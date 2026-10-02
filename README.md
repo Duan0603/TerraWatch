@@ -20,9 +20,10 @@
 [🏛️ Kiến Trúc Microservices](#-3-kiến-trúc-hệ-thống-chuẩn-8-thành-phần) • 
 [📁 Cấu Trúc Toàn Bộ Dự Án](#-4-cấu-trúc-toàn-bộ-dự-án--thư-mục-tài-liệu) • 
 [⚙️ Thiết Lập File .env](#-5-hướng-dẫn-thiết-lập-file-cấu-hình-env) • 
-[🚀 Cách Chạy Dự Án (Docker & Local)](#-6-hướng-dẫn-khởi-chạy-dự-án-chi-tiết) • 
-[🌐 Danh Mục Cổng Dịch Vụ](#-7-danh-mục-cổng-dịch-vụ--api-gateway-routing) • 
-[🤖 Quy Trình BMAD Dev](#-8-hướng-dẫn-dùng-bmad-slash-commands)
+[🚀 Cách Chạy Dự Án](#-6-hướng-dẫn-khởi-chạy-dự-án-chi-tiết) • 
+[🗄️ CSDL: Migration & JPA](#-7-hướng-dẫn-vận-hành-csdl-từ-migration-đến-spring-data-jpa) • 
+[🌐 Danh Mục Cổng Dịch Vụ](#-8-danh-mục-cổng-dịch-vụ--api-gateway-routing) • 
+[🤖 Quy Trình BMAD Dev](#-9-hướng-dẫn-dùng-bmad-slash-commands-cho-nhóm)
 
 </div>
 
@@ -421,7 +422,122 @@ flutter run
 
 ---
 
-## 🌐 7. Danh Mục Cổng Dịch Vụ & API Gateway Routing
+## 🗄️ 7. Hướng Dẫn Vận Hành CSDL: Từ Migration Đến Spring Data JPA
+
+Cơ sở dữ liệu của dự án sử dụng **PostgreSQL 15 kết hợp tiện ích mở rộng địa không gian PostGIS 3.3**, được thiết kế theo kiến trúc **Logical Schema-per-Service**:
+- `core_schema`: Chứa toàn bộ các bảng nghiệp vụ chính của Backend Spring Boot (`users`, `landslide_events`, `community_reports`, `monitoring_areas`, `landslide_event_history`).
+- `gis_schema`: Chứa dữ liệu viễn thám và raster/vector tiles của GIS Service (`raster_scenes`, `satellite_tiles`, v.v.).
+- `public`: Chứa tiện ích mở rộng PostGIS (`postgis`, `postgis_raster`, `uuid-ossp`) và bảng lịch sử migration (`flyway_schema_history`, `schema_migrations`).
+
+---
+
+### 1. Luồng Migration CSDL (Từ DDL Đến Dữ Liệu Mẫu)
+
+Dự án cung cấp **3 cơ chế chạy migration linh hoạt**:
+
+#### Cơ Chế A: Flyway Tự Động Trong Spring Boot (Khuyên dùng khi chạy Core API)
+Mỗi khi `core-api` khởi động (dù chạy trong Docker hay chạy local bằng Maven/IntelliJ), thư viện **Flyway** sẽ tự động quét thư mục `services/core-api/src/main/resources/db/migration/` và áp dụng các file SQL theo thứ tự phiên bản:
+1. `V1__init_postgis_schema.sql`: Kích hoạt PostGIS, tạo các schema (`core_schema`, `gis_schema`), kiểu dữ liệu enum (`risk_level`, `verification_status`), cấu trúc bảng, khóa ngoại và chỉ mục không gian `GIST(geom)`.
+2. `V2__seed_vietnam_geospatial_data.sql`: Nạp sẵn dữ liệu mẫu thực tế tại các điểm sạt lở trọng yếu (Yên Bái, Lào Cai - Bát Xát, Sa Pa, Hà Giang) kèm tọa độ không gian WGS84 (SRID 4326).
+
+> **Lưu ý khi thêm bảng hoặc cột mới:**
+> Thuận chỉ cần tạo file mới theo định dạng `V3__ten_thay_doi.sql` bỏ vào `services/core-api/src/main/resources/db/migration/` (và copy vào `database/migrations/`). Khi khởi chạy lại Core API, Flyway sẽ tự động nhận diện và cập nhật schema mà không làm mất dữ liệu cũ.
+
+#### Cơ Chế B: Chạy Bằng Python CLI Tool (`scripts/migrate.py`)
+Dành cho **Tú (GIS)** hoặc **Duẫn (AI)** khi cần khởi tạo hoặc cập nhật CSDL PostGIS mà không cần khởi động Spring Boot:
+```bash
+# Xem trạng thái các bản migration (đã áp dụng / chưa áp dụng):
+python scripts/migrate.py status
+
+# Thực thi toàn bộ các bản migration còn thiếu:
+python scripts/migrate.py up
+```
+*Script sẽ tự động phát hiện container Docker `terrawatch-postgis` đang chạy hoặc kết nối trực tiếp qua `psql`/`psycopg2`.*
+
+#### Cơ Chế C: Khởi Tạo Tự Động Khi Docker Tạo Volume Lần Đầu
+Khi khởi chạy bằng `docker compose up -d` lần đầu tiên, file `database/init.sql` và `database/seed.sql` được mount vào `/docker-entrypoint-initdb.d/` để tự động khởi tạo CSDL sạch.
+
+---
+
+### 2. Tích Hợp & Ánh Xạ Với Spring Data JPA (Hibernate)
+
+Để đảm bảo hiệu năng và tính toàn vẹn của dữ liệu địa không gian, Core API áp dụng mô hình phân tách tầng dữ liệu chặt chẽ:
+
+#### Quy Tắc Vàng DDL-Auto (`application.yml`):
+```yaml
+spring:
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none # BẮT BUỘC: Tuyệt đối KHÔNG dùng update/create-drop để tránh Hibernate tự ý can thiệp làm hỏng PostGIS schema
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: core_schema # Định tuyến mặc định vào core_schema
+```
+
+#### Ánh Xạ JPA Entity (`@Entity` & `@Table`):
+Các entity trong `services/core-api/src/main/java/vn/terrawatch/core/entity/` được khai báo chỉ định rõ `schema = "core_schema"`:
+```java
+@Entity
+@Table(name = "landslide_events", schema = "core_schema")
+public class LandslideEvent {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "event_id")
+    private UUID eventId;
+
+    @Column(name = "risk_level")
+    private String riskLevel; // low, medium, high, extreme
+
+    @Column(name = "status")
+    private String status;     // pending, verified, rejected, false_alarm
+    // ...
+}
+```
+
+#### Tầng Spring Data JPA Repository (Nghiệp vụ chuẩn & CRUD):
+Nằm tại `vn.terrawatch.core.repository`:
+- `UserRepository`: Tìm kiếm người dùng theo email (`findByEmail`), kiểm tra quyền đăng nhập JWT.
+- `LandslideEventJpaRepository`: Truy vấn danh sách cảnh báo theo trạng thái và mức độ nguy cơ:
+  ```java
+  List<LandslideEvent> findByStatusOrderByDetectionDateDesc(String status);
+  long countByStatus(String status);
+  ```
+- `CommunityReportJpaRepository`, `MonitoringAreaJpaRepository`: Quản lý báo cáo từ người dân và vùng giám sát trọng điểm.
+
+#### Tầng Truy Vấn Không Gian PostGIS Nâng Cao (`SpatialRepository`):
+Đối với các trường hình học phức tạp (`geometry(Polygon, 4326)`, `geometry(Point, 4326)`), dự án không để Hibernate ép kiểu mà sử dụng **`JdbcTemplate` kết hợp trực tiếp hàm không gian PostGIS**:
+```java
+// Lấy danh sách thẩm định kèm định dạng GeoJSON chuẩn cho WebGIS/Mobile:
+String sql = """
+    SELECT event_id, risk_level, status, confidence_score,
+           ST_AsGeoJSON(geom) AS geometry_geojson,
+           ST_AsGeoJSON(centroid) AS centroid_geojson
+    FROM core_schema.landslide_events
+    WHERE status = 'pending'
+    ORDER BY confidence_score DESC
+""";
+```
+*Lợi ích:* Trả dữ liệu trực tiếp dưới dạng GeoJSON cho React WebGIS (Mapbox/Deck.gl) và Flutter Mobile mà không phải tốn tài nguyên chuyển đổi qua lại.
+
+---
+
+### 3. Làm Thế Nào Để Reset Lại Toàn Bộ CSDL Về Trạng Thái Mới Tinh?
+
+Khi muốn xóa sạch dữ liệu thử nghiệm và nạp lại toàn bộ dữ liệu mẫu ban đầu:
+```bash
+# Bước 1: Dừng hệ thống và xóa Volume lưu trữ PostGIS
+docker compose down -v
+
+# Bước 2: Khởi động lại hệ thống (PostGIS sẽ tự động nạp lại init.sql và seed.sql)
+make up
+# hoặc: docker compose up -d --build
+```
+
+---
+
+## 🌐 8. Danh Mục Cổng Dịch Vụ & API Gateway Routing
 
 Khi toàn bộ hệ thống chạy qua Docker, **mọi truy cập chỉ cần đi qua API Gateway duy nhất tại cổng `8080`**:
 
@@ -437,7 +553,7 @@ Khi toàn bộ hệ thống chạy qua Docker, **mọi truy cập chỉ cần đ
 
 ---
 
-## 🤖 8. Hướng Dẫn Dùng BMAD Slash Commands Cho Nhóm
+## 🤖 9. Hướng Dẫn Dùng BMAD Slash Commands Cho Nhóm
 
 Dự án tích hợp đầy đủ hệ sinh thái **AI Agentic BMAD** hỗ trợ 5 thành viên lập trình tự động theo Story:
 
