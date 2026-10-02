@@ -222,108 +222,116 @@ Copy-Item .env.example .env
 
 ---
 
-## 🚀 6. Hướng Dẫn Khởi Chạy Dự Án Chi Tiết
+## 🚀 6. Hướng Dẫn Khởi Chạy Dự Án (Dành Cho Toàn Bộ Thành Viên)
 
-Dự án hỗ trợ **3 hình thức làm việc linh hoạt** tùy theo nhu cầu:
-1. **CÁCH 1:** Khởi chạy toàn bộ hệ thống bằng Docker Compose (Khuyên dùng khi chạy demo toàn diện hoặc bảo vệ đồ án).
-2. **⚡ MÔ HÌNH DEV SIÊU TỐC (KẾT HỢP CÁCH 1 & CÁCH 3 - KHUYÊN DÙNG HÀNG NGÀY):** Không bao giờ phải tắt đi compose lại từ đầu! Tận dụng Hot-Reload trong Docker hoặc chạy local kết hợp Docker nền.
-3. **CÁCH 2:** Từng thành viên khởi chạy riêng phân hệ của mình 100% trên máy local.
+> **MỤC TIÊU CỐT LÕI:** Bất kỳ thành viên nào trong nhóm (kể cả phụ trách AI, GIS, Backend, Frontend hay Mobile) đều có thể tự mình khởi chạy toàn bộ hệ thống GeoSentry trên máy tính cá nhân để lập trình, kiểm thử liên thông và phục vụ bảo vệ đồ án.
+
+Dự án hỗ trợ **3 hình thức làm việc linh hoạt**:
+1. **CÁCH 1:** Khởi chạy toàn bộ hệ thống bằng Docker Compose (Khuyên dùng khi bắt đầu, kiểm thử liên thông hoặc demo đồ án).
+2. **⚡ MÔ HÌNH DEV SIÊU TỐC (DOCKER LIVE RELOAD & REBUILD TỪNG SERVICE):** Quy trình làm việc hàng ngày giúp sửa code ăn ngay mà không bao giờ phải tắt đi compose lại từ đầu.
+3. **CÁCH 2:** Khởi chạy từng phân hệ trên máy local (Dành cho việc viết code độc lập, debug chi tiết từng dịch vụ).
 
 ---
 
-### CÁCH 1: Khởi Chạy Toàn Bộ Bằng Docker Compose (1 Lệnh Duy Nhất)
+### CÁCH 1: Khởi Chạy Toàn Bộ Hệ Thống (1 Lệnh Duy Nhất - Khuyên Dùng Cho Mọi Thành Viên)
 
-Toàn bộ 7 dịch vụ (PostGIS, Redis, Core API, AI Service, GIS Service, WebGIS, API Gateway) sẽ được khởi tạo tự động trong cùng mạng nội bộ `terrawatch-net`:
+Chỉ với 1 lệnh, toàn bộ 7 dịch vụ (PostGIS, Redis, Core API, AI Service, GIS Service, WebGIS, API Gateway) sẽ được tự động biên dịch và khởi chạy trong mạng nội bộ `terrawatch-net`:
 
 ```bash
-# Bước 1: Sao chép file cấu hình môi trường
+# Bước 1: Sao chép file cấu hình môi trường (chỉ làm 1 lần đầu)
+# Trên Linux/macOS:
 cp .env.example .env
+# Trên Windows PowerShell:
+Copy-Item .env.example .env
 
 # Bước 2: Khởi động toàn bộ 7 services (Tự động build và chạy nền)
 make up
-# hoặc: docker compose up -d --build
+# hoặc nếu máy không có make: docker compose up -d --build
 
-# Bước 3: Xem log hệ thống thời gian thực
+# Bước 3: Xem log toàn bộ hệ thống thời gian thực
 make logs
 # hoặc: docker compose logs -f
 
-# Bước 4: Kiểm tra trạng thái hoạt động của các container
+# Bước 4: Kiểm tra trạng thái hoạt động của các container (Tất cả đều phải ở trạng thái "Up")
 make ps
 # hoặc: docker compose ps
+```
 
-# Bước 5: Thử nghiệm các tính năng nâng cao (Demo buổi bảo vệ)
-make demo-circuit-breaker  # Thử nghiệm Circuit Breaker Resilience4j ngắt mạch
-make demo-event-bus        # Thử nghiệm Message Broker Redis Pub/Sub phát sự kiện
+#### 🎯 Kiểm tra kết quả ngay trên trình duyệt:
+Sau khi chạy xong, bất kỳ thành viên nào cũng có thể truy cập ngay:
+- **Giao diện WebGIS 3D Command Center:** [http://localhost:8080](http://localhost:8080)
+- **Tài liệu Swagger Core API Backend:** [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+- **Tài liệu Swagger AI Service:** [http://localhost:8001/docs](http://localhost:8001/docs)
+- **Tài liệu Swagger GIS Pipeline:** [http://localhost:8002/docs](http://localhost:8002/docs)
 
-# Khi muốn dừng toàn bộ hệ thống:
+```bash
+# Khi muốn tạm dừng toàn bộ hệ thống:
 make down
 # hoặc: docker compose down
 ```
 
 ---
 
-### ⚡ MÔ HÌNH DEV SIÊU TỐC: KẾT HỢP CÁCH 1 (DOCKER LIVE RELOAD) & CÁCH 3 (HYBRID CHÂN TRONG CHÂN NGOÀI)
+### ⚡ MÔ HÌNH DEV SIÊU TỐC: DOCKER LIVE RELOAD & REBUILD NHANH TỪNG SERVICE
 
 > **NGUYÊN TẮC VÀNG:** Tuyệt đối **KHÔNG CẦN** tắt đi compose lại từ đầu cả 7 services mỗi khi có ai sửa một dòng code!
 
-Cả team chỉ cần chạy `make up` một lần vào đầu ngày. Sau đó áp dụng linh hoạt 3 cơ chế sau:
+Cả nhóm chỉ cần chạy `make up` một lần vào đầu buổi làm việc. Sau đó áp dụng 3 cơ chế cực nhanh sau:
 
-#### 1. Sửa Code Ăn Ngay Trong 0.5 Giây (Cách 1 — Live Reload qua Volume Mount):
-- Áp dụng sẵn cho: **Duẫn (`ai-service`)** và **Tú (`gis-service`)**.
-- Thư mục code máy thật (`./services/.../app`) đã được mount trực tiếp vào container kèm lệnh `uvicorn --reload`.
-- **Thao tác:** Mở VS Code trên Windows sửa file Python (`inference.py` hoặc `processor.py`) rồi bấm `Ctrl + S`. Container bên trong Docker **tự động reload sau 0.5 giây** mà không cần gõ bất kỳ lệnh docker nào!
+#### 1. Sửa Code Ăn Ngay Trong 0.5 Giây (Live Reload qua Volume Mount):
+- Áp dụng sẵn cho các dịch vụ Python: **`ai-service`** và **`gis-service`**.
+- Thư mục code máy thật (`./services/.../app`) đã được mount trực tiếp vào container kèm cờ `uvicorn --reload`.
+- **Thao tác:** Mở VS Code trên máy bạn, sửa file Python (`inference.py`, `processor.py`,...) rồi bấm `Ctrl + S`. Container bên trong Docker **tự động reload sau 0.5 giây** mà không cần gõ bất kỳ lệnh docker nào!
 
-#### 2. Rebuild ĐÚNG 1 Service Bị Sửa (Chỉ Mất 5–10 Giây — CSDL & Các Service Khác Vẫn Chạy Nguyên):
-Khi một bạn cài thêm thư viện mới (sửa `pom.xml`, `package.json`, hoặc `requirements.txt`), chỉ cần build lại **ĐÚNG SERVICE ĐÓ**:
+#### 2. Rebuild ĐÚNG 1 Service Bị Sửa (Chỉ Mất 5–10 Giây — CSDL & Các Service Khác Vẫn Chạy Bình Thường):
+Khi bạn cài thêm thư viện mới (sửa `pom.xml`, `package.json`, hoặc `requirements.txt`), chỉ cần build lại **ĐÚNG DỊCH VỤ ĐÓ**:
 
 ```bash
-# Thuận sửa Backend: Chỉ build lại Core API
-make rebuild-core     # (docker compose up -d --build core-api)
+# Khi sửa Backend Core API:
+make rebuild-core     # tương đương: docker compose up -d --build core-api
 
-# Duẫn sửa AI: Chỉ build lại AI Service
-make rebuild-ai       # (docker compose up -d --build ai-service)
+# Khi sửa AI Service:
+make rebuild-ai       # tương đương: docker compose up -d --build ai-service
 
-# Tú sửa GIS: Chỉ build lại GIS Service
-make rebuild-gis      # (docker compose up -d --build gis-service)
+# Khi sửa GIS Service:
+make rebuild-gis      # tương đương: docker compose up -d --build gis-service
 
-# Huy sửa Web: Chỉ build lại WebGIS
-make rebuild-web      # (docker compose up -d --build webgis)
+# Khi sửa Frontend WebGIS:
+make rebuild-web      # tương đương: docker compose up -d --build webgis
 
-# Sửa Nginx Gateway:
-make rebuild-gateway  # (docker compose up -d --build gateway)
+# Khi sửa Nginx API Gateway:
+make rebuild-gateway  # tương đương: docker compose up -d --build gateway
 ```
 
-#### 3. Mô Hình Hybrid "Chân Trong Chân Ngoài" (Cách 3 — Dành Cho Huy WebGIS & Thuận Backend):
-Cách làm sướng nhất để debug sâu từng dòng code và cập nhật giao diện trong 50ms:
+#### 3. Mô Hình Hybrid "Chân Trong Chân Ngoài" (Debug Sâu & Cập Nhật Giao Diện 50ms):
+Dành cho bất kỳ thành viên nào muốn debug từng dòng code hoặc làm giao diện nhanh:
 
-* **Với Huy (Làm React WebGIS):**
+* **Khi phát triển Frontend (React WebGIS):**
   1. Tắt riêng container web: `docker compose stop webgis`
-  2. Mở terminal local gõ: `cd apps/webgis && npm run dev`
-  3. WebGIS chạy local tại `http://localhost:5173`, gọi thẳng vào Gateway Docker `http://localhost:8080`. Huy sửa code JSX/CSS thì trình duyệt cập nhật ngay trong **50ms (Vite Fast Refresh)**!
-* **Với Thuận (Làm Java Spring Boot):**
+  2. Mở terminal gõ: `cd apps/webgis && npm run dev`
+  3. WebGIS chạy local tại `http://localhost:5173`, gọi thẳng vào Gateway Docker `http://localhost:8080`. Bạn sửa JSX/CSS thì trình duyệt cập nhật ngay trong **50ms (Vite Fast Refresh)**!
+* **Khi phát triển Backend (Java Spring Boot):**
   1. Tắt riêng container core: `docker compose stop core-api`
   2. Mở IntelliJ IDEA / VS Code bấm nút **Run/Debug** cho `TerraWatchCoreApplication.java`.
-  3. Core API local kết nối vào PostgreSQL (5432) và Redis (6379) đang chạy trong Docker. Thuận đặt **Breakpoint Debug** từng dòng code mượt mà!
-* **Khi code xong muốn đóng gói demo lại:**
+  3. Core API local kết nối thẳng vào PostgreSQL (5432) và Redis (6379) đang chạy trong Docker. Bạn có thể đặt **Breakpoint Debug** từng dòng code mượt mà!
+* **Khi làm xong muốn đóng gói lại Docker:**
   Chỉ cần gõ: `docker compose start core-api webgis` (hoặc `make up`).
 
 ---
 
-### CÁCH 2: Khởi Chạy Từng Phân Hệ Local Độc Lập (100% Không Cần Docker Cả Cụm)
+### CÁCH 2: Khởi Chạy Từng Phân Hệ Dưới Máy Local (Phát Triển Độc Lập)
 
-Mỗi thành viên chỉ cần chạy hạ tầng dùng chung (PostgreSQL & Redis), sau đó chạy service của riêng mình:
+Khi bất kỳ thành viên nào muốn chạy riêng phân hệ của mình trên máy tính cá nhân:
 
-#### 0. Khởi chạy CSDL & Redis nền trước (Tất cả đều cần):
+#### Bước 0: Khởi chạy CSDL PostGIS & Redis nền (Bắt buộc chạy trước):
 ```bash
-# Khởi chạy riêng container PostGIS và Redis:
-docker-compose up -d postgres redis
+docker compose up -d postgres redis
 ```
 
 ---
 
-#### 1. 🧠 DUẪN — Chạy AI Inference Service Local (`services/ai-service`):
+#### 1. 🧠 Phân Hệ AI Inference Service (`services/ai-service` - Python FastAPI):
 ```bash
-# Di chuyển vào thư mục AI Service
 cd services/ai-service
 
 # Tạo và kích hoạt môi trường ảo Python
@@ -333,21 +341,19 @@ python -m venv venv
 # Linux/macOS:
 source venv/bin/activate
 
-# Cài đặt các thư viện phụ thuộc (FastAPI, ONNX Runtime, NumPy, Shapely)
+# Cài đặt thư viện phụ thuộc
 pip install -r requirements.txt
 
-# Khởi chạy server AI tại cổng 8001 (hỗ trợ Hot-Reload khi sửa code)
+# Khởi chạy server AI tại cổng 8001
 uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
 
-# Kiểm tra Swagger UI tài liệu API:
-# Mở trình duyệt: http://localhost:8001/docs
+# Mở trình duyệt xem Swagger UI: http://localhost:8001/docs
 ```
 
 ---
 
-#### 2. 🗺️ TÚ — Chạy GIS Pipeline & Data Service Local (`services/gis-service`):
+#### 2. 🗺️ Phân Hệ GIS Pipeline & Data Service (`services/gis-service` - Python FastAPI + Geo):
 ```bash
-# Di chuyển vào thư mục GIS Service
 cd services/gis-service
 
 # Tạo và kích hoạt môi trường ảo Python
@@ -357,10 +363,10 @@ python -m venv venv
 # Linux/macOS:
 source venv/bin/activate
 
-# Cài đặt thư viện (FastAPI, Rasterio, GeoPandas, Psycopg2)
+# Cài đặt thư viện
 pip install -r requirements.txt
 
-# Chạy migration CSDL PostGIS (nếu cần):
+# Chạy migration CSDL PostGIS (nếu chưa chạy):
 python ../../scripts/migrate.py up
 
 # Khởi chạy server GIS tại cổng 8002
@@ -371,9 +377,8 @@ uvicorn app.main:app --host 0.0.0.0 --port 8002 --reload
 
 ---
 
-#### 3. ⚙️ THUẬN — Chạy Core API Spring Boot 3 Local (`services/core-api`):
+#### 3. ⚙️ Phân Hệ Core API Service (`services/core-api` - Java 17 + Spring Boot 3):
 ```bash
-# Di chuyển vào thư mục Core API
 cd services/core-api
 
 # Khởi chạy Spring Boot 3 bằng Maven Wrapper:
@@ -383,31 +388,28 @@ cd services/core-api
 # Trên Linux / macOS:
 ./mvnw spring-boot:run
 
-# Service sẽ khởi động tại cổng 3000
 # Mở Swagger UI kiểm thử: http://localhost:3000/swagger-ui/index.html
 ```
 
 ---
 
-#### 4. 🖥️ HUY — Chạy WebGIS Dashboard Local (`apps/webgis`):
+#### 4. 🖥️ Phân Hệ WebGIS Dashboard (`apps/webgis` - React 18 + Vite):
 ```bash
-# Di chuyển vào thư mục WebGIS
 cd apps/webgis
 
-# Cài đặt các gói npm
+# Cài đặt các gói thư viện
 npm install
 
 # Khởi chạy Vite Dev Server tại cổng 5173
 npm run dev
 
-# Mở trình duyệt điều khiển: http://localhost:5173
+# Mở trình duyệt: http://localhost:5173
 ```
 
 ---
 
-#### 5. 📱 LÂM — Chạy Mobile Citizen App Local (`apps/mobile`):
+#### 5. 📱 Phân Hệ Mobile Citizen App (`apps/mobile` - Flutter 3.x):
 ```bash
-# Di chuyển vào thư mục Mobile
 cd apps/mobile
 
 # Tải các gói thư viện Flutter
@@ -416,24 +418,24 @@ flutter pub get
 # Kiểm tra danh sách thiết bị/máy ảo đang kết nối
 flutter devices
 
-# Khởi chạy app trên máy ảo Android/iOS hoặc thiết bị thật
+# Khởi chạy app trên máy ảo hoặc điện thoại thật
 flutter run
 ```
 
 ---
 
-## 🗄️ 7. Hướng Dẫn Vận Hành CSDL Thực Chiến: Từ Khởi Tạo, Migration Đến Spring Data JPA
+## 🗄️ 7. Hướng Dẫn Vận Hành CSDL: Từ Khởi Tạo, Migration Đến Spring Data JPA (Dành Cho Toàn Bộ Thành Viên)
 
 Cơ sở dữ liệu của dự án sử dụng **PostgreSQL 15 kết hợp tiện ích địa không gian PostGIS 3.3**, được chia theo mô hình **Logical Schema-per-Service**:
 - `core_schema`: Chứa các bảng nghiệp vụ chính của Spring Boot (`users`, `landslide_events`, `community_reports`, `monitoring_areas`, `landslide_event_history`).
 - `gis_schema`: Chứa dữ liệu viễn thám và tiles của GIS Service (`raster_scenes`, `satellite_tiles`).
 - `public`: Tiện ích PostGIS (`postgis`, `postgis_raster`) và bảng quản lý migration.
 
-Dưới đây là **hướng dẫn hành động từng bước (Runbook)** cho mọi tình huống:
+Dưới đây là **cẩm nang thực chiến từng bước (Runbook)** để bất kỳ ai cũng có thể làm chủ CSDL:
 
 ---
 
-### 📍 TÌNH HUỐNG 1: Bạn mới clone dự án về, muốn CSDL có bảng và dữ liệu mẫu ngay lập tức
+### 📍 TÌNH HUỐNG 1: Bất kỳ thành viên nào mới clone dự án về, muốn CSDL có bảng và dữ liệu mẫu ngay lập tức
 
 Làm theo đúng 3 bước sau:
 
@@ -444,29 +446,15 @@ docker compose up -d postgres redis
 *(Chờ 3 giây để PostgreSQL sẵn sàng nhận kết nối tại cổng `5432`)*
 
 #### Bước 2: Chạy migration để tự động tạo bảng và nạp dữ liệu mẫu
-Chọn **1 trong 2 cách** tùy theo bạn đang làm việc ở phân hệ nào:
+Bất kỳ thành viên nào cũng có thể chọn **1 trong 2 cách** sau:
 
-* **Cách A (Dành cho Thuận - Backend Spring Boot):**
-  Chỉ cần khởi động Core API, thư viện **Flyway** tích hợp sẵn sẽ tự động chạy toàn bộ migration:
-  ```bash
-  # Trên Windows PowerShell:
-  cd services/core-api
-  .\mvnw.cmd spring-boot:run
-  
-  # Trên Linux / macOS:
-  cd services/core-api
-  ./mvnw spring-boot:run
-  ```
-  👉 **Dấu hiệu thành công:** Màn hình console xuất hiện dòng log của Flyway:
-  `Flyway Community Edition ... Successfully applied 2 migrations to schema "core_schema"` (đã chạy xong `V1__init_postgis_schema.sql` và `V2__seed_vietnam_geospatial_data.sql`).
-
-* **Cách B (Dành cho Tú GIS, Duẫn AI, Huy Web hoặc ai không muốn bật Java):**
-  Dùng Python CLI chạy 1 lệnh duy nhất từ thư mục gốc dự án:
+* **Cách A (Nhanh nhất cho tất cả mọi người - Chạy bằng Python CLI, không cần cài Java):**
+  Từ thư mục gốc của dự án, gõ lệnh:
   ```bash
   # Xem trạng thái hiện tại của CSDL:
   python scripts/migrate.py status
 
-  # Thực thi toàn bộ migration vào CSDL:
+  # Thực thi toàn bộ migration nạp cấu trúc bảng và dữ liệu mẫu:
   python scripts/migrate.py up
   ```
   👉 **Dấu hiệu thành công:** Terminal in ra thông báo xanh:
@@ -478,8 +466,13 @@ Chọn **1 trong 2 cách** tùy theo bạn đang làm việc ở phân hệ nào
   🎉 Migration finished! 2 migration(s) applied successfully.
   ```
 
-#### Bước 3: Kiểm tra dữ liệu xem đã vào CSDL thành công chưa
-* **Cách 1 (Bằng dòng lệnh Docker nhanh):**
+* **Cách B (Tự động qua Spring Boot Core API):**
+  Khi chạy `core-api` (bằng Docker `make up` hoặc chạy local `./mvnw spring-boot:run`), thư viện **Flyway** tích hợp sẵn trong Spring Boot sẽ tự động quét thư mục `db/migration` và áp dụng migration ngay lập tức.
+  👉 **Dấu hiệu thành công:** Màn hình console xuất hiện dòng log:
+  `Flyway Community Edition ... Successfully applied 2 migrations to schema "core_schema"`.
+
+#### Bước 3: Kiểm tra dữ liệu trong CSDL
+* **Cách 1 (Dòng lệnh Docker nhanh):**
   ```bash
   docker exec -it terrawatch-postgis psql -U postgres -d terrawatch -c "SELECT event_id, risk_level, status, affected_area_m2 FROM core_schema.landslide_events LIMIT 5;"
   ```
@@ -491,11 +484,11 @@ Chọn **1 trong 2 cách** tùy theo bạn đang làm việc ở phân hệ nào
 
 ---
 
-### 📍 TÌNH HUỐNG 2: Thuận lập trình Core API kết nối CSDL qua Spring Data JPA như thế nào?
+### 📍 TÌNH HUỐNG 2: Cách Core API kết nối CSDL qua Spring Data JPA & PostGIS
 
-Toàn bộ luồng từ CSDL ➔ JPA Entity ➔ Repository ➔ Service đã được cấu hình chuẩn:
+Toàn bộ thành viên khi làm việc với Core API cần nắm chuẩn thiết kế dữ liệu sau:
 
-#### Bước 1: Khai báo Entity (Lưu ý luôn có `schema = "core_schema"`):
+#### Bước 1: Khai báo Entity (Luôn chỉ định `schema = "core_schema"`):
 Tại `services/core-api/src/main/java/vn/terrawatch/core/entity/`:
 ```java
 @Entity
@@ -568,11 +561,11 @@ List<Map<String, Object>> geoJsonEvents = spatialRepository.getVerificationQueue
 
 ---
 
-### 📍 TÌNH HUỐNG 3: Khi bạn muốn tạo thêm bảng mới hoặc thêm cột mới (Quy trình tạo Migration mới)
+### 📍 TÌNH HUỐNG 3: Khi muốn tạo thêm bảng mới hoặc thêm cột mới (Quy trình Migration cho cả nhóm)
 
-> ⛔ **NGHIÊM CẤM:** Không dùng DBeaver bấm tay sửa trực tiếp trên DB máy bạn, vì khi người khác kéo code về sẽ bị lỗi thiếu bảng!
+> ⛔ **NGHIÊM CẤM:** Không dùng DBeaver bấm tay sửa trực tiếp trên DB máy cá nhân, vì khi người khác kéo code về sẽ bị thiếu bảng và lỗi hệ thống!
 
-Thực hiện đúng 3 bước chuẩn:
+Thực hiện đúng 3 bước chuẩn của dự án:
 
 1. **Bước 1: Tạo file migration SQL mới**
    Tạo file mới trong thư mục `services/core-api/src/main/resources/db/migration/` theo quy ước tăng số phiên bản:
@@ -592,22 +585,23 @@ Thực hiện đúng 3 bước chuẩn:
    ```
 
 2. **Bước 2: Đồng bộ sang thư mục script chung**
-   Copy file `V3__tao_bang_cam_bien_iot.sql` vừa tạo sang `database/migrations/` (để Tú & Duẫn có thể chạy bằng Python).
+   Copy file `V3__tao_bang_cam_bien_iot.sql` vừa tạo sang `database/migrations/` (để bất kỳ thành viên nào cũng có thể chạy qua Python).
 
 3. **Bước 3: Chạy áp dụng**
-   - Chỉ cần khởi động lại Core API (`mvnw spring-boot:run`), Flyway sẽ tự động nhận diện file `V3` và chạy ngay trong 1 giây!
+   - Chạy lại Core API (`mvnw spring-boot:run`), Flyway sẽ tự động nhận diện file `V3` và chạy ngay trong 1 giây.
    - Hoặc gõ `python scripts/migrate.py up`.
+   - Commit file migration này lên Git để cả nhóm nhận được cập nhật CSDL.
 
 ---
 
 ### 📍 TÌNH HUỐNG 4: Muốn xóa sạch toàn bộ CSDL để nạp lại dữ liệu gốc từ đầu (Reset Database)
 
-Khi bạn test dữ liệu lung tung hoặc muốn CSDL trở lại trạng thái tinh khôi của buổi bảo vệ:
+Khi bạn muốn CSDL trở lại trạng thái sạch ban đầu với dữ liệu mẫu chuẩn:
 ```bash
 # Bước 1: Dừng toàn bộ và xóa Volume lưu trữ của Docker
 docker compose down -v
 
-# Bước 2: Khởi động lại hệ thống (PostGIS sẽ tự động tạo mới hoàn toàn và nạp dữ liệu mẫu)
+# Bước 2: Khởi động lại hệ thống (PostGIS sẽ tự động tạo mới hoàn toàn và nạp lại dữ liệu mẫu)
 make up
 # hoặc: docker compose up -d postgres redis && python scripts/migrate.py up
 ```
