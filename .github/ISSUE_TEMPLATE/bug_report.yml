@@ -1,0 +1,45 @@
+name: "Báo Cáo Sự Cố (Bug Report)"
+description: "Báo cáo lỗi phát sinh trong hệ thống GeoSentry"
+title: "[BUG] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Cảm ơn bạn đã báo cáo sự cố! Vui lòng cung cấp chi tiết bên dưới.
+  - type: dropdown
+    id: component
+    attributes:
+      label: Phân hệ xảy ra lỗi
+      options:
+        - Core API (NestJS)
+        - AI Service (FastAPI / ONNX)
+        - GIS Service (GEE / MVT)
+        - WebGIS Dashboard (React)
+        - Mobile App (Flutter)
+        - Database (PostGIS)
+        - Docker / Infrastructure
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Mô tả lỗi
+      placeholder: Mô tả hành vi bất thường xảy ra...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Các bước tái hiện lỗi (Steps to Reproduce)
+      placeholder: |
+        1. Gửi request POST tới /api/v1/...
+        2. Nhận mã lỗi 500
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log / Stack Trace
+      render: shell

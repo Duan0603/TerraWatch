@@ -1,0 +1,32 @@
+name: "Đề Xuất Tính Năng (Feature Request)"
+description: "Đề xuất tính năng hoặc cải tiến mới cho đồ án tốt nghiệp"
+title: "[FEAT] "
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: role
+    attributes:
+      label: Thành viên phụ trách (WBS Role)
+      options:
+        - Thành viên 1: AI Engineer
+        - Thành viên 2: GIS Data Engineer
+        - Thành viên 3: Backend Engineer
+        - Thành viên 4: Frontend WebGIS
+        - Thành viên 5: Mobile Engineer
+    validations:
+      required: true
+  - type: textarea
+    id: feature_desc
+    attributes:
+      label: Mô tả tính năng mong muốn
+      placeholder: Tính năng này giải quyết bài toán nghiệp vụ gì trong đề tài...
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Tiêu chí nghiệm thu (Acceptance Criteria)
+      placeholder: |
+        - [ ] API trả về đúng schema
+        - [ ] Độ trễ phản hồi < 200ms
+        - [ ] Tích hợp hiển thị trên WebGIS
