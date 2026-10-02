@@ -2,6 +2,8 @@ package vn.terrawatch.core.service;
 
 import org.springframework.stereotype.Service;
 import vn.terrawatch.core.dto.CommunityReportRequest;
+import vn.terrawatch.core.entity.CommunityReport;
+import vn.terrawatch.core.repository.CommunityReportJpaRepository;
 import vn.terrawatch.core.repository.SpatialRepository;
 
 import java.util.List;
@@ -12,13 +14,19 @@ import java.util.UUID;
 public class CommunityReportService {
 
     private final SpatialRepository spatialRepository;
+    private final CommunityReportJpaRepository reportJpaRepository;
 
-    public CommunityReportService(SpatialRepository spatialRepository) {
+    public CommunityReportService(SpatialRepository spatialRepository, CommunityReportJpaRepository reportJpaRepository) {
         this.spatialRepository = spatialRepository;
+        this.reportJpaRepository = reportJpaRepository;
     }
 
     public List<Map<String, Object>> listReports() {
         return spatialRepository.listCommunityReports();
+    }
+
+    public List<CommunityReport> listRecentJpaReports() {
+        return reportJpaRepository.findAllByOrderByReportTimeDesc();
     }
 
     public Map<String, Object> submitReport(CommunityReportRequest req) {
