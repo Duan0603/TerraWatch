@@ -245,17 +245,20 @@ cp .env.example .env
 Copy-Item .env.example .env
 
 # Bước 2: Khởi động toàn bộ 7 services (Tự động build và chạy nền)
-make up
-# hoặc nếu máy không có make: docker compose up -d --build
-# 💡 Lệnh này TỰ ĐỘNG tạo và bật luôn cả PostgreSQL (PostGIS) và Redis, không cần bật lẻ!
+# Cách A - Chuẩn Docker (100% MÁY CÀI DOCKER ĐỀU CÓ SẴN, KHÔNG CẦN CÀI THÊM GÌ):
+docker compose up -d --build
+
+# Cách B - Dùng phím tắt tiện lợi:
+make up           # Nếu dùng Linux, macOS hoặc Git Bash
+.\run.ps1 up      # Nếu dùng Windows PowerShell (đã tạo sẵn script trong dự án)
+
+# 💡 Lệnh trên TỰ ĐỘNG tạo và bật luôn cả PostgreSQL (PostGIS) và Redis, không cần bật lẻ!
 
 # Bước 3: Xem log toàn bộ hệ thống thời gian thực
-make logs
-# hoặc: docker compose logs -f
+docker compose logs -f    # hoặc: make logs / .\run.ps1 logs
 
-# Bước 4: Kiểm tra trạng thái hoạt động của các container (Tất cả đều phải ở trạng thái "Up")
-make ps
-# hoặc: docker compose ps
+# Bước 4: Kiểm tra trạng thái hoạt động của các container (Tất cả phải ở trạng thái "Up")
+docker compose ps         # hoặc: make ps / .\run.ps1 ps
 ```
 
 #### 🎯 Kiểm tra kết quả ngay trên trình duyệt:
@@ -267,8 +270,7 @@ Sau khi chạy xong, bất kỳ thành viên nào cũng có thể truy cập nga
 
 ```bash
 # Khi muốn tạm dừng toàn bộ hệ thống:
-make down
-# hoặc: docker compose down
+docker compose down       # hoặc: make down / .\run.ps1 down
 ```
 
 ---
@@ -289,19 +291,19 @@ Khi bạn cài thêm thư viện mới (sửa `pom.xml`, `package.json`, hoặc 
 
 ```bash
 # Khi sửa Backend Core API:
-make rebuild-core     # tương đương: docker compose up -d --build core-api
+docker compose up -d --build core-api   # Phím tắt: make rebuild-core / .\run.ps1 rebuild-core
 
 # Khi sửa AI Service:
-make rebuild-ai       # tương đương: docker compose up -d --build ai-service
+docker compose up -d --build ai-service # Phím tắt: make rebuild-ai / .\run.ps1 rebuild-ai
 
 # Khi sửa GIS Service:
-make rebuild-gis      # tương đương: docker compose up -d --build gis-service
+docker compose up -d --build gis-service# Phím tắt: make rebuild-gis / .\run.ps1 rebuild-gis
 
 # Khi sửa Frontend WebGIS:
-make rebuild-web      # tương đương: docker compose up -d --build webgis
+docker compose up -d --build webgis     # Phím tắt: make rebuild-web / .\run.ps1 rebuild-web
 
 # Khi sửa Nginx API Gateway:
-make rebuild-gateway  # tương đương: docker compose up -d --build gateway
+docker compose up -d --build gateway    # Phím tắt: make rebuild-gateway / .\run.ps1 rebuild-gateway
 ```
 
 #### 3. Mô Hình Hybrid "Chân Trong Chân Ngoài" (Debug Sâu & Cập Nhật Giao Diện 50ms):
