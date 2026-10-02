@@ -6,7 +6,7 @@
 
 [![CI Pipeline](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?logo=github-actions&logoColor=white)](.github/workflows)
 [![Docker Orchestration](https://img.shields.io/badge/Orchestrator-Docker_Compose-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
-[![NestJS Core API](https://img.shields.io/badge/Backend-NestJS_10-E0234E?logo=nestjs&logoColor=white)](services/core-api)
+[![Spring Boot Core API](https://img.shields.io/badge/Backend-Spring_Boot_3-6DB33F?logo=springboot&logoColor=white)](services/core-api)
 [![FastAPI AI Engine](https://img.shields.io/badge/AI_Engine-FastAPI_0.110-009688?logo=fastapi&logoColor=white)](services/ai-service)
 [![Spatial DB](https://img.shields.io/badge/Spatial_DB-PostGIS_3.3-336791?logo=postgresql&logoColor=white)](database)
 [![WebGIS Dashboard](https://img.shields.io/badge/Frontend-React_18_+_Mapbox-61DAFB?logo=react&logoColor=black)](apps/webgis)
@@ -46,7 +46,7 @@ graph TD
     end
 
     subgraph GatewayCore ["Trung Tâm Điều Phối & Nghiệp Vụ"]
-        CoreAPI["⚙️ Core API Service (NestJS)<br/>JWT, RBAC, Hàng đợi thẩm định, Phát tán cảnh báo"]
+        CoreAPI["⚙️ Core API Service (Java Spring Boot 3)<br/>Spring Security, PostGIS Spatial, Thẩm định, Phát tán cảnh báo"]
     end
 
     subgraph Microservices ["Dịch Vụ Chuyên Biệt (Microservices)"]
@@ -78,7 +78,7 @@ graph TD
 | :---: | :--- | :--- | :--- |
 | **Thành viên 1** | **AI Engineer** | Huấn luyện mô hình DeepLabV3+/U-Net trên dataset Landslide4Sense, tối ưu F1=0.768, IoU=0.642, đóng gói ONNX Runtime. | [`services/ai-service/`](services/ai-service) |
 | **Thành viên 2** | **GIS Data Engineer** | Xây dựng pipeline GEE/Sentinel Hub, lọc mây, tính toán chỉ số $\Delta\text{NDVI}$, độ dốc (Slope), cắt ảnh (Tiling), Vector Tile MVT. | [`services/gis-service/`](services/gis-service) |
-| **Thành viên 3** | **Backend Engineer** | Thiết kế kiến trúc Microservices, Core API (NestJS), quản lý Celery, xác thực JWT/RBAC, phát tán FCM/SMS. | [`services/core-api/`](services/core-api) |
+| **Thành viên 3** | **Backend Engineer** | Thiết kế kiến trúc Microservices, Core API (Java Spring Boot 3), bảo mật Spring Security, PostGIS Spatial, phát tán FCM/SMS. | [`services/core-api/`](services/core-api) |
 | **Thành viên 4** | **Frontend WebGIS** | Xây dựng Dashboard ReactJS, tích hợp Mapbox GL JS, bản đồ so sánh đa thời gian, quản lý hàng đợi thẩm định. | [`apps/webgis/`](apps/webgis) |
 | **Thành viên 5** | **Mobile Engineer** | Ứng dụng di động Flutter, thuật toán Geofencing ngoại tuyến (Haversine & Ray Casting), SQLite cache $\ge 10,000$ điểm. | [`apps/mobile/`](apps/mobile) |
 
@@ -105,7 +105,7 @@ make up
 | Dịch vụ | Địa chỉ truy cập | Ghi chú |
 | :--- | :--- | :--- |
 | **WebGIS Dashboard** | [http://localhost:5173](http://localhost:5173) | Dashboard Cán bộ Thẩm định Quốc gia |
-| **Core API (NestJS)** | [http://localhost:3000](http://localhost:3000) | Backend REST Gateway |
+| **Core API (Spring Boot 3)** | [http://localhost:3000/swagger-ui.html](http://localhost:3000/swagger-ui.html) | Swagger UI Backend API Gateway |
 | **AI Service (FastAPI)** | [http://localhost:8001/docs](http://localhost:8001/docs) | Swagger Docs API Suy Luận AI |
 | **GIS Service (FastAPI)** | [http://localhost:8002/docs](http://localhost:8002/docs) | Swagger Docs GIS Pipeline |
 | **PostgreSQL / PostGIS** | `localhost:5432` | User: `postgres`, DB: `terrawatch` |

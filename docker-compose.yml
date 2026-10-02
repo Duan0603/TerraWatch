@@ -31,7 +31,7 @@ services:
     networks:
       - terrawatch-net
 
-  # 3. Core API Service (NestJS)
+  # 3. Core API Service (Java Spring Boot 3)
   core-api:
     build:
       context: ./services/core-api
@@ -39,8 +39,10 @@ services:
     container_name: terrawatch-core-api
     restart: always
     environment:
-      PORT: 3000
-      DATABASE_URL: postgresql://postgres:postgrespassword@postgres:5432/terrawatch
+      SERVER_PORT: 3000
+      DATABASE_URL: jdbc:postgresql://postgres:5432/terrawatch
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
       REDIS_URL: redis://redis:6379
       AI_SERVICE_URL: http://ai-service:8001
       GIS_SERVICE_URL: http://gis-service:8002

@@ -1,0 +1,33 @@
+server:
+  port: 3000
+
+spring:
+  application:
+    name: terrawatch-core-api
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/terrawatch}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgrespassword}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+# OpenAPI / Swagger Documentation
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+logging:
+  level:
+    root: INFO
+    vn.terrawatch: DEBUG
+    org.springframework.security: WARN

@@ -44,7 +44,7 @@ C4Container
     Container(webgis, "WebGIS Dashboard", "React, Vite, Mapbox GL JS", "Giao diện bản đồ cho cán bộ & quản trị viên")
     Container(mobile, "Mobile App", "Flutter, Dart, SQLite", "Ứng dụng di động người dân có Geofencing ngoại tuyến")
 
-    Container(core_api, "Core API Service", "NestJS, TypeScript", "Xác thực RBAC, thẩm định sự kiện, quản lý AOI, điều phối phát tán")
+    Container(core_api, "Core API Service", "Java 17, Spring Boot 3", "Xác thực RBAC, thẩm định sự kiện, quản lý AOI, điều phối phát tán")
     Container(ai_service, "AI Inference Service", "Python, FastAPI, ONNX Runtime", "Phân đoạn ảnh sạt lở (DeepLabV3+/U-Net) trên Landslide4Sense")
     Container(gis_service, "GIS Data Service", "Python, FastAPI, Rasterio, GDAL", "Lọc mây, tính NDVI/Slope, Tiling và xuất Vector Tile MVT")
 
