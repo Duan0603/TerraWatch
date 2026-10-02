@@ -223,9 +223,10 @@ Copy-Item .env.example .env
 
 ## 🚀 6. Hướng Dẫn Khởi Chạy Dự Án Chi Tiết
 
-Dự án hỗ trợ **cả 2 hình thức khởi chạy linh hoạt**:
-- **CÁCH 1:** Chạy toàn bộ hệ thống bằng Docker Compose (Khuyên dùng khi chạy demo toàn diện hoặc chấm điểm bảo vệ).
-- **CÁCH 2:** Từng thành viên khởi chạy riêng phân hệ của mình trên máy local để lập trình độc lập.
+Dự án hỗ trợ **3 hình thức làm việc linh hoạt** tùy theo nhu cầu:
+1. **CÁCH 1:** Khởi chạy toàn bộ hệ thống bằng Docker Compose (Khuyên dùng khi chạy demo toàn diện hoặc bảo vệ đồ án).
+2. **⚡ MÔ HÌNH DEV SIÊU TỐC (KẾT HỢP CÁCH 1 & CÁCH 3 - KHUYÊN DÙNG HÀNG NGÀY):** Không bao giờ phải tắt đi compose lại từ đầu! Tận dụng Hot-Reload trong Docker hoặc chạy local kết hợp Docker nền.
+3. **CÁCH 2:** Từng thành viên khởi chạy riêng phân hệ của mình 100% trên máy local.
 
 ---
 
@@ -239,15 +240,15 @@ cp .env.example .env
 
 # Bước 2: Khởi động toàn bộ 7 services (Tự động build và chạy nền)
 make up
-# hoặc: docker-compose up -d --build
+# hoặc: docker compose up -d --build
 
 # Bước 3: Xem log hệ thống thời gian thực
 make logs
-# hoặc: docker-compose logs -f
+# hoặc: docker compose logs -f
 
 # Bước 4: Kiểm tra trạng thái hoạt động của các container
 make ps
-# hoặc: docker-compose ps
+# hoặc: docker compose ps
 
 # Bước 5: Thử nghiệm các tính năng nâng cao (Demo buổi bảo vệ)
 make demo-circuit-breaker  # Thử nghiệm Circuit Breaker Resilience4j ngắt mạch
@@ -255,12 +256,59 @@ make demo-event-bus        # Thử nghiệm Message Broker Redis Pub/Sub phát s
 
 # Khi muốn dừng toàn bộ hệ thống:
 make down
-# hoặc: docker-compose down
+# hoặc: docker compose down
 ```
 
 ---
 
-### CÁCH 2: Khởi Chạy Từng Phân Hệ Local (Dành Cho 5 Thành Viên Lập Trình)
+### ⚡ MÔ HÌNH DEV SIÊU TỐC: KẾT HỢP CÁCH 1 (DOCKER LIVE RELOAD) & CÁCH 3 (HYBRID CHÂN TRONG CHÂN NGOÀI)
+
+> **NGUYÊN TẮC VÀNG:** Tuyệt đối **KHÔNG CẦN** tắt đi compose lại từ đầu cả 7 services mỗi khi có ai sửa một dòng code!
+
+Cả team chỉ cần chạy `make up` một lần vào đầu ngày. Sau đó áp dụng linh hoạt 3 cơ chế sau:
+
+#### 1. Sửa Code Ăn Ngay Trong 0.5 Giây (Cách 1 — Live Reload qua Volume Mount):
+- Áp dụng sẵn cho: **Duẫn (`ai-service`)** và **Tú (`gis-service`)**.
+- Thư mục code máy thật (`./services/.../app`) đã được mount trực tiếp vào container kèm lệnh `uvicorn --reload`.
+- **Thao tác:** Mở VS Code trên Windows sửa file Python (`inference.py` hoặc `processor.py`) rồi bấm `Ctrl + S`. Container bên trong Docker **tự động reload sau 0.5 giây** mà không cần gõ bất kỳ lệnh docker nào!
+
+#### 2. Rebuild ĐÚNG 1 Service Bị Sửa (Chỉ Mất 5–10 Giây — CSDL & Các Service Khác Vẫn Chạy Nguyên):
+Khi một bạn cài thêm thư viện mới (sửa `pom.xml`, `package.json`, hoặc `requirements.txt`), chỉ cần build lại **ĐÚNG SERVICE ĐÓ**:
+
+```bash
+# Thuận sửa Backend: Chỉ build lại Core API
+make rebuild-core     # (docker compose up -d --build core-api)
+
+# Duẫn sửa AI: Chỉ build lại AI Service
+make rebuild-ai       # (docker compose up -d --build ai-service)
+
+# Tú sửa GIS: Chỉ build lại GIS Service
+make rebuild-gis      # (docker compose up -d --build gis-service)
+
+# Huy sửa Web: Chỉ build lại WebGIS
+make rebuild-web      # (docker compose up -d --build webgis)
+
+# Sửa Nginx Gateway:
+make rebuild-gateway  # (docker compose up -d --build gateway)
+```
+
+#### 3. Mô Hình Hybrid "Chân Trong Chân Ngoài" (Cách 3 — Dành Cho Huy WebGIS & Thuận Backend):
+Cách làm sướng nhất để debug sâu từng dòng code và cập nhật giao diện trong 50ms:
+
+* **Với Huy (Làm React WebGIS):**
+  1. Tắt riêng container web: `docker compose stop webgis`
+  2. Mở terminal local gõ: `cd apps/webgis && npm run dev`
+  3. WebGIS chạy local tại `http://localhost:5173`, gọi thẳng vào Gateway Docker `http://localhost:8080`. Huy sửa code JSX/CSS thì trình duyệt cập nhật ngay trong **50ms (Vite Fast Refresh)**!
+* **Với Thuận (Làm Java Spring Boot):**
+  1. Tắt riêng container core: `docker compose stop core-api`
+  2. Mở IntelliJ IDEA / VS Code bấm nút **Run/Debug** cho `TerraWatchCoreApplication.java`.
+  3. Core API local kết nối vào PostgreSQL (5432) và Redis (6379) đang chạy trong Docker. Thuận đặt **Breakpoint Debug** từng dòng code mượt mà!
+* **Khi code xong muốn đóng gói demo lại:**
+  Chỉ cần gõ: `docker compose start core-api webgis` (hoặc `make up`).
+
+---
+
+### CÁCH 2: Khởi Chạy Từng Phân Hệ Local Độc Lập (100% Không Cần Docker Cả Cụm)
 
 Mỗi thành viên chỉ cần chạy hạ tầng dùng chung (PostgreSQL & Redis), sau đó chạy service của riêng mình:
 
