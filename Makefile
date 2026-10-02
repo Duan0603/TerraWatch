@@ -20,6 +20,21 @@ help:
 up:
 	docker compose up -d --build
 
+rebuild-core:
+	docker compose up -d --build core-api
+
+rebuild-ai:
+	docker compose up -d --build ai-service
+
+rebuild-gis:
+	docker compose up -d --build gis-service
+
+rebuild-web:
+	docker compose up -d --build webgis
+
+rebuild-gateway:
+	docker compose up -d --build gateway
+
 down:
 	docker compose down
 

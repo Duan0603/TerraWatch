@@ -64,6 +64,9 @@ services:
     environment:
       REDIS_HOST: redis
       REDIS_PORT: 6379
+    volumes:
+      - ./services/ai-service/app:/app/app
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
     ports:
       - "8001:8001"
     depends_on:
@@ -80,6 +83,9 @@ services:
     restart: always
     environment:
       DATABASE_URL: postgresql://postgres:postgrespassword@postgres:5432/terrawatch
+    volumes:
+      - ./services/gis-service/app:/app/app
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8002", "--reload"]
     ports:
       - "8002:8002"
     depends_on:
