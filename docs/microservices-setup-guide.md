@@ -72,14 +72,47 @@ Hệ thống cấu hình 3 workflow độc lập trong `.github/workflows/`:
 
 ---
 
-## 5. Cơ Chế Database Migration Cho Toàn Bộ Microservices
+## 5. Kiến Trúc CSDL: Logical Schema-per-Service (Phương Án A)
+
+Hệ thống triển khai mô hình **Logical Schema-per-Service** trên nền tảng PostgreSQL 15 & PostGIS 3.3:
+
+```
+PostgreSQL / PostGIS (Database: terrawatch)
+├── public: PostGIS extension, UUID extension, migration metadata
+├── core_schema: Quản lý bởi Core API (users, landslide_events, landslide_event_history, community_reports)
+└── gis_schema: Quản lý bởi GIS Service (monitoring_areas, AOIs, raster tiles)
+```
+
+### Cách thức hoạt động:
+1. **Kết nối JDBC (Spring Boot):**
+   ```yaml
+   spring:
+     datasource:
+       url: jdbc:postgresql://localhost:5432/terrawatch?currentSchema=core_schema,gis_schema,public
+     flyway:
+       schemas: core_schema,gis_schema
+       default-schema: core_schema
+   ```
+2. **JPA Entity Mapping:**
+   Mỗi Entity khai báo rõ ràng schema sở hữu:
+   ```java
+   @Table(name = "landslide_events", schema = "core_schema")
+   @Table(name = "monitoring_areas", schema = "gis_schema")
+   ```
+3. **Hiệu năng & Truy vấn không gian:**
+   - PostGIS extension nằm tại `public`, cho phép cả 2 schema gọi trực tiếp các hàm `ST_DWithin`, `ST_Centroid`, `ST_Area` mà không tốn chi phí đồng bộ mạng.
+   - GIST Index phân bố độc lập trên từng bảng trong schema tương ứng.
+
+---
+
+## 6. Cơ Chế Database Migration Cho Toàn Bộ Microservices
 
 Trong môi trường Microservices, quản lý CSDL cần sự đồng bộ tuyệt đối như các công cụ migration ở Node.js (Prisma / TypeORM / Knex). Dự án cung cấp 2 giải pháp song hành:
 
 ### A. Tự động hóa qua Flyway trong Spring Boot (`services/core-api`)
 - Toàn bộ script migration lưu tại: `services/core-api/src/main/resources/db/migration/`
-  - `V1__init_postgis_schema.sql`: Khởi tạo PostGIS, Enums, Tables, Triggers, Views.
-  - `V2__seed_vietnam_geospatial_data.sql`: Dữ liệu mẫu tọa độ thực tế tại Việt Nam.
+  - `V1__init_postgis_schema.sql`: Khởi tạo PostGIS, Logical Schemas (`core_schema`, `gis_schema`), Enums, Tables, Triggers, Views.
+  - `V2__seed_vietnam_geospatial_data.sql`: Dữ liệu mẫu tọa độ thực tế tại Việt Nam (Yên Bái, Sa Pa, Hà Giang).
 - **Cơ chế**: Khi `core-api` khởi động, Flyway tự động kiểm tra bảng `flyway_schema_history` và áp dụng các bản migration chưa chạy một cách tự động.
 
 ### B. Lệnh Migration CLI dùng chung (Unified CLI Runner)
@@ -102,7 +135,7 @@ make seed
 
 ---
 
-## 6. Sử Dụng BMAD & Ponytail
+## 7. Sử Dụng BMAD & Ponytail
 
 - **BMAD Method (`_bmad/`, `.agents/skills/bmad-*`)**: Điều phối kế hoạch Agile, viết PRD, thiết kế architecture và chia Sprint.
 - **Ponytail (`.agents/rules/ponytail.md`)**: Chuẩn kỹ sư Senior tối giản mã nguồn, loại bỏ abstraction thừa, hạn chế thêm thư viện không cần thiết.

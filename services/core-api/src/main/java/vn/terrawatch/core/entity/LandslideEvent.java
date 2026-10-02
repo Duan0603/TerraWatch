@@ -5,7 +5,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "landslide_events")
+@Table(name = "landslide_events", schema = "core_schema")
 public class LandslideEvent {
 
     @Id

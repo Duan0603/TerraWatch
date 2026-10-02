@@ -8,7 +8,7 @@
 [![CI AI Service](https://img.shields.io/badge/CI_AI-Python_FastAPI-009688?logo=github-actions&logoColor=white)](.github/workflows/ci-ai-service.yml)
 [![CI WebGIS](https://img.shields.io/badge/CI_WebGIS-React_18_+_Vite-61DAFB?logo=github-actions&logoColor=black)](.github/workflows/ci-webgis.yml)
 [![Docker Orchestration](https://img.shields.io/badge/Orchestrator-Docker_Compose-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
-[![Database](https://img.shields.io/badge/Spatial_DB-PostGIS_3.3_Flyway-336791?logo=postgresql&logoColor=white)](database)
+[![Database](https://img.shields.io/badge/Spatial_DB-PostGIS_3.3_Schema_per_Service-336791?logo=postgresql&logoColor=white)](database)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 <br/>
@@ -16,7 +16,7 @@
 [Tổng Quan](#-tổng-quan-đề-tài) • 
 [Kiến Trúc Hệ Thống](#-kiến-trúc-hệ-thống-microservices) • 
 [Cấu Trúc Thư Mục](#-cấu-trúc-chi-tiết-toàn-bộ-dự-án) • 
-[Database Migrations](#-cơ-chế-database-migrations) • 
+[Kiến Trúc CSDL & Migrations](#-kiến-trúc-csdl-schema-per-service--migrations) • 
 [Cách Chạy Dự Án](#-hướng-dẫn-chạy-dự-án-chi-tiết) • 
 [Tài Liệu Kỹ Thuật](#-tài-liệu-kỹ-thuật)
 
@@ -57,8 +57,8 @@ graph TD
         RedisQueue["⚡ Redis 7 Queue & Cache<br/>Hàng đợi xử lý tác vụ bất đồng bộ (Port 6379)"]
     end
 
-    subgraph SpatialData ["Tầng Dữ Liệu Địa Không Gian"]
-        PostGIS[("🐘 PostgreSQL 15 + PostGIS 3.3<br/>Lưu trữ WGS84, GIST Index, Triggers tự động m² (Port 5432)")]
+    subgraph SpatialData ["Tầng Dữ Liệu Địa Không Gian (PostgreSQL / PostGIS)"]
+        PostGIS[("🐘 PostgreSQL 15 + PostGIS 3.3 (Port 5432)<br/>├── public: PostGIS native functions ST_*<br/>├── core_schema: users, events, audit trail, reports<br/>└── gis_schema: monitoring_areas AOIs, tiles")]
     end
 
     WebGIS -->|REST API & Swagger| CoreAPI
@@ -68,8 +68,8 @@ graph TD
     CoreAPI -->|HTTP REST| AIService
     CoreAPI -->|HTTP REST| GISService
     CoreAPI -->|Task Dispatch| RedisQueue
-    CoreAPI <-->|Spring Data JPA & Spatial SQL| PostGIS
-    GISService <-->|Ghi dữ liệu Raster/Vector| PostGIS
+    CoreAPI <-->|Spring Data JPA & core_schema| PostGIS
+    GISService <-->|Đọc/ghi gis_schema| PostGIS
 ```
 
 ---
@@ -91,7 +91,7 @@ SECapstone/
 │       ├── ci-ai-service.yml              # CI cho Python FastAPI AI Service
 │       └── ci-webgis.yml                  # CI cho React 18 WebGIS Dashboard
 ├── database/                              # Quản lý CSDL Địa không gian PostGIS
-│   ├── init.sql                           # DDL Schema, Enums, Triggers, Views
+│   ├── init.sql                           # DDL Schema-per-Service (core_schema, gis_schema), Triggers, Views
 │   ├── seed.sql                           # Dữ liệu kiểm thử mẫu (Yên Bái, Lào Cai, Hà Giang)
 │   └── migrations/                        # Các bản migration đánh số tuần tự (Flyway format)
 │       ├── V1__init_postgis_schema.sql
@@ -106,11 +106,11 @@ SECapstone/
 │   │       │   ├── config/                # SecurityConfig, OpenApiConfig
 │   │       │   ├── controller/            # REST Controllers: Landslides, Areas, Reports, Alerts
 │   │       │   ├── dto/                   # Java 17 Records bất biến
-│   │       │   ├── entity/                # JPA Entities: User, LandslideEvent, MonitoringArea,...
+│   │       │   ├── entity/                # JPA Entities (@Table(schema = "core_schema" / "gis_schema"))
 │   │       │   ├── repository/            # JpaRepositories + SpatialRepository (Native PostGIS)
 │   │       │   └── service/               # Logic nghiệp vụ & Transaction management
 │   │       └── resources/
-│   │           ├── application.yml        # Cấu hình Datasource PostGIS & Flyway
+│   │           ├── application.yml        # Cấu hình currentSchema=core_schema,gis_schema,public & Flyway
 │   │           └── db/migration/          # Thư mục Flyway tự động chạy migration khi khởi động
 │   ├── ai-service/                        # [Python 3.11 + FastAPI] AI Inference Service
 │   │   ├── app/
@@ -140,7 +140,7 @@ SECapstone/
 │       │       └── geofencing_service.dart# Thuật toán Haversine & Ray Casting chạy offline
 │       └── pubspec.yaml
 ├── docs/                                  # Bộ tài liệu kỹ thuật hoàn chỉnh
-│   ├── ARCHITECTURE.md                    # Tài liệu kiến trúc C4 Model (Context, Container, Sequence)
+│   ├── ARCHITECTURE.md                    # Tài liệu kiến trúc C4 Model & Database Schema-per-Service
 │   ├── AI_MODEL_CARD.md                   # Hồ sơ nghiên cứu mô hình AI (Landslide4Sense Benchmark)
 │   └── microservices-setup-guide.md       # Hướng dẫn thiết lập repo, quy ước Git và CI/CD
 ├── scripts/
@@ -153,14 +153,22 @@ SECapstone/
 
 ---
 
-## 🗄️ Cơ Chế Database Migrations
+## 🗄️ Kiến Trúc CSDL (Schema-per-Service) & Migrations
 
-Để mọi service và lập trình viên trong nhóm có thể quản lý CSDL nhất quán như lệnh `npx prisma migrate` hoặc `npm run typeorm migration:run` ở Node.js, dự án hỗ trợ **2 cơ chế migration**:
+### 1. Kiến trúc CSDL: Logical Schema-per-Service (Phương án A)
+Nhằm đảm bảo ranh giới dữ liệu độc lập giữa các Microservices nhưng vẫn tận dụng được sức mạnh tính toán hình học native của PostGIS (0ms network latency), hệ thống chia tách CSDL thành các schema logic:
+- **`public`**: Chứa extension `postgis`, `uuid-ossp`, và bảng kiểm soát migration `public.schema_migrations`.
+- **`core_schema`**: Dành riêng cho **Core API (Java Spring Boot 3)**, gồm: `users`, `landslide_events`, `landslide_event_history`, `community_reports`, `v_active_landslide_zones`.
+- **`gis_schema`**: Dành riêng cho **GIS Data Service (Python FastAPI)**, gồm: `monitoring_areas` (AOIs), siêu dữ liệu phân mảnh ảnh vệ tinh.
 
-### Cách 1: Tự động qua Spring Boot Flyway (Khuyên dùng khi chạy app)
-Mỗi khi service `core-api` khởi động, Flyway tự động đọc các file trong `services/core-api/src/main/resources/db/migration/` và áp dụng các bản migration mới vào CSDL PostGIS. Không cần gõ lệnh thủ công.
+### 2. Hai Cơ Chế Database Migrations Song Hành
 
-### Cách 2: Chạy lệnh CLI thủ công qua Makefile / Python (Dành cho mọi service)
+Để mọi service và lập trình viên trong nhóm có thể quản lý CSDL nhất quán như lệnh `npx prisma migrate` hoặc `npm run typeorm migration:run` ở Node.js, dự án hỗ trợ:
+
+#### Cách 1: Tự động qua Spring Boot Flyway (Khuyên dùng khi chạy app)
+Mỗi khi service `core-api` khởi động, Flyway tự động đọc các file trong `services/core-api/src/main/resources/db/migration/` và áp dụng các bản migration mới vào CSDL PostGIS theo schemas `core_schema,gis_schema`.
+
+#### Cách 2: Chạy lệnh CLI thủ công qua Makefile / Python (Dành cho mọi service)
 Nếu bạn đang phát triển các service khác (AI, GIS, WebGIS) và muốn kiểm tra hoặc cập nhật CSDL:
 
 ```bash

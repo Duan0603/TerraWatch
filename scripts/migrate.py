@@ -83,7 +83,7 @@ def run_sql(sql_content: str) -> bool:
 
 def ensure_migration_table():
     create_table_sql = """
-    CREATE TABLE IF NOT EXISTS schema_migrations (
+    CREATE TABLE IF NOT EXISTS public.schema_migrations (
         version VARCHAR(100) PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         applied_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -96,12 +96,12 @@ def get_applied_migrations() -> set:
         import psycopg2
         conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST, port=DB_PORT)
         with conn.cursor() as cur:
-            cur.execute("SELECT version FROM schema_migrations;")
+            cur.execute("SELECT version FROM public.schema_migrations;")
             rows = cur.fetchall()
             return {r[0] for r in rows}
     except Exception:
         # Query via docker
-        cmd = ["docker", "exec", "-i", CONTAINER_NAME, "psql", "-U", DB_USER, "-d", DB_NAME, "-t", "-c", "SELECT version FROM schema_migrations;"]
+        cmd = ["docker", "exec", "-i", CONTAINER_NAME, "psql", "-U", DB_USER, "-d", DB_NAME, "-t", "-c", "SELECT version FROM public.schema_migrations;"]
         proc = subprocess.run(cmd, capture_output=True, text=True)
         if proc.returncode == 0:
             return {line.strip() for line in proc.stdout.splitlines() if line.strip()}

@@ -31,7 +31,7 @@ public class SpatialRepository {
                 satellite_scene_id,
                 ST_AsGeoJSON(geom) AS geometry_geojson,
                 ST_AsGeoJSON(centroid) AS centroid_geojson
-            FROM landslide_events
+            FROM core_schema.landslide_events
             WHERE status = 'pending'
             ORDER BY confidence_score DESC, detection_date DESC
             """;
@@ -41,10 +41,10 @@ public class SpatialRepository {
     // FR3.2 & UC04: Cán bộ phê duyệt / Bác bỏ
     public Map<String, Object> verifyEvent(UUID eventId, UUID officerId, String status, String riskLevel, String officerNote) {
         String sql = """
-            UPDATE landslide_events
+            UPDATE core_schema.landslide_events
             SET 
-                status = CAST(? AS verification_status),
-                risk_level = CASE WHEN ? IS NOT NULL THEN CAST(? AS risk_level) ELSE risk_level END,
+                status = CAST(? AS core_schema.verification_status),
+                risk_level = CASE WHEN ? IS NOT NULL THEN CAST(? AS core_schema.risk_level) ELSE risk_level END,
                 officer_note = ?,
                 verified_by = ?,
                 verified_at = CURRENT_TIMESTAMP
@@ -81,7 +81,7 @@ public class SpatialRepository {
                     )
                 ), '[]'::jsonb)
             )::text AS geojson
-            FROM landslide_events
+            FROM core_schema.landslide_events
             WHERE status = 'verified'
             """;
         return jdbcTemplate.queryForObject(sql, String.class);
@@ -95,7 +95,7 @@ public class SpatialRepository {
                 risk_level,
                 affected_area_m2,
                 ST_Distance(geom::geography, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography) AS distance_meters
-            FROM landslide_events 
+            FROM core_schema.landslide_events 
             WHERE ST_DWithin(
                 geom::geography, 
                 ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, 
@@ -123,12 +123,12 @@ public class SpatialRepository {
                     )
                 ), '[]'::jsonb)
             )::text AS geojson
-            FROM (SELECT event_id, risk_level, geom FROM landslide_events WHERE status = 'verified') AS t
+            FROM (SELECT event_id, risk_level, geom FROM core_schema.landslide_events WHERE status = 'verified') AS t
             """;
         return jdbcTemplate.queryForObject(sql, String.class);
     }
 
-    // Monitoring Areas
+    // Monitoring Areas (gis_schema)
     public List<Map<String, Object>> listMonitoringAreas() {
         String sql = """
             SELECT 
@@ -138,7 +138,7 @@ public class SpatialRepository {
                 is_active, 
                 ST_AsGeoJSON(geom) AS geometry_geojson,
                 created_at
-            FROM monitoring_areas
+            FROM gis_schema.monitoring_areas
             ORDER BY area_id ASC
             """;
         return jdbcTemplate.queryForList(sql);
@@ -146,17 +146,17 @@ public class SpatialRepository {
 
     public Map<String, Object> createMonitoringArea(String name, String description, String geoJsonGeometry) {
         String sql = """
-            INSERT INTO monitoring_areas (name, description, geom)
+            INSERT INTO gis_schema.monitoring_areas (name, description, geom)
             VALUES (?, ?, ST_Multi(ST_SetSRID(ST_GeomFromGeoJSON(?), 4326)))
             RETURNING area_id, name, description, is_active, created_at
             """;
         return jdbcTemplate.queryForMap(sql, name, description, geoJsonGeometry);
     }
 
-    // Community Reports
+    // Community Reports (core_schema)
     public Map<String, Object> submitCommunityReport(UUID userId, double lon, double lat, String imageUrl, String description) {
         String sql = """
-            INSERT INTO community_reports (user_id, location, image_url, description, status)
+            INSERT INTO core_schema.community_reports (user_id, location, image_url, description, status)
             VALUES (?, ST_SetSRID(ST_MakePoint(?, ?), 4326), ?, ?, 'submitted')
             RETURNING report_id, user_id, report_time, image_url, description, status
             """;
@@ -174,8 +174,8 @@ public class SpatialRepository {
                 ST_X(r.location) AS longitude,
                 ST_Y(r.location) AS latitude,
                 u.full_name AS submitter_name
-            FROM community_reports r
-            LEFT JOIN users u ON r.user_id = u.user_id
+            FROM core_schema.community_reports r
+            LEFT JOIN core_schema.users u ON r.user_id = u.user_id
             ORDER BY r.report_time DESC
             """;
         return jdbcTemplate.queryForList(sql);

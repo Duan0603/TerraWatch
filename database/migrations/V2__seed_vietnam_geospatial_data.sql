@@ -1,18 +1,21 @@
 -- ========================================================
 -- GeoSentry / TerraWatch - Seed Data (Vietnam Focus)
+-- Architecture: Logical Schema-per-Service (Phương án A)
 -- Areas: Mù Cang Chải (Yên Bái), Sa Pa (Lào Cai), Hoàng Su Phì (Hà Giang)
 -- ========================================================
 
--- 1. Users (BCrypt hashed passwords for Admin, Officer, Citizen)
-INSERT INTO users (user_id, full_name, email, password_hash, role, phone_number)
-VALUES
+SET search_path TO core_schema, gis_schema, public;
+
+-- 1. Users (BCrypt hashed passwords for Admin, Officer, Citizen) in core_schema
+INSERT INTO core_schema.users (user_id, full_name, email, password_hash, role, phone_number)
+VALUES 
     ('11111111-1111-1111-1111-111111111111', 'Ban Chỉ Đạo Quốc Gia PCTT', 'admin@terrawatch.vn', '$2b$10$w0M/44Z6F4Yw8YgJ22Jd.OTJjYp4EKnSvy/3o1sVepvI7fL50d2tq', 'admin', '0901234567'),
     ('22222222-2222-2222-2222-222222222222', 'Cán bộ Thẩm định Yên Bái', 'officer.yenbai@terrawatch.vn', '$2b$10$w0M/44Z6F4Yw8YgJ22Jd.OTJjYp4EKnSvy/3o1sVepvI7fL50d2tq', 'officer', '0912345678'),
     ('33333333-3333-3333-3333-333333333333', 'Hoàng Văn Dũng (Bản Lìm Mông)', 'citizen.limmong@terrawatch.vn', '$2b$10$w0M/44Z6F4Yw8YgJ22Jd.OTJjYp4EKnSvy/3o1sVepvI7fL50d2tq', 'citizen', '0987654321')
 ON CONFLICT (email) DO NOTHING;
 
--- 2. Monitoring Areas (AOIs)
-INSERT INTO monitoring_areas (name, geom, description, is_active)
+-- 2. Monitoring Areas (AOIs) in gis_schema
+INSERT INTO gis_schema.monitoring_areas (name, geom, description, is_active)
 VALUES 
     (
         'Vùng trọng điểm 1: Mù Cang Chải (Yên Bái)',
@@ -34,9 +37,9 @@ VALUES
     )
 ON CONFLICT DO NOTHING;
 
--- 3. Landslide Events
+-- 3. Landslide Events in core_schema
 -- Event A: Chờ thẩm định (Pending) - Mù Cang Chải
-INSERT INTO landslide_events (
+INSERT INTO core_schema.landslide_events (
     event_id,
     geom,
     risk_level,
@@ -57,7 +60,7 @@ INSERT INTO landslide_events (
 ) ON CONFLICT (event_id) DO NOTHING;
 
 -- Event B: Đã phê duyệt (Verified Extreme) - Khau Phạ
-INSERT INTO landslide_events (
+INSERT INTO core_schema.landslide_events (
     event_id,
     geom,
     risk_level,
@@ -84,7 +87,7 @@ INSERT INTO landslide_events (
 ) ON CONFLICT (event_id) DO NOTHING;
 
 -- Event C: Đã phê duyệt (Verified Medium) - Sa Pa
-INSERT INTO landslide_events (
+INSERT INTO core_schema.landslide_events (
     event_id,
     geom,
     risk_level,
@@ -110,8 +113,8 @@ INSERT INTO landslide_events (
     'S2A_MSIL2A_20260926T034000_N0500_R061'
 ) ON CONFLICT (event_id) DO NOTHING;
 
--- 4. Community Reports (Crowdsourcing)
-INSERT INTO community_reports (user_id, location, image_url, description, status)
+-- 4. Community Reports (Crowdsourcing) in core_schema
+INSERT INTO core_schema.community_reports (user_id, location, image_url, description, status)
 VALUES 
     (
         '33333333-3333-3333-3333-333333333333',
