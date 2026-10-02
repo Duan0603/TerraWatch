@@ -186,10 +186,15 @@ SECapstone/
 
 ---
 
-## ⚙️ 5. Hướng Dẫn Thiết Lập File Cấu Hình `.env`
+## ⚙️ 5. Hướng Dẫn Thiết Lập Cấu Hình `.env` (Toàn Cục & Từng Phân Hệ)
 
-Trước khi khởi chạy hệ thống, sao chép file `.env.example` thành `.env`:
+Dự án áp dụng kiến trúc cấu hình **2 tầng linh hoạt**:
+1. **Tầng 1 — File `.env` gốc (Root):** Quản lý tập trung toàn bộ biến môi trường khi chạy qua **Docker Compose** (`docker compose up -d` / `make up` / `.\run.ps1 up`). Cả nhóm chỉ cần cấu hình file này 1 lần là toàn bộ 7 services tự động nhận đủ.
+2. **Tầng 2 — File `.env` riêng trong từng thư mục con:** Dành cho các thành viên khi khởi chạy riêng lẻ từng phân hệ dưới máy **Local** (Cách 2). Đã có sẵn file `.env.example` trong từng thư mục, bạn chỉ cần copy thành `.env` để tùy biến riêng cho máy mình.
 
+---
+
+### 1. Thiết lập File `.env` gốc (Bắt buộc cho Docker Compose):
 ```bash
 # Trên Linux / macOS / Git Bash:
 cp .env.example .env
@@ -198,7 +203,7 @@ cp .env.example .env
 Copy-Item .env.example .env
 ```
 
-### Bảng Giải Thích Chi Tiết Các Biến Môi Trường Trong `.env`:
+#### Bảng Giải Thích Chi Tiết Các Biến Trong `.env` Gốc:
 
 | Biến môi trường | Giá trị mặc định trong `.env.example` | Ý nghĩa kỹ thuật | Phân hệ sử dụng |
 | :--- | :--- | :--- | :--- |
@@ -219,6 +224,20 @@ Copy-Item .env.example .env
 | `MAPBOX_ACCESS_TOKEN` | `pk.placeholder_mapbox_token` | Token hiển thị bản đồ số Mapbox 3D Terrain | WebGIS |
 | `NASA_FIRMS_MAP_KEY` | `placeholder_nasa_firms_key` | Khóa API vệ tinh NASA FIRMS | GIS Service |
 | `SENTINEL_HUB_CLIENT_ID` | `placeholder_sentinel_client_id` | Khóa xác thực Copernicus / Sentinel Hub | GIS Service |
+
+---
+
+### 2. Danh Sách File `.env` Riêng Ở Từng Thư Mục Con (Khi Chạy Local):
+
+Khi một thành viên chỉ muốn chạy riêng service của mình trên máy local (không qua Docker), hãy vào thư mục con tương ứng và copy `.env.example` thành `.env`:
+
+| Thư mục phân hệ | File cấu hình mẫu | Các biến quan trọng bên trong |
+| :--- | :--- | :--- |
+| **`apps/webgis/`** | [`.env.example`](apps/webgis/.env.example) | `VITE_PORT=5173`<br/>`VITE_API_BASE_URL=http://localhost:8080`<br/>`VITE_MAPBOX_ACCESS_TOKEN=...` |
+| **`services/ai-service/`** | [`.env.example`](services/ai-service/.env.example) | `PORT=8001`<br/>`REDIS_HOST=localhost`<br/>`REDIS_PORT=6379`<br/>`ONNX_MODEL_PATH=models/...` |
+| **`services/gis-service/`** | [`.env.example`](services/gis-service/.env.example) | `PORT=8002`<br/>`DATABASE_URL=postgresql://...`<br/>`SENTINEL_HUB_CLIENT_ID=...` |
+| **`apps/mobile/`** | [`.env.example`](apps/mobile/.env.example) | `API_BASE_URL=http://10.0.2.2:8080` (Android) hoặc `localhost` (iOS)<br/>`MAPBOX_ACCESS_TOKEN=...` |
+| **`services/core-api/`** | `src/main/resources/application.yml` | Đã cấu hình sẵn giá trị fallback tự động nhận `localhost` khi chạy bằng `mvnw spring-boot:run` |
 
 ---
 
