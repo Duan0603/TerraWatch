@@ -194,8 +194,16 @@ Dự án áp dụng kiến trúc cấu hình **2 tầng linh hoạt**:
 
 ---
 
-### 1. Thiết lập File `.env` gốc (Bắt buộc cho Docker Compose):
+### 1. Thiết lập File `.env` gốc (Tùy chọn cho Docker Compose):
+
+> 💡 **Tin vui cho cả nhóm:** Khi chạy toàn bộ hệ thống bằng Docker Compose (`docker compose up -d` / `make up` / `.\run.ps1 up`), bạn **KHÔNG BẮT BUỘC** phải tạo file `.env` vì toàn bộ thông số CSDL, Redis và cổng dịch vụ đã được định nghĩa sẵn giá trị mặc định chuẩn trong `docker-compose.yml` để **chạy được ngay 100% sau khi clone**!
+>
+> Bạn chỉ cần tạo file `.env` khi:
+> 1. Muốn đổi API Key thật bên ngoài (như Mapbox Token, Sentinel Hub Client ID).
+> 2. Hoặc khi chạy riêng lẻ các phân hệ trên máy Local.
+
 ```bash
+# Nếu muốn tùy biến biến môi trường, sao chép file mẫu:
 # Trên Linux / macOS / Git Bash:
 cp .env.example .env
 
@@ -257,7 +265,7 @@ Dự án hỗ trợ **3 hình thức làm việc linh hoạt**:
 Chỉ với 1 lệnh, toàn bộ 7 dịch vụ (PostGIS, Redis, Core API, AI Service, GIS Service, WebGIS, API Gateway) sẽ được tự động biên dịch và khởi chạy trong mạng nội bộ `terrawatch-net`:
 
 ```bash
-# Bước 1: Sao chép file cấu hình môi trường (chỉ làm 1 lần đầu)
+# Bước 1: Sao chép file .env (TÙY CHỌN - Nếu không làm bước này thì Docker vẫn chạy 100% bằng cấu hình mặc định!)
 # Trên Linux/macOS:
 cp .env.example .env
 # Trên Windows PowerShell:
