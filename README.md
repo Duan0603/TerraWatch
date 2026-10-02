@@ -247,6 +247,7 @@ Copy-Item .env.example .env
 # Bước 2: Khởi động toàn bộ 7 services (Tự động build và chạy nền)
 make up
 # hoặc nếu máy không có make: docker compose up -d --build
+# 💡 Lệnh này TỰ ĐỘNG tạo và bật luôn cả PostgreSQL (PostGIS) và Redis, không cần bật lẻ!
 
 # Bước 3: Xem log toàn bộ hệ thống thời gian thực
 make logs
@@ -321,9 +322,11 @@ Dành cho bất kỳ thành viên nào muốn debug từng dòng code hoặc là
 
 ### CÁCH 2: Khởi Chạy Từng Phân Hệ Dưới Máy Local (Phát Triển Độc Lập)
 
-Khi bất kỳ thành viên nào muốn chạy riêng phân hệ của mình trên máy tính cá nhân:
+Cách này chỉ dành cho trường hợp bạn **không muốn chạy `make up`**, mà chỉ muốn chạy riêng service của mình trên máy thật (local IDE):
 
-#### Bước 0: Khởi chạy CSDL PostGIS & Redis nền (Bắt buộc chạy trước):
+#### Bước 0: Khởi chạy CSDL PostGIS & Redis nền (Bắt buộc chạy trước nếu chưa chạy `make up`):
+> 💡 *Nếu bạn đã chạy `make up` rồi thì Database và Redis **đã có sẵn**, bỏ qua bước này!*
+
 ```bash
 docker compose up -d postgres redis
 ```
