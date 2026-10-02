@@ -1,0 +1,33 @@
+name: CI - AI Service
+
+on:
+  push:
+    paths:
+      - 'services/ai-service/**'
+      - '.github/workflows/ci-ai-service.yml'
+    branches: [ main, develop ]
+  pull_request:
+    paths:
+      - 'services/ai-service/**'
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/ai-service
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt

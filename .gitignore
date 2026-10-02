@@ -33,3 +33,7 @@ Desktop.ini
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Temporary & Output directories
+scratch/
+_bmad-output/

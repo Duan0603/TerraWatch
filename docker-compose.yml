@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # 1. PostGIS Database (Spatial engine)
+  postgres:
+    image: postgis/postgis:15-3.3
+    container_name: terrawatch-postgis
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: terrawatch
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
+    networks:
+      - terrawatch-net
+
+  # 2. Redis Cache & Celery Queue
+  redis:
+    image: redis:7-alpine
+    container_name: terrawatch-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - terrawatch-net
+
+  # 3. Core API Service (NestJS)
+  core-api:
+    build:
+      context: ./services/core-api
+      dockerfile: Dockerfile
+    container_name: terrawatch-core-api
+    restart: always
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgresql://postgres:postgrespassword@postgres:5432/terrawatch
+      REDIS_URL: redis://redis:6379
+      AI_SERVICE_URL: http://ai-service:8001
+      GIS_SERVICE_URL: http://gis-service:8002
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - terrawatch-net
+
+  # 4. AI Deep Learning Service (FastAPI / ONNX)
+  ai-service:
+    build:
+      context: ./services/ai-service
+      dockerfile: Dockerfile
+    container_name: terrawatch-ai-service
+    restart: always
+    ports:
+      - "8001:8001"
+    networks:
+      - terrawatch-net
+
+  # 5. GIS Data Service (FastAPI / GEE / Tiling)
+  gis-service:
+    build:
+      context: ./services/gis-service
+      dockerfile: Dockerfile
+    container_name: terrawatch-gis-service
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://postgres:postgrespassword@postgres:5432/terrawatch
+    ports:
+      - "8002:8002"
+    depends_on:
+      - postgres
+    networks:
+      - terrawatch-net
+
+  # 6. WebGIS Dashboard (React + Mapbox)
+  webgis:
+    build:
+      context: ./apps/webgis
+      dockerfile: Dockerfile
+    container_name: terrawatch-webgis
+    restart: always
+    ports:
+      - "5173:80"
+    depends_on:
+      - core-api
+    networks:
+      - terrawatch-net
+
+volumes:
+  postgis_data:
+  redis_data:
+
+networks:
+  terrawatch-net:
+    driver: bridge
