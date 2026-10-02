@@ -237,7 +237,7 @@ Khi một thành viên chỉ muốn chạy riêng service của mình trên máy
 | **`services/ai-service/`** | [`.env.example`](services/ai-service/.env.example) | `PORT=8001`<br/>`REDIS_HOST=localhost`<br/>`REDIS_PORT=6379`<br/>`ONNX_MODEL_PATH=models/...` |
 | **`services/gis-service/`** | [`.env.example`](services/gis-service/.env.example) | `PORT=8002`<br/>`DATABASE_URL=postgresql://...`<br/>`SENTINEL_HUB_CLIENT_ID=...` |
 | **`apps/mobile/`** | [`.env.example`](apps/mobile/.env.example) | `API_BASE_URL=http://10.0.2.2:8080` (Android) hoặc `localhost` (iOS)<br/>`MAPBOX_ACCESS_TOKEN=...` |
-| **`services/core-api/`** | `src/main/resources/application.yml` | Đã cấu hình sẵn giá trị fallback tự động nhận `localhost` khi chạy bằng `mvnw spring-boot:run` |
+| **`services/core-api/`** | [`.env.example`](services/core-api/.env.example)<br/>và `application.yml` | `SERVER_PORT=3000`<br/>`DATABASE_URL=jdbc:postgresql://...`<br/>`JWT_SECRET=...`<br/>*(Spring Boot tự động inject từ biến môi trường OS, file `.env`, hoặc fallback mặc định trong `application.yml`)* |
 
 ---
 
