@@ -1,7 +1,7 @@
 # Software Architecture Document (SAD) - GeoSentry (TerraWatch)
 
 > **Hệ Thống Phát Hiện & Cảnh Báo Sạt Lở Đất Viễn Thám Đa Phân Hệ**  
-> Kiến trúc tuân theo chuẩn **C4 Model** (Context, Container, Component, Deployment).
+> Kiến trúc tuân theo chuẩn **C4 Model** (Context, Container, Component, Deployment) và đáp ứng toàn diện **8 thành phần cốt lõi của hệ thống Microservices doanh nghiệp**.
 
 ---
 
@@ -35,66 +35,86 @@ C4Context
 
 ## 2. C4 Level 2: Container Diagram (Kiến Trúc Container Microservices)
 
-Các dịch vụ độc lập cấu thành hệ thống GeoSentry và giao thức liên kết:
+Các dịch vụ độc lập cấu thành hệ thống GeoSentry cùng API Gateway và Event Bus:
 
 ```mermaid
 C4Container
     title Container Diagram - GeoSentry Microservices Architecture
 
-    Container(webgis, "WebGIS Dashboard", "React, Vite, Mapbox GL JS", "Giao diện bản đồ cho cán bộ & quản trị viên")
-    Container(mobile, "Mobile App", "Flutter, Dart, SQLite", "Ứng dụng di động người dân có Geofencing ngoại tuyến")
+    Container(webgis, "WebGIS Dashboard", "React 18, Mapbox GL JS", "Giao diện bản đồ cho cán bộ & quản trị viên")
+    Container(mobile, "Mobile App", "Flutter 3.x, SQLite", "Ứng dụng di động người dân có Geofencing ngoại tuyến")
 
-    Container(core_api, "Core API Service", "Java 17, Spring Boot 3", "Xác thực RBAC, thẩm định sự kiện, quản lý AOI, điều phối phát tán")
-    Container(ai_service, "AI Inference Service", "Python, FastAPI, ONNX Runtime", "Phân đoạn ảnh sạt lở (DeepLabV3+/U-Net) trên Landslide4Sense")
-    Container(gis_service, "GIS Data Service", "Python, FastAPI, Rasterio, GDAL", "Lọc mây, tính NDVI/Slope, Tiling và xuất Vector Tile MVT")
+    Container(gateway, "API Gateway", "Nginx Reverse Proxy (Port 8080)", "Single Entry Point: Định tuyến, Rate Limiting, CORS, Gzip")
 
-    ContainerDb(postgis, "Spatial Database", "PostgreSQL 15 + PostGIS 3.3", "Lưu trữ hình học không gian (WGS84), sự kiện sạt lở, AOI (Phân chia Logical Schema-per-Service)")
-    ContainerDb(redis, "Queue & Cache", "Redis 7 Alpine", "Hàng đợi tác vụ bất đồng bộ và bộ đệm phân tán")
+    Container(core_api, "Core API Service", "Java 17, Spring Boot 3", "Xác thực RBAC, thẩm định sự kiện, quản lý AOI, Circuit Breaker (Resilience4j)")
+    Container(ai_service, "AI Inference Service", "Python 3.11, FastAPI, ONNX", "Phân đoạn ảnh sạt lở (DeepLabV3+) trên Landslide4Sense, Event Listener")
+    Container(gis_service, "GIS Data Service", "Python 3.11, FastAPI, GDAL", "Lọc mây, tính NDVI/Slope, Tiling và xuất Vector Tile MVT")
 
-    Rel(webgis, core_api, "Truy vấn nghiệp vụ & thẩm định", "JSON/REST")
-    Rel(webgis, gis_service, "Tải Mapbox Vector Tiles (MVT)", "Protobuf / PBF")
-    Rel(mobile, core_api, "Đồng bộ điểm offline & gửi báo cáo", "JSON/REST")
+    ContainerDb(postgis, "Spatial Database", "PostgreSQL 15 + PostGIS 3.3", "Lưu trữ hình học không gian (WGS84), phân chia Logical Schema-per-Service")
+    ContainerDb(redis, "Message Broker & Event Bus", "Redis 7 Alpine", "Kênh phát tán sự kiện Pub/Sub và bộ đệm phân tán")
+
+    Rel(webgis, gateway, "Gọi API & Tải Tiles", "HTTP/JSON")
+    Rel(mobile, gateway, "Đồng bộ điểm offline & gửi báo cáo", "HTTP/JSON")
+
+    Rel(gateway, webgis, "Phục vụ Static SPA Assets", "HTTP")
+    Rel(gateway, core_api, "Chuyển tiếp /api/v1/core/*, /landslides/*", "Reverse Proxy")
+    Rel(gateway, ai_service, "Chuyển tiếp /api/v1/ai/*", "Reverse Proxy")
+    Rel(gateway, gis_service, "Chuyển tiếp /api/v1/gis/*, /tiles/*", "Reverse Proxy")
     
-    Rel(core_api, ai_service, "Yêu cầu suy luận AI trên patch", "HTTP/REST")
-    Rel(core_api, gis_service, "Lập lịch phân tích & cắt ảnh", "HTTP/REST")
-    Rel(core_api, postgis, "Đọc/ghi dữ liệu core_schema", "TCP / SQL PostGIS")
-    Rel(core_api, redis, "Đẩy việc phát tán cảnh báo", "Redis PubSub")
-    Rel(gis_service, postgis, "Đọc/ghi gis_schema (AOI/Rasters)", "TCP / SQL")
+    Rel(core_api, ai_service, "Gọi suy luận AI (Resilience4j Circuit Breaker)", "HTTP/REST")
+    Rel(core_api, gis_service, "Yêu cầu cắt ảnh & siêu dữ liệu vệ tinh", "HTTP/REST")
+    Rel(core_api, postgis, "Đọc/ghi core_schema", "TCP / SQL PostGIS")
+    Rel(gis_service, postgis, "Đọc/ghi gis_schema", "TCP / SQL PostGIS")
+
+    Rel(core_api, redis, "Publish sự kiện (LANDSLIDE_VERIFIED,...)", "Redis Pub/Sub")
+    Rel(redis, ai_service, "Subscribe & kích hoạt batch inference ngầm", "Redis Pub/Sub")
 ```
 
 ---
 
-## 3. C4 Level 3: Data Flow & Event Processing (Luồng Xử Lý Nghiệp Vụ)
+## 3. C4 Level 3: Event-Driven & Fault Tolerance Processing
 
-Quy trình bán tự động (Semi-automated) từ lúc ảnh vệ tinh chụp đến khi người dân nhận chuông báo động:
+### A. Cơ chế Ngắt Mạch (Circuit Breaker Pattern - Resilience4j)
+
+Nhằm chống sập dây chuyền (Cascading Failures) khi `ai-service` hoặc `gis-service` bị quá tải hoặc hết bộ nhớ GPU:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Closed: Bình thường (Mọi request đi qua)
+    Closed --> Open: Tỷ lệ lỗi >= 50% trong 10 calls gần nhất
+    Open --> HalfOpen: Sau 5 giây (waitDurationInOpenState)
+    HalfOpen --> Closed: 3 calls thử nghiệm thành công
+    HalfOpen --> Open: Vẫn thất bại
+    
+    note right of Open
+      Khi Open State:
+      Core API lập tức kích hoạt Fallback:
+      Trả về kết quả dự phòng và đưa request
+      vào hàng đợi xử lý ngầm,
+      Core API KHÔNG BAO GIỜ BỊ SẬP!
+    end note
+```
+
+### B. Luồng Sự Kiện Bất Đồng Bộ (Event Bus - Redis Pub/Sub)
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant Sat as Vệ tinh Sentinel-2
-    participant GIS as GIS Service
-    participant AI as AI Service
-    participant Core as Core API
-    participant DB as PostGIS DB
     participant Officer as Cán bộ Thẩm định
-    participant Mobile as Mobile App (Offline)
+    participant Core as Core API (Spring Boot)
+    participant Redis as Redis Event Bus (Broker)
+    participant AI as AI Service (FastAPI)
+    participant Mobile as Mobile App (Flutter)
 
-    Sat->>GIS: Chụp ảnh mới khu vực giám sát (AOI)
-    GIS->>GIS: Lọc mây (Cloud Masking), tính ΔNDVI & Độ dốc
-    GIS->>GIS: Cắt ảnh thành các patch 2km x 2km (Tiling)
-    GIS->>AI: Gửi patch đa phổ (B2, B3, B4, B8, B11, B12, NDVI, Slope)
-    AI->>AI: Chạy mô hình DeepLabV3+ ONNX, vector hóa thành Polygon
-    AI->>Core: Trả về kết quả phát hiện (Confidence, Polygon, Slope)
-    Core->>DB: Lưu sự kiện sạt lở mới vào core_schema.landslide_events (Status = 'pending')
-    DB-->>Core: Trigger tự động tính ST_Area (m2) và ST_Centroid
+    Officer->>Core: Phê duyệt điểm sạt lở (POST /api/v1/landslides/{id}/verify)
+    Core->>Core: Cập nhật CSDL core_schema.landslide_events
+    Core->>Redis: Publish Event: "LANDSLIDE_VERIFIED" (kèm tọa độ, mức độ nguy hiểm)
     
-    Officer->>Core: Truy cập hàng đợi thẩm định (WebGIS)
-    Core-->>Officer: Hiển thị so sánh ảnh trước/sau & chỉ số
-    Officer->>Core: Phê duyệt (Status = 'verified', Mức độ: 'extreme')
-    Core->>DB: Cập nhật sự kiện thành verified
-    Core->>Mobile: Phát tán cảnh báo FCM & Cập nhật điểm nguy cơ
-    Mobile->>Mobile: Lưu vào SQLite cục bộ
-    Note over Mobile: Khi người dân đi vào bán kính 500m<br/>App rung chuông cảnh báo dù mất 4G hoàn toàn!
+    par Phát tán song song
+        Redis-->>Mobile: FCM Push Notification khẩn cấp đến thiết bị di động
+    and
+        Redis-->>AI: Bắn tín hiệu cập nhật Retrain Dataset & Spatial Cache
+    end
 ```
 
 ---
@@ -107,7 +127,7 @@ sequenceDiagram
 | **NFR2: Ngoại tuyến** | Lưu trữ ≥ 10,000 điểm nguy cơ trên di động | Cơ chế đồng bộ nén GeoJSON vào SQLite nội bộ trên Flutter, tính toán cục bộ qua Ray Casting & Haversine. |
 | **NFR3: Độ chính xác** | F1-Score ≥ 0.70 trên tập test độc lập | Mô hình DeepLabV3+ kết hợp 8 kênh đặc trưng (Spectral + Topographic) đạt F1 0.768 trên Landslide4Sense. |
 | **NFR4: Tiêu chuẩn GIS** | Chuẩn OGC WMS/WFS, EPSG:4326 | Sử dụng PostGIS chuẩn OGC, phân phối dữ liệu dạng Mapbox Vector Tile (MVT PBF) và GeoJSON chuẩn. |
-| **NFR5: Bảo mật quyền riêng tư** | Không lưu trữ vị trí cá nhân lên server | Thuật toán Geofencing chạy 100% Client-side; máy chủ chỉ phát tán các đa giác vùng sạt lở. |
+| **NFR5: Khả năng chịu lỗi** | Cách ly lỗi, không sập toàn hệ thống | Tích hợp **Resilience4j Circuit Breaker**: khi AI Service chết tiến trình, Core API tự động ngắt mạch và kích hoạt Fallback. |
 
 ---
 
@@ -134,8 +154,19 @@ PostgreSQL 15 + PostGIS (terrawatch)
     └── monitoring_areas (Khu vực giám sát trọng điểm AOI)
 ```
 
-### Ưu điểm vượt trội của Phương án A:
-1. **Cô lập ranh giới dữ liệu (Strict Boundary Isolation):** Mỗi service quản lý nghiệp vụ và schema riêng biệt. Core API chịu trách nhiệm quản lý `core_schema`, GIS Service quản lý `gis_schema`.
-2. **Hiệu năng cực cao (Zero Network Overhead):** Chia sẻ RAM buffer cache của PostgreSQL, các phép tính không gian liên vùng thực thi trong memory máy chủ với thời gian mili-giây (0ms network round-trip).
-3. **Tuân thủ nguyên lý Domain-Driven Design (DDD):** JPA Entity phân định rõ ràng qua thuộc tính `@Table(name = "...", schema = "core_schema")` và `@Table(name = "...", schema = "gis_schema")`.
-4. **Hệ thống Migration tự động:** Hỗ trợ song song qua **Flyway** (Spring Boot) và CLI Runner `scripts/migrate.py` (`make migrate`, `make db-status`).
+---
+
+## 6. Đối Soát Toàn Diện 8 Thành Phần Cốt Lõi Microservices
+
+Hệ thống GeoSentry đã hoàn thiện đầy đủ 8 thành phần cấu thành kiến trúc Microservices tiêu chuẩn công nghiệp:
+
+| STT | Thành phần cốt lõi | Hiện thực hóa trong TerraWatch | Công nghệ sử dụng |
+| :---: | :--- | :--- | :--- |
+| **1** | **Client (Web, Mobile)** | WebGIS Command Center & Mobile App Offline Geofencing | React 18, Mapbox GL JS, Flutter 3.x, SQLite |
+| **2** | **API Gateway** | Điểm vào duy nhất (Port 8080): định tuyến, Rate Limiting (50 req/s), CORS, Gzip | Nginx Reverse Proxy (`gateway/`) |
+| **3** | **Service Discovery** | Định danh và phân giải địa chỉ động qua tên container nội bộ | Docker Container Internal DNS (`terrawatch-net`) |
+| **4** | **Microservices (Vi dịch vụ)** | Các service độc lập theo chuẩn Bounded Context (Core API, AI Service, GIS Service) | Java 17 Spring Boot 3, Python 3.11 FastAPI |
+| **5** | **Database per Service** | Phân chia Logical Schema-per-Service đảm bảo cô lập dữ liệu và tối ưu PostGIS | PostgreSQL 15, PostGIS 3.3 (`core_schema`, `gis_schema`) |
+| **6** | **Message Broker / Event Bus** | Kênh giao tiếp bất đồng bộ, phát tán sự kiện thẩm định sạt lở | Redis 7 Alpine Pub/Sub (`terrawatch:events`) |
+| **7** | **Configuration Management** | Quản lý cấu hình tập trung theo chuẩn Twelve-Factor App | Biến môi trường `.env`, Docker Compose Config Profiles |
+| **8** | **Circuit Breaker / Resilience** | Ngắt mạch tự động chống sập lan truyền khi AI/GIS service gặp sự cố | Resilience4j Spring Boot 3 (`@CircuitBreaker`) |

@@ -17,10 +17,15 @@ public class LandslideEventService {
 
     private final SpatialRepository spatialRepository;
     private final LandslideEventJpaRepository landslideJpaRepository;
+    private final vn.terrawatch.core.event.EventPublisher eventPublisher;
 
-    public LandslideEventService(SpatialRepository spatialRepository, LandslideEventJpaRepository landslideJpaRepository) {
+    public LandslideEventService(
+            SpatialRepository spatialRepository, 
+            LandslideEventJpaRepository landslideJpaRepository,
+            vn.terrawatch.core.event.EventPublisher eventPublisher) {
         this.spatialRepository = spatialRepository;
         this.landslideJpaRepository = landslideJpaRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     public List<Map<String, Object>> getVerificationQueue() {
@@ -34,13 +39,23 @@ public class LandslideEventService {
             ? UUID.fromString(request.officerId()) 
             : UUID.fromString("22222222-2222-2222-2222-222222222222");
 
-        return spatialRepository.verifyEvent(
+        Map<String, Object> result = spatialRepository.verifyEvent(
             eventId,
             officerId,
             request.status(),
             request.riskLevel(),
             request.officerNote()
         );
+
+        // Broadcast event to Redis Event Bus (Message Broker)
+        eventPublisher.publishEvent("LANDSLIDE_VERIFIED", Map.of(
+            "eventId", eventIdStr,
+            "status", request.status(),
+            "riskLevel", request.riskLevel() != null ? request.riskLevel() : "medium",
+            "officerId", officerId.toString()
+        ));
+
+        return result;
     }
 
     public Optional<LandslideEvent> getEventById(UUID eventId) {

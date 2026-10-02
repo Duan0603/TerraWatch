@@ -19,6 +19,12 @@ spring:
         format_sql: true
         default_schema: core_schema
 
+  # Message Broker / Event Bus (Redis 7)
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
   # Automatic Database Migrations (Logical Schema-per-Service: Phương án A)
   flyway:
     enabled: true
@@ -26,6 +32,32 @@ spring:
     locations: classpath:db/migration
     schemas: core_schema,gis_schema
     default-schema: core_schema
+
+# Circuit Breaker & Fault Tolerance (Resilience4j)
+resilience4j:
+  circuitbreaker:
+    instances:
+      aiService:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 5000ms
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+      gisService:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 5000ms
+
+# External Microservices URLs (Service Discovery via Docker Network DNS)
+services:
+  ai:
+    url: ${AI_SERVICE_URL:http://localhost:8001}
+  gis:
+    url: ${GIS_SERVICE_URL:http://localhost:8002}
 
 # OpenAPI / Swagger Documentation
 springdoc:

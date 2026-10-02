@@ -3,12 +3,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from app.services.inference import LandslidePredictor
+from app.services.event_listener import start_redis_listener
 
 app = FastAPI(
     title="GeoSentry AI Inference Service",
     description="Deep Learning Landslide Detection Service (U-Net / DeepLabV3+ ONNX)",
     version="1.0.0"
 )
+
+@app.on_event("startup")
+def startup_event():
+    start_redis_listener()
 
 app.add_middleware(
     CORSMiddleware,

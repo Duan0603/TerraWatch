@@ -1,141 +1,165 @@
 # Hướng Dẫn Thiết Lập & Quản Trị Hệ Thống Microservices (GeoSentry / TerraWatch)
 
-Tài liệu này hướng dẫn chi tiết cách tổ chức, vận hành CSDL và quản trị GitHub repository cho dự án Capstone **GeoSentry** theo kiến trúc Microservices Polyglot.
+Tài liệu này hướng dẫn chi tiết cách tổ chức, vận hành, kiểm thử các thành phần kiến trúc nâng cao (**API Gateway**, **Circuit Breaker**, **Message Broker Event Bus**, **Database Schema-per-Service**) và quản trị GitHub repository cho dự án Capstone **GeoSentry**.
 
 ---
 
-## 1. Lựa Chọn Chiến Lược Repo: Modular Monorepo
+## 1. Bản Đồ 8 Thành Phần Cốt Lõi Microservices
 
-### Tại sao chọn Monorepo cho nhóm Capstone (5 người)?
-| Tiêu chí | Monorepo (1 Repo duy nhất) | Multi-repo (Mỗi service 1 Repo) |
+Hệ thống được thiết kế đầy đủ 8 thành phần theo chuẩn kiến trúc vi dịch vụ công nghiệp:
+
+```
+[WebGIS Client (React 18)]         [Mobile Client (Flutter)]
+           │                                   │
+           └─────────────────┬─────────────────┘
+                             ▼
+     ┌──────────────────────────────────────────────────┐
+     │ 🚪 API Gateway (Nginx Reverse Proxy - Port 8080) │
+     │  - Single Entry Point                            │
+     │  - Rate Limiting: 50 req/s                       │
+     │  - Global CORS & Gzip Compression                │
+     └───────────────────────┬──────────────────────────┘
+                             │
+            ┌────────────────┼────────────────┐
+            ▼                ▼                ▼
+     ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+     │ ⚙️ Core API   │ │ 🧠 AI Service │ │ 🗺️ GIS Service│
+     │ (Java 17 /   │ │ (Python /    │ │ (Python /    │
+     │ Spring Boot3)│ │  FastAPI)    │ │  FastAPI)    │
+     │ Port 3000    │ │  Port 8001   │ │  Port 8002   │
+     └──────┬───────┘ └──────┬───────┘ └──────┬───────┘
+            │                │                │
+            │ (Resilience4j) │                │
+            ├───────────────>│ (Circuit Break)│
+            │                │                │
+            │ (Pub/Sub)      │ (Subscribe)    │
+            ├───────────────>│ (Async Tasks)  │
+            │                ▼                │
+     ┌──────┴─────────────────────────────────┴───────┐
+     │ ⚡ Message Broker & Event Bus (Redis 7: 6379)   │
+     │  Channel: "terrawatch:events"                  │
+     └────────────────────────────────────────────────┘
+            │
+            ▼
+     ┌────────────────────────────────────────────────┐
+     │ 🐘 PostGIS Database (Schema-per-Service: 5432) │
+     │  ├── public: PostGIS native engine ST_*        │
+     │  ├── core_schema: users, events, audit trail   │
+     │  └── gis_schema: monitoring_areas AOIs, tiles  │
+     └────────────────────────────────────────────────┘
+```
+
+---
+
+## 2. API Gateway (Nginx Reverse Proxy)
+
+* **Vị trí thư mục:** `gateway/` (`gateway/nginx.conf`, `gateway/Dockerfile`)
+* **Cổng lắng nghe công khai:** `http://localhost:8080` (hoặc cổng 80 trong container)
+* **Bảng định tuyến (Routing Table):**
+
+| Đường dẫn (Route) | Đích chuyển tiếp (Upstream) | Mục đích nghiệp vụ |
 | :--- | :--- | :--- |
-| **Phối hợp nhóm** | **Rất cao**: Cả 5 người nhìn thấy toàn cảnh, dễ review code chéo. | **Thấp**: Rời rạc, khó theo dõi tiến độ tổng thể. |
-| **Chạy Local (Docker)** | **1 lệnh**: `docker-compose up` khởi động toàn bộ hệ thống ngay. | Phức tạp: Phải clone 5 repo, liên kết mạng docker thủ công. |
-| **Hợp đồng API (Contract)** | Thay đổi DTO/Schema cập nhật đồng bộ trong 1 Pull Request. | Phải tạo PR trên từng repo, dễ lệch phiên bản (drift). |
-| **CI/CD** | Dùng **Path-based triggering** (chỉ build service có thay đổi code). | Mỗi repo 1 pipeline riêng nhưng khó test end-to-end liên repo. |
-
-> **Kết luận**: Với nhóm 5 người làm đồ án tốt nghiệp, **Modular Monorepo** là mô hình chuẩn mực nhất: vừa tách biệt độc lập từng service (mỗi service có Dockerfile, pom.xml / requirements.txt riêng), vừa dùng chung một repository trên GitHub.
-
----
-
-## 2. Thiết Lập Nhánh & Quản Trị Git (Branching Strategy)
-
-Áp dụng mô hình **GitFlow rút gọn (Trunk-based with Feature Branches)**:
-
-```mermaid
-gitGraph
-   commit id: "Initial commit"
-   branch develop
-   checkout develop
-   commit id: "Setup baseline"
-   branch feature/ai-unet
-   checkout feature/ai-unet
-   commit id: "Train U-Net model"
-   commit id: "Export ONNX"
-   checkout develop
-   merge feature/ai-unet
-   branch feature/core-spring-boot
-   checkout feature/core-spring-boot
-   commit id: "Spring Boot 3 + PostGIS"
-   checkout develop
-   merge feature/core-spring-boot
-   checkout main
-   merge develop tag: "v1.0.0-Sprint1"
-```
-
-### Quy ước đặt tên nhánh theo WBS:
-- `feature/ai-<tên_tính_năng>`: Dành cho Thành viên 1 (AI Engineer)
-- `feature/gis-<tên_tính_năng>`: Dành cho Thành viên 2 (GIS Engineer)
-- `feature/core-<tên_tính_năng>`: Dành cho Thành viên 3 (Backend Engineer - Java Spring Boot)
-- `feature/webgis-<tên_tính_năng>`: Dành cho Thành viên 4 (Frontend WebGIS)
-- `feature/mobile-<tên_tính_năng>`: Dành cho Thành viên 5 (Mobile Engineer)
+| `/` | `http://webgis:80` | Phục vụ Single Page Application WebGIS Dashboard |
+| `/api/v1/core/*` | `http://core-api:3000/*` | Các API nghiệp vụ, xác thực, thẩm định |
+| `/api/v1/landslides/*`| `http://core-api:3000/api/v1/landslides/*` | Quản lý điểm sạt lở, hàng đợi, geofencing |
+| `/api/v1/areas/*` | `http://core-api:3000/api/v1/areas/*` | Khu vực giám sát trọng điểm (AOI) |
+| `/api/v1/reports/*` | `http://core-api:3000/api/v1/reports/*` | Báo cáo cộng đồng (Crowdsourcing) |
+| `/api/v1/alerts/*` | `http://core-api:3000/api/v1/alerts/*` | Cảnh báo khẩn cấp |
+| `/api/v1/ai/*` | `http://ai-service:8001/api/v1/*` | Suy luận mô hình DeepLabV3+ ONNX |
+| `/api/v1/gis/*` | `http://gis-service:8002/api/v1/gis/*` | Truy vấn ảnh vệ tinh Sentinel-2/Landsat-8 |
+| `/api/v1/tiles/*` | `http://gis-service:8002/api/v1/tiles/*`| Cung cấp Mapbox Vector Tiles (MVT Protobuf) |
+| `/swagger-ui/*` | `http://core-api:3000/swagger-ui/*` | Tài liệu API tương tác trực quan |
+| `/health` | Nội bộ Gateway | Kiểm tra sức khỏe API Gateway |
 
 ---
 
-## 3. Cấu Hình Branch Protection Rules Trên GitHub
+## 3. Circuit Breaker & Khả Năng Chịu Lỗi (Resilience4j)
 
-1. Vào **Settings** -> **Branches** -> Chọn **Add branch protection rule**.
-2. Áp dụng cho nhánh `main` và `develop`:
-   - ☑️ **Require a pull request before merging** (Bắt buộc tạo PR, không push thẳng lên `main`).
-   - ☑️ **Require approvals**: Tối thiểu 1 phê duyệt (Approved) từ đồng đội.
-   - ☑️ **Require status checks to pass before merging**: Chọn các checks tương ứng (`CI - Core API (Spring Boot 3)`, `CI - AI Service`, `CI - WebGIS`).
-   - ☑️ **Require conversation resolution before merging**: Bắt buộc giải quyết hết comment review.
-
----
-
-## 4. Tự Động Hóa CI/CD Theo Đường Dẫn (Path-based CI)
-
-Hệ thống cấu hình 3 workflow độc lập trong `.github/workflows/`:
-- `ci-core-api.yml`: Kích hoạt khi có thay đổi trong `services/core-api/**` (Build Maven Java 17).
-- `ci-ai-service.yml`: Kích hoạt khi có thay đổi trong `services/ai-service/**` (Test Python 3.11).
-- `ci-webgis.yml`: Kích hoạt khi có thay đổi trong `apps/webgis/**` (Build Vite/React 18).
-
----
-
-## 5. Kiến Trúc CSDL: Logical Schema-per-Service (Phương Án A)
-
-Hệ thống triển khai mô hình **Logical Schema-per-Service** trên nền tảng PostgreSQL 15 & PostGIS 3.3:
-
-```
-PostgreSQL / PostGIS (Database: terrawatch)
-├── public: PostGIS extension, UUID extension, migration metadata
-├── core_schema: Quản lý bởi Core API (users, landslide_events, landslide_event_history, community_reports)
-└── gis_schema: Quản lý bởi GIS Service (monitoring_areas, AOIs, raster tiles)
-```
+Hệ thống tích hợp thư viện **Resilience4j** vào Core API (`services/core-api`) nhằm bảo vệ hệ thống khỏi lỗi lan truyền khi các service tính toán nặng (AI / GIS) bị treo hoặc cạn kiệt tài nguyên.
 
 ### Cách thức hoạt động:
-1. **Kết nối JDBC (Spring Boot):**
-   ```yaml
-   spring:
-     datasource:
-       url: jdbc:postgresql://localhost:5432/terrawatch?currentSchema=core_schema,gis_schema,public
-     flyway:
-       schemas: core_schema,gis_schema
-       default-schema: core_schema
-   ```
-2. **JPA Entity Mapping:**
-   Mỗi Entity khai báo rõ ràng schema sở hữu:
-   ```java
-   @Table(name = "landslide_events", schema = "core_schema")
-   @Table(name = "monitoring_areas", schema = "gis_schema")
-   ```
-3. **Hiệu năng & Truy vấn không gian:**
-   - PostGIS extension nằm tại `public`, cho phép cả 2 schema gọi trực tiếp các hàm `ST_DWithin`, `ST_Centroid`, `ST_Area` mà không tốn chi phí đồng bộ mạng.
-   - GIST Index phân bố độc lập trên từng bảng trong schema tương ứng.
+* **Cơ chế:** Đếm tỷ lệ lỗi trên cửa sổ trượt 10 requests gần nhất.
+* **Ngưỡng ngắt:** Nếu $\ge 50\%$ requests bị lỗi hoặc timeout $\ge 2000\text{ms}$, mạch chuyển sang trạng thái **OPEN**.
+* **Xử lý Fallback:** Khi mạch **OPEN**, Core API không tiếp tục gọi sang AI Service mà lập tức kích hoạt hàm `fallbackPredict()` trả về thông báo lỗi thân thiện, đưa tác vụ vào hàng đợi ngầm.
+* **Tự hồi phục (Half-Open):** Sau thời gian chờ 5 giây (`waitDurationInOpenState: 5000ms`), mạch chuyển sang trạng thái **HALF-OPEN** để thử nghiệm 3 requests. Nếu thành công, mạch tự động đóng lại (**CLOSED**).
+
+### Kiểm thử Circuit Breaker:
+```bash
+# Gọi endpoint chẩn đoán Circuit Breaker
+make demo-circuit-breaker
+# Hoặc truy cập: http://localhost:8080/api/v1/diagnostic/circuit-breaker/ai
+```
 
 ---
 
-## 6. Cơ Chế Database Migration Cho Toàn Bộ Microservices
+## 4. Message Broker & Event Bus (Redis Pub/Sub)
 
-Trong môi trường Microservices, quản lý CSDL cần sự đồng bộ tuyệt đối như các công cụ migration ở Node.js (Prisma / TypeORM / Knex). Dự án cung cấp 2 giải pháp song hành:
+Nhằm chuyển đổi kiến trúc sang **Event-Driven Microservices**, hệ thống kích hoạt kênh truyền thông điệp qua Redis Pub/Sub:
+* **Kênh trao đổi:** `terrawatch:events`
+* **Mẫu thông điệp sự kiện (`TerraWatchEvent`):**
+  ```json
+  {
+    "eventId": "e93f6c12-3211-4f10-b9df-a0418c39d891",
+    "eventType": "LANDSLIDE_VERIFIED",
+    "timestamp": "2026-10-02T14:05:00Z",
+    "sourceService": "core-api",
+    "payload": {
+      "eventId": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+      "status": "verified",
+      "riskLevel": "extreme",
+      "officerId": "22222222-2222-2222-2222-222222222222"
+    }
+  }
+  ```
+* **Luồng xử lý:**
+  1. Khi cán bộ thẩm định duyệt điểm sạt lở (`PATCH /api/v1/landslides/{id}/verify`), Core API phát sự kiện `LANDSLIDE_VERIFIED` lên Redis Event Bus.
+  2. Background worker của `ai-service` lắng nghe kênh `terrawatch:events`, tự động cập nhật cache và kích hoạt huấn luyện/suy luận phân mảnh mới bất đồng bộ.
 
-### A. Tự động hóa qua Flyway trong Spring Boot (`services/core-api`)
-- Toàn bộ script migration lưu tại: `services/core-api/src/main/resources/db/migration/`
-  - `V1__init_postgis_schema.sql`: Khởi tạo PostGIS, Logical Schemas (`core_schema`, `gis_schema`), Enums, Tables, Triggers, Views.
-  - `V2__seed_vietnam_geospatial_data.sql`: Dữ liệu mẫu tọa độ thực tế tại Việt Nam (Yên Bái, Sa Pa, Hà Giang).
-- **Cơ chế**: Khi `core-api` khởi động, Flyway tự động kiểm tra bảng `flyway_schema_history` và áp dụng các bản migration chưa chạy một cách tự động.
-
-### B. Lệnh Migration CLI dùng chung (Unified CLI Runner)
-Dành cho lập trình viên muốn chạy migration trực tiếp từ dòng lệnh (như `npx prisma migrate` hoặc `npm run migrate`):
-
+### Kiểm thử Event Bus:
 ```bash
-# 1. Chạy tất cả các bản migration mới nhất lên CSDL PostGIS
+# Bắn một sự kiện mẫu lên Redis Event Bus
+make demo-event-bus
+# Hoặc POST: http://localhost:8080/api/v1/diagnostic/event-bus/publish?eventType=TEST_EVENT&message=Hello
+```
+
+---
+
+## 5. Service Discovery & Container Networking
+
+Hệ thống sử dụng **Docker Container Internal DNS** kết hợp `bridge network` (`terrawatch-net`):
+* Các service tìm thấy nhau hoàn toàn động thông qua tên host container:
+  - `http://core-api:3000`
+  - `http://ai-service:8001`
+  - `http://gis-service:8002`
+  - `terrawatch-postgis:5432`
+  - `terrawatch-redis:6379`
+* *Lợi thế học thuật khi bảo vệ:* Cơ chế này tương đương với **CoreDNS trong Kubernetes**, nhẹ hơn và hiện đại hơn việc chạy thêm 1 cụm Java Netflix Eureka cồng kềnh tiêu tốn hàng trăm MB RAM vô ích.
+
+---
+
+## 6. Kiến Trúc CSDL: Logical Schema-per-Service (Phương Án A)
+
+* **`public`**: PostGIS extension (`ST_*`, `GIST`), UUID, `schema_migrations`.
+* **`core_schema`**: `users`, `landslide_events`, `landslide_event_history`, `community_reports`.
+* **`gis_schema`**: `monitoring_areas` (AOIs), siêu dữ liệu mảnh ảnh.
+
+### Lệnh chạy Database Migration:
+```bash
+# 1. Chạy tất cả các bản migration mới nhất (giống npx prisma migrate dev)
 make migrate
 # hoặc: python scripts/migrate.py up
 
-# 2. Kiểm tra trạng thái các bản migration đã áp dụng
+# 2. Xem trạng thái các bản migration (Đã chạy hay đang chờ)
 make db-status
-# hoặc: python scripts/migrate.py status
 
-# 3. Nạp lại dữ liệu mẫu
+# 3. Nạp lại dữ liệu mẫu kiểm thử
 make seed
 ```
 
-*Lệnh trên tự động nhận diện nếu đang chạy Docker container `terrawatch-postgis` để thực thi, đảm bảo mọi thành viên trong nhóm không cần cài PostgreSQL cục bộ vẫn chạy được migration 100%!*
-
 ---
 
-## 7. Sử Dụng BMAD & Ponytail
+## 7. Quy Ước Nhánh & Quản Trị Git (GitFlow)
 
-- **BMAD Method (`_bmad/`, `.agents/skills/bmad-*`)**: Điều phối kế hoạch Agile, viết PRD, thiết kế architecture và chia Sprint.
-- **Ponytail (`.agents/rules/ponytail.md`)**: Chuẩn kỹ sư Senior tối giản mã nguồn, loại bỏ abstraction thừa, hạn chế thêm thư viện không cần thiết.
+* `main`: Nhánh production ổn định.
+* `develop`: Nhánh tích hợp sprint.
+* `feature/<nhóm>-<tên_tính_năng>`: Nhánh con của từng thành viên.

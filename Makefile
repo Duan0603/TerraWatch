@@ -42,3 +42,12 @@ seed:
 
 clean:
 	docker compose down -v
+
+demo-circuit-breaker:
+	@echo "Kiểm tra Circuit Breaker (Resilience4j) gọi từ Core API sang AI Service:"
+	curl -s http://localhost:8080/api/v1/diagnostic/circuit-breaker/ai | jq . || curl -s http://localhost:8080/api/v1/diagnostic/circuit-breaker/ai
+
+demo-event-bus:
+	@echo "Kiểm tra Event Bus (Redis Pub/Sub) bắn sự kiện bất đồng bộ:"
+	curl -s -X POST "http://localhost:8080/api/v1/diagnostic/event-bus/publish?eventType=SATELLITE_SCENE_INGESTED&message=DemoEvent" | jq . || curl -s -X POST "http://localhost:8080/api/v1/diagnostic/event-bus/publish?eventType=SATELLITE_SCENE_INGESTED&message=DemoEvent"
+

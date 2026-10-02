@@ -8,13 +8,14 @@
 [![CI AI Service](https://img.shields.io/badge/CI_AI-Python_FastAPI-009688?logo=github-actions&logoColor=white)](.github/workflows/ci-ai-service.yml)
 [![CI WebGIS](https://img.shields.io/badge/CI_WebGIS-React_18_+_Vite-61DAFB?logo=github-actions&logoColor=black)](.github/workflows/ci-webgis.yml)
 [![Docker Orchestration](https://img.shields.io/badge/Orchestrator-Docker_Compose-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
-[![Database](https://img.shields.io/badge/Spatial_DB-PostGIS_3.3_Schema_per_Service-336791?logo=postgresql&logoColor=white)](database)
+[![API Gateway](https://img.shields.io/badge/Gateway-Nginx_Reverse_Proxy-009639?logo=nginx&logoColor=white)](gateway)
+[![Fault Tolerance](https://img.shields.io/badge/Resilience-Circuit_Breaker-red?logo=apache&logoColor=white)](services/core-api)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 <br/>
 
 [Tổng Quan](#-tổng-quan-đề-tài) • 
-[Kiến Trúc Hệ Thống](#-kiến-trúc-hệ-thống-microservices) • 
+[Kiến Trúc Microservices 8 Thành Phần](#-kiến-trúc-hệ-thống-chuẩn-8-thành-phần-cốt-lõi) • 
 [Cấu Trúc Thư Mục](#-cấu-trúc-chi-tiết-toàn-bộ-dự-án) • 
 [Kiến Trúc CSDL & Migrations](#-kiến-trúc-csdl-schema-per-service--migrations) • 
 [Cách Chạy Dự Án](#-hướng-dẫn-chạy-dự-án-chi-tiết) • 
@@ -36,41 +37,75 @@ Hệ thống hoạt động theo quy trình **bán tự động (Semi-automated)
 
 ---
 
-## 🏗️ Kiến Trúc Hệ Thống (Microservices)
+## 🏛️ Kiến Trúc Hệ Thống: Chuẩn 8 Thành Phần Cốt Lõi
 
-Mô hình **Modular Monorepo Polyglot Microservices**:
+Hệ thống hiện thực hóa đầy đủ **8 thành phần cốt lõi của một hệ thống Microservices công nghiệp**:
 
 ```mermaid
 graph TD
-    subgraph Clients ["Giao Diện Người Dùng (Clients)"]
-        WebGIS["🖥️ WebGIS Dashboard (React + Mapbox GL)<br/>Dành cho Cán bộ & Quản trị viên (Port 5173)"]
-        MobileApp["📱 Mobile Citizen App (Flutter)<br/>Geofencing Ngoại Tuyến (SQLite Offline Cache)"]
+    subgraph Clients ["1. Clients (Giao Diện Đa Nền Tảng)"]
+        WebGIS["🖥️ WebGIS Command Center (React 18 + Mapbox GL)"]
+        MobileApp["📱 Mobile Citizen App (Flutter 3.x + SQLite Offline Geofencing)"]
     end
 
-    subgraph CoreBackend ["Backend & Security Gateway"]
-        CoreAPI["⚙️ Core API Service (Java 17 + Spring Boot 3)<br/>Spring Security, Spring Data JPA, Flyway, PostGIS (Port 3000)"]
+    subgraph GatewayLayer ["2. API Gateway (Single Entry Point)"]
+        APIGateway["🚪 Nginx Reverse Proxy (Port 8080)<br/>Định tuyến, Rate Limiting (50 r/s), Global CORS, Gzip"]
     end
 
-    subgraph SpecializedServices ["Dịch Vụ Chuyên Biệt (Microservices)"]
-        AIService["🧠 AI Inference Service (Python FastAPI / ONNX)<br/>Phân đoạn DeepLabV3+ Landslide4Sense (Port 8001)"]
-        GISService["🗺️ GIS Data Pipeline (Python FastAPI / GEE)<br/>Lọc mây, NDVI, Slope, Tiling, Vector Tile MVT (Port 8002)"]
-        RedisQueue["⚡ Redis 7 Queue & Cache<br/>Hàng đợi xử lý tác vụ bất đồng bộ (Port 6379)"]
+    subgraph ServiceDiscovery ["3. Service Discovery & Networking"]
+        DockerDNS["🌐 Container Internal DNS Engine (terrawatch-net)<br/>Tự động phân giải IP/host động giữa các microservice"]
     end
 
-    subgraph SpatialData ["Tầng Dữ Liệu Địa Không Gian (PostgreSQL / PostGIS)"]
-        PostGIS[("🐘 PostgreSQL 15 + PostGIS 3.3 (Port 5432)<br/>├── public: PostGIS native functions ST_*<br/>├── core_schema: users, events, audit trail, reports<br/>└── gis_schema: monitoring_areas AOIs, tiles")]
+    subgraph Services ["4. Microservices (Vi Dịch Vụ Độc Lập)"]
+        CoreAPI["⚙️ Core API Service (Java 17 + Spring Boot 3)<br/>Port 3000 | RBAC, Thẩm định sạt lở, Quản lý AOI"]
+        AIService["🧠 AI Inference Service (Python FastAPI)<br/>Port 8001 | DeepLabV3+ ONNX, Landslide4Sense"]
+        GISService["🗺️ GIS Data Service (Python FastAPI)<br/>Port 8002 | Sentinel-2 Ingestion, NDVI, Slope, Tiling, MVT"]
     end
 
-    WebGIS -->|REST API & Swagger| CoreAPI
-    WebGIS -->|Vector Tiles MVT PBF| GISService
-    MobileApp -->|Đồng bộ GeoJSON & Gửi báo cáo| CoreAPI
+    subgraph Resilience ["8. Circuit Breaker & Fault Tolerance"]
+        CB["🛡️ Resilience4j Circuit Breaker<br/>Tự động ngắt mạch (Open) & kích hoạt Fallback khi AI Service sập"]
+    end
 
-    CoreAPI -->|HTTP REST| AIService
-    CoreAPI -->|HTTP REST| GISService
-    CoreAPI -->|Task Dispatch| RedisQueue
-    CoreAPI <-->|Spring Data JPA & core_schema| PostGIS
-    GISService <-->|Đọc/ghi gis_schema| PostGIS
+    subgraph EventBroker ["6. Message Broker & Event Bus"]
+        RedisBus["⚡ Redis 7 Pub/Sub (Port 6379)<br/>Channel: 'terrawatch:events' | Bắn sự kiện thẩm định sạt lở bất đồng bộ"]
+    end
+
+    subgraph DataLayer ["5. Database per Service (Phương Án A)"]
+        PostGIS[("🐘 PostgreSQL 15 + PostGIS 3.3 (Port 5432)<br/>├── public: PostGIS native engine ST_*, UUID<br/>├── core_schema: users, events, audit trail, reports<br/>└── gis_schema: monitoring_areas AOIs, tiles")]
+    end
+
+    subgraph ConfigLayer ["7. Configuration Management"]
+        ConfigEnv["⚙️ Twelve-Factor Config (.env, Docker Environment Variables)"]
+    end
+
+    WebGIS -->|HTTP 8080| APIGateway
+    MobileApp -->|HTTP 8080| APIGateway
+
+    APIGateway -->|/api/v1/core/*, /landslides/*| CoreAPI
+    APIGateway -->|/api/v1/ai/*| AIService
+    APIGateway -->|/api/v1/gis/*, /tiles/*| GISService
+    APIGateway -->|/| WebGIS
+
+    CoreAPI -.->|Protected by Circuit Breaker| AIService
+    CoreAPI -->|Publish Events| RedisBus
+    RedisBus -->|Subscribe & Async Inference| AIService
+
+    CoreAPI <-->|core_schema| PostGIS
+    GISService <-->|gis_schema| PostGIS
 ```
+
+### Bảng Đối Soát 8 Thành Phần Cốt Lõi:
+
+| STT | Thành phần cốt lõi | Hiện thực hóa trong TerraWatch | Công nghệ |
+| :---: | :--- | :--- | :--- |
+| **1** | **Client (Web, Mobile)** | WebGIS Command Center & Mobile App Offline Geofencing | React 18, Mapbox GL JS, Flutter 3.x, SQLite |
+| **2** | **API Gateway** | Điểm vào duy nhất (Port 8080): định tuyến, Rate Limiting (50 req/s), CORS, Gzip | Nginx Reverse Proxy (`gateway/`) |
+| **3** | **Service Discovery** | Định danh và phân giải địa chỉ động qua tên container nội bộ | Docker Container Internal DNS (`terrawatch-net`) |
+| **4** | **Microservices (Vi dịch vụ)** | Các service độc lập theo chuẩn Bounded Context (Core API, AI Service, GIS Service) | Java 17 Spring Boot 3, Python 3.11 FastAPI |
+| **5** | **Database per Service** | Phân chia Logical Schema-per-Service đảm bảo cô lập dữ liệu và tối ưu PostGIS | PostgreSQL 15, PostGIS 3.3 (`core_schema`, `gis_schema`) |
+| **6** | **Message Broker / Event Bus** | Kênh giao tiếp bất đồng bộ, phát tán sự kiện thẩm định sạt lở | Redis 7 Alpine Pub/Sub (`terrawatch:events`) |
+| **7** | **Configuration Management** | Quản lý cấu hình tập trung theo chuẩn Twelve-Factor App | Biến môi trường `.env`, Docker Compose Config Profiles |
+| **8** | **Circuit Breaker / Resilience** | Ngắt mạch tự động chống sập lan truyền khi AI/GIS service gặp sự cố | Resilience4j Spring Boot 3 (`@CircuitBreaker`) |
 
 ---
 
@@ -79,17 +114,10 @@ graph TD
 ```
 SECapstone/
 ├── .agents/                               # Bộ kỹ năng AI Agentic: 46 BMAD skills & Ponytail rules
-│   ├── rules/
-│   │   └── ponytail.md                    # Quy tắc "Lazy Senior Dev" (YAGNI, tối giản mã nguồn)
-│   └── skills/                            # Các role BMAD (Architect, Analyst, Developer,...)
-├── .github/
-│   ├── ISSUE_TEMPLATE/                    # Mẫu Issue báo cáo lỗi và đề xuất tính năng
-│   ├── pull_request_template.md           # Mẫu PR bắt buộc đối soát Use Case & WBS
-│   ├── copilot-instructions.md            # Chỉ dẫn kỹ thuật cho Copilot
-│   └── workflows/                         # Path-based CI/CD độc lập từng service
-│       ├── ci-core-api.yml                # CI cho Java 17 Spring Boot 3 Maven
-│       ├── ci-ai-service.yml              # CI cho Python FastAPI AI Service
-│       └── ci-webgis.yml                  # CI cho React 18 WebGIS Dashboard
+├── .github/workflows/                     # Path-based CI/CD độc lập từng service (Core API, AI, WebGIS)
+├── gateway/                               # [API Gateway] Điểm vào duy nhất của toàn hệ thống (Port 8080)
+│   ├── nginx.conf                         # Reverse proxy routing, Rate Limiting, Global CORS, Gzip
+│   └── Dockerfile                         # Nginx 1.25 Alpine
 ├── database/                              # Quản lý CSDL Địa không gian PostGIS
 │   ├── init.sql                           # DDL Schema-per-Service (core_schema, gis_schema), Triggers, Views
 │   ├── seed.sql                           # Dữ liệu kiểm thử mẫu (Yên Bái, Lào Cai, Hà Giang)
@@ -97,57 +125,45 @@ SECapstone/
 │       ├── V1__init_postgis_schema.sql
 │       └── V2__seed_vietnam_geospatial_data.sql
 ├── services/
-│   ├── core-api/                          # [Java 17 + Spring Boot 3] Core Backend Service
-│   │   ├── pom.xml                        # Maven dependencies: Spring Data JPA, Security 6, Flyway, Swagger
+│   ├── core-api/                          # [Java 17 + Spring Boot 3] Core Backend Service (Port 3000)
+│   │   ├── pom.xml                        # Maven: Spring Data JPA, Security 6, Resilience4j, Redis, Flyway
 │   │   ├── Dockerfile                     # Multi-stage build (Maven 3.9 + Temurin 17 JRE)
-│   │   └── src/main/
-│   │       ├── java/vn/terrawatch/core/
-│   │       │   ├── TerraWatchCoreApplication.java
-│   │       │   ├── config/                # SecurityConfig, OpenApiConfig
-│   │       │   ├── controller/            # REST Controllers: Landslides, Areas, Reports, Alerts
-│   │       │   ├── dto/                   # Java 17 Records bất biến
-│   │       │   ├── entity/                # JPA Entities (@Table(schema = "core_schema" / "gis_schema"))
-│   │       │   ├── repository/            # JpaRepositories + SpatialRepository (Native PostGIS)
-│   │       │   └── service/               # Logic nghiệp vụ & Transaction management
-│   │       └── resources/
-│   │           ├── application.yml        # Cấu hình currentSchema=core_schema,gis_schema,public & Flyway
-│   │           └── db/migration/          # Thư mục Flyway tự động chạy migration khi khởi động
-│   ├── ai-service/                        # [Python 3.11 + FastAPI] AI Inference Service
+│   │   └── src/main/java/vn/terrawatch/core/
+│   │       ├── client/                    # Clients gọi liên service bọc bởi Resilience4j Circuit Breaker
+│   │       │   ├── AiServiceClient.java   # @CircuitBreaker(name = "aiService") + Fallback
+│   │       │   └── GisServiceClient.java  # @CircuitBreaker(name = "gisService") + Fallback
+│   │       ├── event/                     # Message Broker / Event Bus (Redis Pub/Sub)
+│   │       │   ├── EventPublisher.java    # Bắn sự kiện lên channel "terrawatch:events"
+│   │       │   └── TerraWatchEvent.java   # Mẫu message chuẩn
+│   │       ├── controller/                # REST Controllers (Landslides, Areas, Reports, Diagnostic)
+│   │       ├── entity/                    # JPA Entities (@Table(schema = "core_schema" / "gis_schema"))
+│   │       ├── repository/                # JpaRepositories + SpatialRepository (Native PostGIS)
+│   │       └── service/                   # Logic nghiệp vụ
+│   ├── ai-service/                        # [Python 3.11 + FastAPI] AI Inference Service (Port 8001)
 │   │   ├── app/
-│   │   │   ├── main.py                    # Endpoints: /api/v1/inference, /api/v1/models/info
-│   │   │   └── services/inference.py      # Bọc mô hình DeepLabV3+ ONNX, vector hóa mặt nạ
+│   │   │   ├── main.py                    # Endpoints & Startup event listener
+│   │   │   └── services/
+│   │   │       ├── inference.py           # DeepLabV3+ ONNX Inference
+│   │   │       └── event_listener.py      # Lắng nghe sự kiện bất đồng bộ từ Redis Event Bus
 │   │   ├── requirements.txt
 │   │   └── Dockerfile
-│   └── gis-service/                       # [Python 3.11 + FastAPI] GIS Data Pipeline Service
+│   └── gis-service/                       # [Python 3.11 + FastAPI] GIS Data Pipeline Service (Port 8002)
 │       ├── app/
-│       │   ├── main.py                    # Endpoints: /api/v1/gis/query-satellite, /tiling, /mvt
+│       │   ├── main.py                    # Endpoints: /api/v1/gis/query-satellite, /tiling, /tiles
 │       │   └── pipeline/processor.py      # Tính toán NDVI, Slope, Cắt ảnh Tiling
 │       ├── requirements.txt
 │       └── Dockerfile
 ├── apps/
 │   ├── webgis/                            # [React 18 + Vite] Dashboard Cán Bộ Thẩm Định
-│   │   ├── src/
-│   │   │   ├── App.jsx                    # Giao diện trung tâm cảnh báo quốc gia, radar scan
-│   │   │   ├── index.css                  # Phong cách phòng điều hành (Command Center)
-│   │   │   └── main.jsx
-│   │   ├── package.json
-│   │   ├── vite.config.js
-│   │   └── Dockerfile
 │   └── mobile/                            # [Flutter 3.x] Ứng Dụng Di Động Dành Cho Người Dân
-│       ├── lib/
-│       │   ├── main.dart
-│       │   └── services/
-│       │       └── geofencing_service.dart# Thuật toán Haversine & Ray Casting chạy offline
-│       └── pubspec.yaml
 ├── docs/                                  # Bộ tài liệu kỹ thuật hoàn chỉnh
-│   ├── ARCHITECTURE.md                    # Tài liệu kiến trúc C4 Model & Database Schema-per-Service
+│   ├── ARCHITECTURE.md                    # Tài liệu kiến trúc C4 Model & 8 thành phần Microservices
 │   ├── AI_MODEL_CARD.md                   # Hồ sơ nghiên cứu mô hình AI (Landslide4Sense Benchmark)
 │   └── microservices-setup-guide.md       # Hướng dẫn thiết lập repo, quy ước Git và CI/CD
 ├── scripts/
 │   └── migrate.py                         # Tool CLI Migration CSDL dùng chung (như Prisma migrate)
-├── docker-compose.yml                     # File điều phối khởi chạy toàn bộ 6 services
-├── Makefile                               # Bộ phím tắt điều hành dự án 1 lệnh
-├── CONTRIBUTING.md                        # Quy chuẩn commit Conventional Commits & làm việc nhóm
+├── docker-compose.yml                     # File điều phối khởi chạy toàn bộ 7 services
+├── Makefile                               # Bộ phím tắt điều hành dự án 1 lệnh & demo Circuit Breaker/Event Bus
 └── .env.example                           # Mẫu cấu hình biến môi trường
 ```
 
@@ -163,14 +179,6 @@ Nhằm đảm bảo ranh giới dữ liệu độc lập giữa các Microservic
 
 ### 2. Hai Cơ Chế Database Migrations Song Hành
 
-Để mọi service và lập trình viên trong nhóm có thể quản lý CSDL nhất quán như lệnh `npx prisma migrate` hoặc `npm run typeorm migration:run` ở Node.js, dự án hỗ trợ:
-
-#### Cách 1: Tự động qua Spring Boot Flyway (Khuyên dùng khi chạy app)
-Mỗi khi service `core-api` khởi động, Flyway tự động đọc các file trong `services/core-api/src/main/resources/db/migration/` và áp dụng các bản migration mới vào CSDL PostGIS theo schemas `core_schema,gis_schema`.
-
-#### Cách 2: Chạy lệnh CLI thủ công qua Makefile / Python (Dành cho mọi service)
-Nếu bạn đang phát triển các service khác (AI, GIS, WebGIS) và muốn kiểm tra hoặc cập nhật CSDL:
-
 ```bash
 # 1. Chạy tất cả các bản migration mới nhất (Tương đương 'npx prisma migrate dev')
 make migrate
@@ -184,102 +192,48 @@ make db-status
 make seed
 ```
 
-> **Ghi chú**: Lệnh `make migrate` được viết thông minh trong [scripts/migrate.py](file:///d:/SECapstone/scripts/migrate.py): tự động phát hiện container Docker `terrawatch-postgis` để thực thi, do đó **không đòi hỏi máy tính cá nhân phải cài đặt PostgreSQL**.
-
 ---
 
 ## 🚀 Hướng Dẫn Chạy Dự Án Chi Tiết
 
-### CÁCH 1: Khởi Chạy 1 Lệnh Bằng Docker Compose (Khuyên dùng khi Demo)
+### CÁCH 1: Khởi Chạy 1 Lệnh Bằng Docker Compose (Khuyên dùng khi Demo & Chấm Điểm)
 
-Toàn bộ 6 thành phần (PostGIS, Redis, Core API, AI Service, GIS Service, WebGIS) sẽ được khởi tạo tự động:
+Toàn bộ 7 thành phần (PostGIS, Redis, Core API, AI Service, GIS Service, WebGIS, API Gateway) sẽ được khởi tạo tự động:
 
 ```bash
 # Bước 1: Sao chép file cấu hình môi trường
 cp .env.example .env
 
-# Bước 2: Khởi động toàn bộ Microservices
+# Bước 2: Khởi động toàn bộ hệ thống
 make up
 # hoặc: docker-compose up -d --build
 
 # Bước 3: Xem log hệ thống đang chạy
 make logs
 
-# Bước 4: Dừng hệ thống khi kết thúc
-make down
+# Bước 4: Kiểm tra trạng thái các containers
+make ps
+
+# Bước 5: Thử nghiệm các tính năng nâng cao (Demo buổi bảo vệ)
+make demo-circuit-breaker  # Thử nghiệm Circuit Breaker Resilience4j
+make demo-event-bus        # Thử nghiệm Message Broker Redis Event Bus
 ```
 
 ---
 
-### CÁCH 2: Khởi Chạy Từng Service Riêng Lẻ (Dành cho Lập trình viên)
+## 🌐 Danh Mục Cổng Dịch Vụ & API Gateway Routing
 
-Nếu bạn chỉ phụ trách phát triển 1 service cụ thể trong nhóm:
+Sau khi khởi chạy, **toàn bộ hệ thống có thể truy cập thông qua API Gateway duy nhất tại cổng `8080`**:
 
-#### 1. Khởi động CSDL PostGIS & Redis nền:
-```bash
-docker compose up -d postgres redis
-make migrate
-```
-
-#### 2. Chạy Core API (Java Spring Boot 3):
-```bash
-cd services/core-api
-mvn spring-boot:run
-# API sẵn sàng tại: http://localhost:3000
-# Swagger UI tại: http://localhost:3000/swagger-ui.html
-```
-
-#### 3. Chạy AI Inference Service (Python FastAPI):
-```bash
-cd services/ai-service
-python -m venv venv
-# Windows:
-venv\Scripts\activate
-# Linux/macOS:
-source venv/bin/activate
-
-pip install -r requirements.txt
-uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
-# API Docs tại: http://localhost:8001/docs
-```
-
-#### 4. Chạy GIS Pipeline Service (Python FastAPI):
-```bash
-cd services/gis-service
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --host 0.0.0.0 --port 8002 --reload
-# API Docs tại: http://localhost:8002/docs
-```
-
-#### 5. Chạy WebGIS Dashboard (React + Vite):
-```bash
-cd apps/webgis
-npm install
-npm run dev
-# Dashboard mở tại: http://localhost:5173
-```
-
-#### 6. Chạy Mobile App (Flutter):
-```bash
-cd apps/mobile
-flutter pub get
-flutter run
-```
-
----
-
-## 🌐 Danh Mục Cổng Dịch Vụ & Tài Liệu API
-
-| Dịch Vụ | Địa chỉ truy cập | Tài liệu tương tác / Swagger | Công nghệ |
-| :--- | :--- | :--- | :--- |
-| **WebGIS Dashboard** | [http://localhost:5173](http://localhost:5173) | Giao diện điều hành trực quan | React 18, Mapbox GL JS |
-| **Core API** | [http://localhost:3000](http://localhost:3000) | [http://localhost:3000/swagger-ui.html](http://localhost:3000/swagger-ui.html) | Java 17, Spring Boot 3, JPA |
-| **AI Service** | [http://localhost:8001](http://localhost:8001) | [http://localhost:8001/docs](http://localhost:8001/docs) | Python 3.11, FastAPI, ONNX |
-| **GIS Service** | [http://localhost:8002](http://localhost:8002) | [http://localhost:8002/docs](http://localhost:8002/docs) | Python 3.11, FastAPI, GEE |
-| **PostGIS Database** | `localhost:5432` | `terrawatch` (user: `postgres`) | PostgreSQL 15, PostGIS 3.3 |
-| **Redis Queue** | `localhost:6379` | Message broker | Redis 7 Alpine |
+| Dịch Vụ | Cổng Trực Tiếp | Cổng Đi Qua Gateway (Khuyên Dùng) | Tài liệu tương tác / Swagger |
+| :--- | :---: | :---: | :--- |
+| **API Gateway** | `8080` | **`http://localhost:8080`** | Điểm vào duy nhất cho mọi client |
+| **WebGIS Dashboard** | `5173` | [http://localhost:8080](http://localhost:8080) | Giao diện điều hành trực quan |
+| **Core API** | `3000` | [http://localhost:8080/api/v1/core](http://localhost:8080/api/v1/core) | [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html) |
+| **AI Service** | `8001` | [http://localhost:8080/api/v1/ai](http://localhost:8080/api/v1/ai) | [http://localhost:8001/docs](http://localhost:8001/docs) |
+| **GIS Service** | `8002` | [http://localhost:8080/api/v1/gis](http://localhost:8080/api/v1/gis) | [http://localhost:8002/docs](http://localhost:8002/docs) |
+| **PostGIS Database** | `5432` | `localhost:5432` | `terrawatch` (user: `postgres`) |
+| **Redis Event Bus** | `6379` | `localhost:6379` | Channel: `terrawatch:events` |
 
 ---
 
@@ -287,10 +241,10 @@ flutter run
 
 | Thành viên | Vai trò | Trách nhiệm chính | Thư mục đảm nhiệm |
 | :---: | :--- | :--- | :--- |
-| **Thành viên 1** | **AI Engineer** | Huấn luyện mô hình DeepLabV3+/U-Net trên dataset Landslide4Sense, tối ưu F1=0.768, IoU=0.642, đóng gói ONNX Runtime. | [`services/ai-service/`](services/ai-service) |
+| **Thành viên 1** | **AI Engineer** | Huấn luyện mô hình DeepLabV3+/U-Net trên dataset Landslide4Sense, tối ưu F1=0.768, IoU=0.642, đóng gói ONNX Runtime, Redis Event Listener. | [`services/ai-service/`](services/ai-service) |
 | **Thành viên 2** | **GIS Data Engineer** | Xây dựng pipeline GEE/Sentinel Hub, lọc mây, tính toán chỉ số $\Delta\text{NDVI}$, độ dốc (Slope), cắt ảnh (Tiling), Vector Tile MVT. | [`services/gis-service/`](services/gis-service) |
-| **Thành viên 3** | **Backend Engineer** | Thiết kế kiến trúc Microservices, Core API (Java Spring Boot 3), bảo mật Spring Security, Spring Data JPA, Flyway, PostGIS. | [`services/core-api/`](services/core-api) |
-| **Thành viên 4** | **Frontend WebGIS** | Xây dựng Dashboard ReactJS, tích hợp Mapbox GL JS, bản đồ so sánh đa thời gian, quản lý hàng đợi thẩm định. | [`apps/webgis/`](apps/webgis) |
+| **Thành viên 3** | **Backend Engineer** | Thiết kế kiến trúc Microservices, Core API (Java Spring Boot 3), bảo mật Spring Security, Resilience4j Circuit Breaker, Redis Event Bus, Flyway. | [`services/core-api/`](services/core-api) |
+| **Thành viên 4** | **Frontend WebGIS** | Xây dựng Dashboard ReactJS, tích hợp Mapbox GL JS, bản đồ so sánh đa thời gian, quản lý hàng đợi thẩm định, kết nối qua API Gateway. | [`apps/webgis/`](apps/webgis), [`gateway/`](gateway) |
 | **Thành viên 5** | **Mobile Engineer** | Ứng dụng di động Flutter, thuật toán Geofencing ngoại tuyến (Haversine & Ray Casting), SQLite cache $\ge 10,000$ điểm. | [`apps/mobile/`](apps/mobile) |
 
 ---
@@ -299,7 +253,7 @@ flutter run
 
 - 📘 [Tài Liệu Thiết Kế Kiến Trúc Phần Mềm C4 Model (docs/ARCHITECTURE.md)](docs/ARCHITECTURE.md)
 - 🤖 [Đặc Tả Kỹ Thuật Mô Hình Trí Tuệ Nhân Tạo (docs/AI_MODEL_CARD.md)](docs/AI_MODEL_CARD.md)
-- ⚙️ [Hướng Dẫn Quản Trị GitHub Repo & Database Migration (docs/microservices-setup-guide.md)](docs/microservices-setup-guide.md)
+- ⚙️ [Hướng Dẫn Quản Trị Microservices, Circuit Breaker & Event Bus (docs/microservices-setup-guide.md)](docs/microservices-setup-guide.md)
 - 🤝 [Quy Chuẩn Đóng Góp & Commit (CONTRIBUTING.md)](CONTRIBUTING.md)
 - 🗃️ [Kịch Bản Khởi Tạo CSDL PostGIS](database/init.sql)
 - 📋 [Tài Liệu Yêu Cầu & Thiết Kế Gốc](Tai_Lieu_Yeu_Cau_Va_Thiet_Ke_He_Thong_Canh_Bao_Sat_Lo_Dat.docx)

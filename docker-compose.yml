@@ -61,8 +61,13 @@ services:
       dockerfile: Dockerfile
     container_name: terrawatch-ai-service
     restart: always
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     ports:
       - "8001:8001"
+    depends_on:
+      - redis
     networks:
       - terrawatch-net
 
@@ -93,6 +98,23 @@ services:
       - "5173:80"
     depends_on:
       - core-api
+    networks:
+      - terrawatch-net
+
+  # 7. API Gateway (Nginx Reverse Proxy - Single Entry Point)
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: terrawatch-gateway
+    restart: always
+    ports:
+      - "8080:80"
+    depends_on:
+      - core-api
+      - ai-service
+      - gis-service
+      - webgis
     networks:
       - terrawatch-net
 
