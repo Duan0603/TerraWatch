@@ -1,7 +1,7 @@
 # Kế Hoạch Epics & Stories Chi Tiết — Thành Viên 1: DUẪN
 ## Vai trò: AI / Computer Vision Engineer
 **Phân hệ đảm nhiệm:** `services/ai-service/`  
-**Dự án:** GeoSentry (TerraWatch) - Hệ Thống Viễn Thám, AI & Mô Hình 3D Cảnh Báo & Hỗ Trợ Cứu Hộ Sạt Lở Đất  
+**Dự án:** GeoSentry (TerraWatch) - Hệ Thống Viễn Thám & AI Cảnh Báo Sớm Sạt Lở Đất  
 
 ---
 
@@ -10,7 +10,7 @@
 - Tiền xử lý dải phổ 8 kênh: `[B02, B03, B04, B08, B11, B12, NDVI, SLOPE]`.
 - Huấn luyện, fine-tune và đánh giá mô hình Semantic Segmentation (DeepLabV3+, U-Net, ResU-Net) đạt $F_1 \ge 0.768$, $\text{IoU} \ge 0.642$.
 - Xuất và đóng gói mô hình sang **ONNX Runtime** (`landslide_deeplabv3plus.onnx`) chạy suy luận siêu tốc ($< 300\text{ ms}$).
-- Xây dựng thuật toán **AI Rescue Route** (A* / Dijkstra trên OpenStreetMap) đề xuất tuyến đường cứu hộ an toàn né tránh các vùng sạt lở nguy hiểm (Hazard Zone).
+- Xây dựng thuật toán **xếp hạng mức nguy cơ sạt lở (Risk Scoring)** dựa trên độ dốc, diện tích, độ tin cậy và khoảng cách tới khu dân cư (`low` / `medium` / `high` / `extreme`).
 - Tích hợp Redis Event Listener để tự động chạy suy luận ngầm (batch inference).
 
 ---
@@ -20,7 +20,7 @@
 ```
 Tuần 1: Setup ONNX Runtime, tải Landslide4Sense dataset, viết tiền xử lý chuẩn hóa 8 kênh tensor.
 Tuần 2: Fine-tune DeepLabV3+ / U-Net, đo đạc F1-Score & IoU, export model sang ONNX format.
-Tuần 3: Thay thế mock code trong inference.py bằng ONNX Runtime thật; viết thuật toán AI Rescue Route.
+Tuần 3: Thay thế mock code trong inference.py bằng ONNX Runtime thật; viết thuật toán xếp hạng mức nguy cơ.
 Tuần 4: Viết Redis event listener trong ai-service để tự động chạy batch inference ngầm.
 Tuần 5: Benchmark độ trễ suy luận (< 300 ms), tối ưu Docker container ai-service, phối hợp thông luồng.
 ```
@@ -56,14 +56,14 @@ So that detected landslide bodies can be rendered on WebGIS and stored in PostGI
 - Polygon coordinates correctly mapped to geographic WGS84 coordinates of the original patch.
 - Polygons with area below a minimum noise threshold ($< 100\text{ m}^2$) are filtered out.
 
-#### Story 3.4: AI Rescue Route Recommendation Engine (Tuần 3 - 4)
-As a Rescue Team Leader,  
-I want the AI to calculate the safest approach route from the rescue station to trapped victims, bypassing active landslide hazard zones,  
-So that rescue vehicles avoid blocked mountain passes and unstable mudslide roads.  
+#### Story 3.4: Landslide Risk Level Scoring (Slope & Residential Proximity) (Tuần 3 - Phối hợp cùng Tú)
+As a Disaster Officer,  
+I want every detected landslide polygon to be automatically ranked by risk level,  
+So that I can prioritize verifying and warning the most dangerous zones first.  
 **Acceptance Criteria:**
-- Route calculation algorithm (A* / Dijkstra on OSM road graph via `osmnx` or `networkx`) applies high penalty weights to road segments intersecting the landslide Danger Zone.
-- Outputs recommended rescue route as a GeoJSON LineString.
-- Identifies potential secondary hazards (⚠ Hazard: sụt lún taluy âm, đá lăn) along the route.
+- Risk score computed from mean slope, landslide area, model confidence and distance to the nearest residential area (PostGIS `ST_Distance` against a residential / OSM buildings layer).
+- Score mapped to `risk_level`: `low`, `medium`, `high`, `extreme` (configurable thresholds).
+- Result returned in the inference JSON and persisted to `core_schema.landslide_events.risk_level`.
 
 ---
 
@@ -75,7 +75,7 @@ So that rescue vehicles avoid blocked mountain passes and unstable mudslide road
     "risk_level": "extreme",
     "confidence_score": 0.892,
     "geometry": { "type": "MultiPolygon", "coordinates": [...] },
-    "rescue_route": { "type": "LineString", "coordinates": [...] }
+    "risk_factors": { "mean_slope_deg": 38.5, "area_m2": 12450, "distance_to_residential_m": 320 }
   }
   ```
-- **Bàn giao cho Huy (WebGIS):** Đa giác sạt lở và LineString tuyến đường cứu hộ để Huy vẽ lên bản đồ 3D.
+- **Bàn giao cho Huy (WebGIS):** Đa giác sạt lở kèm `risk_level` để Huy tô màu theo mức nguy cơ trên bản đồ 3D.

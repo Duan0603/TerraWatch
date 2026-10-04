@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-GeoSentry (TerraWatch) - Automated GitHub Issues & Labels Generator
-Parses Epics and User Stories, generating color-coded labels and professional GitHub Issues
-with explicit team member assignments in title and body.
+Script tự động khởi tạo toàn bộ GitHub Labels và 19 GitHub Issues cho 5 thành viên nhóm GeoSentry (TerraWatch)
+Chuyên ngành: Kỹ sư Phần mềm (Software Engineering Capstone Project)
+Đề tài: Hệ Thống Viễn Thám & AI Cảnh Báo Sớm Sạt Lở Đất Miền Núi
 """
 
 import subprocess
@@ -10,36 +11,31 @@ import time
 import os
 import sys
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8")
-if hasattr(sys.stderr, "reconfigure"):
-    sys.stderr.reconfigure(encoding="utf-8")
-
 GH_BIN = r"C:\Program Files\GitHub CLI\gh.exe"
 if not os.path.exists(GH_BIN):
     GH_BIN = "gh"
 
 LABELS = [
     # Members
-    {"name": "member:duan", "color": "1f77b4", "desc": "Phụ trách: Duẫn (AI / Computer Vision Engineer)"},
-    {"name": "member:tu", "color": "2ca02c", "desc": "Phụ trách: Tú (GIS Pipeline & Data Engineer)"},
-    {"name": "member:thuan", "color": "d62728", "desc": "Phụ trách: Thuận (Backend Engineer & System Architect)"},
-    {"name": "member:huy", "color": "9467bd", "desc": "Phụ trách: Huy (Frontend WebGIS 3D Engineer)"},
-    {"name": "member:lam", "color": "ff7f0e", "desc": "Phụ trách: Lâm (Mobile App & Geofencing Engineer)"},
-    {"name": "team:all", "color": "e377c2", "desc": "Toàn bộ 5 thành viên phối hợp liên thông"},
+    {"name": "member:duan", "color": "d73a4a", "desc": "Assigned to Duẫn (AI / CV Engineer)"},
+    {"name": "member:tu", "color": "0075ca", "desc": "Assigned to Tú (GIS Pipeline & Data Engineer)"},
+    {"name": "member:thuan", "color": "a2eeef", "desc": "Assigned to Thuận (Backend Engineer & Architect)"},
+    {"name": "member:huy", "color": "7057ff", "desc": "Assigned to Huy (Frontend WebGIS Engineer)"},
+    {"name": "member:lam", "color": "008672", "desc": "Assigned to Lâm (Mobile App Engineer)"},
+    {"name": "team:all", "color": "e99695", "desc": "All 5 Team Members"},
 
-    # Roles / Components
-    {"name": "role:backend", "color": "0052cc", "desc": "Core API Service (Java Spring Boot 3 + PostGIS)"},
-    {"name": "role:ai", "color": "5319e7", "desc": "AI Inference Service (Python FastAPI / ONNX)"},
-    {"name": "role:gis", "color": "006b75", "desc": "GIS Data Service (Python FastAPI / Sentinel-2 / DEM)"},
+    # Roles / Domains
+    {"name": "role:ai", "color": "cfd3d7", "desc": "Artificial Intelligence & Computer Vision (Python / ONNX)"},
+    {"name": "role:gis", "color": "bfd4f2", "desc": "Geographic Information Systems & Satellite Pipeline"},
+    {"name": "role:backend", "color": "bfe5bf", "desc": "Core API Service & Microservices Infrastructure"},
     {"name": "role:webgis", "color": "1d76db", "desc": "WebGIS Command Center (React 18 + Mapbox 3D)"},
     {"name": "role:mobile", "color": "fbca04", "desc": "Mobile Citizen App (Flutter 3.x + SQLite Geofencing)"},
 
     # Sprints
     {"name": "sprint-1", "color": "0e8a16", "desc": "Sprint 1: Auth & PostGIS Foundation (Tuần 1)"},
-    {"name": "sprint-2", "color": "0e8a16", "desc": "Sprint 2: GIS Pipeline & Landslide Ingestion (Tuần 2)"},
-    {"name": "sprint-3", "color": "0e8a16", "desc": "Sprint 3: AI DeepLabV3+ & Route Optimization (Tuần 3)"},
-    {"name": "sprint-4", "color": "0e8a16", "desc": "Sprint 4: WebGIS 3D Command Center & Dispatch (Tuần 4)"},
+    {"name": "sprint-2", "color": "0e8a16", "desc": "Sprint 2: GIS Pipeline & Field Reports (Tuần 2)"},
+    {"name": "sprint-3", "color": "0e8a16", "desc": "Sprint 3: AI DeepLabV3+ & Risk Scoring (Tuần 3)"},
+    {"name": "sprint-4", "color": "0e8a16", "desc": "Sprint 4: WebGIS Command Center & Emergency Alerts (Tuần 4)"},
     {"name": "sprint-5", "color": "0e8a16", "desc": "Sprint 5: Mobile App Geofencing & End-to-End Demo (Tuần 5)"},
 ]
 
@@ -52,20 +48,21 @@ STORIES = [
 - **Thành viên phối hợp:** Huy (WebGIS), Lâm (Mobile)
 - **Phân hệ code:** `services/core-api/`
 - **Thời gian thực hiện:** Sprint 1 (Tuần 1)
-- **Epic:** Epic 1: Authentication, Multi-Role RBAC & Landslide Database Foundation
+- **Epic:** Epic 1: Authentication, RBAC & Landslide Database Foundation
 
 ---
 
 ### 🎯 Mô tả yêu cầu (User Story):
-> **As a** User (Citizen, Rescue Team Member, Disaster Officer, or Admin),  
+> **As a** User (Citizen, Officer, or Admin),  
 > **I want to** register and log in securely to obtain a role-specific JWT access token,  
 > **So that** my identity and permissions are verified across WebGIS and Mobile applications.
 
 ---
 
 ### ✅ Tiêu chuẩn chấp thuận (Acceptance Criteria):
-- [ ] Endpoint `POST /api/v1/auth/register` tạo người dùng với 4 roles: `citizen`, `rescue_team`, `officer`, `admin`. Mật khẩu băm bằng BCrypt.
-- [ ] Endpoint `POST /api/v1/auth/login` kiểm tra email/mật khẩu và trả về JWT token chứa `userId`, `email`, và `role`.
+- [ ] Endpoint `POST /api/v1/auth/register` tạo người dùng với role mặc định `citizen`, có trường `phone_number` nhận SMS. Mật khẩu băm bằng BCrypt.
+- [ ] Chỉ `admin` mới được cấp/đổi role `officer` hoặc `admin`.
+- [ ] Endpoint `POST /api/v1/auth/login` kiểm tra email/mật khẩu và trả về JWT token chứa `userId`, `email`, và `role` (`admin`, `officer`, `citizen`).
 - [ ] Endpoint `GET /api/v1/auth/me` trả về thông tin profile người dùng khi gửi kèm header `Authorization: Bearer <token>`.
 - [ ] Các endpoint bảo vệ từ chối truy cập không có token hợp lệ với mã HTTP 401.
 """
@@ -76,7 +73,7 @@ STORIES = [
         "body": """### 👤 Người phụ trách: **Tú (GIS Pipeline)** & **Thuận (Backend)**
 - **Phân hệ code:** `database/migrations/`, `services/core-api/`
 - **Thời gian thực hiện:** Sprint 1 (Tuần 1)
-- **Epic:** Epic 1: Authentication, Multi-Role RBAC & Landslide Database Foundation
+- **Epic:** Epic 1: Authentication, RBAC & Landslide Database Foundation
 
 ---
 
@@ -88,7 +85,7 @@ STORIES = [
 ---
 
 ### ✅ Tiêu chuẩn chấp thuận (Acceptance Criteria):
-- [ ] Khởi tạo đầy đủ bảng `core_schema.users`, `core_schema.landslide_events`, `core_schema.landslide_event_history`, `core_schema.sos_requests`, `core_schema.rescue_missions`, và `gis_schema.monitoring_areas`.
+- [ ] Khởi tạo đầy đủ bảng `core_schema.users`, `core_schema.landslide_events`, `core_schema.landslide_event_history`, `core_schema.community_reports`, `core_schema.alert_subscriptions`, `core_schema.device_tokens`, `core_schema.alert_broadcasts`, `core_schema.alert_deliveries` và `gis_schema.monitoring_areas`.
 - [ ] Mọi cột kiểu `geometry` được đánh chỉ mục không gian `USING GIST (geom)`.
 - [ ] Script nạp dữ liệu địa bàn mẫu (Seed data) cho các điểm nóng sạt lở tại Yên Bái, Lào Cai, Hà Giang.
 """
@@ -99,7 +96,7 @@ STORIES = [
         "body": """### 👤 Người phụ trách: **Thuận (Backend Engineer & DevOps)**
 - **Phân hệ code:** `gateway/`
 - **Thời gian thực hiện:** Sprint 1 (Tuần 1)
-- **Epic:** Epic 1: Authentication, Multi-Role RBAC & Landslide Database Foundation
+- **Epic:** Epic 1: Authentication, RBAC & Landslide Database Foundation
 
 ---
 
@@ -123,7 +120,7 @@ STORIES = [
         "body": """### 👤 Người phụ trách: **Tú (GIS Pipeline & Data Engineer)**
 - **Phân hệ code:** `services/gis-service/`
 - **Thời gian thực hiện:** Sprint 2 (Tuần 2)
-- **Epic:** Epic 2: GIS Satellite Pipeline & Landslide Ingestion
+- **Epic:** Epic 2: GIS Satellite Pipeline & Community Field Reports
 
 ---
 
@@ -146,7 +143,7 @@ STORIES = [
         "body": """### 👤 Người phụ trách: **Tú (GIS Pipeline & Data Engineer)**
 - **Phân hệ code:** `services/gis-service/`
 - **Thời gian thực hiện:** Sprint 2 (Tuần 2)
-- **Epic:** Epic 2: GIS Satellite Pipeline & Landslide Ingestion
+- **Epic:** Epic 2: GIS Satellite Pipeline & Community Field Reports
 
 ---
 
@@ -169,7 +166,7 @@ STORIES = [
         "body": """### 👤 Người phụ trách: **Tú (GIS Pipeline)** | Phối hợp: **Duẫn (AI)**
 - **Phân hệ code:** `services/gis-service/`
 - **Thời gian thực hiện:** Sprint 2 (Tuần 2)
-- **Epic:** Epic 2: GIS Satellite Pipeline & Landslide Ingestion
+- **Epic:** Epic 2: GIS Satellite Pipeline & Community Field Reports
 
 ---
 
@@ -187,25 +184,26 @@ STORIES = [
 """
     },
     {
-        "title": "[Thuận - Backend] Story 2.4: Emergency Landslide SOS Ingestion API with GPS & Photo Upload",
+        "title": "[Thuận - Backend] Story 2.4: Community Field Report API (GPS & Photo Upload)",
         "labels": ["member:thuan", "role:backend", "sprint-2"],
         "body": """### 👤 Người phụ trách: **Thuận (Backend Engineer)** | Phối hợp: **Lâm (Mobile)**
 - **Phân hệ code:** `services/core-api/`
 - **Thời gian thực hiện:** Sprint 2 (Tuần 2)
-- **Epic:** Epic 2: GIS Satellite Pipeline & Landslide Ingestion
+- **Epic:** Epic 2: GIS Satellite Pipeline & Community Field Reports
 
 ---
 
 ### 🎯 Mô tả yêu cầu (User Story):
 > **As a** Disaster Officer,  
-> **I want** an API endpoint to receive emergency SOS reports from citizens trapped in landslide zones containing GPS coordinates and field photos,  
-> **So that** ground-truth reports can immediately supplement satellite observations.
+> **I want** an API endpoint to receive field reports of observed landslide signs from citizens, containing GPS coordinates and photos,  
+> **So that** ground-truth reports supplement satellite observations in the verification process.
 
 ---
 
 ### ✅ Tiêu chuẩn chấp thuận (Acceptance Criteria):
-- [ ] Endpoint `POST /api/v1/sos/send` tiếp nhận tọa độ GPS, nội dung mô tả và file ảnh/video hiện trường.
-- [ ] Tạo bản ghi trong `core_schema.sos_requests` và bắn sự kiện `LANDSLIDE_SOS_TRIGGERED` lên Redis Event Bus.
+- [ ] Endpoint `POST /api/v1/core/reports` tiếp nhận tọa độ GPS, nội dung mô tả và ảnh hiện trường (role `citizen` trở lên).
+- [ ] Tạo bản ghi trong `core_schema.community_reports` (trạng thái `submitted`) và bắn sự kiện `COMMUNITY_REPORT_SUBMITTED` lên Redis Event Bus.
+- [ ] Endpoint `GET /api/v1/core/reports` (role `officer`/`admin`) trả danh sách báo cáo dạng GeoJSON để hiển thị trên WebGIS.
 """
     },
 
@@ -216,7 +214,7 @@ STORIES = [
         "body": """### 👤 Người phụ trách: **Duẫn (AI / Computer Vision Engineer)**
 - **Phân hệ code:** `services/ai-service/`
 - **Thời gian thực hiện:** Sprint 3 (Tuần 3)
-- **Epic:** Epic 3: AI Deep Learning & Landslide Segmentation Engine
+- **Epic:** Epic 3: AI Deep Learning, Landslide Segmentation & Risk Scoring
 
 ---
 
@@ -239,7 +237,7 @@ STORIES = [
         "body": """### 👤 Người phụ trách: **Duẫn (AI / Computer Vision Engineer)**
 - **Phân hệ code:** `services/ai-service/`
 - **Thời gian thực hiện:** Sprint 3 (Tuần 3)
-- **Epic:** Epic 3: AI Deep Learning & Landslide Segmentation Engine
+- **Epic:** Epic 3: AI Deep Learning, Landslide Segmentation & Risk Scoring
 
 ---
 
@@ -262,7 +260,7 @@ STORIES = [
         "body": """### 👤 Người phụ trách: **Tú (GIS Pipeline)** & **Duẫn (AI / CV)**
 - **Phân hệ code:** `services/gis-service/`, `services/ai-service/`
 - **Thời gian thực hiện:** Sprint 3 (Tuần 3)
-- **Epic:** Epic 3: AI Deep Learning & Landslide Segmentation Engine
+- **Epic:** Epic 3: AI Deep Learning, Landslide Segmentation & Risk Scoring
 
 ---
 
@@ -280,26 +278,26 @@ STORIES = [
 """
     },
     {
-        "title": "[Duẫn - AI] Story 3.4: AI Rescue Route Recommendation Engine (Bypass Landslide Hazard Zones)",
+        "title": "[Duẫn - AI] Story 3.4: Landslide Risk Level Scoring (Slope & Residential Proximity)",
         "labels": ["member:duan", "role:ai", "sprint-3"],
         "body": """### 👤 Người phụ trách: **Duẫn (AI Engineer)** | Phối hợp: **Tú (GIS)**
 - **Phân hệ code:** `services/ai-service/`
 - **Thời gian thực hiện:** Sprint 3 (Tuần 3)
-- **Epic:** Epic 3: AI Deep Learning & Landslide Segmentation Engine
+- **Epic:** Epic 3: AI Deep Learning, Landslide Segmentation & Risk Scoring
 
 ---
 
 ### 🎯 Mô tả yêu cầu (User Story):
-> **As a** Rescue Team Leader,  
-> **I want** the AI to calculate the safest approach route from the rescue station to trapped victims, bypassing active landslide hazard zones,  
-> **So that** rescue vehicles avoid blocked mountain passes and unstable mudslide roads.
+> **As a** Disaster Officer,  
+> **I want** every detected landslide polygon to be automatically ranked by risk level,  
+> **So that** I can prioritize verifying and warning the most dangerous zones first.
 
 ---
 
 ### ✅ Tiêu chuẩn chấp thuận (Acceptance Criteria):
-- [ ] Thuật toán tìm đường (A* / Dijkstra trên đồ thị OpenStreetMap qua `osmnx` hoặc `networkx`) áp trọng số phạt cực lớn cho các đoạn đường giao cắt với đa giác nguy cơ sạt lở (Danger Zone).
-- [ ] Xuất kết quả tuyến đường cứu hộ dưới dạng `GeoJSON LineString`.
-- [ ] Nhận diện các điểm chướng ngại vật thứ cấp (⚠ Hazard: đá lăn, taluy âm sạt trượt).
+- [ ] Tính điểm nguy cơ dựa trên: độ dốc trung bình, diện tích vùng sạt lở, độ tin cậy AI và khoảng cách tới khu dân cư gần nhất (PostGIS `ST_Distance`).
+- [ ] Ánh xạ điểm số sang `risk_level`: `low`, `medium`, `high`, `extreme`.
+- [ ] Kết quả trả về trong JSON suy luận và lưu vào `core_schema.landslide_events.risk_level`.
 """
     },
 
@@ -310,7 +308,7 @@ STORIES = [
         "body": """### 👤 Người phụ trách: **Thuận (Backend Engineer & Architect)**
 - **Phân hệ code:** `services/core-api/`
 - **Thời gian thực hiện:** Sprint 4 (Tuần 4)
-- **Epic:** Epic 4: Event-Driven Processing & WebGIS 3D Command Center
+- **Epic:** Epic 4: Event-Driven Processing, WebGIS Command Center & Emergency Alerts
 
 ---
 
@@ -322,86 +320,87 @@ STORIES = [
 ---
 
 ### ✅ Tiêu chuẩn chấp thuận (Acceptance Criteria):
-- [ ] Các sự kiện `LANDSLIDE_DETECTED`, `LANDSLIDE_VERIFIED`, và `SOS_TRIGGERED` được publish và consume ổn định.
+- [ ] Các sự kiện `LANDSLIDE_DETECTED`, `LANDSLIDE_VERIFIED`, `COMMUNITY_REPORT_SUBMITTED` và `EMERGENCY_ALERT_BROADCAST` được publish và consume ổn định.
 - [ ] Resilience4j Circuit Breaker tự động chuyển sang `OPEN` khi tỷ lệ lỗi $\ge 50\%$, kích hoạt Fallback lưu vào hàng đợi ngầm mà không gây sập Core API.
 """
     },
     {
-        "title": "[Huy - WebGIS] Story 4.2: WebGIS Incident Management Dashboard & One-Click Landslide Approval",
+        "title": "[Huy - WebGIS] Story 4.2: WebGIS Verification Queue & One-Click Landslide Approval",
         "labels": ["member:huy", "role:webgis", "sprint-4"],
         "body": """### 👤 Người phụ trách: **Huy (Frontend WebGIS Engineer)** | Phối hợp: **Thuận (Backend)**
 - **Phân hệ code:** `apps/webgis/`
 - **Thời gian thực hiện:** Sprint 4 (Tuần 4)
-- **Epic:** Epic 4: Event-Driven Processing & WebGIS 3D Command Center
+- **Epic:** Epic 4: Event-Driven Processing, WebGIS Command Center & Emergency Alerts
 
 ---
 
 ### 🎯 Mô tả yêu cầu (User Story):
 > **As a** Disaster Officer,  
-> **I want** a dashboard listing pending AI landslide detections with confidence scores and one-click verification,  
-> **So that** verified alerts immediately propagate to the emergency broadcast and rescue dispatch system.
+> **I want** a dashboard listing pending AI landslide detections with risk level, confidence scores and one-click verification,  
+> **So that** verified hazards are published on the map and ready for warning dissemination.
 
 ---
 
 ### ✅ Tiêu chuẩn chấp thuận (Acceptance Criteria):
-- [ ] Dashboard hiển thị danh sách các sự kiện sạt lở chờ duyệt (`PENDING`), kèm diện tích (ha), độ dốc và độ tin cậy.
-- [ ] Nút "Phê Duyệt (Approve)" gọi `POST /api/v1/core/landslides/{id}/verify`, chuyển trạng thái sang `VERIFIED` và bắn còi báo động.
+- [ ] Dashboard hiển thị danh sách các sự kiện sạt lở chờ duyệt (`pending`), kèm diện tích (ha), độ dốc, mức nguy cơ và độ tin cậy.
+- [ ] Nút "Phê Duyệt" gọi `POST /api/v1/core/landslides/{id}/verify`, chuyển trạng thái sang `verified`; nút "Bác Bỏ" chuyển sang `rejected` / `false_alarm`.
+- [ ] Sau khi duyệt sự cố mức `high`/`extreme`, hệ thống gợi ý Admin mở form Phát Cảnh Báo Khẩn Cấp với vùng ảnh hưởng điền sẵn.
 """
     },
     {
-        "title": "[Huy - WebGIS] Story 4.3: 3D Landslide Rescue Scene (Terrain 3D, Danger Zone, Victim, Hazard, Route)",
+        "title": "[Huy - WebGIS] Story 4.3: 3D Terrain Hazard Map & Before/After Time-Slider",
         "labels": ["member:huy", "role:webgis", "sprint-4"],
         "body": """### 👤 Người phụ trách: **Huy (Frontend WebGIS Engineer)**
 - **Phân hệ code:** `apps/webgis/`
 - **Thời gian thực hiện:** Sprint 4 (Tuần 4)
-- **Epic:** Epic 4: Event-Driven Processing & WebGIS 3D Command Center
+- **Epic:** Epic 4: Event-Driven Processing, WebGIS Command Center & Emergency Alerts
 
 ---
 
 ### 🎯 Mô tả yêu cầu (User Story):
-> **As a** Rescue Commander,  
-> **I want** an interactive 3D scene visualizing the mountain terrain, the landslide scar (🔴 Danger Zone), trapped victim locations (🟢 Victim), rockfall hazards (⚠ Hazard), and the rescue route (🚒 Rescue Route),  
-> **So that** rescue teams can grasp the dangerous topography before entering the disaster zone.
+> **As a** Disaster Officer,  
+> **I want** an interactive 3D map showing mountain terrain, landslide hazard polygons colored by risk level, community field reports and a before/after satellite comparison slider,  
+> **So that** I can accurately assess each detected landslide before approving warnings.
 
 ---
 
 ### ✅ Tiêu chuẩn chấp thuận (Acceptance Criteria):
 - [ ] Bản đồ Mapbox GL bật lớp 3D Terrain hiển thị địa hình núi đồi Yên Bái, Lào Cai chân thực.
-- [ ] Hiển thị đầy đủ 4 lớp marker không gian 3D:
-  - 🔴 Danger Zone: Đa giác bùn đất sạt lở.
-  - 🟢 Victim: Vị trí người dân gửi SOS kêu cứu.
-  - ⚠ Hazard: Điểm nguy cơ sạt trượt thứ cấp.
-  - 🚒 Rescue Route: Tuyến đường cứu hộ được AI đề xuất.
+- [ ] Hiển thị đa giác sạt lở tô màu theo `risk_level`, báo cáo hiện trường của người dân và ranh giới AOI.
+- [ ] Thanh trượt so sánh ảnh vệ tinh trước/sau biến động (Time-slider swipe).
 - [ ] Điều khiển camera 3D: Xoay 360 độ, nghiêng góc nhìn (pitch), phóng to chi tiết điểm sạt lở.
 """
     },
     {
-        "title": "[Huy - WebGIS & Thuận - Backend] Story 4.4: Rescue Team Dispatch & Mission Status Management",
-        "labels": ["member:huy", "member:thuan", "role:webgis", "role:backend", "sprint-4"],
-        "body": """### 👤 Người phụ trách: **Huy (WebGIS)** & **Thuận (Backend)**
-- **Phân hệ code:** `apps/webgis/`, `services/core-api/`
+        "title": "[Thuận - Backend & Huy - WebGIS] Story 4.4: Admin Emergency Alert Broadcast (SMS & App Push)",
+        "labels": ["member:thuan", "member:huy", "role:backend", "role:webgis", "sprint-4"],
+        "body": """### 👤 Người phụ trách: **Thuận (Backend)** & **Huy (WebGIS)** | Phối hợp: **Lâm (Mobile)**
+- **Phân hệ code:** `services/core-api/`, `apps/webgis/`
 - **Thời gian thực hiện:** Sprint 4 (Tuần 4)
-- **Epic:** Epic 4: Event-Driven Processing & WebGIS 3D Command Center
+- **Epic:** Epic 4: Event-Driven Processing, WebGIS Command Center & Emergency Alerts
 
 ---
 
 ### 🎯 Mô tả yêu cầu (User Story):
-> **As an** Emergency Dispatcher,  
-> **I want** to assign a specific Rescue Team to a landslide incident and track mission status in real time,  
-> **So that** rescue operations are coordinated efficiently.
+> **As an** Admin,  
+> **I want** a prominent '🚨 Phát Cảnh Báo Khẩn Cấp' button on the WebGIS dashboard to send an emergency landslide warning to citizens via SMS and mobile app push notification,  
+> **So that** residents in the affected area are warned to evacuate immediately.
 
 ---
 
 ### ✅ Tiêu chuẩn chấp thuận (Acceptance Criteria):
-- [ ] Cán bộ chọn sự cố sạt lở $\rightarrow$ Gán đội cứu hộ phụ trách $\rightarrow$ Đổi trạng thái sang `DISPATCHED`.
-- [ ] Trạng thái nhiệm vụ chuyển đổi tuần tự: `EN_ROUTE` $\rightarrow$ `ON_SCENE` $\rightarrow$ `VICTIMS_EVACUATED` $\rightarrow$ `RESOLVED`.
-- [ ] Mọi thao tác được lưu vết kiểm toán (Audit Trail) trong bảng `landslide_event_history`.
+- [ ] Nút chỉ hiển thị với role `admin`; API `POST /api/v1/core/alerts/broadcast` bảo vệ bằng `hasRole('ADMIN')`.
+- [ ] Chọn phạm vi nhận: theo sự cố đã duyệt (vùng đệm bán kính), theo AOI, hoặc toàn bộ người dùng.
+- [ ] Chọn kênh gửi: SMS, Push App (FCM), hoặc cả hai; xác nhận 2 bước hiển thị số người nhận dự kiến trước khi gửi.
+- [ ] Gửi bất đồng bộ theo lô qua Redis worker, có retry; lưu kết quả vào `core_schema.alert_deliveries` (`sent`/`failed`).
+- [ ] Người nhận xác định theo vùng quan tâm đã đăng ký (`alert_subscriptions`), không dùng GPS thời gian thực (NFR5).
+- [ ] Ghi vết kiểm toán (Audit Trail) mọi lần phát cảnh báo; hiển thị lịch sử và thống kê trên dashboard.
 """
     },
 
     # Epic 5
     {
-        "title": "[Lâm - Mobile] Story 5.1: 1-Tap Landslide SOS Emergency Button with Auto-GPS & Media Capture",
+        "title": "[Lâm - Mobile] Story 5.1: Citizen Alert Subscription & Emergency Alert Reception (Push + SMS)",
         "labels": ["member:lam", "role:mobile", "sprint-5"],
         "body": """### 👤 Người phụ trách: **Lâm (Mobile App Engineer)** | Phối hợp: **Thuận (Backend)**
 - **Phân hệ code:** `apps/mobile/`
@@ -411,22 +410,24 @@ STORIES = [
 ---
 
 ### 🎯 Mô tả yêu cầu (User Story):
-> **As a** Citizen trapped or isolated by a landslide,  
-> **I want** a prominent 1-tap SOS button that auto-captures my precise GPS coordinates and allows instant photo transmission of the landslide,  
-> **So that** I can call for rescue immediately even when panicked.
+> **As a** Citizen,  
+> **I want to** register my phone number and areas of interest in the app and receive emergency landslide alerts,  
+> **So that** I am warned immediately when the authorities issue an evacuation warning for my area.
 
 ---
 
 ### ✅ Tiêu chuẩn chấp thuận (Acceptance Criteria):
-- [ ] Nút bấm SOS màu đỏ nổi bật ngay giữa màn hình chính ứng dụng di động.
-- [ ] Tự động lấy tọa độ GPS chính xác cao, đính kèm ảnh hiện trường và gửi lên `/api/v1/sos/send`.
-- [ ] Màn hình xác nhận hiển thị mã yêu cầu cứu hộ và số điện thoại đường dây nóng khẩn cấp.
+- [ ] Màn hình đăng ký nhận cảnh báo: nhập SĐT, chọn vùng quan tâm $\rightarrow$ `POST /api/v1/core/alerts/subscriptions`.
+- [ ] App tự động đăng ký FCM token khi đăng nhập $\rightarrow$ `POST /api/v1/core/devices/register`.
+- [ ] Khi nhận Push loại `EMERGENCY_ALERT`: hiển thị màn hình cảnh báo đỏ toàn màn hình, rung và phát âm thanh báo động kể cả khi chạy nền.
+- [ ] Danh sách lịch sử các cảnh báo đã nhận trong app.
+- [ ] Người dân không cài app hoặc mất dữ liệu di động vẫn nhận được cảnh báo qua SMS từ backend.
 """
     },
     {
-        "title": "[Lâm - Mobile] Story 5.2: Live Rescue Support Tracking for Trapped Mountain Communities",
+        "title": "[Lâm - Mobile] Story 5.2: Mobile Community Field Report (Photo & GPS)",
         "labels": ["member:lam", "role:mobile", "sprint-5"],
-        "body": """### 👤 Người phụ trách: **Lâm (Mobile App Engineer)**
+        "body": """### 👤 Người phụ trách: **Lâm (Mobile App Engineer)** | Phối hợp: **Thuận (Backend)**
 - **Phân hệ code:** `apps/mobile/`
 - **Thời gian thực hiện:** Sprint 5 (Tuần 5)
 - **Epic:** Epic 5: Citizen Mobile App, Offline Geofencing & End-to-End Demo
@@ -434,15 +435,16 @@ STORIES = [
 ---
 
 ### 🎯 Mô tả yêu cầu (User Story):
-> **As a** Citizen waiting for rescue,  
-> **I want** to see the real-time status of my rescue request and the approaching rescue team on a map,  
-> **So that** trapped victims remain informed and reassured.
+> **As a** Citizen,  
+> **I want to** report observed landslide signs with a photo and my GPS location,  
+> **So that** officers receive ground-truth evidence to verify landslide hazards.
 
 ---
 
 ### ✅ Tiêu chuẩn chấp thuận (Acceptance Criteria):
-- [ ] Thanh tiến trình trên điện thoại: `Đã tiếp nhận` $\rightarrow$ `Đội cứu hộ đang di chuyển` $\rightarrow$ `Đã tiếp cận hiện trường`.
-- [ ] Bản đồ hiển thị khoảng cách và thời gian dự kiến (ETA) của xe cứu nạn đang di chuyển tới.
+- [ ] Màn hình "Báo cáo hiện trường": tự động lấy tọa độ GPS, chụp/chọn ảnh, nhập mô tả ngắn.
+- [ ] Gửi lên `POST /api/v1/core/reports`; nếu mất mạng thì lưu hàng đợi cục bộ và tự gửi lại khi có kết nối.
+- [ ] Màn hình xác nhận hiển thị mã báo cáo và trạng thái xử lý (`submitted` / `processed`).
 """
     },
     {
@@ -463,8 +465,8 @@ STORIES = [
 ---
 
 ### ✅ Tiêu chuẩn chấp thuận (Acceptance Criteria):
-- [ ] CSDL SQLite cục bộ trên điện thoại lưu trữ sẵn danh sách đa giác các vùng có nguy cơ sạt lở.
-- [ ] Background location tracker chạy ngầm, tính khoảng cách Haversine và thuật toán Ray-Casting mỗi 10 giây.
+- [ ] CSDL SQLite cục bộ trên điện thoại lưu trữ sẵn danh sách đa giác các vùng có nguy cơ sạt lở ($\ge 10,000$ đa giác).
+- [ ] Background location tracker chạy ngầm, tính khoảng cách Haversine và thuật toán Ray-Casting mỗi 10 giây (vị trí GPS chỉ xử lý cục bộ, NFR5).
 - [ ] Bước chân vào vùng đa giác sạt lở: Lập tức chớp màn hình đỏ, rung và phát còi hú âm lượng tối đa ngay cả khi máy để chế độ im lặng.
 """
     },
@@ -480,18 +482,18 @@ STORIES = [
 
 ### 🎯 Mô tả yêu cầu (User Story):
 > **As the** Project Team,  
-> **I want to** demonstrate a complete, flawless end-to-end operational flow across all components,  
+> **I want to** demonstrate a complete, flawless end-to-end early-warning flow across all components,  
 > **So that** the 5-week MVP milestone is 100% achieved and ready for faculty review.
 
 ---
 
 ### ✅ Tiêu chuẩn chấp thuận (Acceptance Criteria):
 - [ ] Kịch bản demo thông suốt từ đầu đến cuối:
-  1. Tú & Duẫn: Vệ tinh Sentinel-2 nạp vào $\rightarrow$ AI DeepLabV3+ quét ra đa giác sạt lở.
+  1. Tú & Duẫn: Vệ tinh Sentinel-2 nạp vào $\rightarrow$ AI DeepLabV3+ quét ra đa giác sạt lở $\rightarrow$ xếp hạng mức nguy cơ.
   2. Thuận: Core API ghi nhận sự cố, bắn Redis Event Bus.
-  3. Duẫn: AI tính toán tuyến đường cứu hộ né tránh vùng sạt lở.
-  4. Huy: WebGIS 3D hiển thị vết sạt lở, cán bộ ấn duyệt và gán đội cứu hộ.
-  5. Lâm: Mobile App nhận nhiệm vụ cứu hộ; đồng thời mô phỏng người dân mất mạng bước vào vùng nguy cơ còi hú báo động ngay lập tức.
+  3. Huy: WebGIS 3D hiển thị vết sạt lở, cán bộ đối chiếu ảnh trước/sau và ấn duyệt.
+  4. Admin bấm "🚨 Phát Cảnh Báo Khẩn Cấp" $\rightarrow$ người dân trong vùng nhận SMS và thông báo App.
+  5. Lâm: Mobile App hiển thị cảnh báo khẩn cấp; đồng thời mô phỏng người dân mất mạng bước vào vùng nguy cơ còi hú báo động ngay lập tức.
   6. 0 lỗi crash trên toàn bộ 7 services Docker.
 """
     }

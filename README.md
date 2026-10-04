@@ -1,7 +1,7 @@
 <div align="center">
 
 # 🛰️ GEOSENTRY (TERRAWATCH)
-### HỆ THỐNG VIỄN THÁM, TRÍ TUỆ NHÂN TẠO & MÔ HÌNH 3D CẢNH BÁO SỚM & HỖ TRỢ CỨU HỘ SẠT LỞ ĐẤT
+### HỆ THỐNG VIỄN THÁM & TRÍ TUỆ NHÂN TẠO CẢNH BÁO SỚM SẠT LỞ ĐẤT
 **Đồ Án Tốt Nghiệp Kỹ Sư Phần Mềm (Software Engineering Capstone Project)**
 
 [![CI Core API](https://img.shields.io/badge/CI_Core_API-Spring_Boot_3_Maven-6DB33F?logo=github-actions&logoColor=white)](.github/workflows/ci-core-api.yml)
@@ -31,13 +31,16 @@
 
 ## 📌 1. Tổng Quan Đề Tài & Giải Pháp
 
-Hệ thống **GeoSentry (TerraWatch)** là giải pháp công nghệ viễn thám, trí tuệ nhân tạo và địa không gian 3D toàn diện nhằm giám sát, cảnh báo sớm và hỗ trợ điều phối cứu hộ thiên tai sạt lở đất tại các tỉnh miền núi phía Bắc Việt Nam (Yên Bái, Lào Cai, Hà Giang — giải quyết bài toán thực tế sau thảm họa bão Yagi 2024 tại Làng Nủ).
+Hệ thống **GeoSentry (TerraWatch)** là giải pháp công nghệ viễn thám, trí tuệ nhân tạo và địa không gian nhằm **giám sát, phát hiện và cảnh báo sớm sạt lở đất** tại các tỉnh miền núi phía Bắc Việt Nam (Yên Bái, Lào Cai, Hà Giang — giải quyết bài toán thực tế sau thảm họa bão Yagi 2024 tại Làng Nủ).
 
-### 4 Trụ Cột Đột Phá Của Hệ Thống:
+> **Phạm vi:** Dự án chỉ tập trung vào **cảnh báo sạt lở đất** (FR1–FR4). Không bao gồm nghiệp vụ cứu hộ (điều phối đội cứu hộ, tuyến đường cứu hộ, SOS kêu cứu) hay các loại thiên tai khác.
+
+### 5 Trụ Cột Của Hệ Thống:
 1. **Viễn thám diện rộng (Sentinel-2 & DEM 30m):** Tự động lọc mây, tính toán chỉ số biến động thực vật $\Delta\text{NDVI}$ và góc dốc sườn núi từ ảnh độ cao số SRTM 30m.
-2. **AI Semantic Segmentation & Rescue Route:** Mô hình DeepLabV3+ ONNX Runtime (huấn luyện trên benchmark quốc tế *Landslide4Sense*, $F_1 = 0.768$) phân đoạn đa giác sạt lở và thuật toán AI A* gợi ý tuyến đường tiếp cận hiện trường né tránh vùng nguy hiểm.
-3. **WebGIS 3D Command Center:** Giao diện điều phối trực quan trên nền bản đồ số Mapbox 3D Terrain, thanh trượt so sánh ảnh trước/sau và mô hình 3D hiện trường (🔴 Danger Zone, 🟢 Victim, ⚠ Hazard, 🚒 Rescue Route).
-4. **Geofencing Ngoại Tuyến (Offline-First Mobile App):** Lưu trữ sẵn 10,000 đa giác sạt lở trong SQLite cục bộ trên điện thoại; tự động **rung chuông còi hú âm lượng tối đa** cứu mạng người dân khi bước vào vùng nguy hiểm ngay cả khi mất sạch 100% sóng 4G/Internet.
+2. **AI Semantic Segmentation & Risk Scoring:** Mô hình DeepLabV3+ ONNX Runtime (huấn luyện trên benchmark quốc tế *Landslide4Sense*, $F_1 = 0.768$) phân đoạn đa giác sạt lở và tự động xếp hạng mức nguy cơ theo độ dốc và khoảng cách tới khu dân cư.
+3. **WebGIS 3D Command Center:** Bản đồ Mapbox 3D Terrain, thanh trượt so sánh ảnh trước/sau, hàng đợi thẩm định 1-click cho cán bộ và bản đồ vùng nguy cơ tô màu theo mức độ.
+4. **🚨 Nút Cảnh Báo Khẩn Cấp cho Admin:** Admin chọn vùng ảnh hưởng và phát cảnh báo tới người dân qua **SMS** và **thông báo App (Firebase Cloud Messaging)**, có xác nhận 2 bước và thống kê kết quả gửi.
+5. **Geofencing Ngoại Tuyến (Offline-First Mobile App):** Lưu trữ sẵn 10,000 đa giác sạt lở trong SQLite cục bộ trên điện thoại; tự động **hú còi âm lượng tối đa** khi người dân bước vào vùng nguy hiểm ngay cả khi mất sạch 100% sóng 4G/Internet.
 
 ---
 
@@ -47,11 +50,11 @@ Toàn bộ kế hoạch công việc chi tiết của từng thành viên đã �
 
 | STT | Thành viên | Vai trò chuyên môn | Phân hệ code chính | Kế hoạch & User Stories chi tiết |
 | :---: | :---: | :--- | :--- | :--- |
-| **1** | **Duẫn** | **AI / Computer Vision Engineer** | [`services/ai-service/`](services/ai-service) | 📂 [Kế hoạch Epics của Duẫn](_bmad-output/planning-artifacts/members/duan-ai/epics.md)<br/>- Dataset Landslide4Sense, tiền xử lý 8 kênh tensor<br/>- DeepLabV3+ ONNX Runtime suy luận $< 300\text{ ms}$<br/>- Thuật toán AI Rescue Route A* né Danger Zone |
+| **1** | **Duẫn** | **AI / Computer Vision Engineer** | [`services/ai-service/`](services/ai-service) | 📂 [Kế hoạch Epics của Duẫn](_bmad-output/planning-artifacts/members/duan-ai/epics.md)<br/>- Dataset Landslide4Sense, tiền xử lý 8 kênh tensor<br/>- DeepLabV3+ ONNX Runtime suy luận $< 300\text{ ms}$<br/>- Xếp hạng mức nguy cơ (độ dốc + khoảng cách khu dân cư) |
 | **2** | **Tú** | **GIS Pipeline & Data Engineer** | [`services/gis-service/`](services/gis-service)<br/>[`database/`](database) | 📂 [Kế hoạch Epics của Tú](_bmad-output/planning-artifacts/members/tu-gis/epics.md)<br/>- Crawl Sentinel-2 L2A qua Copernicus / Sentinel Hub API<br/>- Lọc mây SCL, tính $\Delta\text{NDVI}$, độ dốc SRTM DEM 30m<br/>- Tiling $128 \times 128$, Raster-to-Vector PostGIS, Vector Tiles |
-| **3** | **Thuận** | **Backend Engineer & Architect** | [`services/core-api/`](services/core-api)<br/>[`gateway/`](gateway) | 📂 [Kế hoạch Epics của Thuận](_bmad-output/planning-artifacts/members/thuan-backend/epics.md)<br/>- Core API Spring Boot 3, Spring Security 6 & JWT 4 roles<br/>- Resilience4j Circuit Breaker chống sập lan truyền<br/>- Redis Pub/Sub Event Bus 2 chiều, FCM Push, Gateway Nginx |
-| **4** | **Huy** | **Frontend WebGIS Engineer** | [`apps/webgis/`](apps/webgis) | 📂 [Kế hoạch Epics của Huy](_bmad-output/planning-artifacts/members/huy-webgis/epics.md)<br/>- React 18 / Next.js + Tailwind CSS, Mapbox GL 3D Terrain<br/>- Thanh trượt so sánh ảnh đa thời gian (Time-slider swipe)<br/>- Hàng đợi duyệt sạt lở 1-click & Mô hình 3D Hiện trường |
-| **5** | **Lâm** | **Mobile App Engineer** | [`apps/mobile/`](apps/mobile) | 📂 [Kế hoạch Epics của Lâm](_bmad-output/planning-artifacts/members/lam-mobile/epics.md)<br/>- Ứng dụng Flutter 3.x, SQLite cache 10,000 đa giác sạt lở<br/>- Background Geolocation, Ray-Casting & Haversine ngoại tuyến<br/>- Còi hú khẩn cấp khi mất mạng, Nút SOS 1-chạm & Live Tracking |
+| **3** | **Thuận** | **Backend Engineer & Architect** | [`services/core-api/`](services/core-api)<br/>[`gateway/`](gateway) | 📂 [Kế hoạch Epics của Thuận](_bmad-output/planning-artifacts/members/thuan-backend/epics.md)<br/>- Core API Spring Boot 3, Spring Security 6 & JWT 3 roles<br/>- Resilience4j Circuit Breaker, Redis Pub/Sub Event Bus<br/>- API phát cảnh báo khẩn cấp: FCM Push + SMS Gateway, Gateway Nginx |
+| **4** | **Huy** | **Frontend WebGIS Engineer** | [`apps/webgis/`](apps/webgis) | 📂 [Kế hoạch Epics của Huy](_bmad-output/planning-artifacts/members/huy-webgis/epics.md)<br/>- React 18 + Vite, Mapbox GL 3D Terrain<br/>- Thanh trượt so sánh ảnh đa thời gian (Time-slider swipe)<br/>- Hàng đợi duyệt sạt lở 1-click & Nút 🚨 Phát Cảnh Báo Khẩn Cấp (Admin) |
+| **5** | **Lâm** | **Mobile App Engineer** | [`apps/mobile/`](apps/mobile) | 📂 [Kế hoạch Epics của Lâm](_bmad-output/planning-artifacts/members/lam-mobile/epics.md)<br/>- Ứng dụng Flutter 3.x, SQLite cache 10,000 đa giác sạt lở<br/>- Background Geolocation, Ray-Casting & Haversine ngoại tuyến, còi hú<br/>- Đăng ký & nhận cảnh báo khẩn cấp (FCM), Báo cáo hiện trường |
 
 ---
 
@@ -73,8 +76,8 @@ graph TD
     end
 
     subgraph Services ["4. Microservices (Vi Dịch Vụ Độc Lập)"]
-        CoreAPI["⚙️ Core API Service (Java 17 + Spring Boot 3)<br/>Port 3000 | RBAC 4 Roles, Thẩm định sạt lở, Quản lý AOI"]
-        AIService["🧠 AI Inference Service (Python FastAPI)<br/>Port 8001 | DeepLabV3+ ONNX, AI Rescue Route A*"]
+        CoreAPI["⚙️ Core API Service (Java 17 + Spring Boot 3)<br/>Port 3000 | RBAC 3 Roles, Thẩm định sạt lở, Phát cảnh báo khẩn cấp"]
+        AIService["🧠 AI Inference Service (Python FastAPI)<br/>Port 8001 | DeepLabV3+ ONNX, Xếp hạng mức nguy cơ"]
         GISService["🗺️ GIS Data Service (Python FastAPI)<br/>Port 8002 | Sentinel-2 Ingestion, NDVI, DEM Slope, Tiling, MVT"]
     end
 
@@ -87,11 +90,16 @@ graph TD
     end
 
     subgraph DataLayer ["5. Database per Service (Logical Schema-per-Service)"]
-        PostGIS[("🐘 PostgreSQL 15 + PostGIS 3.3 (Port 5432)<br/>├── public: PostGIS native engine ST_*, UUID, migrations<br/>├── core_schema: users, landslide_events, history, sos_requests<br/>└── gis_schema: monitoring_areas AOIs, satellite_scenes, tiles")]
+        PostGIS[("🐘 PostgreSQL 15 + PostGIS 3.3 (Port 5432)<br/>├── public: PostGIS native engine ST_*, UUID, migrations<br/>├── core_schema: users, landslide_events, history, community_reports, alerts<br/>└── gis_schema: monitoring_areas AOIs, satellite_scenes, tiles")]
     end
 
     subgraph ConfigLayer ["7. Configuration Management"]
         ConfigEnv["⚙️ Twelve-Factor Config (.env, Docker Environment Variables)"]
+    end
+
+    subgraph Notify ["Kênh Phát Cảnh Báo (External)"]
+        FCM["🔔 Firebase Cloud Messaging (Push App)"]
+        SMS["✉️ SMS Gateway (eSMS / SpeedSMS / Twilio)"]
     end
 
     WebGIS -->|HTTP 8080| APIGateway
@@ -106,6 +114,9 @@ graph TD
     CoreAPI -.->|Bọc bởi Circuit Breaker| GISService
     CoreAPI -->|Publish Events| RedisBus
     RedisBus -->|Subscribe & Async Inference| AIService
+    CoreAPI -->|Cảnh báo khẩn cấp| FCM
+    CoreAPI -->|Cảnh báo khẩn cấp| SMS
+    FCM -->|Push| MobileApp
 
     CoreAPI <-->|core_schema| PostGIS
     GISService <-->|gis_schema| PostGIS
@@ -121,7 +132,7 @@ SECapstone/
 │   ├── planning-artifacts/                 # Tài liệu thiết kế sản phẩm & kỹ thuật
 │   │   ├── prd.md                          # Product Requirements Document (PRD v3.1)
 │   │   ├── architecture.md                 # System Architecture Document (SAD)
-│   │   ├── epics.md                        # Toàn bộ 8 Epics & 25 User Stories dự án
+│   │   ├── epics.md                        # Toàn bộ 8 Epics & 26 User Stories dự án
 │   │   └── members/                        # THƯ MỤC EPICS RIÊNG CỦA 5 THÀNH VIÊN
 │   │       ├── duan-ai/epics.md            # Kế hoạch của Duẫn (AI / CV)
 │   │       ├── tu-gis/epics.md             # Kế hoạch của Tú (GIS Pipeline)
@@ -230,8 +241,11 @@ Copy-Item .env.example .env
 | `AI_SERVICE_URL` | `http://localhost:8001` | URL gọi AI Inference Service | Core API, Gateway |
 | `GIS_SERVICE_URL` | `http://localhost:8002` | URL gọi GIS Pipeline Service | Core API, Gateway |
 | `MAPBOX_ACCESS_TOKEN` | `pk.placeholder_mapbox_token` | Token hiển thị bản đồ số Mapbox 3D Terrain | WebGIS |
-| `NASA_FIRMS_MAP_KEY` | `placeholder_nasa_firms_key` | Khóa API vệ tinh NASA FIRMS | GIS Service |
 | `SENTINEL_HUB_CLIENT_ID` | `placeholder_sentinel_client_id` | Khóa xác thực Copernicus / Sentinel Hub | GIS Service |
+| `FIREBASE_CREDENTIALS_PATH` | `./secrets/firebase-service-account.json` | File service account Firebase để gửi Push App (FCM) | Core API |
+| `SMS_PROVIDER` | `esms` | Nhà cung cấp SMS Gateway (`esms` / `speedsms` / `twilio` / `mock`) | Core API |
+| `SMS_API_KEY` / `SMS_SECRET_KEY` | `placeholder_sms_key` | Khóa API của SMS Gateway | Core API |
+| `SMS_BRANDNAME` | `TERRAWATCH` | Tên thương hiệu hiển thị trên tin nhắn cảnh báo | Core API |
 
 ---
 
@@ -459,7 +473,7 @@ flutter run
 ## 🗄️ 7. Hướng Dẫn Vận Hành CSDL: Từ Khởi Tạo, Migration Đến Spring Data JPA (Dành Cho Toàn Bộ Thành Viên)
 
 Cơ sở dữ liệu của dự án sử dụng **PostgreSQL 15 kết hợp tiện ích địa không gian PostGIS 3.3**, được chia theo mô hình **Logical Schema-per-Service**:
-- `core_schema`: Chứa các bảng nghiệp vụ chính của Spring Boot (`users`, `landslide_events`, `community_reports`, `monitoring_areas`, `landslide_event_history`).
+- `core_schema`: Chứa các bảng nghiệp vụ chính của Spring Boot (`users`, `landslide_events`, `community_reports`, `monitoring_areas`, `landslide_event_history`; các bảng cảnh báo `alert_subscriptions`, `device_tokens`, `alert_broadcasts`, `alert_deliveries` sẽ được thêm theo Story 1.2 / 4.4).
 - `gis_schema`: Chứa dữ liệu viễn thám và tiles của GIS Service (`raster_scenes`, `satellite_tiles`).
 - `public`: Tiện ích PostGIS (`postgis`, `postgis_raster`) và bảng quản lý migration.
 
@@ -601,23 +615,23 @@ Thực hiện đúng 3 bước chuẩn của dự án:
 
 1. **Bước 1: Tạo file migration SQL mới**
    Tạo file mới trong thư mục `services/core-api/src/main/resources/db/migration/` theo quy ước tăng số phiên bản:
-   `V3__tao_bang_cam_bien_iot.sql`
+   `V3__tao_bang_alert_subscriptions.sql`
    ```sql
-   -- Ví dụ thêm bảng cảm biến IoT giám sát độ nghiêng sườn đồi
-   CREATE TABLE core_schema.iot_sensors (
-       sensor_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-       sensor_code VARCHAR(50) NOT NULL UNIQUE,
-       tilt_angle DOUBLE PRECISION DEFAULT 0.0,
-       battery_percentage INTEGER DEFAULT 100,
-       geom geometry(Point, 4326),
+   -- Ví dụ thêm bảng đăng ký vùng nhận cảnh báo của người dân (UC07)
+   CREATE TABLE core_schema.alert_subscriptions (
+       subscription_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+       user_id UUID NOT NULL REFERENCES core_schema.users(user_id),
+       phone_number VARCHAR(20),
+       area_name VARCHAR(255),
+       geom geometry(MultiPolygon, 4326) NOT NULL,
        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
    );
 
-   CREATE INDEX idx_iot_sensors_geom ON core_schema.iot_sensors USING GIST (geom);
+   CREATE INDEX idx_alert_subscriptions_geom ON core_schema.alert_subscriptions USING GIST (geom);
    ```
 
 2. **Bước 2: Đồng bộ sang thư mục script chung**
-   Copy file `V3__tao_bang_cam_bien_iot.sql` vừa tạo sang `database/migrations/` (để bất kỳ thành viên nào cũng có thể chạy qua Python).
+   Copy file `V3__tao_bang_alert_subscriptions.sql` vừa tạo sang `database/migrations/` (để bất kỳ thành viên nào cũng có thể chạy qua Python).
 
 3. **Bước 3: Chạy áp dụng**
    - Chạy lại Core API (`mvnw spring-boot:run`), Flyway sẽ tự động nhận diện file `V3` và chạy ngay trong 1 giây.
@@ -677,6 +691,6 @@ Agent sẽ tự động sinh file story đặc tả chi tiết với đầy đ�
 ---
 
 <div align="center">
-<b>GeoSentry (TerraWatch) — Đồng lòng cùng đồng bào miền núi ứng phó thiên tai sạt lở đất.</b><br/>
+<b>GeoSentry (TerraWatch) — Cảnh báo sớm sạt lở đất, bảo vệ đồng bào miền núi.</b><br/>
 <i>Đồ án tốt nghiệp Kỹ sư phần mềm 2026.</i>
 </div>

@@ -1,5 +1,5 @@
 # generated: 2026-10-02
-# last_updated: 2026-10-02
+# last_updated: 2026-10-04
 # project: SECapstone
 # project_key: TERRA
 # tracking_system: file-system
@@ -20,7 +20,7 @@
 #   - done: Story implementation verified and accepted
 
 development_status:
-  # --- GIAI ĐOẠN 1: 5-WEEK ACCELERATED MVP (100% CHUYÊN SÂU SẠT LỞ ĐẤT) ---
+  # --- GIAI ĐOẠN 1: 5-WEEK ACCELERATED MVP (100% CHUYÊN SÂU CẢNH BÁO SẠT LỞ ĐẤT) ---
   epic-1: in-progress
   1-1-multi-role-user-registration-authentication-register-login-jwt: ready-for-dev
   1-2-postgis-schema-per-service-migration-spatial-indexes: backlog
@@ -31,32 +31,32 @@ development_status:
   2-1-sentinel-2-ingestion-pipeline-cloud-masking-filter: backlog
   2-2-topographic-slope-srtm-dem-vegetation-index-ndvi-engine: backlog
   2-3-adaptive-tiling-engine-bounding-box-patch-generator: backlog
-  2-4-emergency-landslide-sos-ingestion-api-gps-photo-upload: backlog
+  2-4-community-field-report-api-gps-photo-upload: backlog
   epic-2-retrospective: optional
 
   epic-3: backlog
   3-1-pretrained-deeplabv3-onnx-model-loading-landslide4sense-benchmark: backlog
   3-2-8-channel-multi-spectral-inference-binary-mask-segmentation: backlog
   3-3-polygonization-converting-raster-mask-to-postgis-multipolygon-geojson: backlog
-  3-4-ai-rescue-route-recommendation-engine-bypass-landslide-hazard-zones: backlog
+  3-4-landslide-risk-level-scoring-slope-residential-proximity: backlog
   epic-3-retrospective: optional
 
   epic-4: backlog
   4-1-redis-pub-sub-event-bus-resilience4j-circuit-breaker: backlog
-  4-2-webgis-incident-management-dashboard-one-click-landslide-approval: backlog
-  4-3-3d-landslide-rescue-scene-terrain-3d-danger-zone-victim-hazard-route: backlog
-  4-4-rescue-team-dispatch-mission-status-management: backlog
+  4-2-webgis-verification-queue-one-click-landslide-approval: backlog
+  4-3-3d-terrain-hazard-map-before-after-time-slider: backlog
+  4-4-admin-emergency-alert-broadcast-sms-app-push-notification: backlog
   epic-4-retrospective: optional
 
   epic-5: backlog
-  5-1-1-tap-landslide-sos-emergency-button-auto-gps-media-capture: backlog
-  5-2-live-rescue-support-tracking-for-trapped-mountain-communities: backlog
+  5-1-citizen-alert-subscription-emergency-alert-reception-push-sms: backlog
+  5-2-mobile-community-field-report-photo-gps: backlog
   5-3-offline-geofencing-hazard-alert-loud-siren-ray-casting-sqlite: backlog
   5-4-end-to-end-system-integration-flow-5-week-milestone-demo: backlog
   epic-5-retrospective: optional
 
-  # --- GIAI ĐOẠN 2: CAPSTONE UPGRADES & THESIS DEFENSE ---
-  epic-6: backlog
+  # --- GIAI ĐOẠN 2: CAPSTONE UPGRADES & THESIS DEFENSE (HƯỚNG PHÁT TRIỂN) ---
+  epic-6: backlog  # Nâng cao độ chính xác cảnh báo sớm (future work)
   6-1-esp32-iot-slope-monitoring-station-vibration-soil-moisture-mqtt: backlog
   6-2-sentinel-1-sar-radar-ingestion-cloud-penetration-rainy-typhoons: backlog
   6-3-antecedent-rainfall-index-ari-gpm-nasa-weather-integration: backlog
@@ -64,10 +64,10 @@ development_status:
 
   epic-7: backlog
   7-1-postgis-spatial-partitioning-province-tile-caching: backlog
-  7-2-comprehensive-disaster-audit-trail-event-sourcing: backlog
+  7-2-comprehensive-verification-alert-audit-trail-event-sourcing: backlog
   epic-7-retrospective: optional
 
   epic-8: backlog
-  8-1-real-world-disaster-simulation-pilot-test-lao-cai-yen-bai: backlog
+  8-1-real-world-early-warning-pilot-test-lao-cai-yen-bai: backlog
   8-2-capstone-thesis-documentation-demo-video-slide-deck: backlog
   epic-8-retrospective: optional

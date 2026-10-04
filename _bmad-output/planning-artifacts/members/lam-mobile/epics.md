@@ -1,19 +1,19 @@
 # Kế Hoạch Epics & Stories Chi Tiết — Thành Viên 5: LÂM
 ## Vai trò: Mobile App Engineer
 **Phân hệ đảm nhiệm:** `apps/mobile/`  
-**Dự án:** GeoSentry (TerraWatch) - Hệ Thống Viễn Thám, AI & Mô Hình 3D Cảnh Báo & Hỗ Trợ Cứu Hộ Sạt Lở Đất  
+**Dự án:** GeoSentry (TerraWatch) - Hệ Thống Viễn Thám & AI Cảnh Báo Sớm Sạt Lở Đất  
 
 ---
 
 ### 1. Mục Tiêu & Trách Nhiệm Kỹ Thuật
 - Phát triển ứng dụng di động đa nền tảng (Android & iOS) bằng Flutter 3.x.
-- Dựng giao diện Đăng ký / Đăng nhập cho Người dân & Thành viên Đội cứu hộ.
-- Lập trình dịch vụ định vị chạy nền (**Background Geolocation**) liên tục theo dõi vị trí GPS ngay cả khi tắt màn hình điện thoại.
+- Dựng giao diện Đăng ký / Đăng nhập cho Người dân.
+- **Đăng ký nhận cảnh báo** (số điện thoại + vùng quan tâm) và **nhận thông báo khẩn cấp** qua Firebase Cloud Messaging (FCM): màn hình cảnh báo đỏ toàn màn hình, rung, âm thanh báo động.
+- Lập trình dịch vụ định vị chạy nền (**Background Geolocation**) — vị trí chỉ xử lý cục bộ trên máy, không gửi lên máy chủ (NFR5).
 - Lưu trữ bộ nhớ đệm CSDL không gian ngoại tuyến bằng **SQLite (`sqflite`)** chứa $\ge 10,000$ đa giác điểm sạt lở nguy hiểm.
 - Xử lý thuật toán **Geofencing ngoại tuyến** không cần mạng Internet/4G (thuật toán khoảng cách Haversine & thuật toán Point-in-Polygon Ray-Casting).
 - Cơ chế kích hoạt **Còi hú báo động âm lượng tối đa & Rung liên tục** (vượt qua chế độ im lặng của máy) khi đi vào vùng sạt lở.
-- Module **Gửi SOS khẩn cấp 1-chạm (1-Tap SOS)** kèm tọa độ GPS và ảnh hiện trường khi bị mắc kẹt / cô lập.
-- Màn hình **Theo dõi tiến trình cứu hộ (Live Rescue Tracking)**.
+- Module **Báo cáo hiện trường** (Crowdsourcing) gửi ảnh + tọa độ GPS dấu hiệu sạt lở.
 
 ---
 
@@ -23,30 +23,33 @@
 Tuần 1: Cấu hình Flutter 3.x, dựng giao diện Đăng ký / Đăng nhập người dân kết nối API Thuận; cài đặt sqflite.
 Tuần 2: Lập trình Background Geolocation chạy ngầm; viết thuật toán Haversine và Ray-Casting kiểm tra tọa độ.
 Tuần 3: Hoàn thiện nạp 10,000 đa giác vào SQLite; lập trình còi hú báo động & rung khi GPS lọt vào vùng nguy cơ.
-Tuần 4: Xây dựng nút SOS khẩn cấp 1-chạm gửi GPS/ảnh về Core API; dựng màn hình Live Rescue Tracking.
-Tuần 5: Thử nghiệm thực địa: Tắt sạch mạng 4G/WiFi, giả lập GPS di chuyển vào vùng sạt lở, đo độ trễ còi hú (< 20 ms).
+Tuần 4: Tích hợp FCM + màn hình đăng ký nhận cảnh báo & cảnh báo khẩn cấp toàn màn hình; màn hình báo cáo hiện trường.
+Tuần 5: Thử nghiệm thực địa: Tắt sạch mạng 4G/WiFi, giả lập GPS di chuyển vào vùng sạt lở, đo độ trễ còi hú (< 20 ms); test nhận Push/SMS từ Admin.
 ```
 
 ---
 
 ### 3. Danh Sách Epics & User Stories Đảm Nhiệm
 
-#### Story 5.1: 1-Tap Landslide SOS Emergency Button with Auto-GPS & Media Capture (Tuần 4)
-As a Citizen trapped or isolated by a landslide,  
-I want a prominent 1-tap SOS button that auto-captures my precise GPS coordinates and allows instant photo transmission of the landslide,  
-So that I can call for rescue immediately even when panicked.  
+#### Story 5.1: Citizen Alert Subscription & Emergency Alert Reception (Push + SMS) (Tuần 4)
+As a Citizen,  
+I want to register my phone number and areas of interest in the app and receive emergency landslide alerts,  
+So that I am warned immediately when the authorities issue an evacuation warning for my area.  
 **Acceptance Criteria:**
-- Nút bấm SOS màu đỏ nổi bật ngay giữa màn hình chính ứng dụng di động.
-- Tự động lấy tọa độ GPS chính xác cao, đính kèm ảnh hiện trường và gửi lên `/api/v1/sos/send`.
-- Màn hình xác nhận hiển thị mã yêu cầu cứu hộ và số điện thoại đường dây nóng khẩn cấp.
+- Màn hình đăng ký nhận cảnh báo: nhập/xác nhận số điện thoại, chọn vùng quan tâm (xã/huyện hoặc AOI) $\rightarrow$ `POST /api/v1/core/alerts/subscriptions`.
+- App tự động đăng ký FCM token khi đăng nhập $\rightarrow$ `POST /api/v1/core/devices/register`.
+- Khi nhận Push loại `EMERGENCY_ALERT`: hiển thị màn hình cảnh báo đỏ toàn màn hình, rung và phát âm thanh báo động kể cả khi app chạy nền; hiển thị nội dung, khu vực và hướng dẫn sơ tán.
+- Danh sách lịch sử các cảnh báo đã nhận trong app.
+- Người dân không cài app hoặc mất dữ liệu di động vẫn nhận được cảnh báo qua SMS (do Backend gửi).
 
-#### Story 5.2: Live Rescue Support Tracking for Trapped Mountain Communities (Tuần 4)
-As a Citizen waiting for rescue,  
-I want to see the real-time status of my rescue request and the approaching rescue team on a map,  
-So that trapped victims remain informed and reassured.  
+#### Story 5.2: Mobile Community Field Report (Photo & GPS) (Tuần 4)
+As a Citizen,  
+I want to report observed landslide signs with a photo and my GPS location,  
+So that officers receive ground-truth evidence to verify landslide hazards.  
 **Acceptance Criteria:**
-- Thanh tiến trình trên điện thoại: `Đã tiếp nhận` $\rightarrow$ `Đội cứu hộ đang di chuyển` $\rightarrow$ `Đã tiếp cận hiện trường`.
-- Bản đồ hiển thị khoảng cách và thời gian dự kiến (ETA) của xe cứu nạn đang di chuyển tới.
+- Màn hình "Báo cáo hiện trường": tự động lấy tọa độ GPS, chụp/chọn ảnh, nhập mô tả ngắn.
+- Gửi lên `POST /api/v1/core/reports`; nếu mất mạng thì lưu hàng đợi cục bộ và tự gửi lại khi có kết nối.
+- Màn hình xác nhận hiển thị mã báo cáo và trạng thái xử lý (`submitted` / `processed`).
 
 #### Story 5.3: Offline Geofencing Hazard Alert & Loud Siren (Ray-Casting & SQLite) (Tuần 2 - 3)
 As a Mountain Traveler or Citizen moving through mountainous areas with zero cell reception,  
@@ -63,7 +66,9 @@ So that I am warned to evacuate before entering an active slide zone.
 - **Giao tiếp với Thuận (Backend):**
   * Gửi request Đăng ký / Đăng nhập nhận JWT token.
   * Tải danh sách đa giác sạt lở mới nhất về đồng bộ vào SQLite: `GET /api/v1/core/landslides/active-zones`.
-  * Gửi tín hiệu SOS khẩn cấp: `POST /api/v1/sos/send`.
-  * Nhận thông báo cứu hộ qua Firebase Cloud Messaging (FCM).
+  * Đăng ký nhận cảnh báo: `POST /api/v1/core/alerts/subscriptions`, `POST /api/v1/core/devices/register`.
+  * Gửi báo cáo hiện trường: `POST /api/v1/core/reports`.
+  * Nhận thông báo cảnh báo khẩn cấp qua Firebase Cloud Messaging (FCM), payload `{ "type": "EMERGENCY_ALERT", "broadcastId", "severity", "message", "areaName" }`.
 - **Phối hợp với Huy (WebGIS):**
-  * Tín hiệu SOS của Lâm gửi lên sẽ lập tức nổ marker xanh 🟢 **Victim** trên màn hình 3D của Huy để cán bộ nhìn thấy và điều phối cứu hộ.
+  * Báo cáo hiện trường của Lâm gửi lên hiển thị marker 📍 trên bản đồ của Huy để cán bộ đối chiếu khi thẩm định.
+  * Cảnh báo do Admin bấm trên WebGIS của Huy sẽ hiển thị toàn màn hình trên app của Lâm.

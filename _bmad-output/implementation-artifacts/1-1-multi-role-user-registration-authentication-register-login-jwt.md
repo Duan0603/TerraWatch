@@ -4,18 +4,18 @@ Status: ready-for-dev
 
 ## Story Overview
 **Story Key:** `1-1-multi-role-user-registration-authentication-register-login-jwt`  
-**Epic:** Epic 1: Authentication, Multi-Role RBAC & Incident Database Schema (Tuần 1)  
+**Epic:** Epic 1: Authentication, RBAC & Landslide Database Foundation (Tuần 1)  
 **Target Service:** Core API (`services/core-api/`)  
 
 ### User Story
-As a User (Citizen, Rescue Team Member, Dispatcher, or Admin),  
+As a User (Citizen, Officer, or Admin),  
 I want to register an account and log in securely to receive a role-specific JWT access token,  
 So that my identity and authorized operational scope are verified across WebGIS and Mobile applications.
 
 ---
 
 ## Acceptance Criteria
-- [ ] AC1: `POST /api/v1/auth/register` creates user with roles: `citizen`, `rescue_team`, `dispatcher`, `admin`. Passwords hashed with BCrypt.
+- [ ] AC1: `POST /api/v1/auth/register` creates a user with default role `citizen` (with optional `phone_number` for SMS alerts). Only `admin` may assign `officer` / `admin` roles. Passwords hashed with BCrypt.
 - [ ] AC2: `POST /api/v1/auth/login` validates credentials and returns JWT token containing `userId`, `email`, and `role`.
 - [ ] AC3: `GET /api/v1/auth/me` returns current user profile when called with `Authorization: Bearer <token>`.
 - [ ] AC4: Spring Security 6 configured to permit public access to `/api/v1/auth/**` while requiring JWT authentication for protected routes.
@@ -27,7 +27,7 @@ So that my identity and authorized operational scope are verified across WebGIS 
 - **Framework:** Spring Boot 3.x, Spring Security 6.x, `jjwt` (Java JWT) library.
 - **Entity:** [User.java](file:///d:/SECapstone/services/core-api/src/main/java/vn/terrawatch/core/entity/User.java) in `core_schema.users`.
 - **Security Config:** [SecurityConfig.java](file:///d:/SECapstone/services/core-api/src/main/java/vn/terrawatch/core/config/SecurityConfig.java).
-- **Supported Roles:** `citizen`, `rescue_team`, `dispatcher`, `admin`.
+- **Supported Roles:** `admin`, `officer`, `citizen` (matches `core_schema.user_role` enum).
 
 ---
 
@@ -51,6 +51,6 @@ So that my identity and authorized operational scope are verified across WebGIS 
 
 ## Dev Agent Record
 ### Debug Log
-- Story initialized by BMAD Party Mode for Multi-Incident Rescue System.
+- Story initialized by BMAD Party Mode for the Landslide Early-Warning System.
 ### Completion Notes
 - Ready for developer agent execution via `/bmad-dev-story`.

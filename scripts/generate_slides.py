@@ -1,125 +1,123 @@
+"""
+Script sinh bộ Slide Thuyết trình PowerPoint (10 trang) chuẩn Đồ án Tốt nghiệp
+Chuyên ngành: Kỹ thuật Phần mềm (Software Engineering Capstone)
+Đề tài: GEOSENTRY (TERRAWATCH) — HỆ THỐNG VIỄN THÁM & AI CẢNH BÁO SỚM SẠT LỞ ĐẤT
+"""
+
 import sys
 from pptx import Presentation
 from pptx.util import Inches, Pt
+from pptx.enum.text import PP_ALIGN
 from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
+
+# -----------------------------------------------------------------------------
+# BẢNG MÀU CHUYÊN NGHIỆP DARK THEME (HIGH-TECH DISASTER RISK MONITORING)
+# -----------------------------------------------------------------------------
+BG_COLOR = RGBColor(11, 19, 32)       # Xanh đen đậm sang trọng (#0B1320)
+CARD_BG = RGBColor(19, 30, 49)        # Nền card (#131E31)
+CARD_BORDER = RGBColor(31, 58, 82)    # Viền card (#1F3A52)
+TEXT_WHITE = RGBColor(255, 255, 255)  # Trắng thuần
+TEXT_MUTED = RGBColor(156, 178, 201)  # Xám xanh nhạt
+CYAN_ACCENT = RGBColor(0, 212, 255)   # Xanh ngọc công nghệ (#00D4FF)
+ORANGE_ACCENT = RGBColor(255, 140, 0) # Cam cảnh báo (#FF8C00)
+GREEN_ACCENT = RGBColor(16, 185, 129) # Xanh lá thành công (#10B981)
+RED_ACCENT = RGBColor(239, 68, 68)    # Đỏ nguy cấp (#EF4444)
+
+def add_slide_background(slide):
+    bg = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, Inches(13.333), Inches(7.5))
+    bg.fill.solid()
+    bg.fill.fore_color.rgb = BG_COLOR
+    bg.line.fill.background()
+    return bg
+
+def add_header(slide, title_text, category="GEOSENTRY • CAPSTONE DEFENSE 2026"):
+    tb = slide.shapes.add_textbox(Inches(0.8), Inches(0.5), Inches(11.7), Inches(1.1))
+    tf = tb.text_frame
+    tf.word_wrap = True
+    tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = 0
+
+    p_cat = tf.paragraphs[0]
+    p_cat.text = category.upper()
+    p_cat.font.size = Pt(10.5)
+    p_cat.font.bold = True
+    p_cat.font.color.rgb = ORANGE_ACCENT
+
+    p_title = tf.add_paragraph()
+    p_title.text = title_text
+    p_title.font.size = Pt(22)
+    p_title.font.bold = True
+    p_title.font.color.rgb = TEXT_WHITE
+    p_title.space_before = Pt(3)
+
+def add_card(slide, left, top, width, height, title, bullet_points, accent_color=CYAN_ACCENT, subtitle=None):
+    shape = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, top, width, height)
+    shape.fill.solid()
+    shape.fill.fore_color.rgb = CARD_BG
+    shape.line.color.rgb = CARD_BORDER
+    shape.line.width = Pt(1)
+
+    bar = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, top, width, Inches(0.08))
+    bar.fill.solid()
+    bar.fill.fore_color.rgb = accent_color
+    bar.line.fill.background()
+
+    tb = slide.shapes.add_textbox(left + Inches(0.2), top + Inches(0.18), width - Inches(0.4), height - Inches(0.25))
+    tf = tb.text_frame
+    tf.word_wrap = True
+    tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = 0
+
+    p_title = tf.paragraphs[0]
+    p_title.text = title
+    p_title.font.size = Pt(13)
+    p_title.font.bold = True
+    p_title.font.color.rgb = accent_color
+
+    if subtitle:
+        p_sub = tf.add_paragraph()
+        p_sub.text = subtitle
+        p_sub.font.size = Pt(9.5)
+        p_sub.font.color.rgb = TEXT_MUTED
+        p_sub.space_after = Pt(4)
+
+    for pt in bullet_points:
+        p = tf.add_paragraph()
+        p.text = "• " + pt
+        p.font.size = Pt(10)
+        p.font.color.rgb = TEXT_WHITE
+        p.space_before = Pt(3)
 
 def create_geosentry_deck(output_path):
     prs = Presentation()
-    # 16:9 widescreen
     prs.slide_width = Inches(13.333)
     prs.slide_height = Inches(7.5)
-    blank_layout = prs.slide_layouts[6] # completely blank layout
-
-    # Palette
-    BG_COLOR = RGBColor(11, 15, 25)         # Deep Navy #0B0F19
-    CARD_BG = RGBColor(21, 30, 50)          # Card navy #151E32
-    CARD_BORDER = RGBColor(42, 59, 92)      # #2A3B5C
-    TEXT_WHITE = RGBColor(255, 255, 255)
-    TEXT_MUTED = RGBColor(148, 163, 184)    # #94A3B8
-    CYAN_ACCENT = RGBColor(14, 165, 233)    # #0EA5E9
-    ORANGE_ACCENT = RGBColor(249, 115, 22)  # #F97316
-    GREEN_ACCENT = RGBColor(16, 185, 129)   # #10B981
-    RED_ACCENT = RGBColor(239, 68, 68)      # #EF4444
-
-    def add_slide_background(slide):
-        bg = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, prs.slide_width, prs.slide_height)
-        bg.fill.solid()
-        bg.fill.fore_color.rgb = BG_COLOR
-        bg.line.fill.background()
-        return bg
-
-    def add_header(slide, title_text, category_text="GEOSENTRY (TERRAWATCH) • SOFTWARE ENGINEERING CAPSTONE"):
-        # Category badge
-        cat_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.4), Inches(11.5), Inches(0.4))
-        tf = cat_box.text_frame
-        tf.word_wrap = True
-        tf.margin_top = tf.margin_bottom = tf.margin_left = tf.margin_right = 0
-        p = tf.paragraphs[0]
-        p.text = category_text.upper()
-        p.font.size = Pt(10)
-        p.font.bold = True
-        p.font.color.rgb = CYAN_ACCENT
-
-        # Title
-        title_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.7), Inches(11.5), Inches(0.7))
-        tf = title_box.text_frame
-        tf.word_wrap = True
-        tf.margin_top = tf.margin_bottom = tf.margin_left = tf.margin_right = 0
-        p = tf.paragraphs[0]
-        p.text = title_text
-        p.font.size = Pt(22)
-        p.font.bold = True
-        p.font.color.rgb = TEXT_WHITE
-
-    def add_card(slide, left, top, width, height, title, body_bullets, accent_color=CYAN_ACCENT, subtitle=None):
-        card = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, top, width, height)
-        card.fill.solid()
-        card.fill.fore_color.rgb = CARD_BG
-        card.line.color.rgb = CARD_BORDER
-        card.line.width = Pt(1.2)
-
-        # Card content
-        tb = slide.shapes.add_textbox(left + Inches(0.2), top + Inches(0.2), width - Inches(0.4), height - Inches(0.4))
-        tf = tb.text_frame
-        tf.word_wrap = True
-        tf.margin_top = tf.margin_bottom = tf.margin_left = tf.margin_right = 0
-
-        # Title
-        p_title = tf.paragraphs[0]
-        p_title.text = title
-        p_title.font.size = Pt(14)
-        p_title.font.bold = True
-        p_title.font.color.rgb = accent_color
-
-        if subtitle:
-            p_sub = tf.add_paragraph()
-            p_sub.text = subtitle
-            p_sub.font.size = Pt(10)
-            p_sub.font.italic = True
-            p_sub.font.color.rgb = TEXT_MUTED
-            p_sub.space_after = Pt(6)
-
-        for b in body_bullets:
-            p_b = tf.add_paragraph()
-            p_b.text = f"•  {b}"
-            p_b.font.size = Pt(10.5)
-            p_b.font.color.rgb = TEXT_WHITE
-            p_b.space_after = Pt(4)
+    blank_layout = prs.slide_layouts[6]
 
     # -------------------------------------------------------------------------
-    # SLIDE 1: COVER
+    # SLIDE 1: TITLE SLIDE
     # -------------------------------------------------------------------------
     s1 = prs.slides.add_slide(blank_layout)
     add_slide_background(s1)
 
-    # Hero Badge
-    badge = s1.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.1), Inches(4.5), Inches(0.45))
-    badge.fill.solid()
-    badge.fill.fore_color.rgb = RGBColor(14, 45, 75)
-    badge.line.color.rgb = CYAN_ACCENT
-    badge.line.width = Pt(1)
-    tf = badge.text_frame
-    p = tf.paragraphs[0]
-    p.text = "🛰️ SOFTWARE ENGINEERING CAPSTONE PROJECT"
-    p.font.size = Pt(10)
-    p.font.bold = True
-    p.font.color.rgb = CYAN_ACCENT
-    p.alignment = PP_ALIGN.CENTER
-
-    # Main Title
-    tb = s1.shapes.add_textbox(Inches(0.8), Inches(1.7), Inches(11.5), Inches(1.8))
+    tb = s1.shapes.add_textbox(Inches(0.8), Inches(1.2), Inches(11.7), Inches(2.8))
     tf = tb.text_frame
     tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = "GEOSENTRY (TERRAWATCH)"
-    p.font.size = Pt(36)
-    p.font.bold = True
-    p.font.color.rgb = TEXT_WHITE
+
+    p0 = tf.paragraphs[0]
+    p0.text = "ĐỒ ÁN TỐT NGHIỆP KỸ SƯ PHẦN MỀM (CAPSTONE PROJECT)"
+    p0.font.size = Pt(13)
+    p0.font.bold = True
+    p0.font.color.rgb = ORANGE_ACCENT
+
+    p1 = tf.add_paragraph()
+    p1.text = "GEOSENTRY (TERRAWATCH)"
+    p1.font.size = Pt(44)
+    p1.font.bold = True
+    p1.font.color.rgb = TEXT_WHITE
+    p1.space_before = Pt(6)
 
     p2 = tf.add_paragraph()
-    p2.text = "Hệ Thống Viễn Thám, Trí Tuệ Nhân Tạo & Mô Hình 3D\nCảnh Báo Sớm và Hỗ Trợ Điều Phối Cứu Hộ Sạt Lở Đất Miền Núi"
+    p2.text = "Hệ Thống Viễn Thám & Trí Tuệ Nhân Tạo Cảnh Báo Sớm Sạt Lở Đất Miền Núi"
     p2.font.size = Pt(18)
     p2.font.color.rgb = CYAN_ACCENT
     p2.space_before = Pt(8)
@@ -140,11 +138,11 @@ def create_geosentry_deck(output_path):
     p_h.font.color.rgb = ORANGE_ACCENT
 
     members = [
-        "1. Duẫn — AI / Computer Vision Engineer (Model DeepLabV3+ ONNX, Tensor 8 kênh, AI Rescue Route)",
+        "1. Duẫn — AI / Computer Vision Engineer (Model DeepLabV3+ ONNX, Tensor 8 kênh, Xếp hạng mức nguy cơ)",
         "2. Tú — GIS Pipeline & Data Engineer (Sentinel-2 Crawl, Cloud Masking, NDVI, DEM Slope, PostGIS)",
-        "3. Thuận — Backend Engineer & System Architect (Spring Boot 3, JWT 4 Roles, Redis Bus, Gateway)",
-        "4. Huy — Frontend WebGIS Engineer (React 18 / Next.js, Mapbox 3D Terrain, 3D Rescue Map, Time-slider)",
-        "5. Lâm — Mobile App Engineer (Flutter 3.x, SQLite Offline 10,000 đa giác, Geofencing Hú Còi, 1-Tap SOS)"
+        "3. Thuận — Backend Engineer & System Architect (Spring Boot 3, JWT 3 Roles, Phát cảnh báo SMS/Push, Gateway)",
+        "4. Huy — Frontend WebGIS Engineer (React 18 + Vite, Mapbox 3D Terrain, Hàng đợi duyệt, Nút Cảnh báo Admin)",
+        "5. Lâm — Mobile App Engineer (Flutter 3.x, SQLite Offline 10,000 đa giác, Geofencing Hú Còi, Nhận cảnh báo Push/SMS)"
     ]
     for m in members:
         p_m = tf_team.add_paragraph()
@@ -158,7 +156,7 @@ def create_geosentry_deck(output_path):
     # -------------------------------------------------------------------------
     s2 = prs.slides.add_slide(blank_layout)
     add_slide_background(s2)
-    add_header(s2, "TÍNH CẤP THIẾT & 4 ĐIỂM NGHẼN TRONG CỨU HỘ SẠT LỞ")
+    add_header(s2, "TÍNH CẤP THIẾT & 4 ĐIỂM NGHẼN TRONG CẢNH BÁO SẠT LỞ")
 
     card_w = Inches(2.7)
     card_h = Inches(4.8)
@@ -167,37 +165,37 @@ def create_geosentry_deck(output_path):
     add_card(s2, Inches(0.8), top_pos, card_w, card_h, "1. Phát Hiện Chậm Trễ", [
         "Sạt lở xảy ra bất ngờ sau mưa dầm kéo dài tại vùng núi hiểm trở.",
         "Điển hình: Vụ sạt lở Làng Nủ (Lào Cai) sau bão Yagi 2024.",
-        "Hiện tại chỉ phát hiện khi thảm họa đã ập xuống hoặc có người sống sót chạy bộ về báo xã.",
-        "Thiếu cơ chế cảnh báo vĩ mô tự động trên diện rộng."
+        "Hiện tại chỉ phát hiện khi thảm họa đã ập xuống hoặc có người dân chạy bộ về báo.",
+        "Thiếu cơ chế quan trắc diện rộng tự động liên tục."
     ], RED_ACCENT, "Phụ thuộc báo tin thủ công")
 
-    add_card(s2, Inches(3.8), top_pos, card_w, card_h, "2. Mất Sóng Viễn Thông", [
-        "Mưa bão quật đổ cột BTS, sạt đường đứt cáp quang.",
+    add_card(s2, Inches(3.8), top_pos, card_w, card_h, "2. Mất Sóng Khi Mưa Bão", [
+        "Mưa bão quật đổ cột BTS, sạt đường đứt cáp viễn thông.",
         "Các bản làng bị cô lập mất sạch 100% sóng 4G/Internet.",
-        "Người dân không thể nhận tin nhắn SMS hay thông báo đẩy online.",
-        "Ứng dụng cảnh báo thông thường trở nên vô dụng khi mất mạng."
-    ], ORANGE_ACCENT, "Cô lập hoàn toàn kết nối")
+        "Người dân không thể nhận tin tức qua mạng khi di chuyển qua vùng nguy hiểm.",
+        "Ứng dụng thông thường hoàn toàn tê liệt khi không có Internet."
+    ], ORANGE_ACCENT, "Mất kết nối hoàn toàn")
 
     add_card(s2, Inches(6.8), top_pos, card_w, card_h, "3. Bản Đồ 2D Thiếu Trực Quan", [
         "Bản đồ 2D phẳng không thể hiện được độ dốc sườn núi hiểm trở.",
         "Không quan sát được vết trượt bùn đất đang lan rộng theo hướng nào.",
-        "Không định vị được không gian 3 chiều giữa vị trí nạn nhân và chướng ngại vật.",
-        "Chỉ huy cứu hộ gặp khó khăn khi đánh giá hiện trường."
+        "Cán bộ khó đánh giá tương quan giữa vách dốc và khu dân cư.",
+        "Khó đối chiếu ảnh vệ tinh trước và sau để thẩm định nguy cơ."
     ], CYAN_ACCENT, "Hạn chế của bản đồ phẳng")
 
-    add_card(s2, Inches(9.8), top_pos, card_w, card_h, "4. Đội Cứu Hộ Thiếu Lộ Trình", [
-        "Đội cứu hộ di chuyển vào vùng thiên tai thường gặp đèo sụt lún.",
-        "Không biết cung đường nào bị đất đá vùi lấp, đường nào an toàn.",
-        "Nguy cơ xe cứu nạn bị mắc kẹt hoặc gặp sạt trượt thứ cấp.",
-        "Thiếu thuật toán AI đề xuất tuyến đường né tránh vùng nguy hiểm."
-    ], GREEN_ACCENT, "Nguy cơ đe dọa người cứu hộ")
+    add_card(s2, Inches(9.8), top_pos, card_w, card_h, "4. Cảnh Báo Thiếu Kịp Thời", [
+        "Thiếu công cụ cho người có thẩm quyền chủ động phát cảnh báo khẩn cấp.",
+        "Chưa tích hợp đồng thời kênh SMS trực tiếp và Push Notification di động.",
+        "Chưa có cơ chế lọc người nhận chính xác theo khu vực chịu ảnh hưởng.",
+        "Người dân không nhận được chỉ thị sơ tán khẩn cấp trước giờ G."
+    ], GREEN_ACCENT, "Thiếu kênh cảnh báo tức thì")
 
     # -------------------------------------------------------------------------
     # SLIDE 3: THE SOLUTION
     # -------------------------------------------------------------------------
     s3 = prs.slides.add_slide(blank_layout)
     add_slide_background(s3)
-    add_header(s3, "GIẢI PHÁP GEOSENTRY: HỆ SINH THÁI CẢNH BÁO & CỨU HỘ ĐỒNG BỘ")
+    add_header(s3, "GIẢI PHÁP GEOSENTRY: HỆ SINH THÁI CẢNH BÁO SỚM SẠT LỞ ĐỒNG BỘ")
 
     card_w2 = Inches(5.6)
     card_h2 = Inches(2.3)
@@ -208,22 +206,22 @@ def create_geosentry_deck(output_path):
         "Trích xuất độ dốc sườn đồi từ ảnh số độ cao SRTM 30m DEM."
     ], CYAN_ACCENT)
 
-    add_card(s3, Inches(6.9), Inches(1.8), card_w2, card_h2, "🧠 Tầng Phân Tích AI & Đề Xuất Cứu Hộ", [
+    add_card(s3, Inches(6.9), Inches(1.8), card_w2, card_h2, "🧠 Tầng Phân Tích AI & Xếp Hạng Nguy Cơ", [
         "DeepLabV3+ ONNX nhận diện đa giác vết trượt sạt lở (F1 = 0.768).",
         "Tự động vector hóa ra chuẩn PostGIS MultiPolygon GeoJSON.",
-        "Thuật toán AI A* tính tuyến đường xe cứu hộ né tránh vùng nguy hiểm."
+        "Tự động xếp hạng nguy cơ theo độ dốc và khoảng cách khu dân cư."
     ], GREEN_ACCENT)
 
-    add_card(s3, Inches(0.8), Inches(4.5), card_w2, card_h2, "🖥️ Tầng Chỉ Huy 3D (WebGIS Command Center)", [
+    add_card(s3, Inches(0.8), Inches(4.5), card_w2, card_h2, "🖥️ Tầng Chỉ Huy & Cảnh Báo (WebGIS Command Center)", [
         "Bản đồ địa hình Mapbox 3D Terrain sườn núi sống động.",
-        "Mô hình 3D Hiện trường: Danger Zone, Victim, Hazard, Rescue Route.",
-        "Thanh trượt đối soát ảnh trước/sau và hàng đợi duyệt sạt lở 1-click."
+        "Thanh trượt đối soát ảnh trước/sau và hàng đợi duyệt sạt lở 1-click.",
+        "Nút '🚨 Phát Cảnh Báo Khẩn Cấp' cho Admin gửi SMS + App Push."
     ], ORANGE_ACCENT)
 
     add_card(s3, Inches(6.9), Inches(4.5), card_w2, card_h2, "📱 Tầng Ngoại Tuyến Hiện Trường (Mobile Citizen App)", [
         "Cơ chế Geofencing Ngoại tuyến: SQLite lưu 10,000 đa giác sạt lở.",
         "Rung chuông còi hú báo động âm lượng tối đa ngay khi mất sóng 4G.",
-        "Nút SOS khẩn cấp 1-chạm gửi GPS và Live Rescue Tracking."
+        "Đăng ký nhận cảnh báo khẩn cấp và gửi báo cáo hiện trường."
     ], RED_ACCENT)
 
     # -------------------------------------------------------------------------
@@ -250,8 +248,8 @@ def create_geosentry_deck(output_path):
 
     add_card(s4, Inches(6.8), Inches(1.8), grid_w, grid_h, "3. Core API Service", [
         "Java 17 + Spring Boot 3",
-        "Spring Security 6 + JWT RBAC",
-        "Quản lý sự cố & Audit Trail"
+        "Spring Security 6 + JWT 3 Roles",
+        "Duyệt sạt lở & Phát cảnh báo khẩn cấp"
     ], GREEN_ACCENT)
 
     add_card(s4, Inches(9.8), Inches(1.8), grid_w, grid_h, "4. AI & GIS Services", [
@@ -278,10 +276,10 @@ def create_geosentry_deck(output_path):
         "Fallback queue, Core API không sập"
     ], RED_ACCENT)
 
-    add_card(s4, Inches(9.8), Inches(4.5), grid_w, grid_h, "8. Orchestration", [
-        "Docker Compose 7 Services",
-        "Internal DNS: terrawatch-net",
-        "CI/CD GitHub Actions theo path"
+    add_card(s4, Inches(9.8), Inches(4.5), grid_w, grid_h, "8. Kênh Phát Cảnh Báo", [
+        "Firebase Cloud Messaging (FCM Push)",
+        "SMS Gateway (eSMS / SpeedSMS / Twilio)",
+        "Gửi đồng thời về App và số điện thoại"
     ], RED_ACCENT)
 
     # -------------------------------------------------------------------------
@@ -349,24 +347,24 @@ def create_geosentry_deck(output_path):
         "Hỗ trợ chế độ chạy nền tự động xử lý hàng loạt khi có ảnh vệ tinh mới."
     ], GREEN_ACCENT, "High Performance Inference")
 
-    add_card(s6, Inches(8.8), Inches(2.9), c_w, Inches(3.9), "Thuật Toán AI Rescue Route", [
-        "Thuật toán tìm đường tối ưu (A* / Dijkstra) trên đồ thị OpenStreetMap qua osmnx.",
-        "Tự động áp trọng số phạt cực lớn cho các cung đường cắt qua đa giác Danger Zone.",
-        "Đề xuất tuyến đường an toàn nhất cho xe cứu hộ tiếp cận bản làng bị cô lập.",
-        "Xuất kết quả GeoJSON LineString hiển thị trực quan lên bản đồ 3D."
-    ], ORANGE_ACCENT, "A* Obstacle Avoidance Routing")
+    add_card(s6, Inches(8.8), Inches(2.9), c_w, Inches(3.9), "Xếp Hạng Mức Nguy Cơ Sạt Lở", [
+        "Tự động tính toán điểm nguy cơ dựa trên: độ dốc trung bình, diện tích khối trượt và độ tin cậy AI.",
+        "Truy vấn không gian PostGIS ST_Distance tính khoảng cách tới khu dân cư gần nhất.",
+        "Tự động gán nhãn risk_level: low, medium, high, extreme.",
+        "Ưu tiên đẩy các điểm sạt lở có nguy cơ đe dọa khu dân cư lên đầu hàng đợi thẩm định."
+    ], ORANGE_ACCENT, "Automated Risk Scoring (FR2.3)")
 
     # -------------------------------------------------------------------------
     # SLIDE 7: THUAN (BACKEND)
     # -------------------------------------------------------------------------
     s7 = prs.slides.add_slide(blank_layout)
     add_slide_background(s7)
-    add_header(s7, "PHÂN HỆ BACKEND, SECURITY & EVENT BUS (THUẬN PHỤ TRÁCH)", "THÀNH VIÊN 3 • BACKEND ENGINEER & ARCHITECT")
+    add_header(s7, "PHÂN HỆ BACKEND, SECURITY & PHÁT CẢNH BÁO (THUẬN PHỤ TRÁCH)", "THÀNH VIÊN 3 • BACKEND ENGINEER & ARCHITECT")
 
     add_card(s7, Inches(0.8), Inches(1.8), c_w, c_h, "Core API & Bảo Mật RBAC JWT", [
         "Phát triển trên nền tảng Java 17 + Spring Boot 3 công nghiệp.",
         "Bảo mật Spring Security 6 với JWT Token phi trạng thái (Stateless).",
-        "Phân quyền RBAC 4 nhóm đối tượng: citizen, rescue_team, officer, admin.",
+        "Phân quyền RBAC 3 vai trò: citizen, officer, admin.",
         "Băm mật khẩu bằng BCrypt; endpoint /api/v1/auth/** phục vụ đăng ký, đăng nhập an toàn."
     ], CYAN_ACCENT, "Spring Boot 3 & Security 6")
 
@@ -377,41 +375,40 @@ def create_geosentry_deck(output_path):
         "Core API được bảo vệ tuyệt đối, không bao giờ bị sập lan truyền (Cascading Failures)."
     ], RED_ACCENT, "Chống sập lan truyền")
 
-    add_card(s7, Inches(8.8), Inches(1.8), c_w, c_h, "Event Bus & Audit Trail", [
-        "Message Broker Redis 7 Pub/Sub đồng bộ bất đồng bộ qua channel terrawatch:events.",
-        "Tích hợp Firebase Cloud Messaging (FCM) phát thông báo đẩy khẩn cấp.",
-        "Lưu vết kiểm toán bất biến (Audit Trail) trong bảng landslide_event_history.",
-        "Quản trị hạ tầng Docker Compose 7 container và Gateway Nginx."
-    ], GREEN_ACCENT, "Redis Pub/Sub & FCM Push")
+    add_card(s7, Inches(8.8), Inches(1.8), c_w, c_h, "Phát Cảnh Báo Khẩn Cấp & Audit", [
+        "API phát cảnh báo khẩn cấp: Gửi đồng thời qua SMS Gateway và Firebase Cloud Messaging.",
+        "Lọc người nhận theo vùng quan tâm đăng ký (alert_subscriptions) qua truy vấn PostGIS ST_DWithin.",
+        "Lưu vết kiểm toán bất biến (Audit Trail) trong bảng landslide_event_history và alert_broadcasts.",
+        "Message Broker Redis 7 Pub/Sub xử lý gửi tin nhắn bất đồng bộ theo lô."
+    ], GREEN_ACCENT, "SMS & FCM Alert Broadcast")
 
     # -------------------------------------------------------------------------
     # SLIDE 8: HUY (WEBGIS 3D)
     # -------------------------------------------------------------------------
     s8 = prs.slides.add_slide(blank_layout)
     add_slide_background(s8)
-    add_header(s8, "PHÂN HỆ WEBGIS COMMAND CENTER & MÔ HÌNH 3D (HUY PHỤ TRÁCH)", "THÀNH VIÊN 4 • FRONTEND WEBGIS ENGINEER")
+    add_header(s8, "PHÂN HỆ WEBGIS COMMAND CENTER & CẢNH BÁO (HUY PHỤ TRÁCH)", "THÀNH VIÊN 4 • FRONTEND WEBGIS ENGINEER")
 
     add_card(s8, Inches(0.8), Inches(1.8), c_w, c_h, "Mapbox GL 3D Terrain", [
-        "Phát triển bằng React 18 / Next.js kết hợp Tailwind CSS.",
+        "Phát triển bằng React 18 + Vite kết hợp Tailwind CSS.",
         "Bật lớp bản đồ địa hình 3D (Terrain 3D Elevation) trên nền WebGL.",
         "Mô phỏng chân thực độ dốc núi rừng hiểm trở các tỉnh Yên Bái, Lào Cai.",
         "Cho phép cán bộ nghiêng, xoay camera 3D 360 độ để quan sát vết nứt sườn đồi."
     ], CYAN_ACCENT, "Địa hình 3D sườn núi chân thực")
 
-    add_card(s8, Inches(4.8), Inches(1.8), c_w, c_h, "Mô Hình 3D Hiện Trường Cứu Hộ", [
-        "Trực quan hóa không gian hiện trường với 4 lớp marker trực quan:",
-        "🔴 Danger Zone: Đa giác bùn đất sạt lở 3D phủ trên mặt đất.",
-        "🟢 Victim: Điểm ghim vị trí người dân gửi SOS kêu cứu từ hiện trường.",
-        "⚠ Hazard: Các điểm sạt trượt phụ, vách đá nứt có nguy cơ lăn sập.",
-        "🚒 Rescue Route: Tuyến đường cứu hộ được AI đề xuất cho xe tiếp cận."
-    ], ORANGE_ACCENT, "3D Rescue Scene Visualization")
-
-    add_card(s8, Inches(8.8), Inches(1.8), c_w, c_h, "Thanh Trượt Đối Soát & Thẩm Định", [
-        "Tính năng Time-slider swipe: Kéo thanh trượt qua lại giữa ảnh vệ tinh trước và sau thiên tai.",
-        "Cán bộ trực ban dễ dàng đối soát sự biến mất của thảm thực vật xanh bằng mắt thường.",
-        "Hàng đợi thẩm định sạt lở bán tự động: Xem thông tin diện tích, độ dốc và duyệt 1-click.",
-        "Xuất báo cáo thống kê thiên tai chuẩn định dạng phục vụ cơ quan quản lý."
+    add_card(s8, Inches(4.8), Inches(1.8), c_w, c_h, "Đối Soát Ảnh & Thẩm Định", [
+        "Tính năng Time-slider swipe: Kéo thanh trượt đối soát ảnh vệ tinh trước và sau sạt lở.",
+        "Cán bộ trực ban dễ dàng xác minh sự biến mất của thảm thực vật bằng mắt thường.",
+        "Hàng đợi thẩm định sạt lở 1-click: Xem thông tin diện tích, độ dốc, mức nguy cơ và duyệt nhanh.",
+        "Hiển thị các điểm báo cáo hiện trường từ người dân để đối chiếu thực tế."
     ], GREEN_ACCENT, "Time-slider Swipe & 1-Click Approval")
+
+    add_card(s8, Inches(8.8), Inches(1.8), c_w, c_h, "Nút Phát Cảnh Báo Khẩn Cấp (Admin)", [
+        "Nút bấm nổi bật '🚨 Phát Cảnh Báo Khẩn Cấp' chỉ hiển thị với vai trò Admin.",
+        "Chọn phạm vi vùng nguy hiểm theo điểm sạt lở (vùng đệm bán kính) hoặc toàn vùng giám sát.",
+        "Tùy chọn kênh gửi: SMS về số điện thoại, Push Notification về ứng dụng di động, hoặc cả hai.",
+        "Xem trước số người nhận và xác nhận 2 bước an toàn chống bấm nhầm."
+    ], ORANGE_ACCENT, "Emergency Broadcast Button")
 
     # -------------------------------------------------------------------------
     # SLIDE 9: LAM (MOBILE GEOFENCING)
@@ -434,12 +431,12 @@ def create_geosentry_deck(output_path):
         "Có cơ chế bypass chế độ im lặng của điện thoại để đánh thức người dân trong đêm."
     ], RED_ACCENT, "Báo động khẩn khi mất mạng")
 
-    add_card(s9, Inches(8.8), Inches(1.8), c_w, c_h, "SOS 1-Chạm & Live Rescue Tracking", [
-        "Nút SOS khẩn cấp nổi bật: 1-chạm tự động lấy tọa độ GPS chuẩn xác và chụp ảnh hiện trường.",
-        "Tự động lưu vào hàng đợi SQLite gửi đi ngay khi có lại kết nối mạng.",
-        "Màn hình Live Rescue Tracking hiển thị tiến trình cứu nạn (Đã nhận -> Đội cứu hộ đang đến).",
-        "Hiển thị vị trí xe cứu nạn và thời gian dự kiến tiếp cận (ETA) trên bản đồ."
-    ], GREEN_ACCENT, "1-Tap SOS & Live Tracking")
+    add_card(s9, Inches(8.8), Inches(1.8), c_w, c_h, "Nhận Cảnh Báo & Báo Cáo Hiện Trường", [
+        "Nhận thông báo khẩn cấp toàn màn hình từ Admin qua Firebase Cloud Messaging (FCM).",
+        "Đăng ký vùng quan tâm và cập nhật số điện thoại nhận tin nhắn SMS cảnh báo.",
+        "Module Báo cáo hiện trường: Chụp ảnh thực địa và gửi tọa độ GPS vết nứt/trượt đất.",
+        "Lưu hàng đợi cục bộ tự động đồng bộ khi có lại kết nối mạng."
+    ], GREEN_ACCENT, "Push/SMS Alert & Field Reports")
 
     # -------------------------------------------------------------------------
     # SLIDE 10: ROADMAP & CONCLUSION
@@ -452,14 +449,14 @@ def create_geosentry_deck(output_path):
     card_h3 = Inches(2.3)
 
     add_card(s10, Inches(0.8), Inches(1.8), card_w3, card_h3, "🚀 Kế Hoạch 5 Tuần Tốc Lực (MVP)", [
-        "Tuần 1: Dựng nền tảng, PostGIS & Auth JWT 4 roles.",
-        "Tuần 2: Ingestion Sentinel-2, DEM Slope và API nhận SOS.",
-        "Tuần 3: Tích hợp mô hình ONNX thật, cắt ảnh Tiling và AI Rescue Route.",
-        "Tuần 4: Dashboard WebGIS 3D Command Center và Mobile SOS.",
+        "Tuần 1: Dựng nền tảng, PostGIS & Auth JWT 3 roles.",
+        "Tuần 2: Ingestion Sentinel-2, DEM Slope và API báo cáo hiện trường.",
+        "Tuần 3: Tích hợp mô hình ONNX thật, cắt ảnh Tiling và xếp hạng nguy cơ.",
+        "Tuần 4: Dashboard WebGIS thẩm định, Nút Cảnh Báo Khẩn Cấp Admin và Mobile FCM.",
         "Tuần 5: Thông luồng 100%, kiểm thử tải và demo kịch bản thực tế Làng Nủ."
     ], CYAN_ACCENT)
 
-    add_card(s10, Inches(6.9), Inches(1.8), card_w3, card_h3, "📦 Nâng Cấp Capstone (Tháng 3 - Tháng 6)", [
+    add_card(s10, Inches(6.9), Inches(1.8), card_w3, card_h3, "📦 Nâng Cấp Capstone (Hướng phát triển Epic 6)", [
         "Trạm IoT ESP32 quan trắc rung chấn sườn dốc (cảm biến rung & độ ẩm đất đẩy MQTT).",
         "Tích hợp ảnh Radar SAR Sentinel-1 quan sát xuyên mây trong mùa mưa bão.",
         "Tích hợp chỉ số mưa tích lũy Antecedent Rainfall Index (ARI) từ vệ tinh GPM NASA.",
@@ -483,10 +480,10 @@ def create_geosentry_deck(output_path):
     p_c1.font.color.rgb = GREEN_ACCENT
 
     points = [
-        "1. Giải quyết bài toán cấp bách mang tính nhân văn sâu sắc: Bảo vệ tính mạng đồng bào miền núi trước thiên tai sạt lở đất.",
+        "1. Giải quyết bài toán cấp bách mang tính nhân văn sâu sắc: Giám sát, phát hiện và cảnh báo sớm thiên tai sạt lở đất bảo vệ người dân.",
         "2. Hiện thực hóa kiến trúc Microservices 8 thành phần công nghiệp, kết hợp Viễn thám Sentinel-2, AI ONNX Runtime và WebGL 3D.",
-        "3. Đột phá với cơ chế Geofencing Ngoại tuyến: Đảm bảo người dân vẫn được còi hú cứu mạng ngay cả khi mất sạch 100% sóng 4G/Internet.",
-        "4. Đầy đủ điều kiện kỹ thuật, tính khoa học và tính thực tiễn để bảo vệ đạt điểm Xuất sắc (A+) trước Hội đồng Kỹ sư Phần mềm."
+        "3. Tích hợp nút Phát Cảnh Báo Khẩn Cấp cho Admin: Chủ động cảnh báo người dân qua cả SMS và thông báo đẩy ứng dụng di động.",
+        "4. Đột phá với cơ chế Geofencing Ngoại tuyến: Đảm bảo người dân vẫn được còi hú cứu mạng ngay cả khi mất sạch 100% sóng 4G/Internet."
     ]
     for pt in points:
         p_pt = tf_c.add_paragraph()

@@ -26,7 +26,7 @@ graph TD
     end
 
     subgraph Services ["4. Microservices"]
-        CoreAPI["⚙️ Core API Service (Java 17 + Spring Boot 3)<br/>Port 3000 | RBAC, Event Auditing, Spatial Repository"]
+        CoreAPI["⚙️ Core API Service (Java 17 + Spring Boot 3)<br/>Port 3000 | RBAC 3 roles, Thẩm định, Phát cảnh báo khẩn cấp, Spatial Repository"]
         AIService["🧠 AI Inference Service (Python FastAPI)<br/>Port 8001 | ONNX Runtime, DeepLabV3+, Redis Listener"]
         GISService["🗺️ GIS Data Service (Python FastAPI)<br/>Port 8002 | Sentinel Ingestion, Slope, NDVI, Tiling"]
     end
@@ -47,6 +47,11 @@ graph TD
         ConfigEnv["⚙️ Twelve-Factor App (.env, Docker Compose Profiles)"]
     end
 
+    subgraph Notify ["Kênh Phát Cảnh Báo (External)"]
+        FCM["🔔 Firebase Cloud Messaging (Push App)"]
+        SMS["✉️ SMS Gateway (eSMS.vn / SpeedSMS / Twilio)"]
+    end
+
     WebGIS -->|HTTP 8080| APIGateway
     MobileApp -->|HTTP 8080| APIGateway
 
@@ -59,6 +64,9 @@ graph TD
     CoreAPI -.->|Bọc bởi Circuit Breaker| GISService
     CoreAPI -->|Publish Events| RedisBus
     RedisBus -->|Subscribe & Async Process| AIService
+    CoreAPI -->|EMERGENCY_ALERT_BROADCAST| FCM
+    CoreAPI -->|EMERGENCY_ALERT_BROADCAST| SMS
+    FCM -->|Push| MobileApp
 
     CoreAPI <-->|core_schema| PostGIS
     GISService <-->|gis_schema| PostGIS
@@ -71,10 +79,14 @@ graph TD
 Hệ thống triển khai mô hình **Schema-per-Service** trên cùng một instance PostgreSQL 15 + PostGIS 3.3 nhằm cô lập dữ liệu nghiệp vụ nhưng vẫn tận dụng được engine tính toán hình học 0ms latency:
 
 1. **`core_schema` (Thuộc quyền sở hữu của Core API - Spring Boot 3):**
-   - `users`: Tài khoản cán bộ, phân quyền RBAC (`ADMIN`, `DISASTER_OFFICER`, `COMMUNITY_LEADER`).
-   - `landslide_events`: Điểm và đa giác sạt lở (`geometry(MultiPolygon, 4326)`), mức độ rủi ro, trạng thái thẩm định (`PENDING`, `VERIFIED`, `REJECTED`).
+   - `users`: Tài khoản người dùng, phân quyền RBAC 3 roles (`admin`, `officer`, `citizen`), số điện thoại nhận SMS.
+   - `landslide_events`: Điểm và đa giác sạt lở (`geometry(MultiPolygon, 4326)`), mức độ rủi ro, trạng thái thẩm định (`pending`, `verified`, `rejected`, `false_alarm`).
    - `landslide_event_history`: Bảng vết kiểm toán (Audit Trail) ghi lại lịch sử thay đổi trạng thái và người phê duyệt.
-   - `community_reports`: Phản ánh sạt lở từ người dân ngoài hiện trường kèm tọa độ GPS và URL ảnh.
+   - `community_reports`: Báo cáo dấu hiệu sạt lở từ người dân ngoài hiện trường kèm tọa độ GPS và URL ảnh.
+   - `alert_subscriptions`: Vùng quan tâm người dân đăng ký nhận cảnh báo (UC07).
+   - `device_tokens`: FCM token của thiết bị di động để gửi Push.
+   - `alert_broadcasts`: Các lần Admin phát cảnh báo khẩn cấp (phạm vi, nội dung, kênh, người gửi).
+   - `alert_deliveries`: Kết quả gửi tới từng người nhận theo kênh (`sent` / `failed`).
    - `v_active_landslide_zones`: View không gian tối ưu cho WebGIS và Mobile tải về.
 
 2. **`gis_schema` (Thuộc quyền sở hữu của GIS Data Service - Python FastAPI):**
@@ -98,7 +110,7 @@ Hệ thống triển khai mô hình **Schema-per-Service** trên cùng một ins
      ```json
      {
        "eventId": "uuid-v4",
-       "eventType": "LANDSLIDE_DETECTED | LANDSLIDE_VERIFIED | SATELLITE_INGESTED",
+       "eventType": "LANDSLIDE_DETECTED | LANDSLIDE_VERIFIED | SATELLITE_INGESTED | COMMUNITY_REPORT_SUBMITTED | EMERGENCY_ALERT_BROADCAST",
        "timestamp": "2026-10-02T14:00:00Z",
        "payload": { ... }
      }
@@ -110,7 +122,7 @@ Hệ thống triển khai mô hình **Schema-per-Service** trên cùng một ins
 
 | Route Pattern | Target Upstream | Chức năng |
 | :--- | :--- | :--- |
-| `/api/v1/core/*` | `http://core-api:3000` | Quản trị, thẩm định, người dùng, báo cáo |
+| `/api/v1/core/*` | `http://core-api:3000` | Quản trị, thẩm định, người dùng, báo cáo hiện trường, phát cảnh báo khẩn cấp (`/alerts/*`) |
 | `/api/v1/ai/*` | `http://ai-service:8001` | Trực tiếp suy luận AI hoặc kiểm tra model |
 | `/api/v1/gis/*` | `http://gis-service:8002` | Kéo dữ liệu vệ tinh, cắt tile, query DEM |
 | `/tiles/*` | `http://gis-service:8002` | Vector/Raster Tiles cho WebGIS |

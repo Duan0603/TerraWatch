@@ -1,5 +1,5 @@
 # BỘ SLIDE THUYẾT TRÌNH ĐỒ ÁN TỐT NGHIỆP KỸ SƯ PHẦN MỀM
-## Đề tài: GEOSENTRY (TERRAWATCH) — HỆ THỐNG VIỄN THÁM, AI & MÔ HÌNH 3D CẢNH BÁO & HỖ TRỢ CỨU HỘ SẠT LỞ ĐẤT
+## Đề tài: GEOSENTRY (TERRAWATCH) — HỆ THỐNG VIỄN THÁM & AI CẢNH BÁO SỚM SẠT LỞ ĐẤT
 **File PowerPoint đã xuất sẵn:** [`docs/GeoSentry_Capstone_Presentation.pptx`](file:///d:/SECapstone/docs/GeoSentry_Capstone_Presentation.pptx)  
 **Nhóm sinh viên thực hiện:**
 - **Thành viên 1:** Duẫn — AI / Computer Vision Engineer
@@ -12,7 +12,7 @@
 
 ### SLIDE 1: TRANG TIÊU ĐỀ (TITLE SLIDE)
 * **Tiêu đề chính:** GEOSENTRY (TERRAWATCH)
-* **Tiêu đề phụ:** Hệ Thống Phần Mềm, Trí Tuệ Nhân Tạo & Mô Hình 3D Cảnh Báo Sớm và Hỗ Trợ Điều Phối Cứu Hộ Sạt Lở Đất Miền Núi
+* **Tiêu đề phụ:** Hệ Thống Viễn Thám & Trí Tuệ Nhân Tạo Cảnh Báo Sớm Sạt Lở Đất Miền Núi
 * **Chuyên ngành:** Kỹ thuật Phần mềm (Software Engineering Capstone Project)
 * **Đội ngũ thực hiện:** Duẫn, Tú, Thuận, Huy, Lâm
 
@@ -20,20 +20,20 @@
 
 ### SLIDE 2: TÍNH CẤP THIẾT & ĐẶT VẤN ĐỀ (PROBLEM STATEMENT)
 * **Thực trạng đau xót:** Miền núi phía Bắc (Lào Cai, Yên Bái, Hà Giang) chịu thiệt hại nặng nề sau các đợt mưa bão kéo dài (điển hình: vụ sạt lở Làng Nủ - Lào Cai sau bão Yagi 2024).
-* **4 Điểm nghẽn lớn trong cứu hộ hiện nay:**
-  1. *Phát hiện chậm trễ:* Chỉ biết khi thảm họa đã xảy ra hoặc có người sống sót chạy về báo.
-  2. *Mất liên lạc hoàn toàn:* Mưa bão quật đổ cột sóng viễn thông, người dân và đội cứu hộ mất sạch 4G/Internet.
-  3. *Thiếu thông tin địa hình:* Bản đồ 2D phẳng không thể hiện được độ dốc, vách núi đứng, và các điểm sạt lở thứ cấp.
-  4. *Đội cứu hộ gặp nguy hiểm:* Xe cứu nạn di chuyển vào các cung đường đèo đã bị sụt lún taluy âm mà không hề hay biết.
+* **4 Điểm nghẽn lớn trong công tác cảnh báo hiện nay:**
+  1. *Phát hiện chậm trễ:* Chỉ biết khi thảm họa đã xảy ra hoặc có người dân chạy về báo; không có phương tiện giám sát diện rộng tự động.
+  2. *Mất liên lạc khi có bão:* Mưa bão quật đổ cột viễn thông, người dân mất sóng 4G/Internet, không nhận được thông báo qua các kênh thông thường.
+  3. *Thiếu trực quan địa hình:* Cán bộ quản lý thiếu công cụ 3D và so sánh ảnh viễn thám trước/sau để xác minh nhanh điểm có nguy cơ sạt lở.
+  4. *Cảnh báo chưa kịp thời:* Thiếu công cụ cho người có thẩm quyền chủ động phát cảnh báo khẩn cấp đồng thời qua SMS và App tới người dân trong vùng ảnh hưởng.
 
 ---
 
 ### SLIDE 3: GIẢI PHÁP ĐỀ XUẤT: HỆ SINH THÁI GEOSENTRY
-* **Mô hình tiếp cận 4 tầng toàn diện:**
-  1. **Tầng Vĩ mô (Vệ tinh Sentinel-2 & DEM 30m):** Quét diện rộng không cần đặt thiết bị tại hiện trường, tự động lọc mây và tính chỉ số suy giảm thảm phủ $\Delta\text{NDVI}$.
-  2. **Tầng Phân tích AI (DeepLabV3+ ONNX):** Phân đoạn vết trượt sạt lở và tính toán tuyến đường cứu hộ an toàn (Rescue Route).
-  3. **Tầng Trực quan hóa 3D (WebGIS 3D Command Center):** Mô phỏng sườn núi 3D thể hiện 4 lớp: 🔴 Danger Zone, 🟢 Victim, ⚠ Hazard, 🚒 Rescue Route.
-  4. **Tầng Hiện trường Ngoại tuyến (Mobile Offline Geofencing):** Rung chuông còi hú cứu người dân ngay cả khi mất sóng điện thoại; Nút SOS 1-chạm gửi GPS.
+* **Mô hình tiếp cận 4 tầng toàn diện (100% chuyên sâu cảnh báo sạt lở):**
+  1. **Tầng Vĩ mô (Vệ tinh Sentinel-2 & DEM 30m):** Quét diện rộng không cần đặt thiết bị tại hiện trường, tự động lọc mây và tính chỉ số suy giảm thảm phủ $\Delta\text{NDVI}$ và độ dốc sườn núi.
+  2. **Tầng Phân tích AI & Xếp hạng Nguy cơ (DeepLabV3+ ONNX):** Phân đoạn vết trượt sạt lở và tự động xếp hạng mức độ nguy cơ dựa trên độ dốc và khoảng cách tới khu dân cư.
+  3. **Tầng Trung tâm Điều hành WebGIS (Command Center):** Bản đồ 3D Terrain, thanh trượt so sánh ảnh trước/sau, hàng đợi duyệt sạt lở 1-click và **nút phát cảnh báo khẩn cấp cho Admin**.
+  4. **Tầng Hiện trường Ngoại tuyến (Mobile Offline Geofencing):** Rung chuông còi hú âm lượng tối đa cứu người dân khi vào vùng nguy cơ ngay cả khi mất sóng 4G/Internet; hỗ trợ gửi báo cáo hiện trường.
 
 ---
 
@@ -49,6 +49,7 @@
 * **6. Message Broker & Event Bus:** Redis 7 Pub/Sub (`terrawatch:events`).
 * **7. Configuration Management:** Twelve-Factor App (`.env`).
 * **8. Fault Tolerance & Resilience:** Resilience4j Circuit Breaker chống sập lan truyền.
+* **Kênh phát cảnh báo tích hợp:** Firebase Cloud Messaging (FCM Push) + SMS Gateway.
 
 ---
 
@@ -72,53 +73,59 @@
   - Độ chính xác vượt trội: $F_1 = 0.768$, $\text{IoU} = 0.642$.
 * **Đóng gói suy luận hiệu năng cao:**
   - Tối ưu hóa qua ONNX Runtime, tốc độ suy luận $< 300\text{ ms}$/patch trên CPU.
-* **Thuật toán AI Gợi ý Tuyến đường Cứu hộ (Rescue Route Engine):**
-  - Thuật toán A* trên đồ thị OpenStreetMap, tự động tránh cung đường cắt qua 🔴 Danger Zone.
+* **Thuật toán Xếp hạng Mức độ Nguy cơ (Risk Scoring):**
+  - Tự động đánh giá theo độ dốc trung bình, diện tích, độ tin cậy và khoảng cách đến khu dân cư gần nhất (`low`, `medium`, `high`, `extreme`).
 
 ---
 
-### SLIDE 7: PHÂN HỆ BACKEND, SECURITY & ĐIỀU PHỐI (THUẬN PHỤ TRÁCH)
+### SLIDE 7: PHÂN HỆ BACKEND, SECURITY & PHÁT CẢNH BÁO (THUẬN PHỤ TRÁCH)
 * **Core API Spring Boot 3 vững chắc:**
-  - Bảo mật Spring Security 6 & JWT, hỗ trợ phân quyền 4 nhóm đối tượng: `citizen`, `rescue_team`, `officer`, `admin`.
+  - Bảo mật Spring Security 6 & JWT, hỗ trợ phân quyền 3 vai trò: `citizen`, `officer`, `admin`.
   - Thiết kế CSDL không gian Schema-per-Service trên PostgreSQL 15 + PostGIS 3.3.
 * **Độ bền vững & Chịu lỗi cao (Resilience):**
   - Cơ chế Circuit Breaker với Resilience4j: Tự động ngắt mạch khi AI/GIS service quá tải và kích hoạt Fallback lưu hàng đợi ngầm.
-* **Luồng xử lý hướng sự kiện (Event-Driven):**
+* **Luồng xử lý hướng sự kiện & Kênh phát cảnh báo:**
   - Redis Pub/Sub đồng bộ bất đồng bộ tức thời giữa Spring Boot và FastAPI.
-  - Tích hợp thông báo khẩn cấp Firebase Cloud Messaging (FCM) và ghi vết kiểm toán (Audit Trail) bất biến.
+  - **Hạ tầng phát cảnh báo khẩn cấp:** Tích hợp Firebase Cloud Messaging (FCM Push) và SMS Gateway gửi tin nhắn trực tiếp về SĐT người dân.
+  - Ghi vết kiểm toán (Audit Trail) bất biến cho mọi lần phê duyệt và phát cảnh báo.
 
 ---
 
-### SLIDE 8: PHÂN HỆ WEBGIS COMMAND CENTER & MÔ HÌNH 3D (HUY PHỤ TRÁCH)
-* **Trung tâm chỉ huy trực quan trên nền Web:**
-  - Xây dựng bằng React 18 / Next.js + Tailwind CSS.
+### SLIDE 8: PHÂN HỆ WEBGIS COMMAND CENTER & CẢNH BÁO KHẨN CẤP (HUY PHỤ TRÁCH)
+* **Trung tâm điều hành trực quan trên nền Web:**
+  - Xây dựng bằng React 18 + Vite.
   - Bản đồ địa hình số 3D (Mapbox GL 3D Terrain) hiển thị chi tiết độ dốc núi rừng Tây Bắc.
 * **Tính năng chuyên sâu phục vụ cán bộ:**
-  - Thanh trượt so sánh ảnh viễn thám đa thời gian (Time-slider swipe) đối soát trực quan thảm thực vật trước và sau sạt lở.
-  - Hàng đợi thẩm định sạt lở bán tự động (One-click Approval).
-  - **Mô hình 3D Hiện trường Cứu hộ:** Thể hiện trực quan 🔴 Danger Zone, 🟢 Victim, ⚠ Hazard, 🚒 Rescue Route.
+  - Thanh trượt so sánh ảnh viễn thám đa thời gian (Time-slider swipe) đối soát trực quan trước và sau sạt lở.
+  - Hàng đợi thẩm định sạt lở 1-click (One-click Approval).
+  - Bản đồ vùng nguy cơ 3D tô màu theo cấp độ rủi ro và các điểm báo cáo hiện trường của người dân.
+* **Nút "🚨 Phát Cảnh Báo Khẩn Cấp" dành riêng cho Admin:**
+  - Chọn phạm vi vùng nguy hiểm, lựa chọn kênh gửi (SMS / App Push / cả hai), xem trước số người nhận và xác nhận 2 bước an toàn.
 
 ---
 
 ### SLIDE 9: PHÂN HỆ MOBILE CITIZEN APP & GEOFENCING NGOẠI TUYẾN (LÂM PHỤ TRÁCH)
 * **Ứng dụng di động Flutter 3.x đa nền tảng:**
-  - Giao diện thân thiện cho đồng bào miền núi và lực lượng cứu hộ.
+  - Giao diện thân thiện cho đồng bào miền núi.
 * **Cơ chế Geofencing Ngoại tuyến đột phá (Offline-First):**
   - Lưu sẵn $\ge 10,000$ đa giác vùng sạt lở vào CSDL SQLite nội bộ trên máy.
-  - Chạy ngầm dịch vụ GPS nền (Background Geolocation), liên tục tính khoảng cách Haversine và thuật toán Ray-Casting.
+  - Chạy ngầm dịch vụ GPS nền (Background Geolocation), liên tục tính khoảng cách Haversine và thuật toán Ray-Casting cục bộ (bảo mật tuyệt đối, NFR5).
   - **Rung chuông còi hú báo động âm lượng tối đa** ngay khi bước vào vùng nguy cơ kể cả khi mất sạch sóng 4G/WiFi.
-* **Nút bấm SOS khẩn cấp 1-chạm:** Tự động lấy tọa độ GPS chính xác và chụp ảnh hiện trường gửi về sở chỉ huy.
+* **Đăng ký nhận cảnh báo & Báo cáo hiện trường:**
+  - Nhận thông báo khẩn cấp toàn màn hình qua FCM Push và SMS từ Admin.
+  - Gửi hình ảnh và tọa độ GPS phản ánh dấu hiệu sạt trượt đất thực địa (Crowdsourcing).
 
 ---
 
-### SLIDE 10: KẾ HOẠCH TRIỂN KHAI, DEMO THỰC ĐỊA & KẾT LUẬN
-* **Tiến độ 5 tuần tăng tốc MVP:**
-  - Tuần 1: Dựng nền tảng, CSDL PostGIS và Auth JWT.
-  - Tuần 2: Ingestion Sentinel-2, DEM Slope và API nhận SOS.
-  - Tuần 3: Tích hợp mô hình ONNX thật, cắt ảnh Tiling và AI Rescue Route.
-  - Tuần 4: Dashboard WebGIS 3D Command Center và Mobile SOS.
+### SLIDE 10: KẾ HOẠCH TRIỂN KHAI, HƯỚNG PHÁT TRIỂN & KẾT LUẬN
+* **Tiến độ 5 tuần tăng tốc MVP (100% cảnh báo sạt lở):**
+  - Tuần 1: Dựng nền tảng, CSDL PostGIS và Auth JWT 3 roles.
+  - Tuần 2: Ingestion Sentinel-2, DEM Slope và API báo cáo hiện trường.
+  - Tuần 3: Tích hợp mô hình ONNX thật, cắt ảnh Tiling và thuật toán xếp hạng nguy cơ.
+  - Tuần 4: WebGIS thẩm định, Nút Phát Cảnh Báo Khẩn Cấp Admin (SMS/Push) và Mobile FCM.
   - Tuần 5: Thông luồng 100%, kiểm thử chịu tải và demo kịch bản thực tế Làng Nủ - Lào Cai.
-* **Giai đoạn nâng cấp Capstone (Tháng 3 - Tháng 6):**
+* **Hướng phát triển nâng cấp Capstone (Epic 6):**
   - Trạm IoT ESP32 quan trắc rung chấn sườn dốc đẩy MQTT.
   - Tích hợp ảnh Radar SAR Sentinel-1 xuyên mây mùa mưa bão.
-* **Kết luận:** GeoSentry là giải pháp công nghệ toàn diện, mang tính nhân văn sâu sắc và sẵn sàng ứng dụng thực tế bảo vệ sinh mạng nhân dân trước thiên tai sạt lở đất.
+  - Tích hợp chỉ số mưa tích lũy Antecedent Rainfall Index (ARI) từ vệ tinh GPM NASA.
+* **Kết luận:** GeoSentry là giải pháp công nghệ toàn diện, tập trung giải quyết bài toán cảnh báo sớm sạt lở đất, mang tính nhân văn sâu sắc và sẵn sàng ứng dụng thực tế bảo vệ tính mạng nhân dân.

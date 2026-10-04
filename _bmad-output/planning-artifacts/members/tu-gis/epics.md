@@ -1,7 +1,7 @@
 # Kế Hoạch Epics & Stories Chi Tiết — Thành Viên 2: TÚ
 ## Vai trò: GIS Pipeline & Data Engineer
 **Phân hệ đảm nhiệm:** `services/gis-service/` & `database/`  
-**Dự án:** GeoSentry (TerraWatch) - Hệ Thống Viễn Thám, AI & Mô Hình 3D Cảnh Báo & Hỗ Trợ Cứu Hộ Sạt Lở Đất  
+**Dự án:** GeoSentry (TerraWatch) - Hệ Thống Viễn Thám & AI Cảnh Báo Sớm Sạt Lở Đất  
 
 ---
 
@@ -12,6 +12,7 @@
 - Module Tiling băm lưới AOI thành các patch $128 \times 128$ pixel.
 - Thuật toán chuyển đổi kết quả mask sang vector polygon (Raster-to-Vector) WGS84 EPSG:4326.
 - Quản trị CSDL không gian PostgreSQL 15 + PostGIS 3.3 (`gis_schema`) & Tile server phục vụ MVT cho WebGIS.
+- Chuẩn bị lớp dữ liệu khu dân cư (OSM buildings / places) phục vụ xếp hạng mức nguy cơ (Story 3.4) và truy vấn không gian xác định người nhận cảnh báo theo vùng (Story 4.4).
 
 ---
 
@@ -72,3 +73,5 @@ So that patches match the input dimensions required by deep learning segmentatio
 - **Nhận từ Duẫn (AI):** Mặt nạ nhị phân (Binary Mask) để Tú chạy thuật toán Raster-to-Vector thành đa giác GeoJSON.
 - **Bàn giao cho Thuận (Backend):** Siêu dữ liệu cảnh vệ tinh và các đa giác vùng giám sát AOI lưu trong `gis_schema`.
 - **Bàn giao cho Huy (WebGIS):** Cung cấp tile bản đồ vệ tinh và vector tiles qua endpoint `/tiles/{z}/{x}/{y}.pbf`.
+- **Bàn giao cho Duẫn (AI):** Lớp khu dân cư để tính khoảng cách trong thuật toán xếp hạng mức nguy cơ.
+- **Bàn giao cho Thuận (Backend):** Truy vấn PostGIS (`ST_DWithin` / `ST_Intersects`) lấy danh sách `alert_subscriptions` nằm trong vùng đệm sự cố / AOI khi Admin phát cảnh báo khẩn cấp.
