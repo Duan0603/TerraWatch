@@ -1,48 +1,38 @@
-import 'dart:math';
+import '../core/utils/geo_math.dart';
+import '../core/storage/local_storage.dart';
+import 'notification_service.dart';
 
 /// Service tính toán Geofencing ngoại tuyến (NFR2 & UC08)
 /// Chạy hoàn toàn cục bộ trên điện thoại không cần 4G/Internet
 class OfflineGeofencingService {
-  static const double earthRadiusMeters = 6371000.0;
+  /// Kiểm tra xem vị trí hiện tại có lọt vào vùng sạt lở nguy hiểm nào không
+  static Future<bool> checkCurrentLocationHazard(double lat, double lon) async {
+    final db = await LocalStorage.database;
 
-  /// Haversine Distance (Khoảng cách giữa vị trí GPS hiện tại và tâm sạt lở)
-  static double calculateDistanceMeters(
-      double lat1, double lon1, double lat2, double lon2) {
-    final dLat = _toRadians(lat2 - lat1);
-    final dLon = _toRadians(lon2 - lon1);
+    // Lọc nhanh trong SQLite theo bounding box bán kính khoảng 500m (~ 0.005 độ)
+    const delta = 0.005;
+    final candidates = await db.query(
+      'hazard_polygons',
+      where: 'centroid_lat BETWEEN ? AND ? AND centroid_lon BETWEEN ? AND ?',
+      whereArgs: [lat - delta, lat + delta, lon - delta, lon + delta],
+    );
 
-    final a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(_toRadians(lat1)) *
-            cos(_toRadians(lat2)) *
-            sin(dLon / 2) *
-            sin(dLon / 2);
-    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    for (final row in candidates) {
+      final cLat = row['centroid_lat'] as double?;
+      final cLon = row['centroid_lon'] as double?;
+      if (cLat == null || cLon == null) continue;
 
-    return earthRadiusMeters * c;
-  }
-
-  /// Thuật toán Point-in-Polygon (Ray Casting)
-  /// Kiểm tra xem điểm GPS hiện tại có nằm trong vùng đa giác sạt lở hay không
-  static bool isPointInPolygon(
-      double pointLat, double pointLon, List<List<double>> polygonCoords) {
-    bool inside = false;
-    int j = polygonCoords.length - 1;
-
-    for (int i = 0; i < polygonCoords.length; i++) {
-      final xi = polygonCoords[i][0]; // lon
-      final yi = polygonCoords[i][1]; // lat
-      final xj = polygonCoords[j][0];
-      final yj = polygonCoords[j][1];
-
-      final intersect = ((yi > pointLat) != (yj > pointLat)) &&
-          (pointLon < (xj - xi) * (pointLat - yi) / (yj - yi) + xi);
-
-      if (intersect) inside = !inside;
-      j = i;
+      final distance = GeoMath.calculateDistanceMeters(lat, lon, cLat, cLon);
+      if (distance <= 500.0) {
+        // Kích hoạt còi hú & thông báo khẩn cấp
+        await NotificationService.showEmergencyAlert(
+          title: '🚨 NGUY HIỂM: BẠN ĐANG Ở VÙNG SẠT LỞ ĐẤT!',
+          body: 'Khoảng cách đến tâm sạt lở: ${distance.toStringAsFixed(0)}m. Yêu cầu sơ tán ngay lập tức!',
+        );
+        return true;
+      }
     }
 
-    return inside;
+    return false;
   }
-
-  static double _toRadians(double degree) => degree * pi / 180.0;
 }
