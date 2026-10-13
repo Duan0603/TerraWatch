@@ -43,7 +43,7 @@ development_status:
 
   epic-4: backlog
   4-1-redis-pub-sub-event-bus-resilience4j-circuit-breaker: backlog
-  4-2-webgis-verification-queue-one-click-landslide-approval: backlog
+  4-2-webgis-verification-queue-one-click-landslide-approval: review
   4-3-3d-terrain-hazard-map-before-after-time-slider: backlog
   4-4-admin-emergency-alert-broadcast-sms-app-push-notification: backlog
   epic-4-retrospective: optional
