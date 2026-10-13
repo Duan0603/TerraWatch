@@ -1,129 +1,99 @@
-# System Architecture Document (SAD)
-## Project: GeoSentry (TerraWatch) Microservices Architecture
+# Architecture — GeoSentry rainfall and terrain forecasting
 
-**Version:** 1.0.0  
-**Date:** 2026-10-02  
-**Architect:** Winston (System Architect)  
-**Standard:** C4 Model & 8 Core Microservices Principles
+**Version:** 2.0.0 | **Updated:** 2026-10-13 | **State:** target, not yet implemented.
+[PRD](prd.md) defines the agreed next-24-hour prediction task.
 
----
+## 1. Components and flow
 
-### 1. Kiến Trúc Tổng Thể: 8 Thành Phần Cốt Lõi
+Retain Java 17/Spring Boot Core API, two Python/FastAPI services, React WebGIS, Flutter mobile, PostgreSQL/PostGIS, Redis and Nginx. No new microservice is required for the pivot.
 
 ```mermaid
-graph TD
-    subgraph Clients ["1. Clients"]
-        WebGIS["🖥️ WebGIS Command Center (React 18 + Mapbox GL)"]
-        MobileApp["📱 Citizen Mobile App (Flutter + SQLite Offline)"]
-    end
-
-    subgraph GatewayLayer ["2. API Gateway"]
-        APIGateway["🚪 Nginx Reverse Proxy (Port 8080)<br/>Routing, Rate Limiting (50 r/s), Global CORS"]
-    end
-
-    subgraph ServiceDiscovery ["3. Service Discovery & Networking"]
-        DockerDNS["🌐 Docker Internal Network (terrawatch-net)<br/>DNS hostname resolution giữa các container"]
-    end
-
-    subgraph Services ["4. Microservices"]
-        CoreAPI["⚙️ Core API Service (Java 17 + Spring Boot 3)<br/>Port 3000 | RBAC 3 roles, Thẩm định, Phát cảnh báo khẩn cấp, Spatial Repository"]
-        AIService["🧠 AI Inference Service (Python FastAPI)<br/>Port 8001 | ONNX Runtime, DeepLabV3+, Redis Listener"]
-        GISService["🗺️ GIS Data Service (Python FastAPI)<br/>Port 8002 | Sentinel Ingestion, Slope, NDVI, Tiling"]
-    end
-
-    subgraph Resilience ["8. Fault Tolerance & Circuit Breaker"]
-        CB["🛡️ Resilience4j Circuit Breaker (@CircuitBreaker)<br/>Ngắt mạch tự động & Fallback khi AI/GIS service sập"]
-    end
-
-    subgraph EventBroker ["6. Message Broker & Event Bus"]
-        RedisBus["⚡ Redis 7 Alpine Pub/Sub (Port 6379)<br/>Channel: 'terrawatch:events'"]
-    end
-
-    subgraph DataLayer ["5. Database per Service (Logical Schema-per-Service)"]
-        PostGIS[("🐘 PostgreSQL 15 + PostGIS 3.3 (Port 5432)<br/>├── public: PostGIS extensions, migrations<br/>├── core_schema: users, landslide_events, history, reports<br/>└── gis_schema: monitoring_areas (AOI), tile_metadata")]
-    end
-
-    subgraph ConfigLayer ["7. Configuration Management"]
-        ConfigEnv["⚙️ Twelve-Factor App (.env, Docker Compose Profiles)"]
-    end
-
-    subgraph Notify ["Kênh Phát Cảnh Báo (External)"]
-        FCM["🔔 Firebase Cloud Messaging (Push App)"]
-        SMS["✉️ SMS Gateway (eSMS.vn / SpeedSMS / Twilio)"]
-    end
-
-    WebGIS -->|HTTP 8080| APIGateway
-    MobileApp -->|HTTP 8080| APIGateway
-
-    APIGateway -->|/api/v1/core/*, /landslides/*| CoreAPI
-    APIGateway -->|/api/v1/ai/*| AIService
-    APIGateway -->|/api/v1/gis/*, /tiles/*| GISService
-    APIGateway -->|/| WebGIS
-
-    CoreAPI -.->|Bọc bởi Circuit Breaker| AIService
-    CoreAPI -.->|Bọc bởi Circuit Breaker| GISService
-    CoreAPI -->|Publish Events| RedisBus
-    RedisBus -->|Subscribe & Async Process| AIService
-    CoreAPI -->|EMERGENCY_ALERT_BROADCAST| FCM
-    CoreAPI -->|EMERGENCY_ALERT_BROADCAST| SMS
-    FCM -->|Push| MobileApp
-
-    CoreAPI <-->|core_schema| PostGIS
-    GISService <-->|gis_schema| PostGIS
+flowchart LR
+    Rain["Rain observations / estimates"] --> GIS["GIS: align time, space and terrain"]
+    Weather["Issued weather forecasts"] --> GIS
+    DEM["DEM terrain"] --> GIS
+    GIS --> Snapshot["Versioned feature snapshot"]
+    Snapshot --> AI["AI: baseline / validated model"]
+    AI --> Core["Core: forecast runs and review"]
+    Core --> Web["WebGIS: rain + terrain + 24h hazard"]
+    Web --> Review["Officer review / admin confirmation"]
+    Review --> Delivery["Persisted SMS / FCM delivery"]
+    Delivery --> Mobile["Mobile: alerts + expiring offline cache"]
+    Reports["Observed incidents / field reports"] --> Core
 ```
 
----
+The AI consumes weather forecasts; it does not forecast weather. The map displays assessed hazard units, not segmentation of an observed landslide scar.
 
-### 2. Ranh Giới Dữ Liệu: Logical Schema-per-Service (PostGIS)
+## 2. Service responsibilities
 
-Hệ thống triển khai mô hình **Schema-per-Service** trên cùng một instance PostgreSQL 15 + PostGIS 3.3 nhằm cô lập dữ liệu nghiệp vụ nhưng vẫn tận dụng được engine tính toán hình học 0ms latency:
+| Component | Target responsibility |
+| --- | --- |
+| GIS, port 8002 | Provider ingestion, source quality, DEM features, versioned spatial units and immutable as-of feature snapshots. |
+| AI, port 8001 | Validate feature/model compatibility, predict for 24h, expose versioned factors and unavailable reasons; training/backtesting remains offline. |
+| Core, port 3000 | Auth/RBAC, run orchestration, persist forecasts, expiry, review, incidents, subscriptions, alerts and audit. |
+| WebGIS | Rainfall history/forecast charts, terrain/hazard/evidence layers, data freshness and warning review. |
+| Mobile | Subscriptions, field reports, notifications, expiry-aware SQLite/geofencing; local location processing. |
+| Gateway, port 8080 | Route clients; protect privileged/internal operations when auth is implemented. |
+| Redis | Optional change notification/wakeup; persisted job state is the recovery source. |
 
-1. **`core_schema` (Thuộc quyền sở hữu của Core API - Spring Boot 3):**
-   - `users`: Tài khoản người dùng, phân quyền RBAC 3 roles (`admin`, `officer`, `citizen`), số điện thoại nhận SMS.
-   - `landslide_events`: Điểm và đa giác sạt lở (`geometry(MultiPolygon, 4326)`), mức độ rủi ro, trạng thái thẩm định (`pending`, `verified`, `rejected`, `false_alarm`).
-   - `landslide_event_history`: Bảng vết kiểm toán (Audit Trail) ghi lại lịch sử thay đổi trạng thái và người phê duyệt.
-   - `community_reports`: Báo cáo dấu hiệu sạt lở từ người dân ngoài hiện trường kèm tọa độ GPS và URL ảnh.
-   - `alert_subscriptions`: Vùng quan tâm người dân đăng ký nhận cảnh báo (UC07).
-   - `device_tokens`: FCM token của thiết bị di động để gửi Push.
-   - `alert_broadcasts`: Các lần Admin phát cảnh báo khẩn cấp (phạm vi, nội dung, kênh, người gửi).
-   - `alert_deliveries`: Kết quả gửi tới từng người nhận theo kênh (`sent` / `failed`).
-   - `v_active_landslide_zones`: View không gian tối ưu cho WebGIS và Mobile tải về.
+Current Core writes both schemas and clients use mocks. These target responsibilities are not claims of existing enforcement.
 
-2. **`gis_schema` (Thuộc quyền sở hữu của GIS Data Service - Python FastAPI):**
-   - `monitoring_areas`: Khu vực giám sát trọng điểm (AOI - Bounding Box đa giác EPSG:4326).
-   - `satellite_scenes`: Siêu dữ liệu ảnh vệ tinh Sentinel-2 (Scene ID, ngày chụp, % mây, đường dẫn lưu trữ raster).
-   - `raster_tiles`: Thông tin phân mảnh tile $128 \times 128$ phục vụ suy luận AI.
+## 3. Spatial and temporal invariants
 
-3. **Chỉ mục không gian (Spatial Indexes):**
-   - Mọi cột kiểu `geometry` bắt buộc phải có chỉ mục `USING GIST (geom)`.
+- Prediction issue time t fixes the window [t, t+24h); all feature source records must have been available by t.
+- Store provider issue time, valid interval, availability/ingestion time and source revision separately.
+- Observation latency must be explicit. A gap between the most recent available observation and t is missing coverage, not dry weather.
+- Use provider run IDs and valid intervals when computing forecast accumulation; do not mix forecast cycles or subtract across resets.
+- All stored times use UTC. Spatial storage/interchange uses EPSG:4326; terrain derivatives/areas/distances use suitable metric coordinates or geodesic calculations.
+- Retain original rainfall resolution and DEM resolution. Resampling a coarse rain grid onto a fine DEM does not create fine-resolution rainfall evidence.
+- Choose assessment-unit scale after checking pilot rainfall/label support; no fixed 30m forecast accuracy claim.
+- A forecast probability concerns occurrence in a unit/window. Exposure and warning priority are separate values.
 
----
+## 4. Data model additions (planned migrations)
 
-### 3. Quy Chuẩn Giao Tiếp Liên Dịch Vụ (Inter-Service Protocols)
+| Owner/schema | New records | Essential content |
+| --- | --- | --- |
+| GIS / gis_schema | assessment_units, terrain_features | Geometry/version, DEM provenance, feature schema, effective resolution. |
+| GIS / gis_schema | rainfall_observations | Unit/provider, interval, available_at, ingested_at, amount/units, quality, revision. |
+| GIS / gis_schema | rainfall_forecasts | Provider run/issue time, valid intervals, availability, accumulation convention and quality. |
+| GIS / gis_schema | feature_snapshots | Unit/version, as-of time, source references, coverage, immutable feature values/schema. |
+| Core / core_schema | forecast_runs, hazard_predictions | Window, unit/snapshot/model/threshold versions, probability or experimental score, hazard level, availability reason. |
+| Core / core_schema | forecast_reviews | Authenticated reviewer, decision/reason and referenced immutable run. |
+| Core / core_schema | alert_broadcasts, alert_deliveries | Existing planned alert records extended with forecast reference/window, idempotency and delivery status. |
 
-1. **Đồng bộ (Synchronous - REST via Circuit Breaker):**
-   - Client gọi vào API Gateway Nginx (`http://localhost:8080`).
-   - Core API gọi sang AI Service hoặc GIS Service thông qua RestTemplate / WebClient có cấu hình `@CircuitBreaker(name = "aiService", fallbackMethod = "aiFallback")`.
-2. **Bất đồng bộ (Asynchronous - Event Bus via Redis Pub/Sub):**
-   - Channel duy nhất: `terrawatch:events`.
-   - Cấu trúc thông điệp JSON:
-     ```json
-     {
-       "eventId": "uuid-v4",
-       "eventType": "LANDSLIDE_DETECTED | LANDSLIDE_VERIFIED | SATELLITE_INGESTED | COMMUNITY_REPORT_SUBMITTED | EMERGENCY_ALERT_BROADCAST",
-       "timestamp": "2026-10-02T14:00:00Z",
-       "payload": { ... }
-     }
-     ```
+Preserve existing users, observed landslide_events, event history, community_reports and monitoring_areas. Do not relabel old detected events as forecasts or overwrite V1/V2 migrations. Add a new migration when implementing, synchronized with the repository migration copies.
 
----
+Model release metadata must identify training data, feature schema, validation report, calibration and threshold version. A forecast review is not an observed-event label.
 
-### 4. Định Tuyến API Gateway (Nginx)
+## 5. Orchestration and failure behavior
 
-| Route Pattern | Target Upstream | Chức năng |
-| :--- | :--- | :--- |
-| `/api/v1/core/*` | `http://core-api:3000` | Quản trị, thẩm định, người dùng, báo cáo hiện trường, phát cảnh báo khẩn cấp (`/alerts/*`) |
-| `/api/v1/ai/*` | `http://ai-service:8001` | Trực tiếp suy luận AI hoặc kiểm tra model |
-| `/api/v1/gis/*` | `http://gis-service:8002` | Kéo dữ liệu vệ tinh, cắt tile, query DEM |
-| `/tiles/*` | `http://gis-service:8002` | Vector/Raster Tiles cho WebGIS |
-| `/` | `http://webgis:80` | Frontend WebGIS Single Page Application |
+1. A scheduled ingestion checks for new qualifying provider runs; cadence follows provider availability.
+2. GIS normalizes complete supported intervals and terrain into a versioned snapshot.
+3. Core persists a forecast job keyed by unit/version, issue time, model version and input snapshot; a unique constraint/idempotency key prevents duplicates.
+4. AI processes the snapshot via bounded-time REST. Core persists the result before notifying clients.
+5. Officer reviews; admin explicitly confirms a persisted warning request. Delivery workers process persisted tasks with bounded retries and deduplication.
+6. A recovery poll finds pending jobs/tasks after restarts or lost Redis notifications. Redis Pub/Sub alone is not a durable queue.
+
+Optional notification names: RAINFALL_INPUTS_UPDATED, HAZARD_FORECAST_READY, FORECAST_REVIEWED, COMMUNITY_REPORT_SUBMITTED, EMERGENCY_ALERT_BROADCAST. Event envelopes include eventId, schemaVersion, timestamp and referenced record IDs; consumers are idempotent. Events supplement, not replace, record retrieval.
+
+Missing/stale input or incompatible model yields unavailable with reason. Service failure must not return fabricated low hazard or claim a task was queued when nothing was persisted. Last-known forecasts retain their original validity/quality.
+
+## 6. API and access
+
+[API specification](../../docs/API_SPECIFICATION.md) distinguishes existing prototype routes from planned forecast routes. New public Core routes use /api/v1/forecasts; Gateway must explicitly route them. Keep current incident APIs during migration. Do not silently replace the old scene-based inference payload with incompatible fields.
+
+Target: admin config/broadcast, officer/admin review, citizens access published approved forecasts and their own subscriptions/reports. Internal ingestion/inference is service-authenticated and not publicly writable.
+
+Current Docker Core sets REDIS_URL while Spring reads REDIS_HOST; fix this in the orchestration story. Existing /api/v1/core/ prefix stripping is not evidence that every route in older docs works.
+
+## 7. Clients and expiration
+
+- Forecast publication/review status is separate from available/unavailable quality and time-derived expiry.
+- A later run can supersede an earlier run for the same unit; record this explicitly.
+- Mobile sync includes run/window, geometry, publication status, supersession/revocation and last sync time.
+- Cached expired predictions remain visible as stale; no fresh-risk siren based solely on an expired forecast. Offline revocations cannot be learned until reconnect.
+- Confirmed incidents and active admin warnings have their own lifecycles; forecast expiration must not silently clear them.
+
+## 8. Implementation order
+
+Data/label feasibility → contracts and new migrations → ingestion/features → baseline/backtest → model service → persisted orchestration → WebGIS review → alert/mobile integration → held-out evaluation and failure testing. See [epics](epics.md) for acceptance criteria.
