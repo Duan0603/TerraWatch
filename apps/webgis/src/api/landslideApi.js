@@ -7,7 +7,24 @@ const STORAGE_KEY = 'terrawatch_events_state';
 const getStoredEvents = () => {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
-    try { return JSON.parse(saved); } catch (e) { /* ignore */ }
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Merge với INITIAL_EVENTS để đảm bảo luôn có lng, lat, polygon, rainfall24h
+        return parsed.map(ev => {
+          const base = INITIAL_EVENTS.find(i => i.id === ev.id) || {};
+          return {
+            ...base,
+            ...ev,
+            lng: typeof ev.lng === 'number' ? ev.lng : (base.lng || 104.085),
+            lat: typeof ev.lat === 'number' ? ev.lat : (base.lat || 21.845),
+            polygon: ev.polygon || base.polygon,
+            rainfall24h: ev.rainfall24h || base.rainfall24h,
+            forecastWindow: ev.forecastWindow || base.forecastWindow
+          };
+        });
+      }
+    } catch (e) { /* ignore */ }
   }
   return INITIAL_EVENTS;
 };

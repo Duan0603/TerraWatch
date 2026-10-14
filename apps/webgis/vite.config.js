@@ -6,5 +6,16 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
+  },
+  build: {
+    chunkSizeWarningLimit: 1500,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          mapbox: ['mapbox-gl'],
+          reactVendor: ['react', 'react-dom', 'react-router-dom']
+        }
+      }
+    }
   }
 });
