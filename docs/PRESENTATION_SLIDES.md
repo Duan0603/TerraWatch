@@ -1,6 +1,8 @@
 # BỘ SLIDE THUYẾT TRÌNH ĐỒ ÁN TỐT NGHIỆP KỸ SƯ PHẦN MỀM
+
+> **Historical material — 2026-10-13:** This outline and the exported PPTX describe the previous image-segmentation scope. The current [PRD](../_bmad-output/planning-artifacts/prd.md) uses rainfall and terrain to forecast landslide hazard for the next 24 hours. Do not present the old model metrics as current results. Regeneration is tracked in Story 8.2.
 ## Đề tài: GEOSENTRY (TERRAWATCH) — HỆ THỐNG VIỄN THÁM & AI CẢNH BÁO SỚM SẠT LỞ ĐẤT
-**File PowerPoint đã xuất sẵn:** [`docs/GeoSentry_Capstone_Presentation.pptx`](file:///d:/SECapstone/docs/GeoSentry_Capstone_Presentation.pptx)  
+**File PowerPoint đã xuất sẵn:** [`docs/GeoSentry_Capstone_Presentation.pptx`](file:///d:/SECapstone/docs/GeoSentry_Capstone_Presentation.pptx)
 **Nhóm sinh viên thực hiện:**
 - **Thành viên 1:** Duẫn — AI / Computer Vision Engineer
 - **Thành viên 2:** Tú — GIS Pipeline & Data Engineer

@@ -1,26 +1,14 @@
 # generated: 2026-10-02
-# last_updated: 2026-10-04
+# last_updated: 2026-10-13
 # project: SECapstone
 # project_key: TERRA
 # tracking_system: file-system
 # story_location: _bmad-output/implementation-artifacts
-
-# STATUS DEFINITIONS:
-# ==================
-# Epic Status:
-#   - backlog: Epic not yet started
-#   - in-progress: Epic actively being worked on
-#   - done: All stories in epic completed
-#
-# Story Status:
-#   - backlog: Story only exists in epics.md
-#   - ready-for-dev: Story file created, ready to implement
-#   - in-progress: Developer actively working on implementation
-#   - review: Implementation complete, awaiting review
-#   - done: Story implementation verified and accepted
+# Pivot: rainfall + terrain, next 24 hours; documentation updated, implementation not completed.
+# Story numbers retained; change analysis records scope mapping.
+# Epic: backlog / in-progress / done; Story: backlog / ready-for-dev / in-progress / review / done.
 
 development_status:
-  # --- GIAI ĐOẠN 1: 5-WEEK ACCELERATED MVP (100% CHUYÊN SÂU CẢNH BÁO SẠT LỞ ĐẤT) ---
   epic-1: in-progress
   1-1-multi-role-user-registration-authentication-register-login-jwt: ready-for-dev
   1-2-postgis-schema-per-service-migration-spatial-indexes: backlog
@@ -28,38 +16,37 @@ development_status:
   epic-1-retrospective: optional
 
   epic-2: backlog
-  2-1-sentinel-2-ingestion-pipeline-cloud-masking-filter: backlog
-  2-2-topographic-slope-srtm-dem-vegetation-index-ndvi-engine: backlog
-  2-3-adaptive-tiling-engine-bounding-box-patch-generator: backlog
+  2-1-rainfall-observation-forecast-ingestion: backlog
+  2-2-dem-terrain-feature-extraction: backlog
+  2-3-as-of-rainfall-terrain-feature-snapshots: backlog
   2-4-community-field-report-api-gps-photo-upload: backlog
   epic-2-retrospective: optional
 
   epic-3: backlog
-  3-1-pretrained-deeplabv3-onnx-model-loading-landslide4sense-benchmark: backlog
-  3-2-8-channel-multi-spectral-inference-binary-mask-segmentation: backlog
-  3-3-polygonization-converting-raster-mask-to-postgis-multipolygon-geojson: backlog
-  3-4-landslide-risk-level-scoring-slope-residential-proximity: backlog
+  3-1-historical-dataset-and-rainfall-terrain-baseline: backlog
+  3-2-24h-model-training-calibration-and-backtesting: backlog
+  3-3-versioned-24h-forecast-inference-contract: backlog
+  3-4-hazard-levels-explanations-and-quality-policy: backlog
   epic-3-retrospective: optional
 
   epic-4: backlog
-  4-1-redis-pub-sub-event-bus-resilience4j-circuit-breaker: backlog
-  4-2-webgis-verification-queue-one-click-landslide-approval: review
-  4-3-3d-terrain-hazard-map-before-after-time-slider: backlog
+  4-1-persisted-forecast-jobs-redis-events-resilience: backlog
+  4-2-webgis-forecast-review-queue: review
+  4-3-rainfall-terrain-24h-hazard-dashboard: backlog
   4-4-admin-emergency-alert-broadcast-sms-app-push-notification: backlog
   epic-4-retrospective: optional
 
   epic-5: backlog
   5-1-citizen-alert-subscription-emergency-alert-reception-push-sms: backlog
   5-2-mobile-community-field-report-photo-gps: backlog
-  5-3-offline-geofencing-hazard-alert-loud-siren-ray-casting-sqlite: backlog
-  5-4-end-to-end-system-integration-flow-5-week-milestone-demo: backlog
+  5-3-expiry-aware-offline-geofencing-sqlite: backlog
+  5-4-24h-forecast-end-to-end-integration-demo: backlog
   epic-5-retrospective: optional
 
-  # --- GIAI ĐOẠN 2: CAPSTONE UPGRADES & THESIS DEFENSE (HƯỚNG PHÁT TRIỂN) ---
-  epic-6: backlog  # Nâng cao độ chính xác cảnh báo sớm (future work)
+  epic-6: backlog
   6-1-esp32-iot-slope-monitoring-station-vibration-soil-moisture-mqtt: backlog
   6-2-sentinel-1-sar-radar-ingestion-cloud-penetration-rainy-typhoons: backlog
-  6-3-antecedent-rainfall-index-ari-gpm-nasa-weather-integration: backlog
+  6-3-multiple-horizons-and-forecast-uncertainty: backlog
   epic-6-retrospective: optional
 
   epic-7: backlog

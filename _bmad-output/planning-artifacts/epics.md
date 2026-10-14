@@ -1,262 +1,333 @@
-# SECapstone: Epics and User Stories
-## Project: GeoSentry (TerraWatch) - Hệ Thống Viễn Thám & AI Cảnh Báo Sớm Sạt Lở Đất
-### Bảng Phân Bổ Nhân Sự: Duẫn (AI), Tú (GIS), Thuận (Backend), Huy (WebGIS), Lâm (Mobile)
+# GeoSentry — Epics and User Stories
 
-> **Phạm vi dự án:** Chỉ tập trung vào **phát hiện và cảnh báo sớm sạt lở đất** (theo tài liệu yêu cầu gốc FR1–FR3, UC01–UC09).
-> Hệ thống **không** bao gồm nghiệp vụ cứu hộ (điều phối đội cứu hộ, tuyến đường cứu hộ, SOS kêu cứu, theo dõi cứu nạn).
+**Revised:** 2026-10-13 | **MVP:** rainfall + terrain, next 24 hours.
 
-**Vai trò người dùng (RBAC 3 roles):** `admin` (Quản trị viên), `officer` (Cán bộ chuyên môn), `citizen` (Người dân).
+[PRD](prd.md) and [architecture](architecture.md) define the target. Story numbers are retained for traceability; changed sprint keys map to the same numbers. These criteria describe future implementation, not completed features. Re-estimate the original five-week schedule after data feasibility. Roles remain admin/officer/citizen.
 
----
+## Epic 1: Foundation, identity and forecast data contracts
 
-# GIAI ĐOẠN 1: 5-WEEK ACCELERATED MVP (100% CHUYÊN SÂU CẢNH BÁO SẠT LỞ ĐẤT)
+### Story 1.1: Multi-role registration and JWT
 
-## Epic 1: Authentication, RBAC & Landslide Database Foundation (Tuần 1)
-Thiết lập hệ thống xác thực người dùng 3 vai trò (`admin`, `officer`, `citizen`), JWT bảo mật và cấu trúc CSDL không gian PostGIS cho dữ liệu sạt lở và cảnh báo.
+**Owner:** Thuận; Huy, Lâm
+**Sprint key:** 1-1-multi-role-user-registration-authentication-register-login-jwt
 
-### Story 1.1: Multi-Role User Registration & Authentication (Register / Login / JWT)
-**[Phụ trách chính: Thuận (Backend) | Hỗ trợ: Huy (WebGIS), Lâm (Mobile)]**  
-As a User (Citizen, Officer, or Admin),  
-I want to register and log in securely to obtain a role-specific JWT access token,  
-So that my identity and permissions are verified across WebGIS and Mobile applications.  
-**Acceptance Criteria:**
-- Endpoint `POST /api/v1/auth/register` tạo người dùng (mặc định role `citizen`, có trường `phone_number` để nhận SMS cảnh báo). Mật khẩu băm bằng BCrypt.
-- Chỉ `admin` mới được cấp/đổi role `officer` hoặc `admin` cho tài khoản khác.
-- Endpoint `POST /api/v1/auth/login` kiểm tra email/mật khẩu và trả về JWT token chứa `userId`, `email`, và `role`.
-- Endpoint `GET /api/v1/auth/me` trả về thông tin profile người dùng khi gửi kèm header `Authorization: Bearer <token>`.
-- Các endpoint bảo vệ từ chối truy cập không có token hợp lệ với mã HTTP 401.
+Users authenticate with role-specific access.
 
-### Story 1.2: PostGIS Schema-per-Service Migration & Spatial Indexes
-**[Phụ trách chính: Tú (GIS) & Thuận (Backend)]**  
-As a Backend & Data Engineer,  
-I want PostgreSQL 15 + PostGIS schemas (`core_schema`, `gis_schema`) configured with GiST spatial indexes and Flyway migration scripts,  
-So that spatial queries on landslide hazard polygons execute in $< 50\text{ ms}$ with strict data isolation.  
-**Acceptance Criteria:**
-- Khởi tạo đầy đủ bảng `core_schema.users`, `core_schema.landslide_events`, `core_schema.landslide_event_history`, `core_schema.community_reports`, `core_schema.alert_subscriptions`, `core_schema.device_tokens`, `core_schema.alert_broadcasts`, `core_schema.alert_deliveries` và `gis_schema.monitoring_areas`.
-- Mọi cột kiểu `geometry` được đánh chỉ mục không gian `USING GIST (geom)`.
-- Script nạp dữ liệu địa bàn mẫu (Seed data) cho các điểm nóng sạt lở tại Yên Bái, Lào Cai, Hà Giang.
+**Acceptance criteria:**
+- Register defaults to citizen with BCrypt; only admin assigns privileged roles.
+- Login/Me return identity from a validated JWT; protected endpoints reject invalid tokens with 401 and insufficient roles with 403.
+- Keep the existing ready-for-dev story; align route checks with new forecast endpoints.
 
-### Story 1.3: API Gateway Reverse Proxy & Rate Limiting
-**[Phụ trách chính: Thuận (Backend / DevOps)]**  
-As a DevOps Engineer,  
-I want Nginx reverse proxy configured as the single entry point (Port 8080) with rate limiting (50 req/s) and unified CORS,  
-So that internal microservice ports are protected and traffic routed seamlessly.  
-**Acceptance Criteria:**
-- Gateway định tuyến trong suốt: `/api/v1/auth/*`, `/api/v1/core/*`, `/api/v1/ai/*`, `/api/v1/gis/*`, và `/` (WebGIS SPA).
-- CORS headers cấu hình chuẩn cho cả WebGIS (Port 5173/8080) và Flutter Mobile.
+### Story 1.2: PostGIS forecast and observation schema
 
----
+**Owner:** Tú, Thuận
+**Sprint key:** 1-2-postgis-schema-per-service-migration-spatial-indexes
 
-## Epic 2: GIS Satellite Pipeline & Community Field Reports (Tuần 2)
-Xây dựng pipeline thu thập ảnh viễn thám Sentinel-2, tính toán độ dốc DEM, chỉ số suy giảm thảm phủ $\Delta\text{NDVI}$, phân mảnh Tiling và API tiếp nhận báo cáo hiện trường từ người dân (UC09).
+Engineers can retain separate predictions, observed incidents and source snapshots.
 
-### Story 2.1: Sentinel-2 Ingestion Pipeline & Cloud Masking Filter
-**[Phụ trách chính: Tú (GIS Pipeline)]**  
-As a GIS Data Engineer,  
-I want an automated ingestion client that pulls Sentinel-2 L2A multi-spectral images for defined Areas of Interest (AOI) and filters out scenes with cloud coverage $> 40\%$,  
-So that downstream AI models receive high-quality surface reflectance data.  
-**Acceptance Criteria:**
-- Kết nối tới Copernicus Data Space Ecosystem (CDSE) hoặc Sentinel Hub API.
-- Thuật toán lọc mây dựa trên Scene Classification Layer (SCL / s2cloudless), loại bỏ các patch bị mây che phủ.
-- Lưu trữ siêu dữ liệu ảnh tải về vào bảng `gis_schema.satellite_scenes`.
+**Acceptance criteria:**
+- Add new migrations for rainfall, terrain, assessment units, feature snapshots, forecast runs and reviews; preserve V1/V2 and historical incidents.
+- Store source/availability/issue/valid times, quality, versions, geometry and idempotency constraints; index spatial and time queries.
+- Include existing planned subscriptions, device tokens, broadcasts/deliveries; seed explicitly synthetic forecast fixtures.
 
-### Story 2.2: Topographic Slope (SRTM DEM) & Vegetation Index ($\Delta\text{NDVI}$) Engine
-**[Phụ trách chính: Tú (GIS Pipeline)]**  
-As a GIS Data Engineer,  
-I want a processor that computes NDVI difference ($\Delta\text{NDVI} = \text{NDVI}_{\text{post}} - \text{NDVI}_{\text{pre}}$) and extracts topographic slope degrees from SRTM 30m DEM,  
-So that sudden loss of vegetation on steep slopes is quantitatively measured.  
-**Acceptance Criteria:**
-- Tính toán bản đồ biến động thực vật $\Delta\text{NDVI}$ giữa ảnh trước và sau thiên tai bằng `rasterio`.
-- Trích xuất độ dốc địa hình theo độ $[0^\circ, 90^\circ]$ từ ảnh số độ cao SRTM DEM 30m.
-- Đồng bộ hệ quy chiếu tọa độ chuẩn WGS84 EPSG:4326.
+### Story 1.3: Gateway routing and access
 
-### Story 2.3: Adaptive Tiling Engine & Bounding Box Patch Generator
-**[Phụ trách chính: Tú (GIS Pipeline) | Phối hợp: Duẫn (AI)]**  
-As an AI Engineer,  
-I want the GIS service to slice large satellite scenes into uniform $128 \times 128$ pixel patches with bounding box coordinates,  
-So that patches match the input dimensions required by deep learning segmentation networks.  
-**Acceptance Criteria:**
-- Endpoint `/api/v1/gis/tiling` nhận Bounding Box của AOI và trả về danh sách tọa độ các patch $128 \times 128$.
-- Băm lưới tính đến độ nén kinh độ theo vĩ độ ($111 \times \cos(\text{lat})$).
-- Overlapping tile margins đảm bảo vết sạt lở ở mép không bị cắt đứt.
+**Owner:** Thuận
+**Sprint key:** 1-3-api-gateway-reverse-proxy-rate-limiting
 
-### Story 2.4: Community Field Report API (GPS & Photo Upload)
-**[Phụ trách chính: Thuận (Backend) | Phối hợp: Lâm (Mobile)]**  
-As a Disaster Officer,  
-I want an API endpoint to receive field reports of observed landslide signs (cracks, slope movement, fresh slides) from citizens, containing GPS coordinates and photos,  
-So that ground-truth reports supplement satellite observations in the verification process.  
-**Acceptance Criteria:**
-- Endpoint `POST /api/v1/core/reports` tiếp nhận tọa độ GPS, nội dung mô tả và ảnh hiện trường (role `citizen` trở lên).
-- Tạo bản ghi trong `core_schema.community_reports` (trạng thái `submitted`) và bắn sự kiện `COMMUNITY_REPORT_SUBMITTED` lên Redis Event Bus.
-- Endpoint `GET /api/v1/core/reports` (role `officer`/`admin`) trả danh sách báo cáo dạng GeoJSON để hiển thị trên WebGIS.
+Clients access Core consistently through port 8080.
 
----
+**Acceptance criteria:**
+- Route auth, existing incidents and new /api/v1/forecasts explicitly; test direct versus gateway paths.
+- Enforce intended role/service access and CORS; retain rate limiting.
+- Keep internal forecast/ingestion mutation endpoints off public unauthenticated routes.
 
-## Epic 3: AI Deep Learning, Landslide Segmentation & Risk Scoring (Tuần 3)
-Hiện thực hóa mô hình DeepLabV3+ ONNX thật trên tập dữ liệu Landslide4Sense, phân đoạn đa giác sạt lở từ tensor 8 kênh và tự động xếp hạng mức độ nguy cơ (FR2.3).
+## Epic 2: Rainfall, terrain and historical evidence
 
-### Story 3.1: Pretrained DeepLabV3+ ONNX Model Loading (Landslide4Sense Benchmark)
-**[Phụ trách chính: Duẫn (AI / CV)]**  
-As an AI Engineer,  
-I want `ai-service` to load a pretrained DeepLabV3+ ONNX model and preprocess raw input into an 8-channel normalized float tensor,  
-So that inference executes efficiently on CPU with GPU fallback.  
-**Acceptance Criteria:**
-- Nạp trọng số mô hình (`models/landslide_deeplabv3plus.onnx`) khi khởi động service bằng ONNX Runtime.
-- Chuẩn hóa tensor đầu vào kích thước `[1, 8, 128, 128]` theo mean/std của bộ dữ liệu Landslide4Sense.
-- Kiểm thử cold-start đảm bảo mô hình chạy suy luận tensor trong thời gian $< 300\text{ ms}$.
+### Story 2.1: Observed and forecast rainfall ingestion
 
-### Story 3.2: 8-Channel Multi-Spectral Inference & Binary Mask Segmentation
-**[Phụ trách chính: Duẫn (AI / CV)]**  
-As an AI Engineer,  
-I want the AI engine to predict pixel-level landslide probabilities from the 8-channel tensor `[B2, B3, B4, B8, B11, B12, NDVI, SLOPE]`,  
-So that scars of slipped earth are accurately segmented.  
-**Acceptance Criteria:**
-- Hàm kích hoạt Sigmoid xuất ra ma trận xác suất $[0.0, 1.0]$ cho từng pixel.
-- Ngưỡng hóa ($\ge 0.5$) tạo ra mặt nạ nhị phân (Binary Mask) phân biệt đất sạt lở với nền.
-- Đánh giá trên tập test đạt $F_1 \ge 0.70$ và $\text{IoU} \ge 0.60$.
+**Owner:** Tú
+**Sprint key:** 2-1-rainfall-observation-forecast-ingestion
 
-### Story 3.3: Polygonization: Converting Raster Mask to PostGIS MultiPolygon GeoJSON
-**[Phụ trách chính: Tú (GIS) & Duẫn (AI)]**  
-As a GIS Developer,  
-I want the AI service to convert binary raster masks into smooth vector polygons (GeoJSON MultiPolygon) with coordinate georeferencing,  
-So that detected landslide bodies can be rendered on WebGIS and stored in PostGIS.  
-**Acceptance Criteria:**
-- Vector hóa từ raster sang đa giác hình học bằng `rasterio.features.shapes` và `shapely`.
-- Tọa độ đa giác được ánh xạ chính xác về tọa độ địa lý WGS84 thực tế.
-- Tự động lọc bỏ các đốm nhiễu có diện tích quá nhỏ ($< 100\text{ m}^2$).
+Data engineers obtain rainfall with trustworthy provenance and timing.
 
-### Story 3.4: Landslide Risk Level Scoring (Slope & Residential Proximity)
-**[Phụ trách chính: Duẫn (AI) | Phối hợp: Tú (GIS)]**  
-As a Disaster Officer,  
-I want every detected landslide polygon to be automatically ranked by risk level,  
-So that I can prioritize verifying and warning the most dangerous zones first.  
-**Acceptance Criteria:**
-- Tính điểm nguy cơ dựa trên: độ dốc trung bình (Slope), diện tích vùng sạt lở, độ tin cậy của mô hình và **khoảng cách tới khu dân cư gần nhất** (PostGIS `ST_Distance` với lớp dân cư/OSM buildings).
-- Ánh xạ điểm số sang `risk_level`: `low`, `medium`, `high`, `extreme` (ngưỡng cấu hình được).
-- Kết quả trả về trong JSON suy luận và lưu vào `core_schema.landslide_events.risk_level`.
+**Acceptance criteria:**
+- Select pilot/source candidates after verifying access, license, units, latency, coverage and historical forecast archives.
+- Persist observations and forecasts separately, including provider run, valid interval, available_at, ingestion time and revision.
+- Normalize mm and accumulated fields safely, detect duplicate/revised/late records and missing intervals; do not fill gaps with zero.
+- Refresh when a qualifying provider run is available; missing archive data blocks claims of forecast validation.
 
----
+### Story 2.2: DEM terrain and assessment units
 
-## Epic 4: Event-Driven Processing, WebGIS Command Center & Emergency Alerts (Tuần 4)
-Kết nối Redis Pub/Sub, Resilience4j Circuit Breaker và giao diện WebGIS Command Center: Bản đồ địa hình 3D vùng nguy cơ, hàng đợi thẩm định và **nút phát cảnh báo khẩn cấp của Admin (SMS + Push App)**.
+**Owner:** Tú
+**Sprint key:** 2-2-dem-terrain-feature-extraction
 
-### Story 4.1: Redis Pub/Sub Event Bus & Resilience4j Circuit Breaker
-**[Phụ trách chính: Thuận (Backend)]**  
-As a Backend Engineer,  
-I want bidirectional asynchronous communication via Redis channel `terrawatch:events` and Circuit Breaker isolation for AI/GIS calls,  
-So that the Core API never crashes when dependent Python services are overloaded.  
-**Acceptance Criteria:**
-- Các sự kiện `LANDSLIDE_DETECTED`, `LANDSLIDE_VERIFIED`, `COMMUNITY_REPORT_SUBMITTED` và `EMERGENCY_ALERT_BROADCAST` được publish và consume ổn định.
-- Resilience4j Circuit Breaker tự động chuyển sang `OPEN` khi tỷ lệ lỗi $\ge 50\%$, kích hoạt Fallback lưu vào hàng đợi ngầm mà không gây sập Core API.
+AI receives versioned terrain features for spatial units.
 
-### Story 4.2: WebGIS Verification Queue & One-Click Landslide Approval
-**[Phụ trách chính: Huy (Frontend WebGIS) | Phối hợp: Thuận (Backend)]**  
-As a Disaster Officer,  
-I want a dashboard listing pending AI landslide detections with risk level, confidence scores and one-click verification,  
-So that verified hazards are published on the map and ready for warning dissemination.  
-**Acceptance Criteria:**
-- Dashboard hiển thị danh sách các sự kiện sạt lở chờ duyệt (`pending`), kèm diện tích (ha), độ dốc, mức nguy cơ và độ tin cậy.
-- Nút "Phê Duyệt" gọi `POST /api/v1/core/landslides/{id}/verify`, chuyển trạng thái sang `verified`; nút "Bác Bỏ" chuyển sang `rejected` / `false_alarm`.
-- Sau khi duyệt sự cố mức `high`/`extreme`, hệ thống gợi ý Admin phát cảnh báo khẩn cấp (mở sẵn form của Story 4.4 với vùng ảnh hưởng điền trước).
+**Acceptance criteria:**
+- Derive slope, elevation and relief using appropriate metric distances; validate nodata and CRS.
+- Version geometry/DEM/features and retain source/effective resolutions; agree unit scale with label and rain coverage.
+- Optional soil/geology/land-cover layers require provenance and a separately evaluated feature schema.
 
-### Story 4.3: 3D Terrain Hazard Map & Before/After Time-Slider
-**[Phụ trách chính: Huy (Frontend WebGIS)]**  
-As a Disaster Officer,  
-I want an interactive 3D map showing mountain terrain, landslide hazard polygons colored by risk level, community field reports and a before/after satellite comparison slider,  
-So that I can accurately assess each detected landslide before approving warnings.  
-**Acceptance Criteria:**
-- Bản đồ Mapbox GL bật lớp 3D Terrain hiển thị địa hình núi đồi Yên Bái, Lào Cai chân thực.
-- Hiển thị các lớp không gian:
-  - 🔴 Vùng sạt lở (Danger Zone) tô màu theo `risk_level`.
-  - 📍 Báo cáo hiện trường của người dân (`community_reports`).
-  - 🟦 Ranh giới vùng giám sát (AOI).
-- Thanh trượt so sánh ảnh vệ tinh trước/sau biến động (Time-slider swipe).
-- Điều khiển camera 3D: Xoay 360 độ, nghiêng góc nhìn (pitch), phóng to chi tiết điểm sạt lở.
+### Story 2.3: As-of feature snapshots
 
-### Story 4.4: Admin Emergency Alert Broadcast (SMS & App Push Notification)
-**[Phụ trách chính: Thuận (Backend) & Huy (WebGIS) | Phối hợp: Lâm (Mobile)]**  
-As an Admin,  
-I want a prominent "🚨 Phát Cảnh Báo Khẩn Cấp" button on the WebGIS dashboard to send an emergency landslide warning to citizens via SMS and mobile app push notification,  
-So that residents in the affected area are warned to evacuate immediately.  
-**Acceptance Criteria:**
-- **Phân quyền:** Nút chỉ hiển thị với role `admin`; API `POST /api/v1/core/alerts/broadcast` được bảo vệ bằng `hasRole('ADMIN')` (role khác nhận HTTP 403).
-- **Form phát cảnh báo:**
-  - Phạm vi nhận: theo một sự cố sạt lở đã `verified` (vùng đệm bán kính cấu hình, mặc định 2 km), theo một/nhiều vùng giám sát (AOI), hoặc toàn bộ người dùng.
-  - Mức độ: `high` / `extreme`; nội dung tin nhắn (SMS giới hạn 160 ký tự, có mẫu soạn sẵn).
-  - Kênh gửi: ☑ SMS ☑ Thông báo App (FCM) — chọn một hoặc cả hai.
-  - Hộp thoại xác nhận 2 bước hiển thị số người nhận dự kiến trước khi gửi (chống bấm nhầm).
-- **Xử lý gửi:**
-  - Tạo bản ghi `core_schema.alert_broadcasts` và publish `EMERGENCY_ALERT_BROADCAST` lên Redis; worker gửi bất đồng bộ theo lô, có retry.
-  - Push App: gửi qua Firebase Cloud Messaging (FCM) tới `device_tokens` của người nhận.
-  - SMS: gửi qua SMS Gateway (eSMS.vn / SpeedSMS / Twilio — cấu hình qua `.env`) tới `phone_number` của người nhận.
-  - Người nhận được xác định theo **vùng quan tâm đã đăng ký** (`alert_subscriptions`, UC07) — không dùng vị trí GPS thời gian thực của người dân (tuân thủ NFR5).
-- **Theo dõi:** Kết quả từng người nhận lưu vào `core_schema.alert_deliveries` (`sent` / `failed`); dashboard hiển thị thống kê đã gửi / thất bại và lịch sử các lần phát cảnh báo.
-- Mọi lần phát cảnh báo được ghi vết kiểm toán (Audit Trail): ai gửi, lúc nào, phạm vi, nội dung.
+**Owner:** Tú, Duẫn
+**Sprint key:** 2-3-as-of-rainfall-terrain-feature-snapshots
 
----
+Training and inference use the same time/space alignment.
 
-## Epic 5: Citizen Mobile App, Offline Geofencing & End-to-End Demo (Tuần 5)
-Hoàn thiện ứng dụng di động Flutter: đăng ký nhận cảnh báo & nhận thông báo khẩn cấp, gửi báo cáo hiện trường, còi hú Geofencing ngoại tuyến khi mất sóng và kịch bản demo thông luồng 100%.
+**Acceptance criteria:**
+- Compute supported antecedent rainfall windows and next-24-hour forecast accumulation; record required coverage and quality.
+- Require source availability <= prediction issue time; handle observation latency, forecast cycles and resets explicitly.
+- Publish immutable snapshot/schema/unit versions; missing required inputs yield unavailable.
+- Provide known-value tests for rainfall totals, timestamp boundaries and forecast interval selection.
 
-### Story 5.1: Citizen Alert Subscription & Emergency Alert Reception (Push + SMS)
-**[Phụ trách chính: Lâm (Mobile App) | Phối hợp: Thuận (Backend)]**  
-As a Citizen,  
-I want to register my phone number and areas of interest in the app and receive emergency landslide alerts,  
-So that I am warned immediately when the authorities issue an evacuation warning for my area.  
-**Acceptance Criteria:**
-- Màn hình đăng ký nhận cảnh báo: nhập/xác nhận số điện thoại, chọn vùng quan tâm (xã/huyện hoặc AOI) $\rightarrow$ `POST /api/v1/core/alerts/subscriptions` (UC07).
-- App tự động đăng ký FCM token khi đăng nhập $\rightarrow$ `POST /api/v1/core/devices/register`.
-- Khi nhận Push loại `EMERGENCY_ALERT`: hiển thị màn hình cảnh báo đỏ toàn màn hình, rung và phát âm thanh báo động kể cả khi app chạy nền; hiển thị nội dung, khu vực và hướng dẫn sơ tán.
-- Danh sách lịch sử các cảnh báo đã nhận trong app.
-- Người dân không cài app hoặc mất dữ liệu di động vẫn nhận được cảnh báo qua SMS.
+### Story 2.4: Field reports and event inventory
 
-### Story 5.2: Mobile Community Field Report (Photo & GPS)
-**[Phụ trách chính: Lâm (Mobile App) | Phối hợp: Thuận (Backend)]**  
-As a Citizen,  
-I want to report observed landslide signs with a photo and my GPS location,  
-So that officers receive ground-truth evidence to verify landslide hazards.  
-**Acceptance Criteria:**
-- Màn hình "Báo cáo hiện trường": tự động lấy tọa độ GPS, chụp/chọn ảnh, nhập mô tả ngắn.
-- Gửi lên `POST /api/v1/core/reports`; nếu mất mạng thì lưu hàng đợi cục bộ và tự gửi lại khi có kết nối.
-- Màn hình xác nhận hiển thị mã báo cáo và trạng thái xử lý (`submitted` / `processed`).
+**Owner:** Thuận, Tú, Duẫn; Lâm
+**Sprint key:** 2-4-community-field-report-api-gps-photo-upload
 
-### Story 5.3: Offline Geofencing Hazard Alert & Loud Siren (Ray-Casting & SQLite)
-**[Phụ trách chính: Lâm (Mobile App)]**  
-As a Mountain Traveler or Citizen moving through mountainous areas with zero cell reception,  
-I want my phone to detect nearby landslide hazard zones locally and sound a loud emergency siren,  
-So that I am warned to evacuate before entering an active slide zone.  
-**Acceptance Criteria:**
-- CSDL SQLite cục bộ trên điện thoại lưu trữ sẵn danh sách đa giác các vùng có nguy cơ sạt lở ($\ge 10,000$ đa giác).
-- Background location tracker chạy ngầm, tính khoảng cách Haversine và thuật toán Ray-Casting mỗi 10 giây; vị trí GPS chỉ xử lý cục bộ, không gửi lên máy chủ (NFR5).
-- Bước chân vào vùng đa giác sạt lở: Lập tức chớp màn hình đỏ, rung và phát còi hú âm lượng tối đa ngay cả khi máy để chế độ im lặng.
+Officers can use field observations as evidence and curate labels.
 
-### Story 5.4: End-to-End System Integration Flow & 5-Week Milestone Demo
-**[Phụ trách: Toàn bộ 5 thành viên (Duẫn, Tú, Thuận, Huy, Lâm)]**  
-As the Project Team,  
-I want to demonstrate a complete, flawless end-to-end early-warning flow across all components,  
-So that the 5-week MVP milestone is 100% achieved and ready for faculty review.  
-**Acceptance Criteria:**
-- Kịch bản demo thông suốt từ đầu đến cuối:
-  1. Tú & Duẫn: Vệ tinh Sentinel-2 nạp vào $\rightarrow$ AI DeepLabV3+ quét ra đa giác sạt lở $\rightarrow$ xếp hạng mức nguy cơ.
-  2. Thuận: Core API ghi nhận sự cố, bắn Redis Event Bus.
-  3. Huy: WebGIS 3D hiển thị vết sạt lở, cán bộ đối chiếu ảnh trước/sau và ấn duyệt.
-  4. Admin bấm "🚨 Phát Cảnh Báo Khẩn Cấp" $\rightarrow$ người dân trong vùng nhận SMS và thông báo App.
-  5. Lâm: Mobile App hiển thị cảnh báo khẩn cấp; đồng thời mô phỏng người dân mất mạng bước vào vùng nguy cơ, còi hú báo động ngay lập tức.
-  6. 0 lỗi crash trên toàn bộ 7 services Docker.
+**Acceptance criteria:**
+- Retain photo/GPS report API, authenticated identity, occurrence time/interval, reported_at and provenance.
+- Review location/time uncertainty and deduplicate events; forecast approval alone is not a positive label.
+- Define reliable negative/background sampling and ambiguous-event policy; missing reports are not automatically confirmed non-events.
 
----
+## Epic 3: 24-hour forecasting and measured model quality
 
-# GIAI ĐOẠN 2: CAPSTONE UPGRADES & THESIS DEFENSE (HƯỚNG PHÁT TRIỂN)
+### Story 3.1: Historical dataset and baseline
 
-## Epic 6: Nâng Cao Độ Chính Xác Cảnh Báo Sớm (Hướng phát triển)
-- **Story 6.1:** Trạm IoT ESP32 quan trắc sườn dốc (cảm biến rung & độ ẩm đất, đẩy dữ liệu qua MQTT).
-- **Story 6.2:** Tích hợp ảnh Radar SAR Sentinel-1 quan sát xuyên mây trong mùa mưa bão.
-- **Story 6.3:** Tích hợp chỉ số mưa tích lũy Antecedent Rainfall Index (ARI) từ dữ liệu GPM NASA.
+**Owner:** Duẫn, Tú
+**Sprint key:** 3-1-historical-dataset-and-rainfall-terrain-baseline
 
-## Epic 7: Tối Ưu Hiệu Năng & Kiểm Toán
-- **Story 7.1:** PostGIS spatial partitioning theo tỉnh & tile caching.
-- **Story 7.2:** Audit Trail toàn diện cho thẩm định và phát cảnh báo (Event Sourcing).
+The team establishes a reproducible forecast baseline.
 
-## Epic 8: Thử Nghiệm Thực Địa & Bảo Vệ Đồ Án
-- **Story 8.1:** Mô phỏng & thử nghiệm cảnh báo thực tế tại Lào Cai / Yên Bái.
-- **Story 8.2:** Hoàn thiện tài liệu đồ án, video demo và slide thuyết trình.
+**Acceptance criteria:**
+- Define the label as occurrence within a versioned unit during [issued_at, issued_at+24h).
+- Create a dataset/split manifest with archived as-issued inputs and a documented label uncertainty policy.
+- Implement an interpretable rainfall/terrain baseline; no future observed rain used as a substitute for a weather forecast.
+- Separate storms/time periods and spatial groups; account for overlapping windows across splits.
+
+### Story 3.2: Candidate model and backtesting
+
+**Owner:** Duẫn
+**Sprint key:** 3-2-24h-model-training-calibration-and-backtesting
+
+The team chooses a model from measured results.
+
+**Acceptance criteria:**
+- Compare a tabular ML candidate such as gradient-boosted trees against the baseline on identical held-out evaluation units.
+- Tune/calibrate on validation data only; freeze thresholds before final testing.
+- Report event recall, precision, false-alarm burden, PR-AUC, probability calibration/Brier where applicable and lead time with sample counts/uncertainty.
+- Agree numeric release targets before final test; do not reuse old segmentation F1/IoU or call an uncalibrated score a probability.
+
+### Story 3.3: Versioned forecast inference
+
+**Owner:** Duẫn, Thuận
+**Sprint key:** 3-3-versioned-24h-forecast-inference-contract
+
+Core can request a reproducible prediction for 24 hours.
+
+**Acceptance criteria:**
+- Validate feature/schema/unit/model versions and horizon_hours=24; use the new contract in docs/API_SPECIFICATION.md.
+- Return issue/valid times, run/snapshot/model/threshold versions, factors and calibrated probability or explicitly experimental score.
+- Unavailable/stale inputs or unloaded/incompatible model return structured non-prediction states, never fabricated low hazard.
+- Measure batch latency on named hardware; persist results against assessed unit geometry, not a generated landslide scar.
+
+### Story 3.4: Hazard levels and quality policy
+
+**Owner:** Duẫn, Tú, Thuận
+**Sprint key:** 3-4-hazard-levels-explanations-and-quality-policy
+
+Officers understand the score and its limits.
+
+**Acceptance criteria:**
+- Version level thresholds selected from validation and the agreed missed-event/false-alarm tradeoff.
+- Separate occurrence hazard from population/exposure-based warning priority.
+- Expose contributing input factors, freshness and quality; no causal or certainty claim from feature importance.
+- Define expiry/supersession and unavailable handling for all consumers.
+
+## Epic 4: Forecast orchestration, WebGIS and warnings
+
+### Story 4.1: Persisted orchestration and resilience
+
+**Owner:** Thuận; Duẫn, Tú
+**Sprint key:** 4-1-persisted-forecast-jobs-redis-events-resilience
+
+Forecast generation recovers from lost notifications and service outages.
+
+**Acceptance criteria:**
+- Persist forecast jobs before optional Redis wakeups; recovery polling resumes pending jobs after restart.
+- Use idempotency keys and bounded timeout/retry for REST; Redis Pub/Sub alone is not a durable job queue.
+- Persist result before HAZARD_FORECAST_READY notification; distinguish unavailable/failed from low hazard.
+- Align Docker REDIS_HOST/REDIS_PORT with Spring configuration and test source/AI/Redis outage paths.
+
+### Story 4.2: Forecast review queue
+
+**Owner:** Huy, Thuận
+**Sprint key:** 4-2-webgis-forecast-review-queue
+
+Officers review warning proposals without declaring an incident occurred.
+
+**Acceptance criteria:**
+- List hazard level, window, rain history/forecast, terrain, factors, quality and data age.
+- Approve/reject with authenticated reviewer and reason; protect against expired/superseded forecast review.
+- Keep observed incidents and field reports separate; approval never becomes training truth.
+- Link approved high/extreme proposals to the admin alert form without automatically sending.
+
+### Story 4.3: Rainfall, terrain and forecast dashboard
+
+**Owner:** Huy; Tú
+**Sprint key:** 4-3-rainfall-terrain-24h-hazard-dashboard
+
+Officers inspect the evidence behind a 24-hour forecast.
+
+**Acceptance criteria:**
+- Render real AOI/assessment geometry, terrain, hazard and field-report layers.
+- Show observed-versus-forecast rainfall charts and issued/valid timestamps with timezone; compare forecast runs.
+- Render missing/stale/expired states distinctly; state effective resolution rather than imply pixel-level precision.
+- Replace the old before/after imagery requirement; keep map rendering responsive with measured performance.
+
+### Story 4.4: Admin SMS/FCM broadcast
+
+**Owner:** Thuận, Huy, Lâm
+**Sprint key:** 4-4-admin-emergency-alert-broadcast-sms-app-push-notification
+
+Admin can warn subscribed residents after an explicit decision.
+
+**Acceptance criteria:**
+- Admin-only preview/broadcast with two-step confirmation, channels, message limit/templates and scope by approved unexpired forecast, incident, AOI or all subscribers.
+- Persist broadcast and delivery tasks, bounded retries, deduplication, actor and forecast validity/reference; distinguish provider accepted versus delivered.
+- Select recipients by subscriptions; never require continuous citizen GPS.
+- Allow a separately justified manual alert during forecast outages; measure 30s Push / 60s SMS submission targets under documented conditions.
+
+## Epic 5: Mobile and end-to-end verification
+
+### Story 5.1: Subscriptions and notification reception
+
+**Owner:** Lâm, Thuận
+**Sprint key:** 5-1-citizen-alert-subscription-emergency-alert-reception-push-sms
+
+Citizens receive warnings for registered interest areas.
+
+**Acceptance criteria:**
+- Register phone/areas and device token; show alert history and forecast issue/expiry times.
+- Handle duplicates, updates and superseded/revoked messages on resync.
+- Test platform notification/audio permissions; SMS still requires cellular service and provider delivery.
+
+### Story 5.2: Mobile field reports
+
+**Owner:** Lâm, Thuận
+**Sprint key:** 5-2-mobile-community-field-report-photo-gps
+
+Citizens submit observed evidence with explicit location sharing.
+
+**Acceptance criteria:**
+- Photo, GPS, observed time/interval and description; preserve report status.
+- Queue offline and retry with stable report IDs; distinguish event time from upload time.
+
+### Story 5.3: Expiry-aware offline geofencing
+
+**Owner:** Lâm
+**Sprint key:** 5-3-expiry-aware-offline-geofencing-sqlite
+
+Citizens can inspect cached hazards without mistaking old forecasts for current ones.
+
+**Acceptance criteria:**
+- Cache geometry/run/version/validity and last sync; test at least 10,000 geometries.
+- Run geofencing locally; stale forecasts are not used as fresh predictions or an all-clear.
+- Test boundary/expiry/timezone, offline-to-online sync and supersession/revocation reconciliation.
+- Continuous GPS stays local; support audio/vibration within platform permissions.
+
+### Story 5.4: 24-hour end-to-end demo
+
+**Owner:** All five members
+**Sprint key:** 5-4-24h-forecast-end-to-end-integration-demo
+
+The team demonstrates traceable forecasts and warning behavior.
+
+**Acceptance criteria:**
+- Demonstrate data snapshot → AI → persisted forecast → officer review → admin SMS/FCM → mobile validity-aware display.
+- Label fixtures as synthetic; demonstrate real provider integration and held-out model evidence separately.
+- Exercise missing/stale rain, unavailable forecast, failed delivery, duplicate job, expired offline cache and reconnect.
+- Publish actual test/latency results and remaining limitations; no simulated provider result presented as real delivery.
+
+## Epic 6: Post-MVP model/data improvements
+
+### Story 6.1: Optional local soil-moisture/IoT observations
+
+**Owner:** Tú, Duẫn
+**Sprint key:** 6-1-esp32-iot-slope-monitoring-station-vibration-soil-moisture-mqtt
+
+Add local measurements only after data quality and incremental benefit are demonstrated.
+
+**Acceptance criteria:**
+- Version inputs and evaluate against the MVP baseline before changing release features.
+
+### Story 6.2: Optional SAR and additional susceptibility features
+
+**Owner:** Tú, Duẫn
+**Sprint key:** 6-2-sentinel-1-sar-radar-ingestion-cloud-penetration-rainy-typhoons
+
+Evaluate additional evidence after the rainfall/terrain MVP.
+
+**Acceptance criteria:**
+- Document acquisition latency, as-of availability and held-out incremental value.
+
+### Story 6.3: Additional horizons and uncertainty
+
+**Owner:** Duẫn, Tú
+**Sprint key:** 6-3-multiple-horizons-and-forecast-uncertainty
+
+Extend beyond the agreed 24-hour window only after separate validation.
+
+**Acceptance criteria:**
+- Treat 6h/72h as new targets with separate labels, calibration and metrics; not part of MVP.
+- Former antecedent rainfall Story 6.3 moved to Stories 2.1/2.3/3.1.
+
+## Epic 7: Performance and audit improvements
+
+### Story 7.1: Spatial/query performance
+
+**Owner:** Tú, Thuận
+**Sprint key:** 7-1-postgis-spatial-partitioning-province-tile-caching
+
+Optimize measured bottlenecks.
+
+**Acceptance criteria:**
+- Benchmark forecast reads/cache invalidation and spatial queries before adding partitioning.
+
+### Story 7.2: Extended audit and reproducibility
+
+**Owner:** Thuận
+**Sprint key:** 7-2-comprehensive-verification-alert-audit-trail-event-sourcing
+
+Review historical model and delivery decisions.
+
+**Acceptance criteria:**
+- Basic audit is required in MVP; extend retention/search/replay as needed, without requiring full event sourcing.
+
+## Epic 8: Pilot and capstone evidence
+
+### Story 8.1: Pilot evaluation
+
+**Owner:** All five members
+**Sprint key:** 8-1-real-world-early-warning-pilot-test-lao-cai-yen-bai
+
+Evaluate an agreed region without overstating coverage.
+
+**Acceptance criteria:**
+- Select the AOI based on data access; northern Vietnam locations remain candidates.
+- Run shadow evaluation and document missed events, false alarms and lead time before operational claims.
+
+### Story 8.2: Thesis, demo and presentation
+
+**Owner:** All five members
+**Sprint key:** 8-2-capstone-thesis-documentation-demo-video-slide-deck
+
+Present the implemented system and measured evidence accurately.
+
+**Acceptance criteria:**
+- Regenerate historical DOCX/PPTX/video/materials for the rainfall/terrain scope; mark older artifacts superseded.
+- Distinguish planned, mocked and implemented functionality and disclose dataset/model limitations.
