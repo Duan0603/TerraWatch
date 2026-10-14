@@ -3,11 +3,13 @@ import Navbar from '../components/Navbar';
 import VerificationQueue from '../components/VerificationQueue';
 import DetailPanel from '../components/DetailPanel';
 import EmergencyAlertPrompt from '../components/EmergencyAlertPrompt';
+import BroadcastModal from '../components/BroadcastModal';
+import BroadcastHistoryModal from '../components/BroadcastHistoryModal';
 import landslideApi from '../api/landslideApi';
 import { useAuth } from '../context/AuthContext';
 
 export default function DashboardPage() {
-  const { role } = useAuth();
+  const { user, role } = useAuth();
   const isAdmin = role === 'admin';
 
   const [events, setEvents] = useState([]);
@@ -15,6 +17,11 @@ export default function DashboardPage() {
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [alertPromptEvent, setAlertPromptEvent] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Story 4.4: Emergency Alert Broadcast States
+  const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [broadcastTargetEvent, setBroadcastTargetEvent] = useState(null);
 
   // Tải danh sách sự cố từ API / Mock data
   const loadEvents = async () => {
@@ -75,12 +82,26 @@ export default function DashboardPage() {
 
   const selectedEvent = events.find(e => e.id === selectedEventId) || events[0];
 
+  // Xử lý mở Modal Phát Cảnh Báo Khẩn Cấp
+  const handleOpenBroadcast = (ev = null) => {
+    setBroadcastTargetEvent(ev || selectedEvent);
+    setIsBroadcastOpen(true);
+    setAlertPromptEvent(null); // Đóng prompt nếu đang mở
+  };
+
+  // Xử lý khi phát lệnh thành công
+  const handleBroadcastSuccess = (result) => {
+    console.log('Phát lệnh thành công:', result);
+  };
+
   return (
     <div className="dashboard-root">
       {/* 1. Header Navigation */}
       <Navbar 
         soundEnabled={soundEnabled} 
-        setSoundEnabled={setSoundEnabled} 
+        setSoundEnabled={setSoundEnabled}
+        onOpenBroadcast={() => handleOpenBroadcast(selectedEvent)}
+        onOpenHistory={() => setIsHistoryOpen(true)}
       />
 
       {/* 2. Main Operational Layout */}
@@ -102,11 +123,29 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* 3. Post-Approval Emergency Alert Prompt (AC5 & Story 4.4 readiness) */}
+      {/* 3. Post-Approval Emergency Alert Prompt (Story 4.2 -> Story 4.4 Bridge) */}
       <EmergencyAlertPrompt
         event={alertPromptEvent}
         isAdmin={isAdmin}
         onClose={() => setAlertPromptEvent(null)}
+        onOpenBroadcast={handleOpenBroadcast}
+      />
+
+      {/* 4. Modal Phát Cảnh Báo Khẩn Cấp (Story 4.4 AC1 -> AC6) */}
+      <BroadcastModal
+        isOpen={isBroadcastOpen}
+        onClose={() => setIsBroadcastOpen(false)}
+        event={broadcastTargetEvent}
+        allEvents={events}
+        currentUser={user}
+        onBroadcastSuccess={handleBroadcastSuccess}
+      />
+
+      {/* 5. Modal Nhật Ký & Lịch Sử Phát Cảnh Báo (Story 4.4 AC7) */}
+      <BroadcastHistoryModal
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        onOpenNewBroadcast={() => handleOpenBroadcast(selectedEvent)}
       />
     </div>
   );
