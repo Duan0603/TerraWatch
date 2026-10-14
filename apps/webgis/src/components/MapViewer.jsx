@@ -13,7 +13,36 @@ import {
 import { MAPBOX_ACCESS_TOKEN, TERRAIN_CONFIG, CAMERA_PRESETS } from '../config/mapbox';
 import { COMMUNITY_REPORTS } from '../data/mockEvents';
 
-mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+// Kiểm tra xem token Mapbox có hợp lệ không hay đang là placeholder
+const hasValidToken = MAPBOX_ACCESS_TOKEN && !MAPBOX_ACCESS_TOKEN.includes('placeholder');
+
+if (hasValidToken) {
+  mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+}
+
+// Style ảnh vệ tinh ESRI miễn phí toàn cầu (Không cần token, luôn hiển thị ảnh vệ tinh núi đồi chân thực)
+const FREE_SATELLITE_STYLE = {
+  version: 8,
+  sources: {
+    'esri-satellite': {
+      type: 'raster',
+      tiles: [
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+      ],
+      tileSize: 256,
+      attribution: 'Esri World Imagery'
+    }
+  },
+  layers: [
+    {
+      id: 'esri-satellite-layer',
+      type: 'raster',
+      source: 'esri-satellite',
+      minzoom: 0,
+      maxzoom: 19
+    }
+  ]
+};
 
 export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
   const mapContainerRef = useRef(null);
@@ -23,14 +52,18 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState(null);
 
-  // 1. Khởi tạo bản đồ Mapbox GL JS 3D
+  // 1. Khởi tạo bản đồ Mapbox GL JS
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
     try {
+      const activeStyle = hasValidToken 
+        ? 'mapbox://styles/mapbox/satellite-streets-v12' 
+        : FREE_SATELLITE_STYLE;
+
       const map = new mapboxgl.Map({
         container: mapContainerRef.current,
-        style: 'mapbox://styles/mapbox/satellite-streets-v12',
+        style: activeStyle,
         center: selectedEvent ? [selectedEvent.lng, selectedEvent.lat] : CAMERA_PRESETS.defaultCenter,
         zoom: CAMERA_PRESETS.defaultZoom,
         pitch: CAMERA_PRESETS.defaultPitch,
@@ -43,30 +76,32 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
       map.on('load', () => {
         setMapLoaded(true);
 
-        // Kích hoạt 3D Terrain từ nguồn DEM số
-        try {
-          if (!map.getSource(TERRAIN_CONFIG.sourceId)) {
-            map.addSource(TERRAIN_CONFIG.sourceId, {
-              type: 'raster-dem',
-              url: TERRAIN_CONFIG.sourceUrl,
-              tileSize: TERRAIN_CONFIG.tileSize,
-              maxzoom: TERRAIN_CONFIG.maxzoom
-            });
-            map.setTerrain({ source: TERRAIN_CONFIG.sourceId, exaggeration: TERRAIN_CONFIG.exaggeration });
-          }
+        // Kích hoạt 3D Terrain từ nguồn DEM số nếu có token Mapbox
+        if (hasValidToken) {
+          try {
+            if (!map.getSource(TERRAIN_CONFIG.sourceId)) {
+              map.addSource(TERRAIN_CONFIG.sourceId, {
+                type: 'raster-dem',
+                url: TERRAIN_CONFIG.sourceUrl,
+                tileSize: TERRAIN_CONFIG.tileSize,
+                maxzoom: TERRAIN_CONFIG.maxzoom
+              });
+              map.setTerrain({ source: TERRAIN_CONFIG.sourceId, exaggeration: TERRAIN_CONFIG.exaggeration });
+            }
 
-          // Hiệu ứng bầu trời & sương mù (Atmosphere / Sky)
-          if (map.setFog) {
-            map.setFog({
-              color: 'rgb(186, 210, 235)',
-              'high-color': 'rgb(36, 92, 223)',
-              'horizon-blend': 0.02,
-              'space-color': 'rgb(11, 11, 25)',
-              'star-intensity': 0.6
-            });
+            // Hiệu ứng bầu trời & sương mù (Atmosphere / Sky)
+            if (map.setFog) {
+              map.setFog({
+                color: 'rgb(186, 210, 235)',
+                'high-color': 'rgb(36, 92, 223)',
+                'horizon-blend': 0.02,
+                'space-color': 'rgb(11, 11, 25)',
+                'star-intensity': 0.6
+              });
+            }
+          } catch (terrainErr) {
+            console.warn('Lưu ý 3D terrain:', terrainErr);
           }
-        } catch (terrainErr) {
-          console.warn('Lưu ý: Không thể bật 3D terrain (có thể do môi trường mạng):', terrainErr);
         }
 
         // Tạo nguồn dữ liệu GeoJSON cho đa giác sạt lở
