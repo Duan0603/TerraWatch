@@ -1,6 +1,6 @@
 # Story 4.3: Rainfall, Terrain & 24h Hazard Forecast Dashboard (3D WebGIS)
 
-Status: review
+Status: done
 
 ## Story Overview
 **Story Key:** `4-3-rainfall-terrain-24h-hazard-dashboard`  
