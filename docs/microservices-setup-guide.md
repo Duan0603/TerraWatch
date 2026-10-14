@@ -1,5 +1,7 @@
 # Hướng Dẫn Thiết Lập & Quản Trị Hệ Thống Microservices (GeoSentry / TerraWatch)
 
+> **Scope update — 2026-10-13:** Infrastructure notes below describe the existing prototype. Image/segmentation workflows and completion claims are historical. Use the current [README](../README.md), [architecture](../_bmad-output/planning-artifacts/architecture.md) and [API status](API_SPECIFICATION.md) for the rainfall/terrain 24-hour target. New forecast routes are not implemented by this guide.
+
 Tài liệu này hướng dẫn chi tiết cách tổ chức, vận hành, kiểm thử các thành phần kiến trúc nâng cao (**API Gateway**, **Circuit Breaker**, **Message Broker Event Bus**, **Database Schema-per-Service**) và quản trị GitHub repository cho dự án Capstone **GeoSentry**.
 
 ---

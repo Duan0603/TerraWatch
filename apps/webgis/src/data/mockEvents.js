@@ -1,0 +1,72 @@
+export const INITIAL_EVENTS = [
+  {
+    id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    location: 'Mù Cang Chải (Yên Bái) - Sườn Đèo Khau Phạ',
+    coords: '104.085°E, 21.845°N',
+    risk: 'high',
+    status: 'pending',
+    confidence: 0.89,
+    slope: 37.2,
+    ndviDrop: -0.48,
+    areaM2: 1850,
+    detectedAt: '2026-10-02 08:30:15 UTC',
+    satelliteScene: 'Sentinel-2A L2A (10m Multi-spectral)',
+    estPopulation: 120,
+    mapX: 42,
+    mapY: 55,
+    geology: 'Đất đá phong hóa nứt nẻ, ta-luy dương cao'
+  },
+  {
+    id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+    location: 'Quốc Lộ 32 - Bản Dế Xu Phình',
+    coords: '104.110°E, 21.860°N',
+    risk: 'extreme',
+    status: 'pending',
+    confidence: 0.96,
+    slope: 43.5,
+    ndviDrop: -0.62,
+    areaM2: 3400,
+    detectedAt: '2026-10-02 06:15:00 UTC',
+    satelliteScene: 'Sentinel-2B L2A (10m Multi-spectral)',
+    estPopulation: 350,
+    mapX: 48,
+    mapY: 48,
+    geology: 'Sạt trượt đất đá khối lượng lớn chia cắt giao thông'
+  },
+  {
+    id: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
+    location: 'Huyện Bắc Hà (Lào Cai) - Xã Nậm Khánh',
+    coords: '104.280°E, 22.510°N',
+    risk: 'medium',
+    status: 'verified',
+    confidence: 0.74,
+    slope: 28.0,
+    ndviDrop: -0.31,
+    areaM2: 920,
+    detectedAt: '2026-10-01 14:20:00 UTC',
+    satelliteScene: 'Sentinel-2A L2A (10m Multi-spectral)',
+    estPopulation: 45,
+    mapX: 62,
+    mapY: 35,
+    geology: 'Trượt lở đất tầng nông cục bộ taluy đường liên xã'
+  },
+  {
+    id: 'dddddddd-dddd-dddd-dddd-dddddddddddd',
+    location: 'Bảo Yên (Lào Cai) - Thung lũng Làng Nủ',
+    coords: '104.420°E, 22.350°N',
+    risk: 'extreme',
+    status: 'pending',
+    confidence: 0.98,
+    slope: 46.2,
+    ndviDrop: -0.75,
+    areaM2: 8500,
+    detectedAt: '2026-10-02 04:00:10 UTC',
+    satelliteScene: 'Sentinel-2B L2A (10m Multi-spectral)',
+    estPopulation: 520,
+    mapX: 70,
+    mapY: 40,
+    geology: 'Lũ bùn đá quét diện rộng cuốn trôi sườn đồi'
+  }
+];
+
+export default INITIAL_EVENTS;
