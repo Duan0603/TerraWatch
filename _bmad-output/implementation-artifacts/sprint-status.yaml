@@ -1,5 +1,5 @@
 # generated: 2026-10-02
-# last_updated: 2026-10-13
+# last_updated: 2026-10-14
 # project: SECapstone
 # project_key: TERRA
 # tracking_system: file-system
@@ -11,14 +11,14 @@
 development_status:
   epic-1: in-progress
   1-1-multi-role-user-registration-authentication-register-login-jwt: ready-for-dev
-  1-2-postgis-schema-per-service-migration-spatial-indexes: backlog
+  1-2-postgis-schema-per-service-migration-spatial-indexes: done
   1-3-api-gateway-reverse-proxy-rate-limiting: backlog
   epic-1-retrospective: optional
 
-  epic-2: backlog
-  2-1-rainfall-observation-forecast-ingestion: backlog
-  2-2-dem-terrain-feature-extraction: backlog
-  2-3-as-of-rainfall-terrain-feature-snapshots: backlog
+  epic-2: in-progress
+  2-1-rainfall-observation-forecast-ingestion: done
+  2-2-dem-terrain-feature-extraction: done
+  2-3-as-of-rainfall-terrain-feature-snapshots: review
   2-4-community-field-report-api-gps-photo-upload: backlog
   epic-2-retrospective: optional
 
