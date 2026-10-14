@@ -31,7 +31,7 @@ development_status:
 
   epic-4: backlog
   4-1-persisted-forecast-jobs-redis-events-resilience: backlog
-  4-2-webgis-forecast-review-queue: backlog
+  4-2-webgis-forecast-review-queue: review
   4-3-rainfall-terrain-24h-hazard-dashboard: backlog
   4-4-admin-emergency-alert-broadcast-sms-app-push-notification: backlog
   epic-4-retrospective: optional
