@@ -18,7 +18,10 @@ import {
 } from 'lucide-react';
 
 export default function App() {
-  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState('all');
+  const [notice, setNotice] = useState('');
+  const [buffers, setBuffers] = useState(true);
   const [selectedEventId, setSelectedEventId] = useState('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
   
   const [events, setEvents] = useState([
@@ -75,264 +78,55 @@ export default function App() {
     }
   ]);
 
-  const selectedEvent = events.find(e => e.id === selectedEventId) || events[0];
 
-  const handleVerify = (id, newStatus, risk) => {
-    setEvents(events.map(ev => {
-      if (ev.id === id) {
-        return {
-          ...ev,
-          status: newStatus,
-          risk: risk || ev.risk,
-          verifiedAt: new Date().toLocaleTimeString(),
-          verifiedBy: 'Cán bộ trực ban Quốc gia (Duan0603)'
-        };
-      }
-      return ev;
-    }));
-    if (newStatus === 'verified') {
-      alert(`[HỆ THỐNG PHÁT TÁN QUỐC GIA]\nĐã xác thực sự kiện sạt lở: ${id}\nKích hoạt FCM Push Notifications, Cell Broadcast và SMS đến 1,250 người dân trong vùng bán kính 500m!`);
-    } else {
-      alert(`Đã đánh dấu báo động giả (False Alarm) cho sự kiện ${id}.`);
-    }
-  };
-
+  const selectedEvent = events.find(e => e.id === selectedEventId);
+  const risks = { high: 'Cao', extreme: 'Rất cao', medium: 'Trung bình' };
+  const statuses = { pending: 'Chờ thẩm định', verified: 'Đã xác thực', false_alarm: 'Đã bác bỏ' };
+  const normalize = text => text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+  const visible = events.filter(e => (filter === 'all' || e.status === filter) && normalize(e.location).includes(normalize(query)));
   const pendingCount = events.filter(e => e.status === 'pending').length;
   const verifiedCount = events.filter(e => e.status === 'verified').length;
-  const totalPopulationAtRisk = events.filter(e => e.status === 'verified').reduce((acc, curr) => acc + curr.estPopulation, 0);
-
+  const activeEvents = events.filter(e => e.status !== 'false_alarm');
+  const number = value => value.toLocaleString('vi-VN');
+  const handleVerify = status => {
+    setEvents(previous => previous.map(e => e.id === selectedEventId ? { ...e, status } : e));
+    setNotice(statuses[status] + ' trong phiên minh họa. Chưa gửi cảnh báo thực tế.');
+  };
+  const exportReport = () => {
+    const url = URL.createObjectURL(new Blob([JSON.stringify({ mode: 'demo', events }, null, 2)], { type: 'application/json' }));
+    const link = document.createElement('a'); link.href = url; link.download = 'terrawatch-minh-hoa.json'; link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setNotice('Đã xuất báo cáo dữ liệu minh họa dưới dạng JSON.');
+  };
   return (
-    <div className="dashboard-root">
-      {/* 1. TOP HEADER / STATUS BAR */}
-      <header className="top-nav">
-        <div className="nav-left">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 34, height: 34, background: 'linear-gradient(135deg, #0ea5e9, #2563eb)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>
-              GS
+    <div className="app-shell">
+      <header className="topbar"><a className="brand" href="#main"><span className="brand-icon"><Mountain size={25}/></span><span>TerraWatch<small>GIÁM SÁT SẠT LỞ ĐẤT</small></span></a><div className="breadcrumb">Không gian giám sát <span>/</span><strong>Tây Bắc</strong></div><span className="demo-badge">● Chế độ minh họa</span></header>
+      <main className="workspace" id="main">
+        <section className="page-heading"><div><div className="eyebrow">TỔNG QUAN KHU VỰC</div><h1>Giám sát & cảnh báo</h1><p>Theo dõi điểm nguy cơ, xem phân tích và thẩm định sự kiện.</p></div><button className="button secondary" onClick={exportReport}><FileText size={17}/>Xuất báo cáo</button></section>
+        <section className="stats" aria-label="Thống kê sự kiện">
+          {[['Điểm đang theo dõi', activeEvents.length, 'Trong khu vực Tây Bắc', MapPin, 'green'], ['Chờ thẩm định', pendingCount, 'Cần cán bộ kiểm tra', Activity, 'amber'], ['Đã xác thực', verifiedCount, 'Kết quả trong dữ liệu mẫu', ShieldAlert, 'blue'], ['Dân số trong vùng nguy cơ', activeEvents.reduce((n,e)=>n+e.estPopulation,0), 'Ước tính từ dữ liệu mẫu', Radio, 'purple']].map(([label,value,note,Icon,tone]) => <article className="stat" key={label}><div><span>{label}</span><strong>{number(value)}</strong><small>{note}</small></div><span className={'stat-icon '+tone}><Icon size={21}/></span></article>)}
+        </section>
+        <div className="monitor-layout">
+          <section className="panel event-panel" aria-label="Danh sách sự kiện">
+            <div className="panel-heading"><h2>Sự kiện phát hiện</h2><span className="count">{events.length}</span></div>
+            <label className="search"><MapPin size={16}/><input aria-label="Tìm địa điểm" placeholder="Tìm địa điểm…" value={query} onChange={e=>setQuery(e.target.value)}/></label>
+            <div className="filters" aria-label="Lọc trạng thái">{[['all','Tất cả'],['pending','Chờ duyệt'],['verified','Đã xác thực'],['false_alarm','Đã bác bỏ']].map(([value,label])=><button key={value} aria-pressed={filter===value} className={filter===value?'active':''} onClick={()=>setFilter(value)}>{label}</button>)}</div>
+            <div className="event-list">{visible.map(e=><button key={e.id} className={'event-card '+(selectedEventId===e.id?'selected':'')} aria-pressed={selectedEventId===e.id} onClick={()=>setSelectedEventId(e.id)}><div className="event-top"><span className={'risk '+e.risk}>● Nguy cơ {risks[e.risk].toLowerCase()}</span><span>↗</span></div><h3>{e.location}</h3><p><MapPin size={12}/>{e.coords}</p><div className="event-bottom"><span className={'status '+e.status}>{statuses[e.status]}</span><span>AI {Math.round(e.confidence*100)}%</span></div></button>)}{!visible.length&&<div className="empty"><h3>Không có sự kiện phù hợp</h3><p>Thử địa điểm hoặc bộ lọc khác.</p><button className="button secondary" onClick={()=>{setQuery('');setFilter('all');}}>Xóa bộ lọc</button></div>}</div>
+            <div className="list-footer"><Satellite size={15}/>Nguồn mẫu: Sentinel-2A/B</div>
+          </section>
+          <section className="panel map-panel" aria-label="Sơ đồ vị trí minh họa"><div className="panel-heading"><div><h2>Phân bố điểm nguy cơ</h2><p>Tây Bắc, Việt Nam · Sơ đồ minh họa</p></div><button className="layer-button" aria-pressed={buffers} onClick={()=>setBuffers(!buffers)}><Layers size={16}/><span>Vùng ảnh hưởng</span></button></div>
+            <div className="map-surface">
+              <svg className="terrain" viewBox="0 0 900 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="900" height="600" fill="#eaf0e6"/><g fill="none" stroke="#ceddc8" strokeWidth="1.5">{Array.from({length:14},(_,i)=><path key={i} d={`M ${-240+i*38} -60 C ${430+i*26} 120, ${-220+i*35} 350, ${270+i*44} 680`}/>)}{Array.from({length:9},(_,i)=><ellipse key={i} cx="790" cy="140" rx={80+i*29} ry={55+i*26} transform="rotate(-28 790 140)"/>)}</g><path d="M340 -20 C390 130 610 190 490 310 S300 420 420 620" fill="none" stroke="#bbdadb" strokeWidth="18"/><path d="M-30 470 C210 410 200 210 420 290 S690 440 960 230" fill="none" stroke="white" strokeWidth="8"/><path d="M-30 470 C210 410 200 210 420 290 S690 440 960 230" fill="none" stroke="#d9c9a2" strokeWidth="3" strokeDasharray="8 5"/></svg>
+              <span className="region-label lao-cai">LÀO CAI</span><span className="region-label yen-bai">YÊN BÁI</span><div className="compass">N<span>↑</span></div>
+              {visible.filter(e=>e.status!=='false_alarm').map(e=><button key={e.id} className={'map-point '+e.risk+(buffers?' with-buffer':'')+(selectedEventId===e.id?' chosen':'')} style={{left:e.mapX+'%',top:e.mapY+'%'}} aria-label={e.location+', nguy cơ '+risks[e.risk]} aria-pressed={selectedEventId===e.id} onClick={()=>setSelectedEventId(e.id)}><span className="pin"><Mountain size={16}/></span><span className="point-label">{e.location.split(' - ')[0]}</span></button>)}
+              <div className="map-legend">{Object.entries(risks).map(([key,label])=><span key={key}><i className={key}/>{label}</span>)}</div><span className="map-disclaimer">Vị trí và vùng ảnh hưởng chỉ mang tính minh họa</span>
             </div>
-            <div>
-              <h1 style={{ fontSize: 16, fontWeight: 700, letterSpacing: -0.3 }}>GeoSentry (TerraWatch)</h1>
-              <span style={{ fontSize: 11, color: '#94a3b8' }}>Trung Tâm Giám Sát & Cảnh Báo Sạt Lở Đất Viễn Thám Quốc Gia</span>
-            </div>
-          </div>
-
-          <div className="national-badge">
-            <span className="live-pulse"></span>
-            Trực Giám Sát 24/7: Sẵn sàng
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#38bdf8' }}>
-            <Satellite size={15} />
-            <span>Nguồn Vệ Tinh: Sentinel-2A/B (10m) + Landsat-8</span>
-          </div>
+          </section>
+          <aside className="panel detail-panel" aria-label="Chi tiết sự kiện"><div className="panel-heading"><h2>Chi tiết sự kiện</h2><MapPin size={16}/></div><div className="detail-content"><span className={'risk '+selectedEvent.risk}>● Nguy cơ {risks[selectedEvent.risk].toLowerCase()}</span><h2 className="detail-title">{selectedEvent.location}</h2><p className="coordinates"><MapPin size={13}/>{selectedEvent.coords}</p><div className="detail-status"><span>Trạng thái</span><strong className={'status '+selectedEvent.status}>{statuses[selectedEvent.status]}</strong></div><div className="confidence"><div><span>Độ tin cậy AI</span><strong>{Math.round(selectedEvent.confidence*100)}%</strong></div><meter min="0" max="1" value={selectedEvent.confidence}>{Math.round(selectedEvent.confidence*100)}%</meter><small>Kết quả mô hình cần được thẩm định.</small></div><dl className="metrics"><div><dt>Độ dốc</dt><dd>{selectedEvent.slope}°</dd></div><div><dt>Diện tích</dt><dd>{number(selectedEvent.areaM2)} <small>m²</small></dd></div><div><dt>Thay đổi NDVI</dt><dd>{selectedEvent.ndviDrop}</dd></div><div><dt>Dân số ước tính</dt><dd>{selectedEvent.estPopulation} <small>người</small></dd></div></dl><div className="observation"><h3>Ghi nhận địa hình</h3><p>{selectedEvent.geology}</p></div><div className="capture"><Satellite size={17}/><div>{selectedEvent.satelliteScene}<small>{selectedEvent.detectedAt}</small></div></div>{selectedEvent.status==='pending'?<div className="review-actions"><button className="button primary" onClick={()=>handleVerify('verified')}><CheckCircle size={16}/>Xác thực sự kiện</button><button className="button secondary" onClick={()=>handleVerify('false_alarm')}><XCircle size={16}/>Bác bỏ cảnh báo</button></div>:<p className="reviewed"><CheckCircle size={16}/>{statuses[selectedEvent.status]}</p>}<p className="demo-note">Thao tác chỉ áp dụng cho dữ liệu mẫu và được đặt lại khi tải lại trang.</p></div></aside>
         </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button 
-            onClick={() => setSoundEnabled(!soundEnabled)}
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '6px 12px', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}
-          >
-            {soundEnabled ? <Volume2 size={15} color="#22c55e" /> : <VolumeX size={15} color="#94a3b8" />}
-            {soundEnabled ? 'Còi báo: Bật' : 'Còi báo: Tắt'}
-          </button>
-
-          <button 
-            onClick={() => alert('Đang xuất Báo cáo Thẩm định Địa không gian (PDF/GeoJSON) chuẩn Bộ Tài nguyên Môi trường...')}
-            style={{ background: '#0284c7', border: 'none', color: '#fff', padding: '6px 14px', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600 }}
-          >
-            <FileText size={15} />
-            Xuất Báo Cáo Thẩm Định
-          </button>
-        </div>
-      </header>
-
-      {/* 2. MAIN LAYOUT */}
-      <div className="main-layout">
-        {/* LEFT SIDEBAR: Verification Queue & Live Operations */}
-        <aside className="sidebar">
-          {/* Top Quick Stats */}
-          <div className="sidebar-stats">
-            <div className="stat-box">
-              <div className="lbl">Chờ thẩm định</div>
-              <div className="num" style={{ color: '#fb923c' }}>{pendingCount}</div>
-            </div>
-            <div className="stat-box">
-              <div className="lbl">Đã cảnh báo</div>
-              <div className="num" style={{ color: '#ef4444' }}>{verifiedCount}</div>
-            </div>
-            <div className="stat-box">
-              <div className="lbl">Dân số nguy cơ</div>
-              <div className="num" style={{ color: '#38bdf8' }}>{totalPopulationAtRisk}</div>
-            </div>
-          </div>
-
-          <div style={{ padding: '12px 16px 4px', fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Hàng đợi AI phân tích ({events.length} điểm)
-          </div>
-
-          {/* Event List */}
-          <div className="queue-container">
-            {events.map(ev => (
-              <div 
-                key={ev.id}
-                className={`event-card ${selectedEventId === ev.id ? 'selected' : ''}`}
-                onClick={() => setSelectedEventId(ev.id)}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                  <span className={`risk-tag ${ev.risk}`}>Nguy cơ {ev.risk}</span>
-                  <span style={{ fontSize: 11, color: ev.status === 'pending' ? '#fb923c' : '#22c55e', fontWeight: 600 }}>
-                    {ev.status === 'pending' ? '● Chờ cán bộ duyệt' : '✓ Đã thẩm định'}
-                  </span>
-                </div>
-
-                <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>{ev.location}</div>
-                <div style={{ fontSize: 11, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <MapPin size={12} /> {ev.coords}
-                </div>
-
-                <div className="grid-metrics">
-                  <div>Độ dốc: <span>{ev.slope}°</span></div>
-                  <div>Giảm NDVI: <span>{ev.ndviDrop}</span></div>
-                  <div>Độ tin cậy AI: <span style={{ color: '#38bdf8' }}>{(ev.confidence * 100).toFixed(0)}%</span></div>
-                  <div>Diện tích: <span>{ev.areaM2} m²</span></div>
-                </div>
-
-                {ev.status === 'pending' && (
-                  <div className="action-btn-row">
-                    <button 
-                      className="btn-approve"
-                      onClick={(e) => { e.stopPropagation(); handleVerify(ev.id, 'verified', 'extreme'); }}
-                    >
-                      <CheckCircle size={14} /> Phê duyệt & Phát lệnh
-                    </button>
-                    <button 
-                      className="btn-reject"
-                      onClick={(e) => { e.stopPropagation(); handleVerify(ev.id, 'false_alarm'); }}
-                    >
-                      <XCircle size={14} /> Bác bỏ
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </aside>
-
-        {/* RIGHT CANVAS: Interactive Map & HUD Inspector */}
-        <main className="map-canvas-area">
-          {/* HUD Top-Right Info Overlay */}
-          <div className="map-hud-overlay">
-            <div>
-              <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase' }}>Khu vực đang xem</div>
-              <div style={{ fontSize: 14, fontWeight: 700 }}>{selectedEvent.location}</div>
-            </div>
-            <div style={{ height: 28, width: 1, background: 'rgba(255,255,255,0.1)' }}></div>
-            <div>
-              <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase' }}>Ảnh Vệ Tinh Gốc</div>
-              <div style={{ fontSize: 13, color: '#38bdf8' }}>{selectedEvent.satelliteScene}</div>
-            </div>
-            <div style={{ height: 28, width: 1, background: 'rgba(255,255,255,0.1)' }}></div>
-            <div>
-              <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase' }}>Vùng đệm Geofencing</div>
-              <div style={{ fontSize: 13, color: '#f87171', fontWeight: 600 }}>Bán kính 500m (Point-in-Polygon)</div>
-            </div>
-          </div>
-
-          {/* Interactive Map Simulation */}
-          <div className="interactive-map-mock">
-            {/* Topographic grid background */}
-            <div style={{
-              position: 'absolute',
-              inset: 0,
-              backgroundImage: 'radial-gradient(rgba(56, 189, 248, 0.1) 1px, transparent 1px)',
-              backgroundSize: '32px 32px',
-              opacity: 0.7
-            }}></div>
-
-            {/* Radar scanner sweep */}
-            <div className="radar-scan-line"></div>
-
-            {/* Hotspots plotted from events list */}
-            {events.map(ev => (
-              <div 
-                key={ev.id}
-                className="map-hotspot"
-                style={{ left: `${ev.mapX}%`, top: `${ev.mapY}%` }}
-                onClick={() => setSelectedEventId(ev.id)}
-              >
-                {/* 500m Danger buffer zone */}
-                <div className="danger-buffer-ring" style={{
-                  borderColor: ev.risk === 'extreme' ? '#ef4444' : (ev.risk === 'high' ? '#f97316' : '#eab308')
-                }}></div>
-
-                {/* Hotspot core icon */}
-                <div className="hotspot-circle" style={{
-                  backgroundColor: ev.risk === 'extreme' ? '#ef4444' : (ev.risk === 'high' ? '#f97316' : '#eab308')
-                }}>
-                  !
-                </div>
-
-                <div style={{
-                  position: 'absolute',
-                  top: 28,
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  whiteSpace: 'nowrap',
-                  background: 'rgba(6, 9, 17, 0.9)',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  padding: '3px 8px',
-                  borderRadius: 4,
-                  fontSize: 11,
-                  fontWeight: 600
-                }}>
-                  {ev.location.split('-')[0]}
-                </div>
-              </div>
-            ))}
-
-            {/* Bottom floating details card */}
-            <div style={{
-              position: 'absolute',
-              bottom: 24,
-              left: 24,
-              right: 24,
-              background: 'rgba(13, 19, 34, 0.92)',
-              border: '1px solid var(--border-color)',
-              backdropFilter: 'blur(16px)',
-              borderRadius: 12,
-              padding: '16px 20px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              boxShadow: '0 12px 40px rgba(0,0,0,0.6)'
-            }}>
-              <div>
-                <div style={{ fontSize: 11, color: '#38bdf8', fontWeight: 700, textTransform: 'uppercase' }}>
-                  Đặc tính trắc địa & Mô hình DeepLabV3+
-                </div>
-                <div style={{ fontSize: 15, fontWeight: 700, marginTop: 2 }}>
-                  {selectedEvent.location} ({selectedEvent.coords})
-                </div>
-                <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>
-                  {selectedEvent.geology} | Ước tính có <strong>{selectedEvent.estPopulation} hộ dân</strong> trong bán kính nguy hiểm 500m.
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: 10 }}>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 11, color: '#94a3b8' }}>Độ dốc trượt lở</div>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: '#f87171' }}>{selectedEvent.slope}°</div>
-                </div>
-                <div style={{ width: 1, background: 'rgba(255,255,255,0.1)' }}></div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 11, color: '#94a3b8' }}>Diện tích ảnh hưởng</div>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: '#38bdf8' }}>{selectedEvent.areaM2} m²</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </main>
-      </div>
+        <footer className="page-footer"><span>TerraWatch · Hỗ trợ quan sát và thẩm định nguy cơ sạt lở</span><span>Dữ liệu minh họa · Tháng 10/2026</span></footer>
+        <div className="notice" role="status" aria-live="polite">{notice&&<><CheckCircle size={18}/><span>{notice}</span><button aria-label="Đóng thông báo" onClick={()=>setNotice('')}>×</button></>}</div>
+      </main>
     </div>
   );
 }
