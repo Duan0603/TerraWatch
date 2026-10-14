@@ -2,7 +2,12 @@
 // Mapbox GL JS Configuration & 3D Terrain Presets
 // =============================================================================
 
-export const MAPBOX_ACCESS_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || '';
+export const getMapboxToken = () => {
+  const token = localStorage.getItem('terrawatch_mapbox_token') || import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || '';
+  return token.trim();
+};
+
+export const MAPBOX_ACCESS_TOKEN = getMapboxToken();
 
 // Các điểm nóng thiên tai sạt lở Tây Bắc (Yên Bái, Lào Cai)
 export const CAMERA_PRESETS = {

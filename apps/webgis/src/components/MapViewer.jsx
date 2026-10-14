@@ -3,68 +3,63 @@ import mapboxgl from 'mapbox-gl';
 import { 
   Compass, 
   Layers, 
-  Maximize2, 
-  Minimize2, 
-  Eye, 
   MapPin, 
   AlertTriangle,
-  RotateCw
+  Key,
+  ExternalLink,
+  CheckCircle,
+  HelpCircle,
+  ShieldCheck
 } from 'lucide-react';
-import { MAPBOX_ACCESS_TOKEN, TERRAIN_CONFIG, CAMERA_PRESETS } from '../config/mapbox';
+import { getMapboxToken, TERRAIN_CONFIG, CAMERA_PRESETS } from '../config/mapbox';
 import { COMMUNITY_REPORTS } from '../data/mockEvents';
-
-// Kiểm tra xem token Mapbox có hợp lệ không hay đang là placeholder
-const hasValidToken = MAPBOX_ACCESS_TOKEN && !MAPBOX_ACCESS_TOKEN.includes('placeholder');
-
-if (hasValidToken) {
-  mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
-}
-
-// Style ảnh vệ tinh ESRI miễn phí toàn cầu (Không cần token, luôn hiển thị ảnh vệ tinh núi đồi chân thực)
-const FREE_SATELLITE_STYLE = {
-  version: 8,
-  sources: {
-    'esri-satellite': {
-      type: 'raster',
-      tiles: [
-        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-      ],
-      tileSize: 256,
-      attribution: 'Esri World Imagery'
-    }
-  },
-  layers: [
-    {
-      id: 'esri-satellite-layer',
-      type: 'raster',
-      source: 'esri-satellite',
-      minzoom: 0,
-      maxzoom: 19
-    }
-  ]
-};
 
 export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
+
+  const [token, setToken] = useState(() => getMapboxToken());
+  const [tokenInput, setTokenInput] = useState('');
   const [is3D, setIs3D] = useState(true);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState(null);
+  const [showTokenModal, setShowTokenModal] = useState(false);
 
-  // 1. Khởi tạo bản đồ Mapbox GL JS
+  const hasValidToken = token && !token.includes('placeholder') && token.startsWith('pk.');
+
+  // Lưu token mới
+  const handleSaveToken = (newToken) => {
+    const trimmed = (newToken || '').trim();
+    if (!trimmed.startsWith('pk.')) {
+      alert('Token Mapbox không hợp lệ! Token chuẩn phải bắt đầu bằng chữ "pk.eyJ..."');
+      return;
+    }
+    localStorage.setItem('terrawatch_mapbox_token', trimmed);
+    setToken(trimmed);
+    setShowTokenModal(false);
+    setMapError(null);
+  };
+
+  // 1. Khởi tạo bản đồ Mapbox GL JS 3D
   useEffect(() => {
     if (!mapContainerRef.current) return;
+    if (!hasValidToken) {
+      setMapLoaded(false);
+      return;
+    }
+
+    mapboxgl.accessToken = token;
 
     try {
-      const activeStyle = hasValidToken 
-        ? 'mapbox://styles/mapbox/satellite-streets-v12' 
-        : FREE_SATELLITE_STYLE;
+      const initialCenter = (selectedEvent && typeof selectedEvent.lng === 'number' && !isNaN(selectedEvent.lng) && typeof selectedEvent.lat === 'number' && !isNaN(selectedEvent.lat))
+        ? [selectedEvent.lng, selectedEvent.lat]
+        : CAMERA_PRESETS.defaultCenter;
 
       const map = new mapboxgl.Map({
         container: mapContainerRef.current,
-        style: activeStyle,
-        center: selectedEvent ? [selectedEvent.lng, selectedEvent.lat] : CAMERA_PRESETS.defaultCenter,
+        style: 'mapbox://styles/mapbox/satellite-streets-v12',
+        center: initialCenter,
         zoom: CAMERA_PRESETS.defaultZoom,
         pitch: CAMERA_PRESETS.defaultPitch,
         bearing: CAMERA_PRESETS.defaultBearing,
@@ -75,52 +70,53 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
 
       map.on('load', () => {
         setMapLoaded(true);
+        setMapError(null);
 
-        // Kích hoạt 3D Terrain từ nguồn DEM số nếu có token Mapbox
-        if (hasValidToken) {
-          try {
-            if (!map.getSource(TERRAIN_CONFIG.sourceId)) {
-              map.addSource(TERRAIN_CONFIG.sourceId, {
-                type: 'raster-dem',
-                url: TERRAIN_CONFIG.sourceUrl,
-                tileSize: TERRAIN_CONFIG.tileSize,
-                maxzoom: TERRAIN_CONFIG.maxzoom
-              });
-              map.setTerrain({ source: TERRAIN_CONFIG.sourceId, exaggeration: TERRAIN_CONFIG.exaggeration });
-            }
-
-            // Hiệu ứng bầu trời & sương mù (Atmosphere / Sky)
-            if (map.setFog) {
-              map.setFog({
-                color: 'rgb(186, 210, 235)',
-                'high-color': 'rgb(36, 92, 223)',
-                'horizon-blend': 0.02,
-                'space-color': 'rgb(11, 11, 25)',
-                'star-intensity': 0.6
-              });
-            }
-          } catch (terrainErr) {
-            console.warn('Lưu ý 3D terrain:', terrainErr);
+        // Kích hoạt 3D Terrain từ nguồn DEM số (độ phóng đại 1.5x)
+        try {
+          if (!map.getSource(TERRAIN_CONFIG.sourceId)) {
+            map.addSource(TERRAIN_CONFIG.sourceId, {
+              type: 'raster-dem',
+              url: TERRAIN_CONFIG.sourceUrl,
+              tileSize: TERRAIN_CONFIG.tileSize,
+              maxzoom: TERRAIN_CONFIG.maxzoom
+            });
+            map.setTerrain({ source: TERRAIN_CONFIG.sourceId, exaggeration: TERRAIN_CONFIG.exaggeration });
           }
+
+          // Hiệu ứng khí quyển bầu trời & sương mù (Atmosphere / Sky)
+          if (map.setFog) {
+            map.setFog({
+              color: 'rgb(186, 210, 235)',
+              'high-color': 'rgb(36, 92, 223)',
+              'horizon-blend': 0.02,
+              'space-color': 'rgb(11, 11, 25)',
+              'star-intensity': 0.6
+            });
+          }
+        } catch (terrainErr) {
+          console.warn('Lưu ý khi bật 3D terrain:', terrainErr);
         }
 
         // Tạo nguồn dữ liệu GeoJSON cho đa giác sạt lở
-        const features = events.map(ev => ({
-          type: 'Feature',
-          properties: {
-            id: ev.id,
-            location: ev.location,
-            risk: ev.risk,
-            status: ev.status,
-            confidence: ev.confidence,
-            slope: ev.slope,
-            areaM2: ev.areaM2
-          },
-          geometry: {
-            type: 'Polygon',
-            coordinates: [ev.polygon]
-          }
-        }));
+        const features = (events || [])
+          .filter(ev => ev && Array.isArray(ev.polygon) && ev.polygon.length >= 3)
+          .map(ev => ({
+            type: 'Feature',
+            properties: {
+              id: ev.id,
+              location: ev.location,
+              risk: ev.risk,
+              status: ev.status,
+              confidence: ev.confidence,
+              slope: ev.slope,
+              areaM2: ev.areaM2
+            },
+            geometry: {
+              type: 'Polygon',
+              coordinates: [ev.polygon]
+            }
+          }));
 
         if (!map.getSource('landslide-hazards')) {
           map.addSource('landslide-hazards', {
@@ -157,7 +153,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
             paint: {
               'line-color': '#ffffff',
               'line-width': 2.5,
-              'line-opacity': 0.9
+              'line-opacity': 0.95
             }
           });
 
@@ -182,7 +178,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
           const el = document.createElement('div');
           el.className = 'community-report-marker';
           el.innerHTML = `
-            <div style="background: #ef4444; color: white; padding: 4px; border-radius: 50%; box-shadow: 0 0 10px #ef4444; cursor: pointer; border: 2px solid #fff; display: flex;">
+            <div style="background: #ef4444; color: white; padding: 4px; border-radius: 50%; box-shadow: 0 0 12px #ef4444; cursor: pointer; border: 2px solid #fff; display: flex;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
             </div>
           `;
@@ -206,7 +202,10 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
       });
 
       map.on('error', (err) => {
-        console.warn('Mapbox báo lỗi:', err);
+        console.warn('Mapbox báo lỗi tải tài nguyên:', err);
+        if (err.error?.status === 401) {
+          setMapError('Khóa Mapbox Access Token không hợp lệ hoặc đã hết hạn.');
+        }
       });
 
       return () => {
@@ -218,11 +217,12 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
       console.error('Không thể khởi tạo Mapbox GL:', err);
       setMapError(err.message);
     }
-  }, []);
+  }, [token]);
 
   // 2. Camera FlyTo mượt mà khi Cán bộ chọn sự cố từ hàng đợi
   useEffect(() => {
     if (!mapRef.current || !mapLoaded || !selectedEvent) return;
+    if (typeof selectedEvent.lng !== 'number' || isNaN(selectedEvent.lng) || typeof selectedEvent.lat !== 'number' || isNaN(selectedEvent.lat)) return;
 
     mapRef.current.flyTo({
       center: [selectedEvent.lng, selectedEvent.lat],
@@ -261,6 +261,148 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
         style={{ width: '100%', height: '100%' }}
       />
 
+      {/* Khi chưa cấu hình Token hoặc Token lỗi -> Hiển thị hộp thoại kích hoạt bản đồ ngay trên giao diện */}
+      {(!hasValidToken || mapError || showTokenModal) && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(6, 9, 17, 0.88)',
+          backdropFilter: 'blur(12px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 30,
+          padding: 20
+        }}>
+          <div style={{
+            maxWidth: 520,
+            width: '100%',
+            background: 'rgba(13, 19, 34, 0.96)',
+            border: '1px solid rgba(56, 189, 248, 0.35)',
+            borderRadius: 16,
+            padding: 28,
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7)',
+            color: '#f8fafc'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              <div style={{ background: 'rgba(2, 132, 199, 0.2)', padding: 10, borderRadius: 10 }}>
+                <Key size={24} color="#38bdf8" />
+              </div>
+              <div>
+                <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>
+                  KÍCH HOẠT BẢN ĐỒ 3D TERRAIN YÊN BÁI - LÀO CAI
+                </h3>
+                <p style={{ fontSize: 11, color: '#94a3b8', margin: '2px 0 0 0' }}>
+                  Đồ án TerraWatch GeoSentry sử dụng mô hình độ cao số DEM & ảnh vệ tinh Mapbox GL JS
+                </p>
+              </div>
+            </div>
+
+            {mapError && (
+              <div style={{
+                background: 'rgba(239, 68, 68, 0.15)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                padding: '8px 12px',
+                borderRadius: 8,
+                fontSize: 12,
+                color: '#f87171',
+                marginBottom: 14
+              }}>
+                ⚠️ {mapError}
+              </div>
+            )}
+
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.03)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              padding: '12px 14px',
+              borderRadius: 10,
+              fontSize: 12,
+              lineHeight: 1.6,
+              color: '#cbd5e1',
+              marginBottom: 16
+            }}>
+              <div style={{ fontWeight: 600, color: '#38bdf8', marginBottom: 4 }}>
+                👉 Cách lấy Token Mapbox miễn phí (mất chưa đầy 1 phút):
+              </div>
+              <ol style={{ paddingLeft: 18, margin: 0 }}>
+                <li>Truy cập <a href="https://account.mapbox.com/" target="_blank" rel="noreferrer" style={{ color: '#38bdf8', fontWeight: 600, textDecoration: 'underline' }}>account.mapbox.com</a> (đăng ký tài khoản miễn phí).</li>
+                <li>Đăng nhập vào bảng điều khiển, bạn sẽ thấy mục <strong>Default public token</strong>.</li>
+                <li>Bấm nút <strong>Copy</strong> đoạn mã bắt đầu bằng <code>pk.eyJ...</code> rồi dán vào ô bên dưới:</li>
+              </ol>
+            </div>
+
+            <form onSubmit={(e) => { e.preventDefault(); handleSaveToken(tokenInput); }}>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#94a3b8', marginBottom: 6 }}>
+                  Dán Mapbox Public Access Token (pk.eyJ...):
+                </label>
+                <input
+                  type="text"
+                  value={tokenInput}
+                  onChange={(e) => setTokenInput(e.target.value)}
+                  placeholder="pk.eyJ1Ijoi..."
+                  autoFocus
+                  style={{
+                    width: '100%',
+                    background: 'rgba(6, 9, 17, 0.95)',
+                    border: '1px solid #0284c7',
+                    borderRadius: 8,
+                    padding: '11px 14px',
+                    color: '#38bdf8',
+                    fontSize: 13,
+                    fontFamily: 'monospace',
+                    outline: 'none',
+                    boxShadow: '0 0 15px rgba(2, 132, 199, 0.25)'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                {hasValidToken && (
+                  <button
+                    type="button"
+                    onClick={() => setShowTokenModal(false)}
+                    style={{
+                      background: 'transparent',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
+                      color: '#94a3b8',
+                      padding: '8px 16px',
+                      borderRadius: 8,
+                      fontSize: 12,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Đóng
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  style={{
+                    background: '#0284c7',
+                    border: 'none',
+                    color: '#fff',
+                    padding: '9px 20px',
+                    borderRadius: 8,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6
+                  }}
+                >
+                  <CheckCircle size={14} /> Lưu Token & Kích Hoạt Bản Đồ 3D
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Floating 3D Map Controls (Góc trên bên phải) */}
       <div style={{
         position: 'absolute',
@@ -289,7 +431,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
             fontSize: 12,
             fontWeight: 800
           }}
-          title={is3D ? 'Chuyển về chế độ 2D phẳng' : 'Chuyển sang địa hình 3D Terrain'}
+          title={is3D ? 'Chuyển về 2D phẳng' : 'Chuyển sang 3D Terrain'}
         >
           {is3D ? '3D' : '2D'}
         </button>
@@ -313,6 +455,27 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
           title="Xoay thẳng hướng Bắc"
         >
           <Compass size={18} />
+        </button>
+
+        {/* Cấu hình / Đổi Token Mapbox */}
+        <button
+          onClick={() => { setTokenInput(token); setShowTokenModal(true); }}
+          style={{
+            background: 'rgba(13, 19, 34, 0.9)',
+            border: '1px solid rgba(255,255,255,0.2)',
+            color: '#fb923c',
+            width: 38,
+            height: 38,
+            borderRadius: 8,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
+          }}
+          title="Cấu hình Access Token Mapbox"
+        >
+          <Key size={16} />
         </button>
 
         {/* Zoom In */}
