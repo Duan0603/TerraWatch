@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
 venv/
+.venv/
 .env
 .env.local
 .env.*.local
@@ -34,6 +35,15 @@ Desktop.ini
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Flutter generated
+*.iml
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
 
 # Temporary & Output directories
 scratch/

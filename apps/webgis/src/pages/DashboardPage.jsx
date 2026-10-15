@@ -78,9 +78,10 @@ export default function DashboardPage() {
   return (
     <div className="dashboard-root">
       {/* 1. Header Navigation */}
-      <Navbar 
-        soundEnabled={soundEnabled} 
-        setSoundEnabled={setSoundEnabled} 
+      <Navbar
+        soundEnabled={soundEnabled}
+        setSoundEnabled={setSoundEnabled}
+        activeNav="monitor"
       />
 
       {/* 2. Main Operational Layout */}

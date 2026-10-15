@@ -3,7 +3,7 @@ baseline_commit: 6ddb5bdd1f89d1258cf6c446b1ba80dd6cd94d52
 ---
 # Story 2.3: As-of Rainfall & Terrain Feature Snapshots
 
-Status: review
+Status: done
 
 <!-- Note: Created via bmad-create-story workflow for Tú (GIS) & Duẫn (AI) -->
 
