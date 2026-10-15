@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Bell, LogOut, FileText, Activity } from 'lucide-react';
+import { ShieldCheck, Bell, LogOut, FileText, Activity, BellRing, History } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const NAV_ITEMS_OFFICER = [
@@ -15,7 +15,14 @@ const NAV_ITEMS_ADMIN = [
   { label: 'Báo cáo', key: 'reports' },
 ];
 
-export default function Navbar({ activeNav, onNavChange, soundEnabled, setSoundEnabled }) {
+export default function Navbar({
+  activeNav,
+  onNavChange,
+  soundEnabled,
+  setSoundEnabled,
+  onOpenBroadcast,
+  onOpenHistory,
+}) {
   const { user, role, logout } = useAuth();
   const isAdmin = role === 'admin';
 
@@ -61,6 +68,7 @@ export default function Navbar({ activeNav, onNavChange, soundEnabled, setSoundE
           Hệ thống trực tuyến
         </div>
 
+        {/* Sound toggle */}
         <button
           className="btn-ghost"
           onClick={() => setSoundEnabled?.(!soundEnabled)}
@@ -70,11 +78,44 @@ export default function Navbar({ activeNav, onNavChange, soundEnabled, setSoundE
           <Activity size={14} color={soundEnabled ? '#22C55E' : undefined} />
         </button>
 
-        <button className="btn-ghost" title="Xuất báo cáo">
+        {/* Lịch sử phát lệnh */}
+        <button
+          className="btn-ghost"
+          onClick={onOpenHistory}
+          title="Xem nhật ký phát lệnh cảnh báo SMS / FCM"
+        >
+          <History size={14} />
+          Lịch sử lệnh
+        </button>
+
+        {/* Phát cảnh báo — Admin only */}
+        <button
+          className="btn-danger"
+          onClick={() => {
+            if (isAdmin) {
+              onOpenBroadcast?.();
+            } else {
+              alert('Chỉ tài khoản Admin mới có quyền phát lệnh cảnh báo khẩn cấp.');
+            }
+          }}
+          style={{ opacity: isAdmin ? 1 : 0.5, cursor: isAdmin ? 'pointer' : 'not-allowed' }}
+          title={isAdmin ? 'Phát cảnh báo (SMS / App Push)' : 'Cần quyền Admin'}
+        >
+          <BellRing size={14} />
+          Phát cảnh báo
+        </button>
+
+        {/* Xuất báo cáo */}
+        <button
+          className="btn-ghost"
+          onClick={() => alert('Đang xuất Báo cáo Thẩm định (PDF/GeoJSON)...')}
+          title="Xuất báo cáo"
+        >
           <FileText size={14} />
           Xuất báo cáo
         </button>
 
+        {/* Notification bell */}
         <button className="btn-ghost" style={{ padding: '6px 8px', position: 'relative' }} title="Thông báo">
           <Bell size={16} />
           <span style={{
@@ -84,6 +125,7 @@ export default function Navbar({ activeNav, onNavChange, soundEnabled, setSoundE
           }} />
         </button>
 
+        {/* User info */}
         <div className="nav-user">
           <div className="nav-avatar">{initials}</div>
           <div className="nav-user-info">
@@ -92,6 +134,7 @@ export default function Navbar({ activeNav, onNavChange, soundEnabled, setSoundE
           </div>
         </div>
 
+        {/* Logout */}
         <button className="btn-ghost" onClick={logout} title="Đăng xuất">
           <LogOut size={14} />
         </button>
