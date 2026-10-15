@@ -36,7 +36,7 @@ export default function DetailPanel({ selectedEvent, events, onSelectEvent }) {
         </div>
       </div>
 
-      {/* 2. Mapbox GL JS 3D Terrain Map Viewer */}
+      {/* 2. MapLibre GL JS 3D Terrain Map Viewer */}
       <MapViewer
         events={events}
         selectedEvent={selectedEvent}

@@ -614,3 +614,86 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
+
+/* ── MAPLIBRE CONTROLS & RESPONSIVE (Story 1.2 AC 1.2.3, AC 1.2.5) ── */
+
+.maplibregl-ctrl-top-right {
+  top: 10px !important;
+  right: 10px !important;
+}
+
+.maplibregl-ctrl-group {
+  background: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(4px) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+}
+
+.maplibregl-ctrl-group button {
+  width: 32px !important;
+  height: 32px !important;
+  border: none !important;
+}
+
+.maplibregl-ctrl-group button:hover {
+  background: var(--surface-2) !important;
+}
+
+.map-floating-controls {
+  right: 58px !important;
+}
+
+@media (max-width: 1024px) {
+  .map-floating-controls {
+    right: 58px !important;
+    gap: 6px !important;
+  }
+  .map-floating-controls .btn-text {
+    display: none !important;
+  }
+  .map-floating-controls .map-ctrl-btn {
+    padding: 7px !important;
+  }
+  .location-selector-label {
+    display: none !important;
+  }
+  .location-selector-trigger {
+    padding: 6px 8px !important;
+    gap: 6px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .location-selector-menu {
+    width: 220px !important;
+    right: -20px !important;
+  }
+}
+
+/* ── LOCATION SELECTOR (Story 1.3 AC 1.3.2, AC 1.3.4) ── */
+.location-selector-trigger:hover {
+  border-color: var(--primary) !important;
+  box-shadow: 0 4px 12px rgba(8, 123, 112, 0.12) !important;
+}
+
+.location-option-item:hover {
+  background: var(--surface-2) !important;
+}
+
+.location-option-item.active:hover {
+  background: #E4F4F1 !important;
+}
+
+/* ── COORDINATE INSPECTOR POPUP (Story 1.4 AC 1.4.2) ── */
+.coord-popup-box .maplibregl-popup-content {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 16px rgba(23, 37, 36, 0.15) !important;
+  border: 1px solid var(--border) !important;
+  padding: 8px 12px !important;
+  background: #FFFFFF !important;
+}
+
+
+

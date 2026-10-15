@@ -1,238 +1,407 @@
 import React, { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
+import * as maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
+
+// Cấu hình Web Worker độc lập cho MapLibre trong môi trường Vite/Rollup
+if (typeof maplibregl.setWorkerUrl === 'function') {
+  maplibregl.setWorkerUrl(workerUrl);
+}
+
 import { 
   Compass, 
   Layers, 
   MapPin, 
   AlertTriangle,
-  Key,
-  ExternalLink,
-  CheckCircle,
-  HelpCircle,
-  ShieldCheck
+  RotateCcw
 } from 'lucide-react';
-import { getMapboxToken, TERRAIN_CONFIG, CAMERA_PRESETS } from '../config/mapbox';
+import { 
+  STYLE_URL, 
+  TERRAIN_CONFIG, 
+  DEFAULT_CAMERA, 
+  INCIDENT_CAMERA, 
+  ERROR_MESSAGE, 
+  ATTRIBUTIONS 
+} from '../config/mapConfig';
 import { COMMUNITY_REPORTS } from '../data/mockEvents';
+import { DEFAULT_LOCATION_ID } from '../data/mountainLocations';
+import LocationSelector from './LocationSelector';
 
 export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
+  const clickMarkerRef = useRef(null);
+  const startTimeRef = useRef(performance.now());
+  const hasMeasuredIdleRef = useRef(false);
 
-  const [token, setToken] = useState(() => getMapboxToken());
-  const [tokenInput, setTokenInput] = useState('');
   const [is3D, setIs3D] = useState(true);
+  const [currentLocationId, setCurrentLocationId] = useState(DEFAULT_LOCATION_ID);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState(null);
-  const [showTokenModal, setShowTokenModal] = useState(false);
+  const [idleLoadTime, setIdleLoadTime] = useState(null);
 
-  const hasValidToken = token && !token.includes('placeholder') && token.startsWith('pk.');
+  // Tham chiếu luôn cập nhật cho events và callback onSelectEvent (AC 1.5.2, AC 1.5.3)
+  const eventsRef = useRef(events);
+  useEffect(() => {
+    eventsRef.current = events;
+  }, [events]);
 
-  // Lưu token mới
-  const handleSaveToken = (newToken) => {
-    const trimmed = (newToken || '').trim();
-    if (!trimmed.startsWith('pk.')) {
-      alert('Token Mapbox không hợp lệ! Token chuẩn phải bắt đầu bằng chữ "pk.eyJ..."');
-      return;
+  const onSelectEventRef = useRef(onSelectEvent);
+  useEffect(() => {
+    onSelectEventRef.current = onSelectEvent;
+  }, [onSelectEvent]);
+
+  // Chuyển đổi danh sách sự cố sang chuẩn GeoJSON FeatureCollection (AC 1.5.1)
+  const createFeatureCollection = (eventList) => ({
+    type: 'FeatureCollection',
+    features: (eventList || [])
+      .filter(ev => ev && Array.isArray(ev.polygon) && ev.polygon.length >= 3)
+      .map(ev => ({
+        type: 'Feature',
+        properties: {
+          id: ev.id,
+          location: ev.location,
+          risk: ev.risk,
+          status: ev.status,
+          confidence: ev.confidence,
+          slope: ev.slope,
+          areaM2: ev.areaM2
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [ev.polygon]
+        }
+      }))
+  });
+
+  // Thiết lập địa hình 3D Terrarium DEM & Bầu trời khí quyển (AC 1.1.3, AC 1.1.4, AC 1.5.2)
+  const setupTerrainAndSky = (map) => {
+    if (!map) return;
+    try {
+      if (!map.getSource(TERRAIN_CONFIG.sourceId)) {
+        map.addSource(TERRAIN_CONFIG.sourceId, {
+          type: 'raster-dem',
+          tiles: [TERRAIN_CONFIG.sourceUrl],
+          tileSize: TERRAIN_CONFIG.tileSize,
+          maxzoom: TERRAIN_CONFIG.maxzoom,
+          encoding: TERRAIN_CONFIG.encoding,
+          attribution: TERRAIN_CONFIG.attribution
+        });
+        map.setTerrain({ 
+          source: TERRAIN_CONFIG.sourceId, 
+          exaggeration: TERRAIN_CONFIG.exaggeration 
+        });
+      }
+
+      if (typeof map.setSky === 'function') {
+        map.setSky({
+          'sky-color': '#199EE0',
+          'horizon-color': '#FFFFFF',
+          'fog-color': '#E8F2EF'
+        });
+      }
+    } catch (terrainErr) {
+      console.warn('Lưu ý khi bật 3D terrain/sky:', terrainErr);
     }
-    localStorage.setItem('terrawatch_mapbox_token', trimmed);
-    setToken(trimmed);
-    setShowTokenModal(false);
-    setMapError(null);
   };
 
-  // 1. Khởi tạo bản đồ Mapbox GL JS 3D
-  useEffect(() => {
-    if (!mapContainerRef.current) return;
-    if (!hasValidToken) {
-      setMapLoaded(false);
-      return;
+  // Nạp an toàn các lớp phân vùng nguy cơ sạt lở (AC 1.5.1, AC 1.5.2, AC 1.5.3, Rule R6)
+  const ensureLandslideLayers = (map, eventList) => {
+    if (!map) return;
+    const style = map.getStyle();
+    if (!style) return;
+
+    const data = createFeatureCollection(eventList);
+
+    if (!map.getSource('landslide-hazards')) {
+      map.addSource('landslide-hazards', {
+        type: 'geojson',
+        data
+      });
+    } else {
+      map.getSource('landslide-hazards').setData(data);
     }
 
-    mapboxgl.accessToken = token;
+    // Lớp màu nền đa giác sạt lở (Fill layer)
+    if (!map.getLayer('landslide-polygons-fill')) {
+      map.addLayer({
+        id: 'landslide-polygons-fill',
+        type: 'fill',
+        source: 'landslide-hazards',
+        paint: {
+          'fill-color': [
+            'match',
+            ['get', 'risk'],
+            'extreme', '#ef4444',
+            'high', '#f97316',
+            'medium', '#eab308',
+            /* default */ '#10b981'
+          ],
+          'fill-opacity': 0.45
+        }
+      });
+
+      // Click vào đa giác sạt lở -> Chọn sự cố (AC 1.5.3)
+      map.on('click', 'landslide-polygons-fill', (e) => {
+        if (e.features && e.features[0] && onSelectEventRef.current) {
+          const eventId = e.features[0].properties.id;
+          onSelectEventRef.current(eventId);
+        }
+      });
+
+      map.on('mouseenter', 'landslide-polygons-fill', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', 'landslide-polygons-fill', () => {
+        map.getCanvas().style.cursor = '';
+      });
+    }
+
+    // Lớp viền nét đa giác (Line layer)
+    if (!map.getLayer('landslide-polygons-outline')) {
+      map.addLayer({
+        id: 'landslide-polygons-outline',
+        type: 'line',
+        source: 'landslide-hazards',
+        paint: {
+          'line-color': '#ffffff',
+          'line-width': 2.0,
+          'line-opacity': 0.95
+        }
+      });
+    }
+  };
+
+  // Nạp các marker Báo cáo hiện trường cộng đồng (AC 1.5.4)
+  const renderCommunityReportMarkers = (map) => {
+    if (!map) return;
+    markersRef.current.forEach(m => m.remove());
+    markersRef.current = [];
+
+    COMMUNITY_REPORTS.forEach(rep => {
+      const el = document.createElement('div');
+      el.className = 'community-report-marker';
+      el.innerHTML = `
+        <div style="background: #ef4444; color: white; padding: 4px; border-radius: 50%; box-shadow: 0 0 12px #ef4444; cursor: pointer; border: 2px solid #fff; display: flex;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+        </div>
+      `;
+
+      const popup = new maplibregl.Popup({ offset: 25 }).setHTML(`
+        <div style="color: #0f172a; padding: 4px; font-family: sans-serif;">
+          <div style="font-weight: 700; font-size: 12px; margin-bottom: 2px; color: #dc2626;">📍 BÁO CÁO CỘNG ĐỒNG</div>
+          <div style="font-size: 11px; font-weight: 600; margin-bottom: 2px;">${rep.reporterName}</div>
+          <div style="font-size: 10px; color: #475569; margin-bottom: 4px;">${rep.description}</div>
+          <div style="font-size: 9px; color: #64748b;">Gửi lúc: ${rep.time}</div>
+        </div>
+      `);
+
+      const marker = new maplibregl.Marker({ element: el })
+        .setLngLat(rep.coords)
+        .setPopup(popup)
+        .addTo(map);
+
+      markersRef.current.push(marker);
+    });
+  };
+
+  // 1. Khởi tạo bản đồ MapLibre GL JS 3D không cần Token
+  useEffect(() => {
+    if (!mapContainerRef.current || mapRef.current) return;
+
+    startTimeRef.current = performance.now();
+    hasMeasuredIdleRef.current = false;
 
     try {
       const initialCenter = (selectedEvent && typeof selectedEvent.lng === 'number' && !isNaN(selectedEvent.lng) && typeof selectedEvent.lat === 'number' && !isNaN(selectedEvent.lat))
         ? [selectedEvent.lng, selectedEvent.lat]
-        : CAMERA_PRESETS.defaultCenter;
+        : DEFAULT_CAMERA.center;
 
-      const map = new mapboxgl.Map({
+      const map = new maplibregl.Map({
         container: mapContainerRef.current,
-        style: 'mapbox://styles/mapbox/outdoors-v12',
+        style: STYLE_URL,
         center: initialCenter,
-        zoom: CAMERA_PRESETS.defaultZoom,
-        pitch: CAMERA_PRESETS.defaultPitch,
-        bearing: CAMERA_PRESETS.defaultBearing,
-        antialias: true
+        zoom: DEFAULT_CAMERA.zoom,
+        pitch: DEFAULT_CAMERA.pitch,
+        bearing: DEFAULT_CAMERA.bearing,
+        antialias: true,
+        customAttribution: ATTRIBUTIONS
       });
 
+      // Thêm thanh công cụ NavigationControl chuẩn (AC 1.2.3)
+      const navControl = new maplibregl.NavigationControl({
+        showCompass: true,
+        showZoom: true,
+        visualizePitch: true
+      });
+      map.addControl(navControl, 'top-right');
+
       mapRef.current = map;
+
+      // Đo thời gian nạp xong bản đồ nền qua sự kiện 'idle' lần đầu (AC 1.1.2)
+      map.once('idle', () => {
+        if (!hasMeasuredIdleRef.current) {
+          hasMeasuredIdleRef.current = true;
+          const duration = Math.round(performance.now() - startTimeRef.current);
+          setIdleLoadTime(duration);
+          console.log(`[Performance] MapLibre initial 'idle' event fired in ${duration}ms`);
+        }
+      });
+
+      // Lắng nghe tải style (hỗ trợ khôi phục an toàn sau khi đổi hoặc nạp lại style) (AC 1.5.2)
+      map.on('style.load', () => {
+        setupTerrainAndSky(map);
+        ensureLandslideLayers(map, eventsRef.current);
+        if (markersRef.current.length === 0) {
+          renderCommunityReportMarkers(map);
+        }
+      });
 
       map.on('load', () => {
         setMapLoaded(true);
         setMapError(null);
 
-        // Kích hoạt 3D Terrain từ nguồn DEM số (độ phóng đại 1.5x)
-        try {
-          if (!map.getSource(TERRAIN_CONFIG.sourceId)) {
-            map.addSource(TERRAIN_CONFIG.sourceId, {
-              type: 'raster-dem',
-              url: TERRAIN_CONFIG.sourceUrl,
-              tileSize: TERRAIN_CONFIG.tileSize,
-              maxzoom: TERRAIN_CONFIG.maxzoom
-            });
-            map.setTerrain({ source: TERRAIN_CONFIG.sourceId, exaggeration: TERRAIN_CONFIG.exaggeration });
-          }
-
-          // Hiệu ứng sương mù nhẹ (light atmosphere)
-          if (map.setFog) {
-            map.setFog({
-              color: 'rgb(245, 248, 247)',
-              'high-color': 'rgb(186, 220, 214)',
-              'horizon-blend': 0.02,
-              'space-color': 'rgb(230, 242, 240)',
-              'star-intensity': 0
-            });
-          }
-        } catch (terrainErr) {
-          console.warn('Lưu ý khi bật 3D terrain:', terrainErr);
+        setupTerrainAndSky(map);
+        ensureLandslideLayers(map, eventsRef.current);
+        if (markersRef.current.length === 0) {
+          renderCommunityReportMarkers(map);
         }
-
-        // Tạo nguồn dữ liệu GeoJSON cho đa giác sạt lở
-        const features = (events || [])
-          .filter(ev => ev && Array.isArray(ev.polygon) && ev.polygon.length >= 3)
-          .map(ev => ({
-            type: 'Feature',
-            properties: {
-              id: ev.id,
-              location: ev.location,
-              risk: ev.risk,
-              status: ev.status,
-              confidence: ev.confidence,
-              slope: ev.slope,
-              areaM2: ev.areaM2
-            },
-            geometry: {
-              type: 'Polygon',
-              coordinates: [ev.polygon]
-            }
-          }));
-
-        if (!map.getSource('landslide-hazards')) {
-          map.addSource('landslide-hazards', {
-            type: 'geojson',
-            data: {
-              type: 'FeatureCollection',
-              features
-            }
-          });
-
-          // Lớp màu nền đa giác sạt lở (Fill layer)
-          map.addLayer({
-            id: 'landslide-polygons-fill',
-            type: 'fill',
-            source: 'landslide-hazards',
-            paint: {
-              'fill-color': [
-                'match',
-                ['get', 'risk'],
-                'extreme', '#ef4444',
-                'high', '#f97316',
-                'medium', '#eab308',
-                /* default */ '#10b981'
-              ],
-              'fill-opacity': 0.65
-            }
-          });
-
-          // Lớp viền nét đa giác (Line layer)
-          map.addLayer({
-            id: 'landslide-polygons-outline',
-            type: 'line',
-            source: 'landslide-hazards',
-            paint: {
-              'line-color': '#ffffff',
-              'line-width': 2.5,
-              'line-opacity': 0.95
-            }
-          });
-
-          // Click vào đa giác sạt lở -> Chọn sự cố
-          map.on('click', 'landslide-polygons-fill', (e) => {
-            if (e.features && e.features[0]) {
-              const eventId = e.features[0].properties.id;
-              onSelectEvent(eventId);
-            }
-          });
-
-          map.on('mouseenter', 'landslide-polygons-fill', () => {
-            map.getCanvas().style.cursor = 'pointer';
-          });
-          map.on('mouseleave', 'landslide-polygons-fill', () => {
-            map.getCanvas().style.cursor = '';
-          });
-        }
-
-        // Thêm marker Báo cáo hiện trường cộng đồng (community_reports)
-        COMMUNITY_REPORTS.forEach(rep => {
-          const el = document.createElement('div');
-          el.className = 'community-report-marker';
-          el.innerHTML = `
-            <div style="background: #ef4444; color: white; padding: 4px; border-radius: 50%; box-shadow: 0 0 12px #ef4444; cursor: pointer; border: 2px solid #fff; display: flex;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-            </div>
-          `;
-
-          const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-            <div style="color: #0f172a; padding: 4px; font-family: sans-serif;">
-              <div style="font-weight: 700; font-size: 12px; margin-bottom: 2px; color: #dc2626;">📍 BÁO CÁO CỘNG ĐỒNG</div>
-              <div style="font-size: 11px; font-weight: 600; margin-bottom: 2px;">${rep.reporterName}</div>
-              <div style="font-size: 10px; color: #475569; margin-bottom: 4px;">${rep.description}</div>
-              <div style="font-size: 9px; color: #64748b;">Gửi lúc: ${rep.time}</div>
-            </div>
-          `);
-
-          const marker = new mapboxgl.Marker(el)
-            .setLngLat(rep.coords)
-            .setPopup(popup)
-            .addTo(map);
-
-          markersRef.current.push(marker);
-        });
       });
 
+      // Lọc lỗi nạp Style/DEM chính vs lỗi tile đơn lẻ (AC 1.1.6)
       map.on('error', (err) => {
-        console.warn('Mapbox báo lỗi tải tài nguyên:', err);
-        if (err.error?.status === 401) {
-          setMapError('Khóa Mapbox Access Token không hợp lệ hoặc đã hết hạn.');
+        const status = err.error?.status;
+        const isCriticalSource = err.sourceId === TERRAIN_CONFIG.sourceId || err.dataType === 'style' || status === 401 || status === 403;
+        if (isCriticalSource) {
+          console.error('Lỗi nghiêm trọng khi tải tài nguyên bản đồ:', err);
+          setMapError(ERROR_MESSAGE);
+        } else {
+          console.warn('Cảnh báo nạp tile bản đồ:', err);
         }
+      });
+
+      // 1.4 Click chọn điểm trên bản đồ để xem tọa độ không gian (Story 1.4, AC 1.4.1 - 1.4.5, Rule R10)
+      map.on('click', (e) => {
+        // Ưu tiên click vào polygon sự cố sạt lở (AC 1.4.4, FR-MAP-13)
+        const features = map.queryRenderedFeatures(e.point, { layers: ['landslide-polygons-fill'] });
+        if (features && features.length > 0) {
+          return;
+        }
+
+        // Ưu tiên click vào marker báo cáo cộng đồng (AC 1.4.4, FR-MAP-13)
+        if (e.originalEvent && e.originalEvent.target) {
+          const isCommunityMarker = e.originalEvent.target.closest('.community-report-marker');
+          if (isCommunityMarker) {
+            return;
+          }
+        }
+
+        // Xóa Marker ghim điểm cũ (nếu có) - Đảm bảo duy nhất 1 Marker (AC 1.4.1, Rule R10)
+        if (clickMarkerRef.current) {
+          clickMarkerRef.current.remove();
+          clickMarkerRef.current = null;
+        }
+
+        const lng = e.lngLat.lng;
+        const lat = e.lngLat.lat;
+
+        // Popup hiển thị tọa độ định dạng 5 chữ số thập phân, không có nút clipboard (AC 1.4.2)
+        const popupContent = `
+          <div class="coordinate-inspector-popup" style="color: #172524; padding: 4px 6px; font-family: Inter, sans-serif;">
+            <div style="font-size: 10px; font-weight: 700; color: #087B70; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
+              <span>📍</span> TỌA ĐỘ ĐIỂM CHỌN
+            </div>
+            <div style="font-size: 12px; font-weight: 600; color: #172524; line-height: 1.4;">
+              Kinh độ: <span style="color: #087B70; font-family: monospace;">${lng.toFixed(5)}°Đ</span>
+            </div>
+            <div style="font-size: 12px; font-weight: 600; color: #172524; line-height: 1.4;">
+              Vĩ độ: <span style="color: #087B70; font-family: monospace;">${lat.toFixed(5)}°B</span>
+            </div>
+          </div>
+        `;
+
+        const popup = new maplibregl.Popup({
+          offset: 25,
+          closeButton: true,
+          closeOnClick: false,
+          className: 'coord-popup-box'
+        }).setHTML(popupContent);
+
+        // Tạo Marker mới tại vị trí click (màu thương hiệu GeoSentry #087B70)
+        const marker = new maplibregl.Marker({
+          color: '#087B70'
+        })
+          .setLngLat([lng, lat])
+          .setPopup(popup)
+          .addTo(map);
+
+        marker.togglePopup();
+        clickMarkerRef.current = marker;
       });
 
       return () => {
+        if (clickMarkerRef.current) {
+          clickMarkerRef.current.remove();
+          clickMarkerRef.current = null;
+        }
         markersRef.current.forEach(m => m.remove());
         markersRef.current = [];
-        map.remove();
+        if (mapRef.current) {
+          mapRef.current.remove();
+          mapRef.current = null;
+        }
       };
     } catch (err) {
-      console.error('Không thể khởi tạo Mapbox GL:', err);
-      setMapError(err.message);
+      console.error('Không thể khởi tạo MapLibre GL:', err);
+      setMapError(ERROR_MESSAGE);
     }
-  }, [token]);
+  }, []); // Run once on mount (R3)
 
-  // 2. Camera FlyTo mượt mà khi Cán bộ chọn sự cố từ hàng đợi
+  // 1b. Đồng bộ nguồn GeoJSON sạt lở khi prop events thay đổi (AC 1.5.2)
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const map = mapRef.current;
+    const source = map.getSource('landslide-hazards');
+    if (source) {
+      source.setData(createFeatureCollection(events));
+    } else {
+      ensureLandslideLayers(map, events);
+    }
+  }, [events, mapLoaded]);
+
+  // 2. Camera FlyTo mượt mà khi Cán bộ chọn sự cố từ hàng đợi (AC 1.5.5, FR-MAP-12)
+  const prevSelectedEventIdRef = useRef(null);
   useEffect(() => {
     if (!mapRef.current || !mapLoaded || !selectedEvent) return;
+    if (selectedEvent.id === prevSelectedEventIdRef.current) return;
+    prevSelectedEventIdRef.current = selectedEvent.id;
+
     if (typeof selectedEvent.lng !== 'number' || isNaN(selectedEvent.lng) || typeof selectedEvent.lat !== 'number' || isNaN(selectedEvent.lat)) return;
 
     mapRef.current.flyTo({
       center: [selectedEvent.lng, selectedEvent.lat],
-      zoom: 14.0,
-      pitch: is3D ? 62 : 0,
+      zoom: INCIDENT_CAMERA.zoom,
+      pitch: is3D ? INCIDENT_CAMERA.pitch : 0,
       bearing: is3D ? 35 : 0,
-      duration: 1800,
+      duration: INCIDENT_CAMERA.duration,
       essential: true
     });
   }, [selectedEvent, mapLoaded, is3D]);
+
+  // Đảm bảo canvas bản đồ tự động co giãn theo kích thước container (AC 1.2.5, R8)
+  useEffect(() => {
+    if (!mapContainerRef.current) return;
+    const resizeObserver = new ResizeObserver(() => {
+      if (mapRef.current) {
+        mapRef.current.resize();
+      }
+    });
+    resizeObserver.observe(mapContainerRef.current);
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   // 3. Chuyển đổi chế độ xem 2D / 3D
   const toggle3D = () => {
@@ -247,22 +416,65 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
     });
   };
 
-  // 4. Xoay về hướng Bắc
-  const resetNorth = () => {
+  // 4. Về góc nhìn toàn cảnh mặc định (Toàn Việt Nam) (AC 1.2.1, AC 1.2.4)
+  const resetDefaultView = () => {
     if (!mapRef.current) return;
-    mapRef.current.resetNorthPitch({ duration: 1000 });
+    setIs3D(true);
+    setCurrentLocationId(DEFAULT_LOCATION_ID);
+    prevSelectedEventIdRef.current = null;
+    mapRef.current.flyTo({
+      center: DEFAULT_CAMERA.center,
+      zoom: DEFAULT_CAMERA.zoom,
+      pitch: DEFAULT_CAMERA.pitch,
+      bearing: DEFAULT_CAMERA.bearing,
+      duration: 1500,
+      essential: true
+    });
+  };
+
+  // 4b. Điều hướng camera tới khu vực miền núi được chọn (Story 1.3 AC 1.3.3, AC 1.3.4, R3, R4)
+  const handleSelectLocation = (loc) => {
+    if (!mapRef.current || !loc) return;
+    setCurrentLocationId(loc.id);
+    prevSelectedEventIdRef.current = null;
+
+    // Kích hoạt 3D terrain nếu chọn một trong các tỉnh miền núi (Task 3.2)
+    if (loc.id !== 'vietnam') {
+      setIs3D(true);
+    }
+
+    mapRef.current.flyTo({
+      center: loc.center,
+      zoom: loc.zoom,
+      pitch: loc.pitch,
+      bearing: loc.bearing,
+      duration: 1800,
+      essential: true
+    });
+  };
+
+  // 5. Thử lại nạp style trên cùng instance khi có lỗi (AC 1.1.6)
+  const handleRetry = () => {
+    setMapError(null);
+    if (mapRef.current) {
+      try {
+        mapRef.current.setStyle(STYLE_URL);
+      } catch (e) {
+        console.error('Lỗi khi nạp lại style:', e);
+      }
+    }
   };
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
-      {/* Khung chứa canvas Mapbox */}
+      {/* Khung chứa canvas MapLibre (R8) */}
       <div 
         ref={mapContainerRef} 
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: '100%', height: '100%', minHeight: 400 }}
       />
 
-      {/* Token modal — light theme */}
-      {(!hasValidToken || mapError || showTokenModal) && (
+      {/* Fallback Overlay khi lỗi nạp Style/DEM chính (AC 1.1.6) */}
+      {mapError && (
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
           background: 'rgba(245,248,247,0.92)',
@@ -271,147 +483,117 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
           zIndex: 30, padding: 20
         }}>
           <div style={{
-            maxWidth: 480, width: '100%',
+            maxWidth: 420, width: '100%',
             background: '#fff',
             border: '1px solid #DCE5E2',
-            borderRadius: 16, padding: 28,
+            borderRadius: 16, padding: 24,
             boxShadow: '0 10px 40px rgba(23,37,36,0.12)',
+            textAlign: 'center'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-              <div style={{ background: '#E4F4F1', padding: 10, borderRadius: 10 }}>
-                <Key size={22} color="#087B70" />
-              </div>
-              <div>
-                <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: '#172524' }}>
-                  Kích hoạt bản đồ địa hình 3D
-                </h3>
-                <p style={{ fontSize: 11, color: '#687977', margin: '3px 0 0' }}>
-                  TerraWatch dùng Mapbox GL JS · DEM 30m · Lào Cai
-                </p>
-              </div>
-            </div>
-
-            {mapError && (
-              <div style={{
-                background: '#FFF0F0', border: '1px solid #FECACA',
-                padding: '8px 12px', borderRadius: 8,
-                fontSize: 12, color: '#EF4444', marginBottom: 14
-              }}>
-                ⚠️ {mapError}
-              </div>
-            )}
-
-            <div style={{
-              background: '#F5F8F7', border: '1px solid #DCE5E2',
-              padding: '12px 14px', borderRadius: 10,
-              fontSize: 12, lineHeight: 1.7, color: '#687977', marginBottom: 16
-            }}>
-              <div style={{ fontWeight: 600, color: '#087B70', marginBottom: 6 }}>
-                Cách lấy Token Mapbox miễn phí (dưới 1 phút):
-              </div>
-              <ol style={{ paddingLeft: 18, margin: 0 }}>
-                <li>Vào <a href="https://account.mapbox.com/" target="_blank" rel="noreferrer" style={{ color: '#087B70', fontWeight: 600 }}>account.mapbox.com</a> · đăng ký miễn phí</li>
-                <li>Tìm mục <strong style={{ color: '#172524' }}>Default public token</strong> trong dashboard</li>
-                <li>Copy đoạn mã bắt đầu <code style={{ background: '#E4F4F1', padding: '1px 5px', borderRadius: 4 }}>pk.eyJ...</code> và dán vào ô dưới</li>
-              </ol>
-            </div>
-
-            <form onSubmit={(e) => { e.preventDefault(); handleSaveToken(tokenInput); }}>
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#687977', marginBottom: 6 }}>
-                  Mapbox Public Token (pk.eyJ...):
-                </label>
-                <input
-                  type="text"
-                  value={tokenInput}
-                  onChange={(e) => setTokenInput(e.target.value)}
-                  placeholder="pk.eyJ1Ijoi..."
-                  autoFocus
-                  style={{
-                    width: '100%', background: '#F5F8F7',
-                    border: '1.5px solid #087B70', borderRadius: 8,
-                    padding: '10px 14px', color: '#172524',
-                    fontSize: 13, fontFamily: 'monospace', outline: 'none'
-                  }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                {hasValidToken && (
-                  <button type="button" onClick={() => setShowTokenModal(false)}
-                    style={{
-                      background: 'transparent', border: '1px solid #DCE5E2',
-                      color: '#687977', padding: '8px 16px', borderRadius: 8,
-                      fontSize: 12, cursor: 'pointer'
-                    }}>
-                    Đóng
-                  </button>
-                )}
-                <button type="submit"
-                  style={{
-                    background: '#087B70', border: 'none', color: '#fff',
-                    padding: '9px 20px', borderRadius: 8,
-                    fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', gap: 6
-                  }}>
-                  <CheckCircle size={14} /> Kích hoạt bản đồ 3D
-                </button>
-              </div>
-            </form>
+            <AlertTriangle size={36} color="#EF4444" style={{ margin: '0 auto 12px' }} />
+            <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 8px', color: '#172524' }}>
+              Thông báo
+            </h3>
+            <p style={{ fontSize: 13, color: '#475569', margin: '0 0 16px', lineHeight: 1.5 }}>
+              {ERROR_MESSAGE}
+            </p>
+            <button
+              onClick={handleRetry}
+              style={{
+                background: '#087B70', color: '#fff',
+                border: 'none', borderRadius: 8,
+                padding: '8px 22px', fontSize: 13, fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Thử lại
+            </button>
           </div>
         </div>
       )}
 
-      {/* Floating controls — right side */}
-      <div style={{
-        position: 'absolute', top: 14, right: 14,
-        display: 'flex', flexDirection: 'column', gap: 6, zIndex: 10
-      }}>
-        {[
-          { label: is3D ? '3D' : '2D', action: toggle3D, active: is3D, isText: true, title: is3D ? 'Chuyển 2D' : 'Chuyển 3D' },
-          { icon: <Compass size={16} />, action: resetNorth, title: 'Hướng Bắc' },
-          { icon: <Key size={15} />, action: () => { setTokenInput(token); setShowTokenModal(true); }, title: 'Đổi token' },
-          { label: '+', action: () => mapRef.current?.zoomIn({ duration: 500 }), isText: true, title: 'Phóng to' },
-          { label: '−', action: () => mapRef.current?.zoomOut({ duration: 500 }), isText: true, title: 'Thu nhỏ' },
-        ].map((btn, i) => (
-          <button key={i} onClick={btn.action} title={btn.title}
-            style={{
-              width: 36, height: 36, borderRadius: 8,
-              background: btn.active ? '#087B70' : '#fff',
-              border: '1px solid #DCE5E2',
-              color: btn.active ? '#fff' : '#172524',
-              cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(23,37,36,0.1)',
-              fontSize: 14, fontWeight: 700
-            }}>
-            {btn.isText ? btn.label : btn.icon}
-          </button>
-        ))}
+      {/* Cụm công cụ điều khiển bản đồ nổi (AC 1.2.3, 1.2.4, 1.2.5, 1.3.2) */}
+      <div 
+        className="map-floating-controls"
+        style={{
+          position: 'absolute',
+          top: 10,
+          right: 58,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          zIndex: 10
+        }}
+      >
+        {/* Bộ chọn khu vực miền núi & góc nhìn toàn cảnh (Story 1.3 AC 1.3.2, 1.3.4) */}
+        <LocationSelector
+          selectedLocationId={currentLocationId}
+          onSelectLocation={handleSelectLocation}
+        />
+
+        {/* Nút Về góc nhìn mặc định (AC 1.2.4) */}
+        <button
+          onClick={resetDefaultView}
+          title="Về góc nhìn toàn cảnh mặc định (Toàn Việt Nam)"
+          className="map-ctrl-btn"
+          style={{
+            background: 'rgba(255,255,255,0.92)',
+            color: '#172524',
+            border: '1px solid #DCE5E2',
+            padding: '7px 12px',
+            borderRadius: 8,
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            backdropFilter: 'blur(4px)'
+          }}
+        >
+          <RotateCcw size={14} color="#087B70" />
+          <span className="btn-text">Góc nhìn mặc định</span>
+        </button>
+
+        {/* Nút bật/tắt 3D Terrain */}
+        <button
+          onClick={toggle3D}
+          title={is3D ? "Chuyển về góc nhìn phẳng 2D" : "Bật góc nhìn khối địa hình 3D"}
+          className="map-ctrl-btn"
+          style={{
+            background: is3D ? '#087B70' : 'rgba(255,255,255,0.92)',
+            color: is3D ? '#fff' : '#172524',
+            border: '1px solid #DCE5E2',
+            padding: '7px 12px',
+            borderRadius: 8,
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            backdropFilter: 'blur(4px)'
+          }}
+        >
+          <Layers size={14} />
+          <span className="btn-text">{is3D ? '3D Terrain: BẬT' : '2D Map'}</span>
+        </button>
       </div>
 
-      {/* Legend — bottom left */}
-      <div style={{
-        position: 'absolute', bottom: 20, left: 20,
-        background: '#fff', border: '1px solid #DCE5E2',
-        padding: '10px 14px', borderRadius: 10,
-        fontSize: 11, color: '#687977',
-        display: 'flex', flexDirection: 'column', gap: 5,
-        zIndex: 5, boxShadow: '0 4px 16px rgba(23,37,36,0.1)'
-      }}>
-        <div style={{ fontWeight: 700, color: '#172524', marginBottom: 2, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Chú giải nguy cơ</div>
-        {[
-          { color: '#EF4444', label: 'Cực nguy hiểm' },
-          { color: '#F97316', label: 'Cao' },
-          { color: '#EAB308', label: 'Trung bình' },
-          { color: '#22C55E', label: 'Thấp' },
-        ].map(({ color, label }) => (
-          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-            <span style={{ width: 10, height: 10, borderRadius: 2, background: color, flexShrink: 0 }} />
-            {label}
-          </div>
-        ))}
-      </div>
+      {/* Chỉ báo trạng thái nạp & hiệu năng */}
+      {idleLoadTime && (
+        <div style={{
+          position: 'absolute', bottom: 26, left: 16,
+          background: 'rgba(255,255,255,0.85)',
+          padding: '3px 8px', borderRadius: 4,
+          fontSize: 10, color: '#64748b',
+          zIndex: 5, pointerEvents: 'none'
+        }}>
+          MapLibre 3D Ready ({idleLoadTime}ms)
+        </div>
+      )}
     </div>
   );
 }
