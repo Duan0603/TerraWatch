@@ -7,11 +7,18 @@ import {
   FileText, 
   LogOut, 
   UserCheck,
-  ShieldCheck
+  ShieldCheck,
+  BellRing,
+  History
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-export default function Navbar({ soundEnabled, setSoundEnabled }) {
+export default function Navbar({ 
+  soundEnabled, 
+  setSoundEnabled, 
+  onOpenBroadcast, 
+  onOpenHistory 
+}) {
   const { user, role, logout } = useAuth();
 
   return (
@@ -62,6 +69,60 @@ export default function Navbar({ soundEnabled, setSoundEnabled }) {
         >
           {soundEnabled ? <Volume2 size={15} color="#22c55e" /> : <VolumeX size={15} color="#94a3b8" />}
           {soundEnabled ? 'Còi: Bật' : 'Còi: Tắt'}
+        </button>
+
+        {/* Nút xem Lịch sử phát lệnh */}
+        <button 
+          onClick={onOpenHistory}
+          style={{ 
+            background: 'rgba(255,255,255,0.06)', 
+            border: '1px solid rgba(255,255,255,0.12)', 
+            color: '#38bdf8', 
+            padding: '6px 12px', 
+            borderRadius: 6, 
+            cursor: 'pointer', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 6, 
+            fontSize: 12, 
+            fontWeight: 600 
+          }}
+          title="Xem nhật ký phát lệnh cảnh báo SMS / FCM"
+        >
+          <History size={14} />
+          Lịch Sử Lệnh
+        </button>
+
+        {/* Nút PHÁT CẢNH BÁO KHẨN CẤP (Admin Exclusive) */}
+        <button 
+          onClick={() => {
+            if (role === 'admin') {
+              if (onOpenBroadcast) onOpenBroadcast();
+            } else {
+              alert('⚠️ TRUY CẬP BỊ TỪ CHỐI: Chỉ tài khoản Admin Tổng Chỉ Huy mới có thẩm quyền phát lệnh báo động khẩn cấp tới người dân.');
+            }
+          }}
+          style={{ 
+            background: role === 'admin' 
+              ? 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)' 
+              : 'rgba(220, 38, 38, 0.25)', 
+            border: role === 'admin' ? '1px solid #ef4444' : '1px solid rgba(239, 68, 68, 0.3)', 
+            color: role === 'admin' ? '#fff' : '#f87171', 
+            padding: '6px 14px', 
+            borderRadius: 6, 
+            cursor: role === 'admin' ? 'pointer' : 'not-allowed', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 6, 
+            fontSize: 12, 
+            fontWeight: 700,
+            boxShadow: role === 'admin' ? '0 0 16px rgba(220, 38, 38, 0.55)' : 'none',
+            opacity: role === 'admin' ? 1 : 0.7
+          }}
+          title={role === 'admin' ? 'Phát cảnh báo khẩn cấp (SMS / App Push)' : 'Cần quyền Admin để phát cảnh báo'}
+        >
+          <BellRing size={15} color={role === 'admin' ? '#fff' : '#f87171'} />
+          Phát Cảnh Báo
         </button>
 
         {/* Nút xuất báo cáo */}
