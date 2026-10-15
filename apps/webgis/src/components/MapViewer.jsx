@@ -1,27 +1,30 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 
 // Cấu hình Web Worker độc lập cho MapLibre trong môi trường Vite/Rollup
 if (typeof maplibregl.setWorkerUrl === 'function') {
   maplibregl.setWorkerUrl(workerUrl);
 }
 
-import { 
-  Compass, 
-  Layers, 
-  MapPin, 
+import {
+  Compass,
+  Layers,
+  MapPin,
   AlertTriangle,
-  RotateCcw
+  RotateCcw,
+  Satellite
 } from 'lucide-react';
-import { 
-  STYLE_URL, 
-  TERRAIN_CONFIG, 
-  DEFAULT_CAMERA, 
-  INCIDENT_CAMERA, 
-  ERROR_MESSAGE, 
-  ATTRIBUTIONS 
+import {
+  STYLE_URL,
+  SATELLITE_STYLE_URL,
+  HAS_SATELLITE_STYLE,
+  TERRAIN_CONFIG,
+  DEFAULT_CAMERA,
+  INCIDENT_CAMERA,
+  ERROR_MESSAGE,
+  ATTRIBUTIONS
 } from '../config/mapConfig';
 import { COMMUNITY_REPORTS } from '../data/mockEvents';
 import { DEFAULT_LOCATION_ID } from '../data/mountainLocations';
@@ -36,6 +39,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
   const hasMeasuredIdleRef = useRef(false);
 
   const [is3D, setIs3D] = useState(true);
+  const [isSatellite, setIsSatellite] = useState(false);
   const [currentLocationId, setCurrentLocationId] = useState(DEFAULT_LOCATION_ID);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState(null);
@@ -80,14 +84,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
     if (!map) return;
     try {
       if (!map.getSource(TERRAIN_CONFIG.sourceId)) {
-        map.addSource(TERRAIN_CONFIG.sourceId, {
-          type: 'raster-dem',
-          tiles: [TERRAIN_CONFIG.sourceUrl],
-          tileSize: TERRAIN_CONFIG.tileSize,
-          maxzoom: TERRAIN_CONFIG.maxzoom,
-          encoding: TERRAIN_CONFIG.encoding,
-          attribution: TERRAIN_CONFIG.attribution
-        });
+        map.addSource(TERRAIN_CONFIG.sourceId, TERRAIN_CONFIG.source);
         map.setTerrain({ 
           source: TERRAIN_CONFIG.sourceId, 
           exaggeration: TERRAIN_CONFIG.exaggeration 
@@ -416,6 +413,14 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
     });
   };
 
+  // 3b. Chuyển đổi nền bản đồ Vector (topo) <-> Ảnh vệ tinh (raster, phủ lên terrain 3D)
+  const toggleSatellite = () => {
+    if (!mapRef.current || !HAS_SATELLITE_STYLE) return;
+    const nextSatellite = !isSatellite;
+    setIsSatellite(nextSatellite);
+    mapRef.current.setStyle(nextSatellite ? SATELLITE_STYLE_URL : STYLE_URL);
+  };
+
   // 4. Về góc nhìn toàn cảnh mặc định (Toàn Việt Nam) (AC 1.2.1, AC 1.2.4)
   const resetDefaultView = () => {
     if (!mapRef.current) return;
@@ -580,6 +585,33 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
           <Layers size={14} />
           <span className="btn-text">{is3D ? '3D Terrain: BẬT' : '2D Map'}</span>
         </button>
+
+        {/* Nút bật/tắt nền ảnh vệ tinh (chỉ hiện khi có MapTiler key) */}
+        {HAS_SATELLITE_STYLE && (
+          <button
+            onClick={toggleSatellite}
+            title={isSatellite ? "Chuyển về bản đồ địa hình (vector)" : "Bật nền ảnh vệ tinh thực địa"}
+            className="map-ctrl-btn"
+            style={{
+              background: isSatellite ? '#087B70' : 'rgba(255,255,255,0.92)',
+              color: isSatellite ? '#fff' : '#172524',
+              border: '1px solid #DCE5E2',
+              padding: '7px 12px',
+              borderRadius: 8,
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+              backdropFilter: 'blur(4px)'
+            }}
+          >
+            <Satellite size={14} />
+            <span className="btn-text">{isSatellite ? 'Vệ tinh: BẬT' : 'Vệ tinh'}</span>
+          </button>
+        )}
       </div>
 
       {/* Chỉ báo trạng thái nạp & hiệu năng */}
