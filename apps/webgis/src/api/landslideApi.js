@@ -1,4 +1,3 @@
-import axiosClient from './axiosClient';
 import { INITIAL_EVENTS } from '../data/mockEvents';
 
 // Bộ nhớ đệm cục bộ (localStorage) để lưu trạng thái thẩm định khi chạy dev offline
@@ -35,46 +34,40 @@ const saveStoredEvents = (events) => {
 
 export const landslideApi = {
   // Lấy danh sách sự cố sạt lở (lọc theo pending / verified / all)
+  //
+  // LƯU Ý: Backend thật (`GET /api/v1/landslides/queue`) chỉ trả các cột SQL thô
+  // (event_id, risk_level, confidence_score, geometry_geojson...) cho riêng trạng thái
+  // 'pending' — không có endpoint nào trả về TẤT CẢ trạng thái theo đúng hình dạng dữ liệu
+  // mà Dashboard/EventCard ở đây cần (lng/lat số, polygon, tên địa danh, rainfall24h...).
+  // Gọi thẳng endpoint đó sẽ hiển thị sai hoặc vỡ giao diện, không phải lỗi mạng để bắt bằng
+  // try/catch. Dùng dữ liệu cục bộ cho tới khi có một bước map hình dạng dữ liệu rõ ràng
+  // (việc đó thuộc phạm vi hoàn thiện Story 4.2/4.3, không phải sửa lỗi đăng nhập/role).
   async getLandslides(params = {}) {
-    try {
-      const data = await axiosClient.get('/core/landslides', { params });
-      return data;
-    } catch (err) {
-      console.warn('Backend Core API chưa kết nối, sử dụng dữ liệu cục bộ:', err.message);
-      const events = getStoredEvents();
-      if (params.status) {
-        return events.filter(e => e.status === params.status);
-      }
-      return events;
+    const events = getStoredEvents();
+    if (params.status) {
+      return events.filter(e => e.status === params.status);
     }
+    return events;
   },
 
-  // Thẩm định 1-click (Phê duyệt hoặc Bác bỏ)
+  // Thẩm định 1-click (Phê duyệt hoặc Bác bỏ) — xem lý do dùng dữ liệu cục bộ ở getLandslides().
+  // (Cũng không thể gọi PATCH /api/v1/landslides/{id}/verify thật ở đây vì id trong dữ liệu
+  // demo không phải UUID thật tồn tại trong core_schema.landslide_events.)
   async verifyLandslide(id, { status = 'verified', risk_level, verified_notes = '' } = {}) {
-    try {
-      const data = await axiosClient.post(`/core/landslides/${id}/verify`, {
-        status,
-        risk_level,
-        verified_notes
-      });
-      return data;
-    } catch (err) {
-      console.warn(`Lưu trạng thái thẩm định [${status}] cục bộ cho sự cố ${id}:`, err.message);
-      const events = getStoredEvents();
-      const updated = events.map(ev => {
-        if (ev.id === id) {
-          return {
-            ...ev,
-            status,
-            risk: risk_level || ev.risk,
-            verifiedAt: new Date().toISOString(),
-          };
-        }
-        return ev;
-      });
-      saveStoredEvents(updated);
-      return { success: true, id, status, updatedEvent: updated.find(e => e.id === id) };
-    }
+    const events = getStoredEvents();
+    const updated = events.map(ev => {
+      if (ev.id === id) {
+        return {
+          ...ev,
+          status,
+          risk: risk_level || ev.risk,
+          verifiedAt: new Date().toISOString(),
+        };
+      }
+      return ev;
+    });
+    saveStoredEvents(updated);
+    return { success: true, id, status, updatedEvent: updated.find(e => e.id === id) };
   },
 
   // Đặt lại dữ liệu mẫu về ban đầu (tiện cho demo)

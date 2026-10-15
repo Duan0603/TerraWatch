@@ -1,6 +1,8 @@
 package vn.terrawatch.core.entity;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.ColumnTransformer;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -20,9 +22,11 @@ public class User {
     private String email;
 
     @Column(name = "password_hash", nullable = false)
+    @JsonIgnore
     private String passwordHash;
 
-    @Column(name = "role")
+    @Column(name = "role", columnDefinition = "core_schema.user_role")
+    @ColumnTransformer(write = "CAST(? AS core_schema.user_role)")
     private String role; // admin, officer, citizen
 
     @Column(name = "phone_number", length = 20)
