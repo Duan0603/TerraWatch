@@ -25,8 +25,9 @@ import { useAuth } from '../context/AuthContext';
 import authApi from '../api/authApi';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('officer@terrawatch.vn');
-  const [password, setPassword] = useState('Password123!');
+  // Khớp với tài khoản seed thật (V2) + mật khẩu demo đặt bởi migration V4
+  const [email, setEmail] = useState('officer.yenbai@terrawatch.vn');
+  const [password, setPassword] = useState('Terrawatch@2026');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   
@@ -89,12 +90,13 @@ export default function LoginPage() {
 
   const handleQuickLogin = (role) => {
     if (role === 'officer') {
-      setEmail('officer@terrawatch.vn');
-      setPassword('Password123!');
+      setEmail('officer.yenbai@terrawatch.vn');
+    } else if (role === 'citizen') {
+      setEmail('citizen.limmong@terrawatch.vn');
     } else {
       setEmail('admin@terrawatch.vn');
-      setPassword('Password123!');
     }
+    setPassword('Terrawatch@2026');
   };
 
   const openRegisterModal = (role) => {
@@ -310,7 +312,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: 16 }}>
             <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#cbd5e1', marginBottom: 6 }}>
-              Tài khoản Cán bộ / Admin
+              Email đăng nhập (Công dân / Cán bộ / Admin)
             </label>
             <div style={{ position: 'relative' }}>
               <div style={{ position: 'absolute', left: 12, top: 11, color: '#64748b' }}>
@@ -395,7 +397,26 @@ export default function LoginPage() {
           <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 8, textAlign: 'center' }}>
             Nút chọn nhanh tài khoản diễn tập:
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+            <button
+              type="button"
+              onClick={() => handleQuickLogin('citizen')}
+              style={{
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                padding: '8px',
+                borderRadius: 6,
+                color: '#34d399',
+                fontSize: 11,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 4
+              }}
+            >
+              <Smartphone size={13} /> Công Dân
+            </button>
             <button
               type="button"
               onClick={() => handleQuickLogin('officer')}

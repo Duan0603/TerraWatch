@@ -1,5 +1,5 @@
 # generated: 2026-10-02
-# last_updated: 2026-10-14
+# last_updated: 2026-10-15
 # project: SECapstone
 # project_key: TERRA
 # tracking_system: file-system
@@ -10,9 +10,9 @@
 
 development_status:
   epic-1: in-progress
-  1-1-multi-role-user-registration-authentication-register-login-jwt: ready-for-dev
+  1-1-multi-role-user-registration-authentication-register-login-jwt: done
   1-2-postgis-schema-per-service-migration-spatial-indexes: done
-  1-3-api-gateway-reverse-proxy-rate-limiting: backlog
+  1-3-api-gateway-reverse-proxy-rate-limiting: done
   epic-1-retrospective: optional
 
   epic-2: in-progress

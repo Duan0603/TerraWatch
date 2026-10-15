@@ -49,27 +49,34 @@ export const getOrCreateRecaptcha = async (containerId = 'recaptcha-container') 
 };
 
 export const authApi = {
-  // Đăng nhập cán bộ / admin
+  // Đăng nhập cán bộ / admin — xác thực thật qua Core API, trả về role thật từ JWT
   async login({ email, password }) {
     try {
       const data = await axiosClient.post('/auth/login', { email, password });
       return data;
     } catch (err) {
-      // Fallback offline dev mode nếu Backend Core API chưa khởi chạy
-      console.warn('Backend Core API chưa phản hồi, chuyển sang chế độ Demo Auth:', err.message);
-      const isOfficer = email.toLowerCase().includes('officer') || email === 'officer@terrawatch.vn';
+      // Backend Core API đã trả lời (sai mật khẩu, tài khoản không tồn tại, v.v.) — đây là lỗi
+      // THẬT, không được nuốt và giả vờ đăng nhập thành công. Trước đây code che hết lỗi 401
+      // bằng một JWT giả đoán role qua chuỗi email, khiến phân quyền admin/officer vô nghĩa.
+      if (err.response) {
+        throw err;
+      }
+      // Chỉ rơi vào chế độ Demo khi THỰC SỰ không gọi được Backend (mất mạng / server chưa chạy),
+      // phục vụ dev offline. Gắn rõ cờ `isMock` để UI có thể cảnh báo đây không phải phiên thật.
+      console.warn('Không kết nối được Core API, chuyển sang chế độ Demo Auth (offline):', err.message);
+      const isOfficer = email.toLowerCase().includes('officer');
       const role = isOfficer ? 'officer' : 'admin';
-      const mockResponse = {
+      return {
         token: `mock_jwt_token_${role}_${Date.now()}`,
-        role: role,
+        role,
+        isMock: true,
         user: {
           id: isOfficer ? 'user-officer-01' : 'user-admin-01',
           fullName: isOfficer ? 'Đ/c Nguyễn Văn Huy (Cán bộ Phòng chống Thiên tai)' : 'Admin Tổng Chỉ Huy TerraWatch',
-          email: email,
-          role: role,
+          email,
+          role,
         }
       };
-      return mockResponse;
     }
   },
 
@@ -79,6 +86,11 @@ export const authApi = {
       const data = await axiosClient.get('/auth/me');
       return data;
     } catch (err) {
+      // Token thật đã bị từ chối (hết hạn/không hợp lệ) — không âm thầm trả dữ liệu cache cũ,
+      // để AuthContext/axios interceptor xử lý đăng xuất đúng theo lỗi thật.
+      if (err.response) {
+        throw err;
+      }
       const cached = localStorage.getItem('terrawatch_user');
       return cached ? JSON.parse(cached) : null;
     }
@@ -157,34 +169,47 @@ export const authApi = {
   },
 
   // Đăng ký tài khoản Cán bộ (Yêu cầu Admin xét duyệt - UC06)
+  // LƯU Ý: `POST /auth/register-officer-request` KHÔNG tồn tại trên Core API — tạo tài khoản
+  // officer/admin công khai nằm ngoài phạm vi Story 1.1 (xem AC1: "no public way to create
+  // officer/admin account"). Luồng này luôn rơi vào nhánh mô phỏng bên dưới cho mọi môi trường,
+  // không chỉ khi offline. Hồ sơ KHÔNG được lưu ở đâu cả — đây là UI demo, chưa có hàng đợi
+  // phê duyệt thật phía backend.
   async registerOfficerRequest(data) {
     try {
       const res = await axiosClient.post('/auth/register-officer-request', data);
       return res;
     } catch (err) {
-      // Giả lập lưu hồ sơ chờ duyệt trong môi trường Demo
       await new Promise((r) => setTimeout(r, 600));
       return {
         success: true,
+        isMock: true,
         requestId: `REG-OFFICER-${Date.now().toString().slice(-6)}`,
-        message: 'Hồ sơ đã được gửi thành công đến Quản trị viên (Admin) xét duyệt.',
+        message: 'Hồ sơ đã được ghi nhận (chế độ demo — tính năng duyệt cán bộ thật chưa triển khai ở backend).',
         status: 'pending_approval'
       };
     }
   },
 
   // Đăng ký tài khoản Công dân (Nhận cảnh báo SMS/Push - UC07)
+  // Backend luôn ép role = citizen bất kể truyền gì (xem AC1 Story 1.1) — gửi `role` ở đây
+  // chỉ để tương thích payload cũ, backend sẽ bỏ qua trường này.
   async registerCitizen(data) {
     try {
       const res = await axiosClient.post('/auth/register', { ...data, role: 'citizen' });
       return res;
     } catch (err) {
-      // Giả lập đăng ký công dân thành công
+      // Lỗi thật từ backend (email đã tồn tại -> 409, mật khẩu < 8 ký tự -> 400, v.v.) phải
+      // được báo cho người dùng, không được giả vờ đăng ký thành công.
+      if (err.response) {
+        throw err;
+      }
+      // Chỉ mô phỏng khi backend không gọi được (offline dev).
       await new Promise((r) => setTimeout(r, 600));
       return {
         success: true,
+        isMock: true,
         userId: `citizen-${Date.now().toString().slice(-6)}`,
-        message: 'Đăng ký tài khoản công dân thành công.',
+        message: 'Đăng ký tài khoản công dân thành công (chế độ demo offline).',
         role: 'citizen'
       };
     }
