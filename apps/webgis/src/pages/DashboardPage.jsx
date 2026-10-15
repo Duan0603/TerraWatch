@@ -97,9 +97,10 @@ export default function DashboardPage() {
   return (
     <div className="dashboard-root">
       {/* 1. Header Navigation */}
-      <Navbar 
-        soundEnabled={soundEnabled} 
+      <Navbar
+        soundEnabled={soundEnabled}
         setSoundEnabled={setSoundEnabled}
+        activeNav="monitor"
         onOpenBroadcast={() => handleOpenBroadcast(selectedEvent)}
         onOpenHistory={() => setIsHistoryOpen(true)}
       />

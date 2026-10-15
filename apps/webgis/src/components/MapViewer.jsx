@@ -58,7 +58,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
 
       const map = new mapboxgl.Map({
         container: mapContainerRef.current,
-        style: 'mapbox://styles/mapbox/satellite-streets-v12',
+        style: 'mapbox://styles/mapbox/outdoors-v12',
         center: initialCenter,
         zoom: CAMERA_PRESETS.defaultZoom,
         pitch: CAMERA_PRESETS.defaultPitch,
@@ -84,14 +84,14 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
             map.setTerrain({ source: TERRAIN_CONFIG.sourceId, exaggeration: TERRAIN_CONFIG.exaggeration });
           }
 
-          // Hiệu ứng khí quyển bầu trời & sương mù (Atmosphere / Sky)
+          // Hiệu ứng sương mù nhẹ (light atmosphere)
           if (map.setFog) {
             map.setFog({
-              color: 'rgb(186, 210, 235)',
-              'high-color': 'rgb(36, 92, 223)',
+              color: 'rgb(245, 248, 247)',
+              'high-color': 'rgb(186, 220, 214)',
               'horizon-blend': 0.02,
-              'space-color': 'rgb(11, 11, 25)',
-              'star-intensity': 0.6
+              'space-color': 'rgb(230, 242, 240)',
+              'star-intensity': 0
             });
           }
         } catch (terrainErr) {
@@ -261,84 +261,65 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
         style={{ width: '100%', height: '100%' }}
       />
 
-      {/* Khi chưa cấu hình Token hoặc Token lỗi -> Hiển thị hộp thoại kích hoạt bản đồ ngay trên giao diện */}
+      {/* Token modal — light theme */}
       {(!hasValidToken || mapError || showTokenModal) && (
         <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(6, 9, 17, 0.88)',
-          backdropFilter: 'blur(12px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 30,
-          padding: 20
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(245,248,247,0.92)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 30, padding: 20
         }}>
           <div style={{
-            maxWidth: 520,
-            width: '100%',
-            background: 'rgba(13, 19, 34, 0.96)',
-            border: '1px solid rgba(56, 189, 248, 0.35)',
-            borderRadius: 16,
-            padding: 28,
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7)',
-            color: '#f8fafc'
+            maxWidth: 480, width: '100%',
+            background: '#fff',
+            border: '1px solid #DCE5E2',
+            borderRadius: 16, padding: 28,
+            boxShadow: '0 10px 40px rgba(23,37,36,0.12)',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-              <div style={{ background: 'rgba(2, 132, 199, 0.2)', padding: 10, borderRadius: 10 }}>
-                <Key size={24} color="#38bdf8" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <div style={{ background: '#E4F4F1', padding: 10, borderRadius: 10 }}>
+                <Key size={22} color="#087B70" />
               </div>
               <div>
-                <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>
-                  KÍCH HOẠT BẢN ĐỒ 3D TERRAIN YÊN BÁI - LÀO CAI
+                <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: '#172524' }}>
+                  Kích hoạt bản đồ địa hình 3D
                 </h3>
-                <p style={{ fontSize: 11, color: '#94a3b8', margin: '2px 0 0 0' }}>
-                  Đồ án TerraWatch GeoSentry sử dụng mô hình độ cao số DEM & ảnh vệ tinh Mapbox GL JS
+                <p style={{ fontSize: 11, color: '#687977', margin: '3px 0 0' }}>
+                  TerraWatch dùng Mapbox GL JS · DEM 30m · Lào Cai
                 </p>
               </div>
             </div>
 
             {mapError && (
               <div style={{
-                background: 'rgba(239, 68, 68, 0.15)',
-                border: '1px solid rgba(239, 68, 68, 0.3)',
-                padding: '8px 12px',
-                borderRadius: 8,
-                fontSize: 12,
-                color: '#f87171',
-                marginBottom: 14
+                background: '#FFF0F0', border: '1px solid #FECACA',
+                padding: '8px 12px', borderRadius: 8,
+                fontSize: 12, color: '#EF4444', marginBottom: 14
               }}>
                 ⚠️ {mapError}
               </div>
             )}
 
             <div style={{
-              background: 'rgba(255, 255, 255, 0.03)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              padding: '12px 14px',
-              borderRadius: 10,
-              fontSize: 12,
-              lineHeight: 1.6,
-              color: '#cbd5e1',
-              marginBottom: 16
+              background: '#F5F8F7', border: '1px solid #DCE5E2',
+              padding: '12px 14px', borderRadius: 10,
+              fontSize: 12, lineHeight: 1.7, color: '#687977', marginBottom: 16
             }}>
-              <div style={{ fontWeight: 600, color: '#38bdf8', marginBottom: 4 }}>
-                👉 Cách lấy Token Mapbox miễn phí (mất chưa đầy 1 phút):
+              <div style={{ fontWeight: 600, color: '#087B70', marginBottom: 6 }}>
+                Cách lấy Token Mapbox miễn phí (dưới 1 phút):
               </div>
               <ol style={{ paddingLeft: 18, margin: 0 }}>
-                <li>Truy cập <a href="https://account.mapbox.com/" target="_blank" rel="noreferrer" style={{ color: '#38bdf8', fontWeight: 600, textDecoration: 'underline' }}>account.mapbox.com</a> (đăng ký tài khoản miễn phí).</li>
-                <li>Đăng nhập vào bảng điều khiển, bạn sẽ thấy mục <strong>Default public token</strong>.</li>
-                <li>Bấm nút <strong>Copy</strong> đoạn mã bắt đầu bằng <code>pk.eyJ...</code> rồi dán vào ô bên dưới:</li>
+                <li>Vào <a href="https://account.mapbox.com/" target="_blank" rel="noreferrer" style={{ color: '#087B70', fontWeight: 600 }}>account.mapbox.com</a> · đăng ký miễn phí</li>
+                <li>Tìm mục <strong style={{ color: '#172524' }}>Default public token</strong> trong dashboard</li>
+                <li>Copy đoạn mã bắt đầu <code style={{ background: '#E4F4F1', padding: '1px 5px', borderRadius: 4 }}>pk.eyJ...</code> và dán vào ô dưới</li>
               </ol>
             </div>
 
             <form onSubmit={(e) => { e.preventDefault(); handleSaveToken(tokenInput); }}>
               <div style={{ marginBottom: 16 }}>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#94a3b8', marginBottom: 6 }}>
-                  Dán Mapbox Public Access Token (pk.eyJ...):
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#687977', marginBottom: 6 }}>
+                  Mapbox Public Token (pk.eyJ...):
                 </label>
                 <input
                   type="text"
@@ -347,55 +328,33 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
                   placeholder="pk.eyJ1Ijoi..."
                   autoFocus
                   style={{
-                    width: '100%',
-                    background: 'rgba(6, 9, 17, 0.95)',
-                    border: '1px solid #0284c7',
-                    borderRadius: 8,
-                    padding: '11px 14px',
-                    color: '#38bdf8',
-                    fontSize: 13,
-                    fontFamily: 'monospace',
-                    outline: 'none',
-                    boxShadow: '0 0 15px rgba(2, 132, 199, 0.25)'
+                    width: '100%', background: '#F5F8F7',
+                    border: '1.5px solid #087B70', borderRadius: 8,
+                    padding: '10px 14px', color: '#172524',
+                    fontSize: 13, fontFamily: 'monospace', outline: 'none'
                   }}
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                 {hasValidToken && (
-                  <button
-                    type="button"
-                    onClick={() => setShowTokenModal(false)}
+                  <button type="button" onClick={() => setShowTokenModal(false)}
                     style={{
-                      background: 'transparent',
-                      border: '1px solid rgba(255, 255, 255, 0.15)',
-                      color: '#94a3b8',
-                      padding: '8px 16px',
-                      borderRadius: 8,
-                      fontSize: 12,
-                      cursor: 'pointer'
-                    }}
-                  >
+                      background: 'transparent', border: '1px solid #DCE5E2',
+                      color: '#687977', padding: '8px 16px', borderRadius: 8,
+                      fontSize: 12, cursor: 'pointer'
+                    }}>
                     Đóng
                   </button>
                 )}
-                <button
-                  type="submit"
+                <button type="submit"
                   style={{
-                    background: '#0284c7',
-                    border: 'none',
-                    color: '#fff',
-                    padding: '9px 20px',
-                    borderRadius: 8,
-                    fontSize: 12,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6
-                  }}
-                >
-                  <CheckCircle size={14} /> Lưu Token & Kích Hoạt Bản Đồ 3D
+                    background: '#087B70', border: 'none', color: '#fff',
+                    padding: '9px 20px', borderRadius: 8,
+                    fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 6
+                  }}>
+                  <CheckCircle size={14} /> Kích hoạt bản đồ 3D
                 </button>
               </div>
             </form>
@@ -403,159 +362,55 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
         </div>
       )}
 
-      {/* Floating 3D Map Controls (Góc trên bên phải) */}
+      {/* Floating controls — right side */}
       <div style={{
-        position: 'absolute',
-        top: 80,
-        right: 16,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8,
-        zIndex: 10
+        position: 'absolute', top: 14, right: 14,
+        display: 'flex', flexDirection: 'column', gap: 6, zIndex: 10
       }}>
-        {/* Toggle 2D / 3D */}
-        <button
-          onClick={toggle3D}
-          style={{
-            background: is3D ? '#0284c7' : 'rgba(13, 19, 34, 0.9)',
-            border: '1px solid rgba(255,255,255,0.2)',
-            color: '#fff',
-            width: 38,
-            height: 38,
-            borderRadius: 8,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-            fontSize: 12,
-            fontWeight: 800
-          }}
-          title={is3D ? 'Chuyển về 2D phẳng' : 'Chuyển sang 3D Terrain'}
-        >
-          {is3D ? '3D' : '2D'}
-        </button>
-
-        {/* Reset North */}
-        <button
-          onClick={resetNorth}
-          style={{
-            background: 'rgba(13, 19, 34, 0.9)',
-            border: '1px solid rgba(255,255,255,0.2)',
-            color: '#38bdf8',
-            width: 38,
-            height: 38,
-            borderRadius: 8,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
-          }}
-          title="Xoay thẳng hướng Bắc"
-        >
-          <Compass size={18} />
-        </button>
-
-        {/* Cấu hình / Đổi Token Mapbox */}
-        <button
-          onClick={() => { setTokenInput(token); setShowTokenModal(true); }}
-          style={{
-            background: 'rgba(13, 19, 34, 0.9)',
-            border: '1px solid rgba(255,255,255,0.2)',
-            color: '#fb923c',
-            width: 38,
-            height: 38,
-            borderRadius: 8,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
-          }}
-          title="Cấu hình Access Token Mapbox"
-        >
-          <Key size={16} />
-        </button>
-
-        {/* Zoom In */}
-        <button
-          onClick={() => mapRef.current?.zoomIn({ duration: 500 })}
-          style={{
-            background: 'rgba(13, 19, 34, 0.9)',
-            border: '1px solid rgba(255,255,255,0.2)',
-            color: '#fff',
-            width: 38,
-            height: 38,
-            borderRadius: 8,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-            fontSize: 18,
-            fontWeight: 700
-          }}
-          title="Phóng to"
-        >
-          +
-        </button>
-
-        {/* Zoom Out */}
-        <button
-          onClick={() => mapRef.current?.zoomOut({ duration: 500 })}
-          style={{
-            background: 'rgba(13, 19, 34, 0.9)',
-            border: '1px solid rgba(255,255,255,0.2)',
-            color: '#fff',
-            width: 38,
-            height: 38,
-            borderRadius: 8,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-            fontSize: 18,
-            fontWeight: 700
-          }}
-          title="Thu nhỏ"
-        >
-          -
-        </button>
+        {[
+          { label: is3D ? '3D' : '2D', action: toggle3D, active: is3D, isText: true, title: is3D ? 'Chuyển 2D' : 'Chuyển 3D' },
+          { icon: <Compass size={16} />, action: resetNorth, title: 'Hướng Bắc' },
+          { icon: <Key size={15} />, action: () => { setTokenInput(token); setShowTokenModal(true); }, title: 'Đổi token' },
+          { label: '+', action: () => mapRef.current?.zoomIn({ duration: 500 }), isText: true, title: 'Phóng to' },
+          { label: '−', action: () => mapRef.current?.zoomOut({ duration: 500 }), isText: true, title: 'Thu nhỏ' },
+        ].map((btn, i) => (
+          <button key={i} onClick={btn.action} title={btn.title}
+            style={{
+              width: 36, height: 36, borderRadius: 8,
+              background: btn.active ? '#087B70' : '#fff',
+              border: '1px solid #DCE5E2',
+              color: btn.active ? '#fff' : '#172524',
+              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 2px 8px rgba(23,37,36,0.1)',
+              fontSize: 14, fontWeight: 700
+            }}>
+            {btn.isText ? btn.label : btn.icon}
+          </button>
+        ))}
       </div>
 
-      {/* Floating Bottom Left Legend */}
+      {/* Legend — bottom left */}
       <div style={{
-        position: 'absolute',
-        bottom: 24,
-        left: 24,
-        background: 'rgba(13, 19, 34, 0.92)',
-        border: '1px solid rgba(255,255,255,0.15)',
-        backdropFilter: 'blur(10px)',
-        padding: '10px 14px',
-        borderRadius: 8,
-        fontSize: 11,
-        color: '#94a3b8',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 5,
-        zIndex: 5,
-        boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
+        position: 'absolute', bottom: 20, left: 20,
+        background: '#fff', border: '1px solid #DCE5E2',
+        padding: '10px 14px', borderRadius: 10,
+        fontSize: 11, color: '#687977',
+        display: 'flex', flexDirection: 'column', gap: 5,
+        zIndex: 5, boxShadow: '0 4px 16px rgba(23,37,36,0.1)'
       }}>
-        <div style={{ fontWeight: 700, color: '#fff', marginBottom: 2 }}>Phân cấp Nguy cơ Sạt lở 3D:</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ width: 10, height: 10, borderRadius: 2, background: '#ef4444' }}></span> Cực kỳ nguy hiểm (Extreme) - Độ dốc &gt; 40°
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ width: 10, height: 10, borderRadius: 2, background: '#f97316' }}></span> Nguy cơ cao (High) - Sụt giảm NDVI
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ width: 10, height: 10, borderRadius: 2, background: '#eab308' }}></span> Nguy cơ trung bình (Medium)
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', border: '1px solid #fff' }}></span> Báo cáo hiện trường người dân (GPS)
-        </div>
+        <div style={{ fontWeight: 700, color: '#172524', marginBottom: 2, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Chú giải nguy cơ</div>
+        {[
+          { color: '#EF4444', label: 'Cực nguy hiểm' },
+          { color: '#F97316', label: 'Cao' },
+          { color: '#EAB308', label: 'Trung bình' },
+          { color: '#22C55E', label: 'Thấp' },
+        ].map(({ color, label }) => (
+          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: color, flexShrink: 0 }} />
+            {label}
+          </div>
+        ))}
       </div>
     </div>
   );

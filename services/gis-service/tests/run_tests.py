@@ -2,6 +2,10 @@
 Standard Library Test Runner for Story 2.1 (Rainfall Ingestion) & Story 2.2 (DEM Terrain)
 Runs cleanly in any Python environment without external test runners.
 """
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import unittest
 import numpy as np
 from datetime import datetime, timezone, timedelta
