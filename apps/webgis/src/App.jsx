@@ -18,7 +18,8 @@ function ProtectedRoute({ children }) {
 // (CitizenPage), officer/admin vào Trung tâm Chỉ huy đầy đủ (DashboardPage).
 function HomeByRole() {
   const { role } = useAuth();
-  return role === 'citizen' ? <CitizenPage /> : <DashboardPage />;
+  const isCitizen = role?.toLowerCase()?.includes('citizen');
+  return isCitizen ? <CitizenPage /> : <DashboardPage />;
 }
 
 export default function App() {

@@ -64,15 +64,28 @@ export const authApi = {
       // Chỉ rơi vào chế độ Demo khi THỰC SỰ không gọi được Backend (mất mạng / server chưa chạy),
       // phục vụ dev offline. Gắn rõ cờ `isMock` để UI có thể cảnh báo đây không phải phiên thật.
       console.warn('Không kết nối được Core API, chuyển sang chế độ Demo Auth (offline):', err.message);
-      const isOfficer = email.toLowerCase().includes('officer');
-      const role = isOfficer ? 'officer' : 'admin';
+      const lowerEmail = email.toLowerCase();
+      let role = 'admin';
+      let fullName = 'Admin Tổng Chỉ Huy TerraWatch';
+      let id = 'user-admin-01';
+
+      if (lowerEmail.includes('citizen')) {
+        role = 'citizen';
+        fullName = 'Anh Giàng A Páo (Người dân Bản Lìm Mông)';
+        id = 'user-citizen-01';
+      } else if (lowerEmail.includes('officer')) {
+        role = 'officer';
+        fullName = 'Đ/c Nguyễn Văn Huy (Cán bộ Phòng chống Thiên tai)';
+        id = 'user-officer-01';
+      }
+
       return {
         token: `mock_jwt_token_${role}_${Date.now()}`,
         role,
         isMock: true,
         user: {
-          id: isOfficer ? 'user-officer-01' : 'user-admin-01',
-          fullName: isOfficer ? 'Đ/c Nguyễn Văn Huy (Cán bộ Phòng chống Thiên tai)' : 'Admin Tổng Chỉ Huy TerraWatch',
+          id,
+          fullName,
           email,
           role,
         }

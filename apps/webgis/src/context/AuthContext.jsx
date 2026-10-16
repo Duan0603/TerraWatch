@@ -20,8 +20,10 @@ export function AuthProvider({ children }) {
     const jwtToken = data.token || data.accessToken;
     const userData = data.user || {
       email,
-      role: data.role || null,
-      fullName: email.includes('admin') ? 'Quản Trị Viên (Admin)' : 'Cán Bộ Thẩm Định'
+      role: data.role || (email.toLowerCase().includes('citizen') ? 'citizen' : (email.toLowerCase().includes('officer') ? 'officer' : 'admin')),
+      fullName: email.toLowerCase().includes('citizen')
+        ? 'Anh Giàng A Páo (Người dân)'
+        : (email.toLowerCase().includes('admin') ? 'Quản Trị Viên (Admin)' : 'Cán Bộ Thẩm Định')
     };
 
     localStorage.setItem('terrawatch_token', jwtToken);
