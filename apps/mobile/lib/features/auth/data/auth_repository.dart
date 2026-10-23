@@ -80,8 +80,9 @@ class AuthRepository {
     } on ApiException catch (_) {}
   }
 
+  /// Xóa phiên trước để đăng xuất luôn thành công; đăng xuất Google/Firebase chỉ là bước phụ, có giới hạn thời gian
   Future<void> logout() async {
-    await GoogleAuthService.signOut();
     await Session.clear();
+    await GoogleAuthService.signOut().timeout(const Duration(seconds: 3), onTimeout: () {});
   }
 }
