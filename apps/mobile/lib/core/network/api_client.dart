@@ -6,6 +6,8 @@ import 'api_exceptions.dart';
 
 /// Client mạng chuẩn hóa bọc quanh HTTP package để gọi API Gateway Nginx
 class ApiClient {
+  static const _timeout = Duration(seconds: 10);
+
   final http.Client _client;
   final String _baseUrl;
 
@@ -20,11 +22,10 @@ class ApiClient {
   }) async {
     final uri = _buildUri(endpoint, queryParameters);
     try {
-      final response = await _client.get(uri, headers: _buildHeaders(headers));
+      final response = await _client.get(uri, headers: _buildHeaders(headers)).timeout(_timeout);
       return _handleResponse(response);
     } catch (e) {
-      if (e is ApiException) rethrow;
-      throw ApiException(message: 'Lỗi kết nối mạng: $e');
+      throw _networkError(e);
     }
   }
 
@@ -35,16 +36,30 @@ class ApiClient {
   }) async {
     final uri = _buildUri(endpoint);
     try {
-      final response = await _client.post(
-        uri,
-        headers: _buildHeaders(headers),
-        body: body != null ? jsonEncode(body) : null,
-      );
+      final response = await _client
+          .post(
+            uri,
+            headers: _buildHeaders(headers),
+            body: body != null ? jsonEncode(body) : null,
+          )
+          .timeout(_timeout);
       return _handleResponse(response);
     } catch (e) {
-      if (e is ApiException) rethrow;
-      throw ApiException(message: 'Lỗi kết nối mạng: $e');
+      throw _networkError(e);
     }
+  }
+
+  /// Giữ nguyên ApiException từ server; lỗi mạng/timeout đổi thành thông báo ngắn (chi tiết ở log debug)
+  ApiException _networkError(Object e) {
+    if (e is ApiException) return e;
+    assert(() {
+      // ignore: avoid_print
+      print('ApiClient network error: $e');
+      return true;
+    }());
+    return ApiException(
+      message: 'Không kết nối được máy chủ (${Uri.parse(_baseUrl).authority}). Kiểm tra mạng và địa chỉ API.',
+    );
   }
 
   Uri _buildUri(String endpoint, [Map<String, dynamic>? queryParameters]) {
