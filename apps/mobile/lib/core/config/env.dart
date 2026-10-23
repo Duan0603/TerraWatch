@@ -10,6 +10,12 @@ class AppEnv {
     defaultValue: 'http://127.0.0.1:8080',
   );
 
+  /// Web client ID (client_type 3 trong google-services.json); không phải bí mật.
+  static const String googleServerClientId = String.fromEnvironment(
+    'GOOGLE_SERVER_CLIENT_ID',
+    defaultValue: '484674000797-5dcns0a47mg8rk2mfanteocgeknfe9ii.apps.googleusercontent.com',
+  );
+
   static const String mapboxAccessToken = String.fromEnvironment(
     'MAPBOX_ACCESS_TOKEN',
     defaultValue: 'pk.placeholder_mapbox_token',

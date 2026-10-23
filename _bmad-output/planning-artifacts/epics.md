@@ -252,6 +252,17 @@ Citizens sign in from the mobile app so subscriptions, device tokens and field r
 - Citizen role only; offline start with a stored session still opens the app (local geofencing is not blocked).
 - Bearer token attached to API calls; 401 clears the session.
 
+### Story 5.6: Mobile Google sign-in
+
+**Owner:** Lâm (backend `/auth/google`: Thuận/Duẫn)
+**Sprint key:** 5-6-mobile-google-sign-in
+
+Citizens can sign in with a Google account instead of a password.
+
+**Acceptance criteria:**
+- Google account chooser → Firebase ID token → Core API `/api/v1/auth/google` → same session as email login.
+- Cancel is silent; failures and a not-yet-deployed endpoint show clear messages; `google-services.json` is not committed.
+
 ### Story 5.4: 24-hour end-to-end demo
 
 **Owner:** All five members
