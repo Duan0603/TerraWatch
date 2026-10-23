@@ -1,21 +1,20 @@
 import React, { useState } from 'react';
-import { RotateCcw, Filter, Layers } from 'lucide-react';
+import { RotateCcw, Search, SlidersHorizontal } from 'lucide-react';
 import EventCard from './EventCard';
 
-export default function VerificationQueue({ 
-  events, 
-  selectedEventId, 
-  onSelectEvent, 
-  onVerifyEvent, 
-  onResetData 
+export default function VerificationQueue({
+  events,
+  selectedEventId,
+  onSelectEvent,
+  onVerifyEvent,
+  onResetData,
 }) {
-  const [filter, setFilter] = useState('all'); // 'all' | 'pending' | 'verified'
+  const [filter, setFilter] = useState('all');
 
   const pendingCount = events.filter(e => e.status === 'pending').length;
   const verifiedCount = events.filter(e => e.status === 'verified').length;
-  const totalPopulationAtRisk = events
-    .filter(e => e.status === 'verified')
-    .reduce((sum, e) => sum + (e.estPopulation || 0), 0);
+  const extremeCount = events.filter(e => e.risk === 'extreme').length;
+  const highCount = events.filter(e => e.risk === 'high').length;
 
   const filteredEvents = events.filter(e => {
     if (filter === 'pending') return e.status === 'pending';
@@ -25,89 +24,79 @@ export default function VerificationQueue({
 
   return (
     <aside className="sidebar">
-      {/* 1. Top Quick Stats */}
-      <div className="sidebar-stats">
-        <div className="stat-box">
-          <div className="lbl">Chờ thẩm định</div>
-          <div className="num" style={{ color: '#fb923c' }}>{pendingCount}</div>
-        </div>
-        <div className="stat-box">
-          <div className="lbl">Đã cảnh báo</div>
-          <div className="num" style={{ color: '#ef4444' }}>{verifiedCount}</div>
-        </div>
-        <div className="stat-box">
-          <div className="lbl">Dân số nguy cơ</div>
-          <div className="num" style={{ color: '#38bdf8' }}>{totalPopulationAtRisk.toLocaleString()}</div>
+      {/* Header */}
+      <div className="sidebar-header">
+        <div className="sidebar-eyebrow">Trung tâm điều hành</div>
+        <div className="sidebar-title">Giám sát nguy cơ 24h</div>
+        <div style={{ position: 'relative' }}>
+          <Search
+            size={13}
+            style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }}
+          />
+          <input
+            type="text"
+            placeholder="Tìm xã, huyện..."
+            style={{
+              width: '100%',
+              padding: '7px 10px 7px 30px',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: 12,
+              background: 'var(--bg)',
+              color: 'var(--text-1)',
+              outline: 'none',
+            }}
+            onFocus={e => (e.target.style.borderColor = 'var(--primary)')}
+            onBlur={e => (e.target.style.borderColor = 'var(--border)')}
+          />
         </div>
       </div>
 
-      {/* 2. Header & Filter Tabs */}
-      <div style={{ 
-        padding: '12px 16px 8px', 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        borderBottom: '1px solid rgba(255,255,255,0.06)'
-      }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Hàng Đợi AI ({filteredEvents.length} điểm)
+      {/* Overview */}
+      <div className="sidebar-overview">
+        <div className="overview-item">
+          <div className="ov-num" style={{ color: 'var(--text-1)' }}>{events.length}</div>
+          <div className="ov-label">Ô theo dõi</div>
         </div>
-
-        {/* Filter Buttons */}
-        <div style={{ display: 'flex', gap: 4, background: 'rgba(0,0,0,0.3)', padding: 2, borderRadius: 6 }}>
-          <button
-            onClick={() => setFilter('all')}
-            style={{
-              background: filter === 'all' ? '#0284c7' : 'transparent',
-              color: filter === 'all' ? '#fff' : '#94a3b8',
-              border: 'none',
-              padding: '2px 8px',
-              borderRadius: 4,
-              fontSize: 10,
-              cursor: 'pointer',
-              fontWeight: 600
-            }}
-          >
-            Tất cả
-          </button>
-          <button
-            onClick={() => setFilter('pending')}
-            style={{
-              background: filter === 'pending' ? '#fb923c' : 'transparent',
-              color: filter === 'pending' ? '#fff' : '#94a3b8',
-              border: 'none',
-              padding: '2px 8px',
-              borderRadius: 4,
-              fontSize: 10,
-              cursor: 'pointer',
-              fontWeight: 600
-            }}
-          >
-            Chờ duyệt ({pendingCount})
-          </button>
-          <button
-            onClick={() => setFilter('verified')}
-            style={{
-              background: filter === 'verified' ? '#22c55e' : 'transparent',
-              color: filter === 'verified' ? '#fff' : '#94a3b8',
-              border: 'none',
-              padding: '2px 8px',
-              borderRadius: 4,
-              fontSize: 10,
-              cursor: 'pointer',
-              fontWeight: 600
-            }}
-          >
-            Đã duyệt
-          </button>
+        <div className="overview-item">
+          <div className="ov-num" style={{ color: 'var(--risk-extreme)' }}>{pendingCount}</div>
+          <div className="ov-label">Chờ thẩm định</div>
+        </div>
+        <div className="overview-item">
+          <div className="ov-num" style={{ color: 'var(--risk-extreme)' }}>{extremeCount}</div>
+          <div className="ov-label">Cực nguy hiểm</div>
+        </div>
+        <div className="overview-item">
+          <div className="ov-num" style={{ color: 'var(--risk-high)' }}>{highCount}</div>
+          <div className="ov-label">Mức cao</div>
         </div>
       </div>
 
-      {/* 3. Event List */}
+      {/* Filter tabs */}
+      <div className="filter-tabs">
+        {[
+          { key: 'all', label: `Tất cả (${events.length})` },
+          { key: 'pending', label: `Chờ duyệt (${pendingCount})` },
+          { key: 'verified', label: `Đã duyệt (${verifiedCount})` },
+        ].map(tab => (
+          <button
+            key={tab.key}
+            className={`filter-tab ${filter === tab.key ? 'active' : ''}`}
+            onClick={() => setFilter(tab.key)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Event list */}
       <div className="queue-container">
         {filteredEvents.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px 16px', color: '#64748b', fontSize: 13 }}>
-            Không có sự cố nào trong bộ lọc này.
+          <div style={{
+            textAlign: 'center', padding: '40px 16px',
+            color: 'var(--text-3)', fontSize: 13
+          }}>
+            Không có sự cố trong bộ lọc này.
           </div>
         ) : (
           filteredEvents.map(event => (
@@ -122,31 +111,23 @@ export default function VerificationQueue({
         )}
       </div>
 
-      {/* 4. Footer Reset Demo Button */}
-      <div style={{ 
-        padding: '10px 16px', 
-        borderTop: '1px solid rgba(255,255,255,0.06)', 
-        display: 'flex', 
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        background: 'rgba(0,0,0,0.15)'
-      }}>
-        <span style={{ fontSize: 11, color: '#64748b' }}>TerraWatch SE-Capstone</span>
+      {/* Footer */}
+      <div className="sidebar-footer">
+        <span style={{ fontSize: 10, color: 'var(--text-3)' }}>TerraWatch v2.4.0</span>
         <button
           onClick={onResetData}
           style={{
             background: 'transparent',
             border: 'none',
-            color: '#94a3b8',
+            color: 'var(--text-2)',
             fontSize: 11,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: 4
+            gap: 4,
           }}
-          title="Đặt lại danh sách mẫu ban đầu"
         >
-          <RotateCcw size={12} /> Reset dữ liệu mẫu
+          <RotateCcw size={11} /> Reset demo
         </button>
       </div>
     </aside>

@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
 venv/
+.venv/
 .env
 .env.local
 .env.*.local
@@ -13,6 +14,7 @@ build/
 out/
 target/
 *.class
+.dart_tool/
 
 # IDE and Editor
 .idea/
@@ -36,5 +38,15 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Flutter generated
+*.iml
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+
 # Temporary & Output directories
 scratch/
+.playwright-mcp/

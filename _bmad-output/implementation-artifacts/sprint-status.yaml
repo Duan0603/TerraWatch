@@ -1,5 +1,5 @@
 # generated: 2026-10-02
-# last_updated: 2026-10-14
+# last_updated: 2026-10-15
 # project: SECapstone
 # project_key: TERRA
 # tracking_system: file-system
@@ -10,15 +10,15 @@
 
 development_status:
   epic-1: in-progress
-  1-1-multi-role-user-registration-authentication-register-login-jwt: ready-for-dev
-  1-2-postgis-schema-per-service-migration-spatial-indexes: backlog
-  1-3-api-gateway-reverse-proxy-rate-limiting: backlog
+  1-1-multi-role-user-registration-authentication-register-login-jwt: done
+  1-2-postgis-schema-per-service-migration-spatial-indexes: done
+  1-3-api-gateway-reverse-proxy-rate-limiting: done
   epic-1-retrospective: optional
 
-  epic-2: backlog
-  2-1-rainfall-observation-forecast-ingestion: backlog
-  2-2-dem-terrain-feature-extraction: backlog
-  2-3-as-of-rainfall-terrain-feature-snapshots: backlog
+  epic-2: in-progress
+  2-1-rainfall-observation-forecast-ingestion: done
+  2-2-dem-terrain-feature-extraction: done
+  2-3-as-of-rainfall-terrain-feature-snapshots: done
   2-4-community-field-report-api-gps-photo-upload: backlog
   epic-2-retrospective: optional
 
@@ -29,15 +29,15 @@ development_status:
   3-4-hazard-levels-explanations-and-quality-policy: backlog
   epic-3-retrospective: optional
 
-  epic-4: backlog
+  epic-4: in-progress
   4-1-persisted-forecast-jobs-redis-events-resilience: backlog
-  4-2-webgis-forecast-review-queue: review
-  4-3-rainfall-terrain-24h-hazard-dashboard: backlog
-  4-4-admin-emergency-alert-broadcast-sms-app-push-notification: backlog
+  4-2-webgis-forecast-review-queue: done
+  4-3-rainfall-terrain-24h-hazard-dashboard: done
+  4-4-admin-emergency-alert-broadcast-sms-app-push-notification: done
   epic-4-retrospective: optional
 
-  epic-5: in-progress
-  5-1-citizen-alert-subscription-emergency-alert-reception-push-sms: review
+  epic-5: backlog
+  5-1-citizen-alert-subscription-emergency-alert-reception-push-sms: backlog
   5-2-mobile-community-field-report-photo-gps: backlog
   5-3-expiry-aware-offline-geofencing-sqlite: backlog
   5-4-24h-forecast-end-to-end-integration-demo: backlog
