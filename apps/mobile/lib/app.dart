@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_constants.dart';
-import 'features/home/presentation/home_screen.dart';
+import 'features/home/presentation/main_shell.dart';
 
 /// Root Application Widget
 class GeoSentryApp extends StatelessWidget {
@@ -13,7 +13,7 @@ class GeoSentryApp extends StatelessWidget {
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const HomeScreen(),
+      home: const MainShell(),
     );
   }
 }

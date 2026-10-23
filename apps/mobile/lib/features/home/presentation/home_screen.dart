@@ -70,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('GeoSentry Cảnh Báo Sạt Lở'),
+        title: const Text('TerraWatch'),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
