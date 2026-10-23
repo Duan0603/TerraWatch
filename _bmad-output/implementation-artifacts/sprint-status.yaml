@@ -1,5 +1,5 @@
 # generated: 2026-10-02
-# last_updated: 2026-10-15
+# last_updated: 2026-10-23
 # project: SECapstone
 # project_key: TERRA
 # tracking_system: file-system
@@ -41,6 +41,7 @@ development_status:
   5-2-mobile-community-field-report-photo-gps: backlog
   5-3-expiry-aware-offline-geofencing-sqlite: backlog
   5-4-24h-forecast-end-to-end-integration-demo: backlog
+  5-5-mobile-citizen-login-jwt: review
   epic-5-retrospective: optional
 
   epic-6: backlog
