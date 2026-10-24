@@ -5,6 +5,7 @@ class UserProfile {
   final String email;
   final String role;
   final String? phoneNumber;
+  final String authProvider; // email | google
 
   const UserProfile({
     required this.userId,
@@ -12,6 +13,7 @@ class UserProfile {
     required this.email,
     required this.role,
     this.phoneNumber,
+    this.authProvider = 'email',
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) => UserProfile(
@@ -20,6 +22,7 @@ class UserProfile {
         email: json['email'] as String,
         role: json['role'] as String,
         phoneNumber: json['phoneNumber'] as String?,
+        authProvider: (json['authProvider'] as String?) ?? 'email',
       );
 
   Map<String, dynamic> toJson() => {
@@ -28,6 +31,7 @@ class UserProfile {
         'email': email,
         'role': role,
         'phoneNumber': phoneNumber,
+        'authProvider': authProvider,
       };
 
   /// Chữ cái đầu của tối đa 2 từ cuối trong tên, dùng cho avatar

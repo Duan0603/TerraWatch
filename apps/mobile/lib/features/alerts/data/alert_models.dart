@@ -76,3 +76,25 @@ class AlertModel {
         receivedAt: DateTime.now().toIso8601String(),
       );
 }
+
+/// Vùng người dùng đã đăng ký nhận cảnh báo (GET /api/v1/alerts/subscriptions)
+class SubscribedArea {
+  final String subscriptionId;
+  final int areaId;
+  final String areaName;
+  final List<String> alertChannels; // PUSH, SMS
+
+  const SubscribedArea({
+    required this.subscriptionId,
+    required this.areaId,
+    required this.areaName,
+    required this.alertChannels,
+  });
+
+  factory SubscribedArea.fromJson(Map<String, dynamic> json) => SubscribedArea(
+        subscriptionId: json['subscriptionId'] as String,
+        areaId: json['areaId'] as int,
+        areaName: (json['areaName'] as String?) ?? 'Khu vực #${json['areaId']}',
+        alertChannels: List<String>.from(json['alertChannels'] as List),
+      );
+}

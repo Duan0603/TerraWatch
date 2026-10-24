@@ -76,8 +76,35 @@ class AuthRepository {
     if (token == null) return;
     try {
       final profile = UserProfile.fromJson(await _api.get(ApiEndpoints.me));
-      await Session.save(token, profile);
+      if (Session.token == token) await Session.save(token, profile); // đã đăng xuất trong lúc chờ thì không đăng nhập lại
     } on ApiException catch (_) {}
+  }
+
+  /// PUT /auth/me; cập nhật hồ sơ lưu trên máy bằng bản server trả về
+  Future<UserProfile> updateProfile({required String fullName, String? phoneNumber}) async {
+    final token = Session.token;
+    try {
+      final profile = UserProfile.fromJson(await _api.put(ApiEndpoints.me, body: {
+        'fullName': fullName.trim(),
+        'phoneNumber': phoneNumber?.trim() ?? '',
+      }));
+      if (token != null && Session.token == token) await Session.save(token, profile);
+      return profile;
+    } on TypeError catch (_) {
+      throw const ApiException(message: 'Phản hồi máy chủ không hợp lệ');
+    }
+  }
+
+  /// PUT /auth/password; sai mật khẩu hiện tại trả 400 (không phải 401 nên không bị đăng xuất)
+  Future<void> changePassword({required String currentPassword, required String newPassword}) async {
+    try {
+      await _api.put(ApiEndpoints.password, body: {'currentPassword': currentPassword, 'newPassword': newPassword});
+    } on ApiException catch (e) {
+      if (e.statusCode == 400) {
+        throw const ApiException(message: 'Mật khẩu hiện tại không đúng', statusCode: 400);
+      }
+      rethrow;
+    }
   }
 
   /// Xóa phiên trước để đăng xuất luôn thành công; đăng xuất Google/Firebase chỉ là bước phụ, có giới hạn thời gian
