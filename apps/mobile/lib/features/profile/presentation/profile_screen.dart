@@ -184,11 +184,14 @@ class _SettingsSection extends StatelessWidget {
   const _SettingsSection({required this.title, required this.children});
 
   @override
-  Widget build(BuildContext context) => Container(
-        decoration: BoxDecoration(
-            color: AppColors.cardSurface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border)),
+  // Material (không phải Container có nền) để ListTile bên trong vẽ được hiệu ứng chạm
+  Widget build(BuildContext context) => Material(
+        color: AppColors.cardSurface,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: AppColors.border),
+        ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
