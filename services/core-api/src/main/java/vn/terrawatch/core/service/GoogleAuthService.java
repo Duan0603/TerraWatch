@@ -46,6 +46,7 @@ public class GoogleAuthService {
         // The random password is never disclosed, so the account can only be entered through Google.
         User user = new User(fullName.length() > 100 ? fullName.substring(0, 100) : fullName, email,
             passwords.encode(UUID.randomUUID().toString()), Role.CITIZEN.dbValue(), null);
+        user.setAuthProvider("google");
         try {
             return users.saveAndFlush(user);
         } catch (DataIntegrityViolationException raced) {

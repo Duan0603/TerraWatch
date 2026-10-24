@@ -49,4 +49,17 @@ public class AuthController {
         // JwtAuthenticationFilter always sets a UUID principal directly — no string round-trip needed.
         return auth.getCurrentUser((UUID) authentication.getPrincipal());
     }
+
+    @PutMapping("/me")
+    @Operation(summary = "Update the authenticated user's name and phone number")
+    public UserProfileResponse updateMe(Authentication authentication, @Valid @RequestBody UpdateProfileRequest request) {
+        return auth.updateProfile((UUID) authentication.getPrincipal(), request);
+    }
+
+    @PutMapping("/password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Change the password of an email/password account")
+    public void changePassword(Authentication authentication, @Valid @RequestBody ChangePasswordRequest request) {
+        auth.changePassword((UUID) authentication.getPrincipal(), request);
+    }
 }
