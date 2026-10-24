@@ -12,6 +12,7 @@ import vn.terrawatch.core.security.JwtTokenProvider;
 import vn.terrawatch.core.security.Role;
 
 import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -73,6 +74,41 @@ public class AuthService {
             new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized")));
     }
 
+    public UserProfileResponse updateProfile(UUID userId, UpdateProfileRequest request) {
+        User user = users.findById(userId).orElseThrow(() ->
+            new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
+        user.setFullName(request.fullName().trim());
+        String phone = request.phoneNumber();
+        user.setPhoneNumber(phone == null || phone.isBlank() ? null : phone);
+        user.setUpdatedAt(OffsetDateTime.now());
+        return profile(users.save(user));
+    }
+
+    /**
+     * Wrong current password is 400, not 401: clients treat 401 on an authenticated call as an
+     * expired session and sign the user out. Google-only accounts have no password to change.
+     */
+    public void changePassword(UUID userId, ChangePasswordRequest request) {
+        validatePasswordLength(request.newPassword());
+        User user = users.findById(userId).orElseThrow(() ->
+            new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
+        if (!"email".equals(user.getAuthProvider())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This account signs in with Google and has no password");
+        }
+        boolean matches;
+        try {
+            matches = passwords.matches(request.currentPassword(), user.getPasswordHash());
+        } catch (IllegalArgumentException malformedHash) {
+            matches = false;
+        }
+        if (!matches) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is incorrect");
+        }
+        user.setPasswordHash(passwords.encode(request.newPassword()));
+        user.setUpdatedAt(OffsetDateTime.now());
+        users.save(user);
+    }
+
     private void validatePasswordLength(String password) {
         if (password.getBytes(StandardCharsets.UTF_8).length > 72) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password exceeds 72 UTF-8 bytes");
@@ -87,7 +123,7 @@ public class AuthService {
     private UserProfileResponse profile(User user) {
         requireKnownRole(user);
         return new UserProfileResponse(user.getUserId().toString(), user.getFullName(), user.getEmail(),
-            user.getRole(), user.getPhoneNumber());
+            user.getRole(), user.getPhoneNumber(), user.getAuthProvider());
     }
 
     /** Refuses to issue a token/profile for a row whose role isn't one of the three known values. */

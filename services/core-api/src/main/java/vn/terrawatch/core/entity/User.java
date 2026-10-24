@@ -35,6 +35,9 @@ public class User {
     @Column(name = "fcm_token")
     private String fcmToken;
 
+    @Column(name = "auth_provider", nullable = false, length = 20)
+    private String authProvider = "email"; // email | google
+
     @Column(name = "created_at")
     private OffsetDateTime createdAt;
 
@@ -74,6 +77,9 @@ public class User {
 
     public String getFcmToken() { return fcmToken; }
     public void setFcmToken(String fcmToken) { this.fcmToken = fcmToken; }
+
+    public String getAuthProvider() { return authProvider; }
+    public void setAuthProvider(String authProvider) { this.authProvider = authProvider; }
 
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
