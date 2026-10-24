@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geosentry_mobile/features/alerts/data/alert_models.dart';
-import 'package:geosentry_mobile/features/alerts/data/alerts_repository.dart';
 
 void main() {
   group('Alert Models & Subscription Tests (Story 5.1)', () {
@@ -45,13 +44,6 @@ void main() {
       final fromMap = AlertModel.fromMap(map);
       expect(fromMap.broadcastId, alert.broadcastId);
       expect(fromMap.message, alert.message);
-    });
-
-    test('AlertsRepository fallback returns non-empty areas', () async {
-      final repo = AlertsRepository();
-      final areas = await repo.fetchMonitoringAreas();
-      expect(areas.isNotEmpty, isTrue);
-      expect(areas.any((a) => a['name']?.toString().contains('Bát Xát') ?? false), isTrue);
     });
   });
 }

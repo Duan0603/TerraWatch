@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../core/network/api_exceptions.dart';
+import '../../../core/storage/session.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../data/alert_models.dart';
@@ -14,7 +16,7 @@ class SubscriptionScreen extends StatefulWidget {
 
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _phoneController = TextEditingController(text: '0912345678');
+  final _phoneController = TextEditingController(text: Session.user.value?.phoneNumber ?? '');
   final _alertsRepo = AlertsRepository();
 
   List<Map<String, dynamic>> _areas = [];
@@ -24,6 +26,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   bool _receiveSms = true;
   bool _isLoadingAreas = true;
   bool _isSubmitting = false;
+  String? _areasError;
 
   @override
   void initState() {
@@ -38,16 +41,25 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 
   Future<void> _loadAreas() async {
-    final areas = await _alertsRepo.fetchMonitoringAreas();
-    if (mounted) {
-      setState(() {
-        _areas = areas;
-        if (areas.isNotEmpty) {
-          _selectedAreaId = areas.first['id']?.toString();
-          _selectedAreaName = areas.first['name']?.toString();
-        }
-        _isLoadingAreas = false;
-      });
+    try {
+      final areas = await _alertsRepo.fetchMonitoringAreas();
+      if (mounted) {
+        setState(() {
+          _areas = areas;
+          if (areas.isNotEmpty) {
+            _selectedAreaId = areas.first['area_id']?.toString();
+            _selectedAreaName = areas.first['name']?.toString();
+          }
+          _isLoadingAreas = false;
+        });
+      }
+    } on ApiException catch (e) {
+      if (mounted) {
+        setState(() {
+          _areasError = e.message;
+          _isLoadingAreas = false;
+        });
+      }
     }
   }
 
@@ -80,26 +92,22 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       alertChannels: channels,
     );
 
-    final success = await _alertsRepo.subscribeAlerts(model);
-
-    if (mounted) {
+    try {
+      await _alertsRepo.subscribeAlerts(model);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: AppColors.safe,
+          content: Text('Đăng ký nhận cảnh báo thành công!'),
+        ),
+      );
+      Navigator.pop(context, _selectedAreaName ?? 'Vùng vừa đăng ký');
+    } on ApiException catch (e) {
+      if (!mounted) return;
       setState(() => _isSubmitting = false);
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: AppColors.safe,
-            content: Text('✅ Đăng ký nhận cảnh báo thành công!'),
-          ),
-        );
-        Navigator.pop(context, _selectedAreaName ?? 'Vùng vừa đăng ký');
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: AppColors.danger,
-            content: Text('Không thể kết nối máy chủ. Đã lưu cấu hình dự phòng.'),
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(backgroundColor: AppColors.danger, content: Text(e.message)),
+      );
     }
   }
 
@@ -156,9 +164,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   fillColor: AppColors.cardSurface,
                 ),
                 validator: (val) {
-                  if (val == null || val.trim().isEmpty) return 'Vui lòng nhập số điện thoại';
-                  if (val.trim().length < 9) return 'Số điện thoại không hợp lệ';
-                  return null;
+                  final phone = val?.trim() ?? '';
+                  if (phone.isEmpty) return _receiveSms ? 'Cần số điện thoại để nhận SMS' : null;
+                  return RegExp(r'^\+?[0-9]{9,15}$').hasMatch(phone) ? null : 'Số điện thoại không hợp lệ';
                 },
               ),
               const SizedBox(height: 20),
@@ -174,6 +182,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   padding: EdgeInsets.all(16.0),
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ))
+              else if (_areasError != null)
+                Text(_areasError!, style: const TextStyle(color: AppColors.danger))
               else
                 DropdownButtonFormField<String>(
                   initialValue: _selectedAreaId,
@@ -184,7 +194,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     fillColor: AppColors.cardSurface,
                   ),
                   items: _areas.map((area) {
-                    final id = area['id']?.toString() ?? '';
+                    final id = area['area_id']?.toString() ?? '';
                     final name = area['name']?.toString() ?? 'Khu vực';
                     final prov = area['province']?.toString() ?? '';
                     final title = prov.isNotEmpty ? '$name ($prov)' : name;
@@ -197,7 +207,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     setState(() {
                       _selectedAreaId = val;
                       final selected = _areas.firstWhere(
-                        (a) => a['id']?.toString() == val,
+                        (a) => a['area_id']?.toString() == val,
                         orElse: () => {},
                       );
                       _selectedAreaName = selected['name']?.toString() ?? '';

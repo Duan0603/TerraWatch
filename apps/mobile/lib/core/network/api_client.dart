@@ -49,6 +49,22 @@ class ApiClient {
     }
   }
 
+  Future<Map<String, dynamic>> put(String endpoint, {dynamic body}) => _run(
+        () => _client.put(_buildUri(endpoint), headers: _buildHeaders(null), body: jsonEncode(body)),
+      );
+
+  Future<Map<String, dynamic>> delete(String endpoint) => _run(
+        () => _client.delete(_buildUri(endpoint), headers: _buildHeaders(null)),
+      );
+
+  Future<Map<String, dynamic>> _run(Future<http.Response> Function() call) async {
+    try {
+      return _handleResponse(await call().timeout(_timeout));
+    } catch (e) {
+      throw _networkError(e);
+    }
+  }
+
   /// Giữ nguyên ApiException từ server; lỗi mạng/timeout đổi thành thông báo ngắn (chi tiết ở log debug)
   ApiException _networkError(Object e) {
     if (e is ApiException) return e;

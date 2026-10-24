@@ -1,3 +1,4 @@
+import '../../../core/constants/api_endpoints.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/session.dart';
 import '../../../core/storage/local_storage.dart';
@@ -10,18 +11,21 @@ class AlertsRepository {
   AlertsRepository({ApiClient? apiClient})
       : _apiClient = apiClient ?? ApiClient();
 
-  /// AC1: Đăng ký vùng nhận cảnh báo khẩn cấp (POST /api/v1/alerts/subscriptions)
-  Future<bool> subscribeAlerts(SubscriptionModel subscription) async {
-    try {
-      await _apiClient.post(
-        '/api/v1/alerts/subscriptions',
-        body: subscription.toJson(),
-      );
-      return true;
-    } catch (_) {
-      // Fallback: Nếu backend chưa sẵn sàng hoặc offline, coi như đã lưu nhận tin cục bộ
-      return true;
-    }
+  /// AC1: Đăng ký vùng nhận cảnh báo khẩn cấp (POST /api/v1/alerts/subscriptions). Lỗi được ném ra, không giả thành công.
+  Future<void> subscribeAlerts(SubscriptionModel subscription) async {
+    await _apiClient.post(ApiEndpoints.alertSubscriptions, body: subscription.toJson());
+  }
+
+  /// Danh sách vùng người dùng đã đăng ký (GET /api/v1/alerts/subscriptions)
+  Future<List<SubscribedArea>> fetchSubscriptions() async {
+    final response = await _apiClient.get(ApiEndpoints.alertSubscriptions);
+    final data = response['data'];
+    if (data is! List) return [];
+    return data.map((e) => SubscribedArea.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<void> deleteSubscription(String subscriptionId) async {
+    await _apiClient.delete('${ApiEndpoints.alertSubscriptions}/$subscriptionId');
   }
 
   /// AC2: Đăng ký FCM Device Token (POST /api/v1/alerts/devices/register)
@@ -42,22 +46,11 @@ class AlertsRepository {
   }
 
   /// Lấy danh sách vùng giám sát trọng điểm (AOI) để người dân lựa chọn
+  /// Mỗi vùng có `area_id` (số) và `name`. Lỗi mạng được ném ra để màn hình báo lỗi thật (không dùng danh sách giả).
   Future<List<Map<String, dynamic>>> fetchMonitoringAreas() async {
-    try {
-      final response = await _apiClient.get('/api/v1/monitoring-areas');
-      if (response['data'] is List) {
-        return List<Map<String, dynamic>>.from(response['data']);
-      }
-    } catch (_) {}
-
-    // Fallback các vùng trọng điểm sạt lở miền núi phía Bắc khi offline
-    return [
-      {'id': 'aoi-laocai-01', 'name': 'Khu vực Bát Xát', 'province': 'Lào Cai'},
-      {'id': 'aoi-laocai-02', 'name': 'Thị xã Sa Pa', 'province': 'Lào Cai'},
-      {'id': 'aoi-yenbai-01', 'name': 'Huyện Mù Cang Chải', 'province': 'Yên Bái'},
-      {'id': 'aoi-hoabinh-01', 'name': 'Huyện Đà Bắc', 'province': 'Hòa Bình'},
-      {'id': 'aoi-hagiang-01', 'name': 'Huyện Hoàng Su Phì', 'province': 'Hà Giang'},
-    ];
+    final response = await _apiClient.get('/api/v1/monitoring-areas');
+    final data = response['data'];
+    return data is List ? List<Map<String, dynamic>>.from(data) : [];
   }
 
   /// AC4: Lưu bản tin cảnh báo khẩn cấp vào SQLite

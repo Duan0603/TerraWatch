@@ -6,6 +6,8 @@ class ApiEndpoints {
   static const String login = '/api/v1/auth/login';
   static const String register = '/api/v1/auth/register';
   static const String me = '/api/v1/auth/me';
+  static const String avatar = '/api/v1/auth/me/avatar';
+  static const String password = '/api/v1/auth/password';
 
   // Landslide Hazards & Offline Sync (Story 5.3)
   static const String landslidesActive = '/api/v1/landslides/active';
