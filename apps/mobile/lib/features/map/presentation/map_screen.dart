@@ -23,6 +23,8 @@ class _MapScreenState extends State<MapScreen> {
   static const _source = 'hazards';
   static const _fillLayer = 'hazards-fill';
   static const _lineLayer = 'hazards-line';
+  static const _markerSource = 'hazard-markers';
+  static const _markerLayer = 'hazard-markers-circle';
 
   /// Màu theo risk_level, trùng bản web
   static const _colorExpression = [
@@ -68,17 +70,31 @@ class _MapScreenState extends State<MapScreen> {
     final c = _controller;
     final data = _hazards;
     if (c == null || data == null || !_styleLoaded) return;
-    for (final id in [_lineLayer, _fillLayer]) {
+    for (final id in [_markerLayer, _lineLayer, _fillLayer]) {
       try {
         await c.removeLayer(id);
       } catch (_) {} // chưa có lớp này
     }
-    try {
-      await c.removeSource(_source);
-    } catch (_) {}
+    for (final id in [_markerSource, _source]) {
+      try {
+        await c.removeSource(id);
+      } catch (_) {}
+    }
     await c.addGeoJsonSource(_source, data);
     await c.addFillLayer(_source, _fillLayer, const FillLayerProperties(fillColor: _colorExpression, fillOpacity: 0.45));
     await c.addLineLayer(_source, _lineLayer, const LineLayerProperties(lineColor: _colorExpression, lineWidth: 2));
+    // Chấm tròn ở tâm mỗi vùng: vùng chỉ rộng vài trăm mét, ở mức thu phóng thấp sẽ không thấy và không chạm được
+    await c.addGeoJsonSource(_markerSource, hazardMarkers(data));
+    await c.addCircleLayer(
+      _markerSource,
+      _markerLayer,
+      const CircleLayerProperties(
+        circleRadius: 7,
+        circleColor: _colorExpression,
+        circleStrokeColor: '#ffffff',
+        circleStrokeWidth: 2,
+      ),
+    );
     if (!_fitted) {
       final b = hazardBounds(data);
       if (b != null) {
@@ -94,7 +110,7 @@ class _MapScreenState extends State<MapScreen> {
   Future<void> _onMapClick(Point<double> point, LatLng _) async {
     final c = _controller;
     if (c == null) return;
-    final hits = await c.queryRenderedFeatures(point, [_fillLayer], null);
+    final hits = await c.queryRenderedFeatures(point, [_markerLayer, _fillLayer], null);
     if (hits.isEmpty || !mounted) return;
     final feature = hits.first is String ? jsonDecode(hits.first as String) : hits.first;
     final properties = Map<String, dynamic>.from((feature as Map)['properties'] as Map);

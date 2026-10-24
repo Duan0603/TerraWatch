@@ -58,8 +58,10 @@ class HazardInfo {
   }
 }
 
-/// Khung bao (tây-nam, đông-bắc) của toàn bộ vùng trong một FeatureCollection; null nếu không có tọa độ
-({double south, double west, double north, double east})? hazardBounds(Map<String, dynamic> collection) {
+typedef GeoBounds = ({double south, double west, double north, double east});
+
+/// Khung bao của một nhóm tọa độ GeoJSON lồng nhau ([lon, lat] ở lớp trong cùng); null nếu rỗng
+GeoBounds? _boundsOf(Iterable<dynamic> coordinates) {
   double? south, west, north, east;
   void visit(dynamic node) {
     if (node is List && node.length >= 2 && node[0] is num && node[1] is num) {
@@ -74,9 +76,32 @@ class HazardInfo {
     }
   }
 
-  for (final f in (collection['features'] as List? ?? const [])) {
-    visit((f as Map)['geometry']?['coordinates']);
-  }
+  coordinates.forEach(visit);
   if (south == null) return null;
   return (south: south!, west: west!, north: north!, east: east!);
+}
+
+/// Khung bao (tây-nam, đông-bắc) của toàn bộ vùng trong một FeatureCollection; null nếu không có tọa độ
+GeoBounds? hazardBounds(Map<String, dynamic> collection) => _boundsOf(
+      (collection['features'] as List? ?? const []).map((f) => (f as Map)['geometry']?['coordinates']),
+    );
+
+/// Mỗi vùng là một điểm (tâm khung bao) giữ nguyên properties. Vùng sạt lở chỉ rộng vài trăm mét nên
+/// ở mức thu phóng thấp chúng nhỏ hơn một điểm ảnh; chấm tròn này giúp nhìn thấy và chạm được.
+Map<String, dynamic> hazardMarkers(Map<String, dynamic> collection) {
+  final markers = <Map<String, dynamic>>[];
+  for (final f in (collection['features'] as List? ?? const [])) {
+    final feature = f as Map;
+    final b = _boundsOf([feature['geometry']?['coordinates']]);
+    if (b == null) continue;
+    markers.add({
+      'type': 'Feature',
+      'geometry': {
+        'type': 'Point',
+        'coordinates': [(b.west + b.east) / 2, (b.south + b.north) / 2],
+      },
+      'properties': feature['properties'] ?? <String, dynamic>{},
+    });
+  }
+  return {'type': 'FeatureCollection', 'features': markers};
 }

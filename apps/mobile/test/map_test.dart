@@ -47,6 +47,7 @@ final _collection = <String, dynamic>{
 };
 
 void main() {
+  markerTests();
   group('Hazard info (Story 5.9)', () {
     test('parses server properties and builds display values', () {
       final info = HazardInfo.fromProperties(_collection['features'][0]['properties'] as Map<String, dynamic>);
@@ -101,6 +102,26 @@ void main() {
       final data = await repo.fetchActiveHazards();
       expect(sent.url.path, '/api/v1/landslides/active');
       expect((data['features'] as List).length, 2);
+    });
+  });
+}
+
+void markerTests() {
+  group('Hazard markers (Story 5.9)', () {
+    test('each area becomes one point at the centre of its box and keeps its properties', () {
+      final markers = hazardMarkers(_collection);
+      final features = markers['features'] as List;
+      expect(features.length, 2);
+      final first = features.first as Map;
+      expect(first['geometry']['type'], 'Point');
+      expect((first['geometry']['coordinates'] as List)[0], closeTo(104.113, 1e-9));
+      expect((first['geometry']['coordinates'] as List)[1], closeTo(21.8635, 1e-9));
+      expect(first['properties']['risk_level'], 'extreme');
+    });
+
+    test('empty or coordinate-less input gives no markers', () {
+      expect((hazardMarkers({'features': []})['features'] as List), isEmpty);
+      expect((hazardMarkers({'features': [{'type': 'Feature', 'geometry': null, 'properties': {}}]})['features'] as List), isEmpty);
     });
   });
 }

@@ -20,7 +20,7 @@ so that I can see where the danger is around me.
 
 1. **AC1 — Real map:** the Map tab shows a MapLibre map using the same MapTiler `topo-v2` style as the WebGIS. Without a key it falls back to the free OpenFreeMap style and says so.
 2. **AC2 — Satellite:** an app-bar button toggles the MapTiler satellite style; without a key it explains that the key is missing instead of failing. The hazard layers are redrawn after a style change.
-3. **AC3 — Hazards:** verified areas from `/api/v1/landslides/active` are drawn as fill + outline, coloured by `risk_level` with the WebGIS colours (extreme `#ef4444`, high `#f97316`, medium `#eab308`, else `#10b981`). The status card shows the real count, a load error with a retry, or a loading state. The camera fits the polygons once they load.
+3. **AC3 — Hazards:** verified areas from `/api/v1/landslides/active` are drawn as fill + outline plus a round marker at the centre of each (the areas are only a few hundred metres wide, invisible and untappable at low zoom), coloured by `risk_level` with the WebGIS colours (extreme `#ef4444`, high `#f97316`, medium `#eab308`, else `#10b981`). The status card shows the real count, a load error with a retry, or a loading state. The camera fits the polygons once they load.
 4. **AC4 — Details:** tapping an area opens a sheet with risk level, confidence, slope, area (ha or m²), verification date and scene id; fields the server does not send are skipped.
 5. **AC5 — My location:** the location button asks for permission, shows the blue dot and moves the camera to the current position; denial or failure shows a message. Location stays on the phone.
 6. **AC6 — Config:** the MapTiler key comes from `--dart-define=MAPTILER_KEY=...`; it is never written to the repo.
