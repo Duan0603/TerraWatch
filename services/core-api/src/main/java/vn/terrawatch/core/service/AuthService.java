@@ -79,7 +79,7 @@ public class AuthService {
         }
     }
 
-    private AuthResponse response(User user) {
+    AuthResponse response(User user) {
         requireKnownRole(user);
         return new AuthResponse(tokens.generateToken(user), user.getRole(), profile(user));
     }

@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import vn.terrawatch.core.dto.*;
 import vn.terrawatch.core.service.AuthService;
+import vn.terrawatch.core.service.GoogleAuthService;
 
 import java.util.UUID;
 
@@ -16,9 +17,17 @@ import java.util.UUID;
 @Tag(name = "Authentication", description = "Citizen registration and multi-role JWT login")
 public class AuthController {
     private final AuthService auth;
+    private final GoogleAuthService googleAuth;
 
-    public AuthController(AuthService auth) {
+    public AuthController(AuthService auth, GoogleAuthService googleAuth) {
         this.auth = auth;
+        this.googleAuth = googleAuth;
+    }
+
+    @PostMapping("/google")
+    @Operation(summary = "Sign in with Google: exchange a Firebase ID token for a citizen JWT")
+    public AuthResponse google(@Valid @RequestBody GoogleLoginRequest request) {
+        return googleAuth.login(request.idToken());
     }
 
     @PostMapping("/register")

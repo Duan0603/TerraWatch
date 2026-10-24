@@ -5,6 +5,10 @@ jwt:
   secret: ${JWT_SECRET}
   expiration-ms: ${JWT_EXPIRATION_MS:86400000}
 
+# Firebase project whose Google sign-in ID tokens Core API accepts (/api/v1/auth/google)
+firebase:
+  project-id: ${FIREBASE_PROJECT_ID:terrawatch-defense}
+
 spring:
   application:
     name: terrawatch-core-api

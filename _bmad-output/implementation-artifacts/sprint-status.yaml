@@ -13,6 +13,7 @@ development_status:
   1-1-multi-role-user-registration-authentication-register-login-jwt: done
   1-2-postgis-schema-per-service-migration-spatial-indexes: done
   1-3-api-gateway-reverse-proxy-rate-limiting: done
+  1-4-google-sign-in-token-exchange: review
   epic-1-retrospective: optional
 
   epic-2: in-progress
