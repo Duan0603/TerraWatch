@@ -36,7 +36,7 @@ so that alerts reach the right phone for the places I care about, and the Profil
 
 - Verified the real contract end to end through the gateway with curl against the Story 1.5 backend (update profile, invalid phone 400, subscribe with SMS, list, no-token 401, wrong password 400, change password 204, delete 204); throwaway user removed afterwards.
 - Wrong current password is 400 on purpose: `ApiClient` signs the user out on any 401 while a token is stored.
-- **Deferred:** FCM device-token registration and push (`registerDeviceToken` in `HomeScreen` still sends a placeholder token that the server does not accept yet); radius preference (not in PRD); "reports sent" statistic (needs a "my reports" endpoint, Story 5.2); editing an existing subscription's channels directly (re-add the area to change them).
+- **Deferred:** FCM device-token registration and push (the placeholder `registerDeviceToken` call in `HomeScreen` was removed: the endpoint does not exist and its 401 made the app sign the user out right after login); radius preference (not in PRD); "reports sent" statistic (needs a "my reports" endpoint, Story 5.2); editing an existing subscription's channels directly (re-add the area to change them).
 - Existing Google accounts created before Story 1.5 are `authProvider = email` until updated in the database.
 
 ## Dev Agent Record
