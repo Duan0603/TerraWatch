@@ -8,7 +8,6 @@ import '../../report/presentation/report_screen.dart';
 import '../../alerts/presentation/alerts_screen.dart';
 import '../../alerts/presentation/subscription_screen.dart';
 import '../../alerts/presentation/emergency_alert_screen.dart';
-import '../../alerts/data/alerts_repository.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,7 +24,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadHazardCount();
-    _registerFcmDevice();
     _listenEmergencyAlerts();
   }
 
@@ -33,13 +31,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _alertSubscription?.cancel();
     super.dispose();
-  }
-
-  /// AC2: Đăng ký FCM Device Token khi mở ứng dụng
-  Future<void> _registerFcmDevice() async {
-    final repo = AlertsRepository();
-    // Giả lập FCM token nhận được từ Firebase Messaging
-    await repo.registerDeviceToken('fcm_token_android_pixel_001');
   }
 
   /// AC3: Lắng nghe tín hiệu cảnh báo khẩn cấp để mở Full-Screen Intent

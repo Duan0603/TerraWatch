@@ -36,6 +36,7 @@ so that I can see where the danger is around me.
 
 - Response shape verified against the live server: FeatureCollection of MultiPolygons with properties `event_id, risk_level, confidence, slope, area_m2, scene_id, verified_at`.
 - Run with the key: `--dart-define=MAPTILER_KEY=<key>` (keep it out of git; restrict or revoke the key after the defence).
+- Also removes the placeholder `registerDeviceToken` call in `HomeScreen` (same fix as Story 5.7): the endpoint does not exist and its 401 signed users out right after login.
 - **Deferred:** 3D terrain/tilt like the WebGIS (needs a terrain source in the style; verify plugin support), offline tiles, clustering and filters, community-report markers.
 - The plugin is native; first Android build is slower.
 
