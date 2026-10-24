@@ -60,4 +60,14 @@ class ErrorStatusOverHttpTest {
         assertThat(send(HttpMethod.DELETE, "/api/v1/alerts/subscriptions/" + UUID.randomUUID(), headers, null))
             .isEqualTo(HttpStatus.NOT_FOUND);
     }
+
+    @Test
+    void avatarErrorsKeepTheirRealStatusInsteadOfBecoming401() {
+        HttpHeaders headers = registerAndAuthorize();
+        assertThat(send(HttpMethod.GET, "/api/v1/auth/me/avatar", headers, null)).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(send(HttpMethod.PUT, "/api/v1/auth/me/avatar", headers, Map.of("imageBase64", "aGVsbG8=")))
+            .isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(send(HttpMethod.PUT, "/api/v1/auth/me/avatar", headers, Map.of("imageBase64", "")))
+            .isEqualTo(HttpStatus.BAD_REQUEST);
+    }
 }

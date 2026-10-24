@@ -36,6 +36,10 @@ class ProfileAndSubscriptionServiceTest {
     private final AlertSubscriptionService subscriptions = new AlertSubscriptionService(subs, areas, users);
     private final UUID me = UUID.randomUUID();
 
+    private static UpdateProfileRequest profile(String name, String phone) {
+        return new UpdateProfileRequest(name, phone, null, null, null, null, null, null, null, null, null);
+    }
+
     private User user(String provider, String phone) {
         User user = new User("An", "an@example.com", passwords.encode("oldpass123"), "citizen", phone);
         user.setUserId(me);
@@ -60,10 +64,10 @@ class ProfileAndSubscriptionServiceTest {
     @Test
     void updatesNameAndPhoneAndClearsBlankPhone() {
         User user = user("email", "0901234567");
-        var updated = auth.updateProfile(me, new UpdateProfileRequest("  Binh  ", "0912345678"));
+        var updated = auth.updateProfile(me, profile("  Binh  ", "0912345678"));
         assertThat(updated.fullName()).isEqualTo("Binh");
         assertThat(updated.phoneNumber()).isEqualTo("0912345678");
-        auth.updateProfile(me, new UpdateProfileRequest("Binh", ""));
+        auth.updateProfile(me, profile("Binh", ""));
         assertThat(user.getPhoneNumber()).isNull();
     }
 

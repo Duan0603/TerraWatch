@@ -21,6 +21,8 @@ public class AuthService {
     private final UserRepository users;
     private final BCryptPasswordEncoder passwords;
     private final JwtTokenProvider tokens;
+    private static final java.time.LocalDate MIN_BIRTH_DATE = java.time.LocalDate.of(1900, 1, 1);
+
     private final String dummyHash;
 
     public AuthService(UserRepository users, BCryptPasswordEncoder passwords, JwtTokenProvider tokens) {
@@ -77,11 +79,27 @@ public class AuthService {
     public UserProfileResponse updateProfile(UUID userId, UpdateProfileRequest request) {
         User user = users.findById(userId).orElseThrow(() ->
             new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
+        if (request.dateOfBirth() != null && request.dateOfBirth().isBefore(MIN_BIRTH_DATE)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Date of birth is out of range");
+        }
         user.setFullName(request.fullName().trim());
-        String phone = request.phoneNumber();
-        user.setPhoneNumber(phone == null || phone.isBlank() ? null : phone);
+        user.setPhoneNumber(clean(request.phoneNumber()));
+        user.setDateOfBirth(request.dateOfBirth());
+        user.setGender(clean(request.gender()));
+        user.setProvince(clean(request.province()));
+        user.setDistrict(clean(request.district()));
+        user.setCommune(clean(request.commune()));
+        user.setAddressLine(clean(request.addressLine()));
+        user.setEmergencyContactName(clean(request.emergencyContactName()));
+        user.setEmergencyContactPhone(clean(request.emergencyContactPhone()));
+        user.setEmergencyContactRelation(clean(request.emergencyContactRelation()));
         user.setUpdatedAt(OffsetDateTime.now());
         return profile(users.save(user));
+    }
+
+    /** Blank optional text is stored as null. */
+    private static String clean(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 
     /**
@@ -123,7 +141,11 @@ public class AuthService {
     private UserProfileResponse profile(User user) {
         requireKnownRole(user);
         return new UserProfileResponse(user.getUserId().toString(), user.getFullName(), user.getEmail(),
-            user.getRole(), user.getPhoneNumber(), user.getAuthProvider());
+            user.getRole(), user.getPhoneNumber(), user.getAuthProvider(),
+            user.getDateOfBirth() == null ? null : user.getDateOfBirth().toString(), user.getGender(),
+            user.getProvince(), user.getDistrict(), user.getCommune(), user.getAddressLine(),
+            user.getEmergencyContactName(), user.getEmergencyContactPhone(), user.getEmergencyContactRelation(),
+            user.isHasAvatar());
     }
 
     /** Refuses to issue a token/profile for a row whose role isn't one of the three known values. */
