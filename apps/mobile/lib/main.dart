@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'app.dart';
 import 'services/notification_service.dart';
@@ -11,6 +12,9 @@ void main() async {
   // Khởi tạo các dịch vụ nền tảng cốt lõi
   await NotificationService.initialize();
   await LocalStorage.database; // Mở kết nối SQLite
+  try {
+    await Firebase.initializeApp(); // dùng google-services.json; lỗi thì app vẫn chạy (đăng nhập email, geofencing offline)
+  } catch (_) {}
   await Session.load();
   AuthRepository().refreshProfile(); // xác thực lại phiên ở nền, lỗi mạng thì giữ phiên đã lưu
 

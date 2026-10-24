@@ -98,6 +98,8 @@ void main() {
     expect(Session.token, 'jwt-1');
   });
 
+  googleTests();
+
   test('session survives reload from storage and logout clears it', () async {
     await Session.save('jwt-1', UserProfile.fromJson(_user));
     Session.token = null;
@@ -106,5 +108,56 @@ void main() {
     expect(Session.user.value?.email, 'an@example.com');
     await AuthRepository().logout();
     expect(Session.token, isNull);
+  });
+}
+
+AuthRepository _googleRepo(Future<String?> Function() token, http.Response Function(http.Request) handler) =>
+    AuthRepository(
+      apiClient: ApiClient(client: MockClient((r) async => handler(r)), baseUrl: 'http://test'),
+      googleIdToken: token,
+    );
+
+void googleTests() {
+  group('Google sign-in (Story 5.6)', () {
+    test('success posts the ID token and stores the session', () async {
+      late http.Request sent;
+      final repo = _googleRepo(() async => 'firebase-id-token', (r) {
+        sent = r;
+        return _json(200, {'token': 'jwt-g', 'role': 'citizen', 'user': _user});
+      });
+      await repo.loginWithGoogle();
+      expect(sent.url.path, '/api/v1/auth/google');
+      expect(jsonDecode(sent.body)['idToken'], 'firebase-id-token');
+      expect(Session.token, 'jwt-g');
+    });
+
+    test('user cancel returns null, calls no API and stores nothing', () async {
+      var called = false;
+      final repo = _googleRepo(() async => null, (_) {
+        called = true;
+        return _json(200, {});
+      });
+      expect(await repo.loginWithGoogle(), isNull);
+      expect(called, isFalse);
+      expect(Session.token, isNull);
+    });
+
+    test('endpoint not deployed (404) shows the unsupported message', () async {
+      final repo = _googleRepo(() async => 't', (_) => http.Response('', 404));
+      await expectLater(
+        repo.loginWithGoogle(),
+        throwsA(isA<ApiException>().having((e) => e.message, 'message', 'Máy chủ chưa hỗ trợ đăng nhập Google')),
+      );
+    });
+
+    test('non-citizen role from Google login is rejected', () async {
+      final repo = _googleRepo(() async => 't', (_) => _json(200, {
+            'token': 'x',
+            'role': 'admin',
+            'user': {..._user, 'role': 'admin'},
+          }));
+      await expectLater(repo.loginWithGoogle(), throwsA(isA<ApiException>()));
+      expect(Session.token, isNull);
+    });
   });
 }

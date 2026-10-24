@@ -19,4 +19,7 @@ class ApiEndpoints {
 
   // Community Reports (Story 5.2 - Crowdsourcing)
   static const String communityReports = '/api/v1/community-reports';
+
+  // Đăng nhập Google: gửi Firebase ID token, nhận AuthResponse (Story 5.6)
+  static const String googleLogin = '/api/v1/auth/google';
 }

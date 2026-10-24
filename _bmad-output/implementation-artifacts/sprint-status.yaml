@@ -43,6 +43,7 @@ development_status:
   5-3-expiry-aware-offline-geofencing-sqlite: backlog
   5-4-24h-forecast-end-to-end-integration-demo: backlog
   5-5-mobile-citizen-login-jwt: review
+  5-6-mobile-google-sign-in: review
   epic-5-retrospective: optional
 
   epic-6: backlog

@@ -45,6 +45,20 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _submitGoogle() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      await _repo.loginWithGoogle(); // null = người dùng hủy, không báo lỗi
+    } on ApiException catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,6 +113,26 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                   const SizedBox(height: 24),
                   PrimaryButton(label: 'Đăng nhập', isLoading: _loading, onPressed: _submit),
+                  const SizedBox(height: 12),
+                  const Row(children: [
+                    Expanded(child: Divider()),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: Text('hoặc', style: TextStyle(color: AppColors.textSecondary)),
+                    ),
+                    Expanded(child: Divider()),
+                  ]),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: _loading ? null : _submitGoogle,
+                    icon: const Icon(Icons.account_circle_outlined),
+                    label: const Text('Đăng nhập bằng Google'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      foregroundColor: AppColors.textPrimary,
+                      side: const BorderSide(color: AppColors.border),
+                    ),
+                  ),
                   TextButton(
                     onPressed: _loading
                         ? null

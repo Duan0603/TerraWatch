@@ -3,18 +3,35 @@ import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exceptions.dart';
 import '../../../core/storage/session.dart';
 import 'auth_models.dart';
+import 'google_auth_service.dart';
 
 /// Đăng nhập / đăng ký / xác thực phiên (Story 5.5)
 class AuthRepository {
   final ApiClient _api;
 
-  AuthRepository({ApiClient? apiClient}) : _api = apiClient ?? ApiClient();
+  /// Cung cấp Firebase ID token (inject giả khi test)
+  final Future<String?> Function() _googleIdToken;
+
+  AuthRepository({ApiClient? apiClient, Future<String?> Function()? googleIdToken})
+      : _api = apiClient ?? ApiClient(),
+        _googleIdToken = googleIdToken ?? GoogleAuthService.signInForIdToken;
 
   Future<UserProfile> login(String email, String password) => _authenticate(
         ApiEndpoints.login,
         {'email': email.trim(), 'password': password},
         {401: 'Email hoặc mật khẩu không đúng'},
       );
+
+  /// Trả về null nếu người dùng hủy hộp chọn tài khoản Google
+  Future<UserProfile?> loginWithGoogle() async {
+    final idToken = await _googleIdToken();
+    if (idToken == null) return null;
+    return _authenticate(
+      ApiEndpoints.googleLogin,
+      {'idToken': idToken},
+      {401: 'Đăng nhập Google không hợp lệ', 404: 'Máy chủ chưa hỗ trợ đăng nhập Google', 501: 'Máy chủ chưa hỗ trợ đăng nhập Google'},
+    );
+  }
 
   Future<UserProfile> register({
     required String fullName,
@@ -63,5 +80,9 @@ class AuthRepository {
     } on ApiException catch (_) {}
   }
 
-  Future<void> logout() => Session.clear();
+  /// Xóa phiên trước để đăng xuất luôn thành công; đăng xuất Google/Firebase chỉ là bước phụ, có giới hạn thời gian
+  Future<void> logout() async {
+    await Session.clear();
+    await GoogleAuthService.signOut().timeout(const Duration(seconds: 3), onTimeout: () {});
+  }
 }

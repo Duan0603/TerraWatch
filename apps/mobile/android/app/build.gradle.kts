@@ -20,7 +20,7 @@ android {
         applicationId = "com.example.geosentry_mobile"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = maxOf(flutter.minSdkVersion, 23) // firebase_auth cần API 23+
         targetSdk = flutter.targetSdkVersion
         multiDexEnabled = true
         // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
@@ -52,4 +52,9 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+}
+
+// google-services.json không được commit; thiếu file thì bỏ qua plugin để đồng đội vẫn build được (đăng nhập Google sẽ không hoạt động)
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
 }
