@@ -16,6 +16,18 @@ class AppEnv {
     defaultValue: '484674000797-5dcns0a47mg8rk2mfanteocgeknfe9ii.apps.googleusercontent.com',
   );
 
+  /// Khóa MapTiler Cloud cho nền bản đồ (truyền bằng --dart-define=MAPTILER_KEY=...; không ghi vào repo).
+  static const String mapTilerKey = String.fromEnvironment('MAPTILER_KEY');
+
+  /// Nền địa hình giống bản web (topo-v2); chưa có khóa thì dùng nền OpenFreeMap miễn phí.
+  static String topoStyleUrl([String key = mapTilerKey]) => key.isEmpty
+      ? 'https://tiles.openfreemap.org/styles/liberty'
+      : 'https://api.maptiler.com/maps/topo-v2/style.json?key=$key';
+
+  /// Nền vệ tinh giống bản web; null khi chưa có khóa MapTiler.
+  static String? satelliteStyleUrl([String key = mapTilerKey]) =>
+      key.isEmpty ? null : 'https://api.maptiler.com/maps/satellite/style.json?key=$key';
+
   static const String mapboxAccessToken = String.fromEnvironment(
     'MAPBOX_ACCESS_TOKEN',
     defaultValue: 'pk.placeholder_mapbox_token',
