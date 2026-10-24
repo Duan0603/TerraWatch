@@ -19,6 +19,8 @@ target/
 # IDE and Editor
 .idea/
 .vscode/
+*.iml
+*.bak
 *.suo
 *.ntvs*
 *.njsproj
