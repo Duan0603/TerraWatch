@@ -35,6 +35,7 @@ so that the system knows where I live and who to reach, and my profile feels com
 - Personal data (birth date, address, emergency contact) is optional and only the owner can read it; the existing app privacy note still holds (no continuous GPS goes to the server).
 - shortcut: avatar as base64 text in Postgres (client shrinks it to about 256 px / under 200 KB); move to object storage if pictures grow.
 - Province, district and commune are free text (no administrative-division dataset in the project); a dropdown would need one.
+- Over real HTTP an error from a controller not covered by `AuthExceptionHandler` becomes 401 (container error dispatch), which signs mobile users out; `ProfileAvatarController` is therefore listed there and `ErrorStatusOverHttpTest` guards it.
 - Existing `PUT /me` callers must now send the new fields too, otherwise they are cleared; mobile Story 5.8 always sends the full form.
 
 ## Dev Agent Record
