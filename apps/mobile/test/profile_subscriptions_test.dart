@@ -50,7 +50,9 @@ void main() {
       await repo.updateProfile(fullName: ' Binh ', phoneNumber: '0912345678');
       expect(sent.method, 'PUT');
       expect(sent.url.path, '/api/v1/auth/me');
-      expect(jsonDecode(sent.body), {'fullName': 'Binh', 'phoneNumber': '0912345678'});
+      final body = jsonDecode(sent.body) as Map<String, dynamic>;
+      expect(body['fullName'], 'Binh');
+      expect(body['phoneNumber'], '0912345678');
       expect(Session.user.value?.fullName, 'Binh');
       expect(Session.user.value?.phoneNumber, '0912345678');
     });
@@ -76,7 +78,8 @@ void main() {
     testWidgets('edit screen rejects an empty name and a malformed phone number', (tester) async {
       await tester.pumpWidget(const MaterialApp(home: EditProfileScreen()));
       await tester.enterText(find.byType(TextFormField).first, '');
-      await tester.enterText(find.byType(TextFormField).last, 'abc');
+      await tester.enterText(find.byType(TextFormField).at(1), 'abc');
+      await tester.ensureVisible(find.text('Lưu'));
       await tester.tap(find.text('Lưu'));
       await tester.pump();
       expect(find.text('Nhập họ và tên'), findsOneWidget);

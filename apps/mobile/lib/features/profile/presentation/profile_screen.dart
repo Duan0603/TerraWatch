@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/network/api_exceptions.dart';
 import '../../../core/storage/local_storage.dart';
 import '../../../core/storage/session.dart';
@@ -20,6 +23,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final _alerts = AlertsRepository();
+  final _auth = AuthRepository();
   List<SubscribedArea>? _subscriptions;
   String? _subscriptionsError;
   int _alertCount = 0;
@@ -29,6 +33,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     _loadSubscriptions();
     _loadAlertCount();
+    _loadAvatar();
+  }
+
+  /// Tải ảnh đại diện nếu hồ sơ có ảnh mà chưa có trong bộ nhớ
+  Future<void> _loadAvatar() async {
+    if (Session.user.value?.hasAvatar != true || Session.avatar.value != null) return;
+    try {
+      Session.avatar.value = await _auth.fetchAvatar();
+    } on ApiException catch (_) {} // lỗi mạng: hiện chữ cái đầu thay cho ảnh
+  }
+
+  Future<void> _changeAvatar() async {
+    final hasAvatar = Session.user.value?.hasAvatar == true;
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          ListTile(
+            leading: const Icon(Icons.photo_camera_outlined),
+            title: const Text('Chụp ảnh'),
+            onTap: () => Navigator.pop(sheetContext, 'camera'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.photo_library_outlined),
+            title: const Text('Chọn từ thư viện'),
+            onTap: () => Navigator.pop(sheetContext, 'gallery'),
+          ),
+          if (hasAvatar)
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: AppColors.danger),
+              title: const Text('Xóa ảnh đại diện'),
+              onTap: () => Navigator.pop(sheetContext, 'delete'),
+            ),
+        ]),
+      ),
+    );
+    if (action == null) return;
+    try {
+      if (action == 'delete') {
+        await _auth.deleteAvatar();
+        return;
+      }
+      // Thu nhỏ ngay khi chọn để ảnh gửi lên nhẹ (server giới hạn 200 KB)
+      final picked = await ImagePicker().pickImage(
+        source: action == 'camera' ? ImageSource.camera : ImageSource.gallery,
+        maxWidth: 256,
+        maxHeight: 256,
+        imageQuality: 80,
+      );
+      if (picked == null) return;
+      await _auth.uploadAvatar(await picked.readAsBytes());
+    } on ApiException catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    }
   }
 
   Future<void> _loadSubscriptions() async {
@@ -36,9 +94,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final list = await _alerts.fetchSubscriptions();
       if (mounted) {
         setState(() {
-        _subscriptions = list;
-        _subscriptionsError = null;
-      });
+          _subscriptions = list;
+          _subscriptionsError = null;
+        });
       }
     } on ApiException catch (e) {
       if (mounted) setState(() => _subscriptionsError = e.message);
@@ -74,8 +132,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              _Header(user: user),
+              _Header(user: user, onAvatarTap: _changeAvatar),
               const SizedBox(height: 20),
+              _SettingsSection(title: 'Thông tin cá nhân', children: [
+                _DetailRow(label: 'Ngày sinh', value: user?.dateOfBirthDisplay),
+                _DetailRow(label: 'Giới tính', value: user?.genderLabel),
+                _DetailRow(label: 'Số điện thoại', value: user?.phoneNumber),
+              ]),
+              const SizedBox(height: 12),
+              _SettingsSection(title: 'Nơi ở', children: [
+                _DetailRow(label: 'Địa chỉ', value: user?.fullAddress),
+              ]),
+              const SizedBox(height: 12),
+              _SettingsSection(title: 'Liên hệ khẩn cấp', children: [
+                _DetailRow(label: 'Người thân', value: user?.emergencyContactDisplay),
+              ]),
+              const SizedBox(height: 12),
               _SettingsSection(title: 'Tài khoản', children: [
                 _ActionRow(
                   icon: Icons.edit_outlined,
@@ -144,21 +216,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
 class _Header extends StatelessWidget {
   final UserProfile? user;
-  const _Header({required this.user});
+  final VoidCallback onAvatarTap;
+  const _Header({required this.user, required this.onAvatarTap});
 
   @override
   Widget build(BuildContext context) {
-    final phone = user?.phoneNumber;
     return Center(
       child: Column(children: [
-        Container(
-          width: 72,
-          height: 72,
-          decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-          child: Center(
-            child: Text(user?.initials ?? '?',
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.white)),
-          ),
+        GestureDetector(
+          onTap: onAvatarTap,
+          child: Stack(children: [
+            ValueListenableBuilder<Uint8List?>(
+              valueListenable: Session.avatar,
+              builder: (_, bytes, __) => CircleAvatar(
+                radius: 40,
+                backgroundColor: AppColors.primary,
+                backgroundImage: bytes == null ? null : MemoryImage(bytes),
+                child: bytes == null
+                    ? Text(user?.initials ?? '?',
+                        style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700, color: Colors.white))
+                    : null,
+              ),
+            ),
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: AppColors.cardSurface,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: const Icon(Icons.photo_camera, size: 16, color: AppColors.primary),
+              ),
+            ),
+          ]),
         ),
         const SizedBox(height: 12),
         Text(user?.fullName ?? '',
@@ -170,21 +263,18 @@ class _Header extends StatelessWidget {
           child: Text(user?.email ?? '',
               style: const TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500)),
         ),
-        const SizedBox(height: 4),
-        Text(phone == null || phone.isEmpty ? 'Chưa có số điện thoại' : phone,
-            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
       ]),
     );
   }
 }
 
+// Material (không phải Container có nền) để ListTile bên trong vẽ được hiệu ứng chạm
 class _SettingsSection extends StatelessWidget {
   final String title;
   final List<Widget> children;
   const _SettingsSection({required this.title, required this.children});
 
   @override
-  // Material (không phải Container có nền) để ListTile bên trong vẽ được hiệu ứng chạm
   Widget build(BuildContext context) => Material(
         color: AppColors.cardSurface,
         clipBehavior: Clip.antiAlias,
@@ -228,6 +318,30 @@ class _Note extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       Padding(padding: const EdgeInsets.all(14), child: Text(text, style: TextStyle(fontSize: 12, color: color)));
+}
+
+/// Một dòng thông tin chỉ để xem; chưa có dữ liệu thì hiện "Chưa cập nhật"
+class _DetailRow extends StatelessWidget {
+  final String label;
+  final String? value;
+  const _DetailRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasValue = value != null && value!.isNotEmpty;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        SizedBox(width: 110, child: Text(label, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary))),
+        Expanded(
+          child: Text(
+            hasValue ? value! : 'Chưa cập nhật',
+            style: TextStyle(fontSize: 13, color: hasValue ? AppColors.textPrimary : AppColors.textMuted),
+          ),
+        ),
+      ]),
+    );
+  }
 }
 
 class _InfoRow extends StatelessWidget {

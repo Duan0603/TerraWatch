@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exceptions.dart';
@@ -81,17 +84,71 @@ class AuthRepository {
   }
 
   /// PUT /auth/me; cập nhật hồ sơ lưu trên máy bằng bản server trả về
-  Future<UserProfile> updateProfile({required String fullName, String? phoneNumber}) async {
+  /// Server thay thế toàn bộ hồ sơ: trường để trống sẽ bị xóa, nên luôn gửi đủ các trường
+  Future<UserProfile> updateProfile({
+    required String fullName,
+    String? phoneNumber,
+    String? dateOfBirth, // ISO yyyy-MM-dd
+    String? gender,
+    String? province,
+    String? district,
+    String? commune,
+    String? addressLine,
+    String? emergencyContactName,
+    String? emergencyContactPhone,
+    String? emergencyContactRelation,
+  }) async {
     final token = Session.token;
+    String text(String? v) => v?.trim() ?? '';
     try {
       final profile = UserProfile.fromJson(await _api.put(ApiEndpoints.me, body: {
         'fullName': fullName.trim(),
-        'phoneNumber': phoneNumber?.trim() ?? '',
+        'phoneNumber': text(phoneNumber),
+        'dateOfBirth': (dateOfBirth == null || dateOfBirth.isEmpty) ? null : dateOfBirth,
+        'gender': text(gender),
+        'province': text(province),
+        'district': text(district),
+        'commune': text(commune),
+        'addressLine': text(addressLine),
+        'emergencyContactName': text(emergencyContactName),
+        'emergencyContactPhone': text(emergencyContactPhone),
+        'emergencyContactRelation': text(emergencyContactRelation),
       }));
       if (token != null && Session.token == token) await Session.save(token, profile);
       return profile;
     } on TypeError catch (_) {
       throw const ApiException(message: 'Phản hồi máy chủ không hợp lệ');
+    }
+  }
+
+  /// Ảnh đại diện (JPEG/PNG đã thu nhỏ) qua base64; null nếu chưa có ảnh (404)
+  Future<Uint8List?> fetchAvatar() async {
+    try {
+      final data = await _api.get(ApiEndpoints.avatar);
+      return base64Decode(data['imageBase64'] as String);
+    } on ApiException catch (e) {
+      if (e.statusCode == 404) return null;
+      rethrow;
+    }
+  }
+
+  Future<UserProfile> uploadAvatar(Uint8List bytes) async {
+    final token = Session.token;
+    final profile = UserProfile.fromJson(await _api.put(ApiEndpoints.avatar, body: {'imageBase64': base64Encode(bytes)}));
+    if (token != null && Session.token == token) {
+      await Session.save(token, profile);
+      Session.avatar.value = bytes;
+    }
+    return profile;
+  }
+
+  Future<void> deleteAvatar() async {
+    final token = Session.token;
+    await _api.delete(ApiEndpoints.avatar);
+    final current = Session.user.value;
+    if (token != null && current != null && Session.token == token) {
+      await Session.save(token, UserProfile.fromJson({...current.toJson(), 'hasAvatar': false}));
+      Session.avatar.value = null;
     }
   }
 

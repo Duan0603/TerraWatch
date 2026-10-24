@@ -14,6 +14,9 @@ class Session {
   static String? token;
   static final ValueNotifier<UserProfile?> user = ValueNotifier(null);
 
+  /// Ảnh đại diện đã tải (không lưu bền vững, tải lại khi mở tab Hồ sơ)
+  static final ValueNotifier<Uint8List?> avatar = ValueNotifier(null);
+
   static Future<void> load() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -38,6 +41,7 @@ class Session {
   static Future<void> clear() async {
     token = null;
     user.value = null;
+    avatar.value = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
     await prefs.remove(_userKey);
