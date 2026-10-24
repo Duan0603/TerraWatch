@@ -48,7 +48,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/google").permitAll()
-                .requestMatchers("/api/v1/auth/me", "/api/v1/auth/password").authenticated()
+                .requestMatchers("/api/v1/auth/me", "/api/v1/auth/me/**", "/api/v1/auth/password").authenticated()
                 .requestMatchers("/api/v1/alerts/**").authenticated()
                 // Story 1.3 review: this diagnostic/circuit-breaker/event-bus test endpoint became
                 // internet-reachable for the first time once the gateway added a route for it
