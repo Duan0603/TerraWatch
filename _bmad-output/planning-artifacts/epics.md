@@ -240,6 +240,18 @@ Citizens can inspect cached hazards without mistaking old forecasts for current 
 - Test boundary/expiry/timezone, offline-to-online sync and supersession/revocation reconciliation.
 - Continuous GPS stays local; support audio/vibration within platform permissions.
 
+### Story 5.5: Mobile citizen login with JWT
+
+**Owner:** Lâm
+**Sprint key:** 5-5-mobile-citizen-login-jwt
+
+Citizens sign in from the mobile app so subscriptions, device tokens and field reports belong to their account.
+
+**Acceptance criteria:**
+- Login/register against `/api/v1/auth/*`; session persists and is revalidated with `/auth/me`; logout clears it.
+- Citizen role only; offline start with a stored session still opens the app (local geofencing is not blocked).
+- Bearer token attached to API calls; 401 clears the session.
+
 ### Story 5.4: 24-hour end-to-end demo
 
 **Owner:** All five members

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import '../../../core/storage/session.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../auth/data/auth_repository.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final user = Session.user.value;
     return Scaffold(
       appBar: AppBar(title: const Text('Hồ sơ')),
       body: SingleChildScrollView(
@@ -18,15 +21,15 @@ class ProfileScreen extends StatelessWidget {
                 Container(
                   width: 72, height: 72,
                   decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-                  child: const Center(child: Text('HM', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.white))),
+                  child: Center(child: Text(user?.initials ?? '?', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.white))),
                 ),
                 const SizedBox(height: 12),
-                const Text('Hoàng Văn Minh', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                Text(user?.fullName ?? '', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                 const SizedBox(height: 4),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(20)),
-                  child: const Text('Bản Vược, Bát Xát', style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500)),
+                  child: Text(user?.email ?? '', style: const TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500)),
                 ),
               ]),
             ),
@@ -47,7 +50,7 @@ class ProfileScreen extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
-                onPressed: () {},
+                onPressed: () => AuthRepository().logout(),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.danger,
                   side: const BorderSide(color: Color(0xFFFECACA)),

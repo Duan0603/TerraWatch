@@ -1,4 +1,5 @@
 import '../../../core/network/api_client.dart';
+import '../../../core/storage/session.dart';
 import '../../../core/storage/local_storage.dart';
 import 'alert_models.dart';
 
@@ -29,7 +30,7 @@ class AlertsRepository {
       await _apiClient.post(
         '/api/v1/alerts/devices/register',
         body: {
-          'userId': userId ?? 'citizen_anonymous',
+          'userId': userId ?? Session.user.value?.userId ?? 'citizen_anonymous',
           'fcmToken': fcmToken,
           'deviceType': 'ANDROID',
         },
