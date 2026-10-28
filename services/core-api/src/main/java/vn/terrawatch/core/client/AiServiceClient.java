@@ -35,7 +35,6 @@ public class AiServiceClient {
         Map<String, Object> payload = new HashMap<>();
         payload.put("satellite_scene_id", sceneId);
         payload.put("bbox", new double[]{minLon, minLat, maxLon, maxLat});
-        payload.put("confidence_threshold", 0.75);
 
         log.info("Calling AI Service: {} for scene: {}", endpoint, sceneId);
         ResponseEntity<Map> response = restTemplate.postForEntity(endpoint, payload, Map.class);

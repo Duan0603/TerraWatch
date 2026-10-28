@@ -1,0 +1,796 @@
+{
+  "schema_version": "2.0",
+  "name": "deeplabv3plus_r50_l4s_tilenorm",
+  "version": "v1.0",
+  "status": "experimental - candidate generator, needs human verification",
+  "artifact": {
+    "onnx_file": "deeplabv3plus_r50_l4s_tilenorm.onnx",
+    "size_mb": 106.7,
+    "sha256": "cbd88fb40d63a5005f6282cc5f1e42375578465ebf2672d7df47583c9e72687f",
+    "onnx_vs_pytorch_max_abs_diff": 1.7e-05,
+    "trained_on": "Landslide4Sense (L4S) train, chuẩn hóa theo ô; chưa tinh chỉnh trên dữ liệu Việt Nam"
+  },
+  "input": {
+    "shape": "(batch,8,128,128)",
+    "channels": [
+      "B2",
+      "B3",
+      "B4",
+      "B8",
+      "B11",
+      "B12",
+      "slope",
+      "ndvi"
+    ],
+    "preprocessing": {
+      "method": "tile_norm",
+      "std_floor_multiplier": 2.0,
+      "text": "mỗi ô, mỗi kênh: (x - mean_ô) / max(std_ô, 2.0 * std_toàn_cảnh_của_kênh_đó); mean và std tính trên pixel hợp lệ; pixel không hợp lệ = 0. Sàn 2.0 được chọn trên VN013/VN014/VN008/VN010 (chưa kiểm độc lập); sàn 0.05 cũ gây báo nhầm nhiều ở rừng đồng nhất.",
+      "slope_note": "tan(theta) lấy từ ảnh 8 kênh cũ, khác đơn vị slope của L4S (đã biết)"
+    }
+  },
+  "output": "logits; xác suất = sigmoid(logits). conf chỉ là điểm xếp hạng, KHÔNG phải xác suất sạt lở",
+  "modes": {
+    "sensitive": 0.532,
+    "balanced": 0.721,
+    "conservative": 0.904
+  },
+  "default_mode": "balanced",
+  "mode_note": "ba chế độ ở sàn 2.0; chọn trên cụm VN013; kiểm lại ở NW2 (cùng cảnh) và ở Làng Nủ (v1.0 nguyên trạng, cảnh khác)",
+  "temporal_check": {
+    "rule": "NDVI_sau - NDVI_trước < -0.15 và NDVI_sau < 0.55 và NDVI_trước > 0.40 (theo pixel)",
+    "status_values": [
+      "change_detected",
+      "no_change",
+      "not_assessable"
+    ],
+    "min_fraction": 0.1,
+    "meaning": "chỉ cho biết vùng có biến đổi NDVI trước-sau; KHÔNG phải xác nhận sạt lở",
+    "requires": "composite Sentinel-2 trước sự kiện CÙNG MÙA với composite sau; nếu khác mùa (VN008, VN010) bước này không đáng tin",
+    "results_VN013_balanced": {
+      "không lọc": {
+        "patches": "8/12",
+        "ha": 44,
+        "false_regions_per_km2": 0.1
+      },
+      "lọc 0.10": {
+        "patches": "8/12",
+        "ha": 18,
+        "false_regions_per_km2": 0.04
+      },
+      "lọc 0.25": {
+        "patches": "8/12",
+        "ha": 17,
+        "false_regions_per_km2": 0.02
+      }
+    },
+    "NW2_holdout": "không đổi sau lọc (recall_px 0.48, precision_px 1.0, 0 vùng báo nhầm ở cả ba mức)"
+  },
+  "metrics": {
+    "L4S_official_test_800": {
+      "F1": 0.5591101157517667,
+      "IoU": 0.38803112011815916
+    },
+    "L4S_cache_test_571_random_split_optimistic": {
+      "F1": 0.6746934058970424,
+      "IoU": 0.5090847724587931
+    },
+    "VN013_floor2": {
+      "evaluation": "nhãn 3 lớp VN013: vết sạt 24.8 ha (12 mảng đã duyệt); pixel chưa biết (255) bị bỏ qua; 164 km2",
+      "operating_points": {
+        "sensitive": {
+          "threshold": 0.532,
+          "scar_patches_hit": "8/12",
+          "regions": 46,
+          "regions_hit": 8,
+          "regions_false": 29,
+          "regions_unverified": 9,
+          "false_regions_per_km2": 0.177,
+          "region_precision_known": 0.22,
+          "pixel_window": {
+            "precision": 0.639,
+            "recall": 0.4,
+            "IoU": 0.327,
+            "Dice": 0.492
+          },
+          "pixel_scene": {
+            "precision": 0.194,
+            "recall": 0.4,
+            "IoU": 0.15,
+            "Dice": 0.261
+          },
+          "boundary": {
+            "IoU_median_all_patches": 0.32,
+            "IoU_median_matched_patches": 0.37,
+            "mean_patch_recall_px": 0.36,
+            "patches_hit_by_size": {
+              "<0.5ha": "0/0",
+              "0.5-2ha": "4/7",
+              ">=2ha": "4/5"
+            }
+          }
+        },
+        "balanced": {
+          "threshold": 0.721,
+          "scar_patches_hit": "8/12",
+          "regions": 32,
+          "regions_hit": 9,
+          "regions_false": 17,
+          "regions_unverified": 6,
+          "false_regions_per_km2": 0.104,
+          "region_precision_known": 0.35,
+          "pixel_window": {
+            "precision": 0.689,
+            "recall": 0.3,
+            "IoU": 0.264,
+            "Dice": 0.418
+          },
+          "pixel_scene": {
+            "precision": 0.205,
+            "recall": 0.3,
+            "IoU": 0.139,
+            "Dice": 0.244
+          },
+          "boundary": {
+            "IoU_median_all_patches": 0.17,
+            "IoU_median_matched_patches": 0.29,
+            "mean_patch_recall_px": 0.26,
+            "patches_hit_by_size": {
+              "<0.5ha": "0/0",
+              "0.5-2ha": "4/7",
+              ">=2ha": "4/5"
+            }
+          }
+        },
+        "conservative": {
+          "threshold": 0.904,
+          "scar_patches_hit": "7/12",
+          "regions": 16,
+          "regions_hit": 7,
+          "regions_false": 7,
+          "regions_unverified": 2,
+          "false_regions_per_km2": 0.043,
+          "region_precision_known": 0.5,
+          "pixel_window": {
+            "precision": 0.72,
+            "recall": 0.201,
+            "IoU": 0.186,
+            "Dice": 0.314
+          },
+          "pixel_scene": {
+            "precision": 0.192,
+            "recall": 0.201,
+            "IoU": 0.109,
+            "Dice": 0.196
+          },
+          "boundary": {
+            "IoU_median_all_patches": 0.06,
+            "IoU_median_matched_patches": 0.19,
+            "mean_patch_recall_px": 0.16,
+            "patches_hit_by_size": {
+              "<0.5ha": "0/0",
+              "0.5-2ha": "3/7",
+              ">=2ha": "4/5"
+            }
+          }
+        }
+      }
+    },
+    "independent_holdout_NW2": {
+      "site": "VN013 cụm tây bắc, 22.5610N 104.3437E (người duyệt thấy mảng trơ mới bằng Google Earth 12/2019 vs 4/2025)",
+      "box_ha": 146,
+      "label_ha": 1.2,
+      "note": "nhãn nháp từ chênh lệch NDVI trước-sau, giữ 3 mảng trong 250 m; một vết sạt; sàn và ngưỡng chưa từng chọn bằng khu vực này",
+      "results_floor_2": {
+        "AUC_in_box": 0.998,
+        "balanced_thr_0_721": {
+          "recall_px": 0.48,
+          "precision_px": 1.0,
+          "patches_hit": "1/3",
+          "false_regions": 0
+        },
+        "sensitive_thr_0_532": {
+          "recall_px": 0.62,
+          "precision_px": 0.95
+        },
+        "conservative_thr_0_904": {
+          "recall_px": 0.26,
+          "precision_px": 1.0
+        }
+      },
+      "other_points": {
+        "NW1_farmland_22_5692_104_2924": "không báo (max 0.29)",
+        "NW3_uncertain_22_5407_104_3336": "max 0.59 ở sàn 2.0 (0.75 ở sàn 0.05); chưa rõ là sạt, loại khỏi đo"
+      }
+    },
+    "VN013_manual_reviewed_label": {
+      "label": "VN013_scars_manual_mask_v1.tif: 11 polygon người duyệt (21.4 ha), xuất phát từ nhãn NDVI (79% diện tích trùng), không phải vẽ tay độc lập; còn lẫn ao nước (P05) và bồi tích suối (P08)",
+      "reviewed_with": "Google Earth Historical Imagery, ảnh trước 12/2019, ảnh sau 4/2025",
+      "n_polygons": 11,
+      "area_ha": 21.4,
+      "kept_from_ndvi_label_ha": 19.5,
+      "removed_from_ndvi_label_ha": 5.2,
+      "added_outside_ndvi_label_ha": 1.9,
+      "AUC_in_window": 0.99,
+      "by_mode": {
+        "sensitive": {
+          "threshold": 0.532,
+          "patches_hit": "9/11",
+          "IoU_median_matched": 0.5,
+          "IoU_median_all": 0.38,
+          "window_precision": 0.593,
+          "window_recall": 0.487,
+          "window_IoU": 0.365,
+          "window_Dice": 0.535
+        },
+        "balanced": {
+          "threshold": 0.721,
+          "patches_hit": "9/11",
+          "IoU_median_matched": 0.33,
+          "IoU_median_all": 0.3,
+          "window_precision": 0.69,
+          "window_recall": 0.382,
+          "window_IoU": 0.326,
+          "window_Dice": 0.492
+        },
+        "conservative": {
+          "threshold": 0.904,
+          "patches_hit": "8/11",
+          "IoU_median_matched": 0.24,
+          "IoU_median_all": 0.09,
+          "window_precision": 0.74,
+          "window_recall": 0.251,
+          "window_IoU": 0.231,
+          "window_Dice": 0.375
+        }
+      }
+    }
+  },
+  "known_false_alarm_groups": [
+    "mỏ đá + trạm trộn bê tông (VN013 22.55533N 104.30122E, 5.2 ha, có từ trước 2019)",
+    "mỏ đá lộ thiên (VN013 22.50878N 104.27620E, 3.3 ha, có từ trước 2019)",
+    "công trường san lấp (VN013 22.52825N 104.30037E, 13.9 ha, conf 0.956)",
+    "mỏ đá, bãi vật liệu (VN010)",
+    "khoảnh chặt rừng trồng, nương rẫy",
+    "trầm tích và bãi cát lòng sông sau lũ (Làng Nủ)",
+    "khai thác cát ven sông",
+    "san lấp công trình du lịch (Minh Đức)"
+  ],
+  "limitations": [
+    "bằng chứng trên Việt Nam từ hai khung cùng sự kiện bão Yagi (VN013 và Làng Nủ), vài chục vết sạt; chỉ một vết sạt sườn (Làng Nủ id 48) được đo ranh giới độc lập; recall trên vết sạt chưa biết chưa đo (id 48 được chọn vì mô hình đã báo nó)",
+    "phát hiện khác khoanh ranh giới: ở chế độ cân bằng IoU trung vị của mảng bắt được chỉ 0.29; \"bắt mảng\" nghĩa là chạm ít nhất một pixel",
+    "nhãn lấy từ chênh lệch NDVI (NDVI cũng là đầu vào), là cận dưới, thiếu ít nhất c4; nhãn NDVI không có mảng nào dưới 0.5 ha (nhãn duyệt thủ công có 1 mảng 0.47 ha, n = 1) nên recall vết sạt nhỏ chưa đo được",
+    "sàn 2.0 và ngưỡng chọn trên cùng các cảnh dùng để đo",
+    "bước temporal_check cần composite trước sự kiện CÙNG MÙA; ở VN008 và VN010 (khác mùa) không đáng tin",
+    "mỏ đá, công trường, bãi vật liệu, khoảnh chặt rừng, nương rẫy vẫn có thể bị báo",
+    "không dự báo thời điểm; chưa có dữ liệu mưa; mức nghiêm trọng (severity) chưa tính và phải tách khỏi conf",
+    "nhãn đã duyệt vẫn là bản nháp từ NDVI được người sửa; chỉ 11 mảng, một cảnh; IoU theo mảng dao động mạnh"
+  ],
+  "output_schema": {
+    "file": "GeoJSON FeatureCollection (WGS84)",
+    "fields": {
+      "area_ha": "diện tích",
+      "conf_mean_conf_max": "điểm xếp hạng của mô hình",
+      "temporal_check": "change_detected | no_change | not_assessable",
+      "change_fraction": "tỷ lệ pixel thỏa quy tắc biến đổi",
+      "review_status": "ai_suggested | human_confirmed | human_rejected | needs_field_check (người duyệt cập nhật)",
+      "severity": "null cho đến khi có mô-đun riêng",
+      "quality_flag": "low_obs nếu số lần quan sát sạch trung vị < 3",
+      "model_sha256": "12 ký tự đầu"
+    }
+  },
+  "history": {
+    "note": "các mục dưới đây đã bị thay thế, giữ để truy vết",
+    "threshold_floor_0_05_balanced": 0.4,
+    "threshold_conservative_floor_0_05": 0.8000000000000002,
+    "operating_points_VN013_floor_0_05": [
+      {
+        "thr": 0.1,
+        "mảng_sạt_bị_bắt": "9/12",
+        "vùng_trúng": 12,
+        "vùng_báo_nhầm": 47,
+        "vùng_chưa_xác_minh": 26,
+        "báo_nhầm_mỗi_km2": 0.29,
+        "precision": 0.438,
+        "recall": 0.5,
+        "IoU": 0.305
+      },
+      {
+        "thr": 0.2,
+        "mảng_sạt_bị_bắt": "7/12",
+        "vùng_trúng": 7,
+        "vùng_báo_nhầm": 36,
+        "vùng_chưa_xác_minh": 19,
+        "báo_nhầm_mỗi_km2": 0.22,
+        "precision": 0.523,
+        "recall": 0.434,
+        "IoU": 0.311
+      },
+      {
+        "thr": 0.3,
+        "mảng_sạt_bị_bắt": "7/12",
+        "vùng_trúng": 7,
+        "vùng_báo_nhầm": 22,
+        "vùng_chưa_xác_minh": 16,
+        "báo_nhầm_mỗi_km2": 0.13,
+        "precision": 0.597,
+        "recall": 0.401,
+        "IoU": 0.316
+      },
+      {
+        "thr": 0.4,
+        "mảng_sạt_bị_bắt": "7/12",
+        "vùng_trúng": 9,
+        "vùng_báo_nhầm": 16,
+        "vùng_chưa_xác_minh": 13,
+        "báo_nhầm_mỗi_km2": 0.1,
+        "precision": 0.634,
+        "recall": 0.358,
+        "IoU": 0.297
+      },
+      {
+        "thr": 0.5,
+        "mảng_sạt_bị_bắt": "6/12",
+        "vùng_trúng": 6,
+        "vùng_báo_nhầm": 13,
+        "vùng_chưa_xác_minh": 10,
+        "báo_nhầm_mỗi_km2": 0.08,
+        "precision": 0.655,
+        "recall": 0.298,
+        "IoU": 0.258
+      },
+      {
+        "thr": 0.6,
+        "mảng_sạt_bị_bắt": "4/12",
+        "vùng_trúng": 4,
+        "vùng_báo_nhầm": 8,
+        "vùng_chưa_xác_minh": 8,
+        "báo_nhầm_mỗi_km2": 0.05,
+        "precision": 0.688,
+        "recall": 0.249,
+        "IoU": 0.224
+      },
+      {
+        "thr": 0.7,
+        "mảng_sạt_bị_bắt": "4/12",
+        "vùng_trúng": 4,
+        "vùng_báo_nhầm": 6,
+        "vùng_chưa_xác_minh": 5,
+        "báo_nhầm_mỗi_km2": 0.04,
+        "precision": 0.73,
+        "recall": 0.216,
+        "IoU": 0.2
+      },
+      {
+        "thr": 0.8,
+        "mảng_sạt_bị_bắt": "3/12",
+        "vùng_trúng": 3,
+        "vùng_báo_nhầm": 4,
+        "vùng_chưa_xác_minh": 2,
+        "báo_nhầm_mỗi_km2": 0.02,
+        "precision": 0.734,
+        "recall": 0.183,
+        "IoU": 0.172
+      },
+      {
+        "thr": 0.9,
+        "mảng_sạt_bị_bắt": "3/12",
+        "vùng_trúng": 3,
+        "vùng_báo_nhầm": 2,
+        "vùng_chưa_xác_minh": 1,
+        "báo_nhầm_mỗi_km2": 0.01,
+        "precision": 0.719,
+        "recall": 0.139,
+        "IoU": 0.131
+      }
+    ],
+    "std_floor_matched_recall": [
+      {
+        "sàn": 0.05,
+        "recall_px": 0.2,
+        "ngưỡng": 0.758,
+        "VN013_bắt": "4/12",
+        "VN013_fa": 0.04,
+        "VN014_fa": 0.49,
+        "VN014_còn": "3/8",
+        "VN008_fa": 1.06,
+        "VN008_còn": "6/8",
+        "VN010_fa": 0.07,
+        "VN010_còn": "3/4"
+      },
+      {
+        "sàn": 0.05,
+        "recall_px": 0.3,
+        "ngưỡng": 0.497,
+        "VN013_bắt": "6/12",
+        "VN013_fa": 0.08,
+        "VN014_fa": 0.94,
+        "VN014_còn": "8/8",
+        "VN008_fa": 1.64,
+        "VN008_còn": "8/8",
+        "VN010_fa": 0.11,
+        "VN010_còn": "4/4"
+      },
+      {
+        "sàn": 0.05,
+        "recall_px": 0.4,
+        "ngưỡng": 0.303,
+        "VN013_bắt": "7/12",
+        "VN013_fa": 0.13,
+        "VN014_fa": 1.55,
+        "VN014_còn": "8/8",
+        "VN008_fa": 2.34,
+        "VN008_còn": "8/8",
+        "VN010_fa": 0.22,
+        "VN010_còn": "4/4"
+      },
+      {
+        "sàn": 1.0,
+        "recall_px": 0.2,
+        "ngưỡng": 0.844,
+        "VN013_bắt": "4/12",
+        "VN013_fa": 0.02,
+        "VN014_fa": 0.08,
+        "VN014_còn": "0/8",
+        "VN008_fa": 0.86,
+        "VN008_còn": "5/8",
+        "VN010_fa": 0.06,
+        "VN010_còn": "2/4"
+      },
+      {
+        "sàn": 1.0,
+        "recall_px": 0.3,
+        "ngưỡng": 0.609,
+        "VN013_bắt": "6/12",
+        "VN013_fa": 0.07,
+        "VN014_fa": 0.22,
+        "VN014_còn": "2/8",
+        "VN008_fa": 1.15,
+        "VN008_còn": "7/8",
+        "VN010_fa": 0.12,
+        "VN010_còn": "3/4"
+      },
+      {
+        "sàn": 1.0,
+        "recall_px": 0.4,
+        "ngưỡng": 0.386,
+        "VN013_bắt": "7/12",
+        "VN013_fa": 0.1,
+        "VN014_fa": 0.42,
+        "VN014_còn": "2/8",
+        "VN008_fa": 1.72,
+        "VN008_còn": "8/8",
+        "VN010_fa": 0.23,
+        "VN010_còn": "3/4"
+      },
+      {
+        "sàn": 2.0,
+        "recall_px": 0.2,
+        "ngưỡng": 0.904,
+        "VN013_bắt": "7/12",
+        "VN013_fa": 0.04,
+        "VN014_fa": 0.0,
+        "VN014_còn": "0/8",
+        "VN008_fa": 0.24,
+        "VN008_còn": "1/8",
+        "VN010_fa": 0.02,
+        "VN010_còn": "2/4"
+      },
+      {
+        "sàn": 2.0,
+        "recall_px": 0.3,
+        "ngưỡng": 0.721,
+        "VN013_bắt": "8/12",
+        "VN013_fa": 0.1,
+        "VN014_fa": 0.0,
+        "VN014_còn": "0/8",
+        "VN008_fa": 0.39,
+        "VN008_còn": "1/8",
+        "VN010_fa": 0.05,
+        "VN010_còn": "2/4"
+      },
+      {
+        "sàn": 2.0,
+        "recall_px": 0.4,
+        "ngưỡng": 0.532,
+        "VN013_bắt": "8/12",
+        "VN013_fa": 0.18,
+        "VN014_fa": 0.0,
+        "VN014_còn": "0/8",
+        "VN008_fa": 0.46,
+        "VN008_còn": "1/8",
+        "VN010_fa": 0.05,
+        "VN010_còn": "2/4"
+      },
+      {
+        "sàn": 4.0,
+        "recall_px": 0.2,
+        "ngưỡng": 0.013,
+        "VN013_bắt": "7/12",
+        "VN013_fa": 0.23,
+        "VN014_fa": 0.01,
+        "VN014_còn": "0/8",
+        "VN008_fa": 0.32,
+        "VN008_còn": "1/8",
+        "VN010_fa": 0.06,
+        "VN010_còn": "2/4"
+      },
+      {
+        "sàn": 4.0,
+        "recall_px": 0.3,
+        "ngưỡng": 0.008,
+        "VN013_bắt": "9/12",
+        "VN013_fa": 0.44,
+        "VN014_fa": 0.03,
+        "VN014_còn": "0/8",
+        "VN008_fa": 0.45,
+        "VN008_còn": "1/8",
+        "VN010_fa": 0.13,
+        "VN010_còn": "2/4"
+      },
+      {
+        "sàn": 4.0,
+        "recall_px": 0.4,
+        "ngưỡng": 0.005,
+        "VN013_bắt": "9/12",
+        "VN013_fa": 0.62,
+        "VN014_fa": 0.05,
+        "VN014_còn": "0/8",
+        "VN008_fa": 0.62,
+        "VN008_còn": "1/8",
+        "VN010_fa": 0.25,
+        "VN010_còn": "2/4"
+      }
+    ]
+  },
+  "frozen_release": {
+    "version": "v1.0",
+    "frozen_at": "2026-10-28 02:25",
+    "rule": "từ thời điểm này KHÔNG chỉnh sàn, ngưỡng, quy tắc temporal_check hay bảng điểm severity; mọi thay đổi tạo phiên bản mới (v1.1) và đo lại",
+    "parameters": {
+      "std_floor_multiplier": 2.0,
+      "modes": {
+        "sensitive": 0.532,
+        "balanced": 0.721,
+        "conservative": 0.904
+      },
+      "default_mode": "balanced",
+      "temporal_check": "NDVI_sau - NDVI_trước < -0.15 và NDVI_sau < 0.55 và NDVI_trước > 0.40 (theo pixel)",
+      "temporal_min_fraction": 0.1,
+      "severity_rules": "sev-v0.2 (xem src/severity.py)"
+    },
+    "files": {
+      "src/infer.py": {
+        "path": "releases/v1.0/src/infer.py",
+        "sha256": "7a09ce99072f42ba2892370bb5687119af42208f082c32ee078dde42cdaab5b4",
+        "copied": true
+      },
+      "src/severity.py": {
+        "path": "releases/v1.0/src/severity.py",
+        "sha256": "3ac48920cf54b61a9622483fab60b796aed81c7abafe6d67abd225e1e1beabb7",
+        "copied": true
+      },
+      "src/preprocess.py": {
+        "path": "releases/v1.0/src/preprocess.py",
+        "sha256": "46b6ac363ed07f8c0ce5ee01a12c0c94d63374baef6e2c5ad90f5b058bee79eb",
+        "copied": true
+      },
+      "model_card.json": {
+        "path": "releases/v1.0/model_card.json",
+        "sha256": "d8d80b8d39f0b83dfab55ce22b602b86a95614b635419f4d4f96fbea1bbe9af9",
+        "copied": true
+      },
+      "weights.onnx": {
+        "path": "/content/drive/MyDrive/TerraWatch_AI/models/l4s_tilenorm_v1/deeplabv3plus_r50_l4s_tilenorm.onnx",
+        "sha256": "cbd88fb40d63a5005f6282cc5f1e42375578465ebf2672d7df47583c9e72687f",
+        "copied": false,
+        "note": "file nặng 106 MB nên không sao chép, chỉ ghi hash"
+      }
+    },
+    "tuned_on": [
+      "VN013 (một cảnh, một sự kiện)",
+      "VN008, VN010, VN014 (20 điểm đã kiểm, chỉ để chọn sàn)"
+    ],
+    "untouched_since_freeze": "các cảnh mới sẽ dùng để kiểm thử"
+  },
+  "independent_test_v1_0_LangNu": {
+    "frame": "VN001b: khoảng 13 km quanh Làng Nủ (22.134N, 104.538E), Phúc Khánh, Lào Cai; ảnh cùng mùa trước 15/7-7/9/2024, sau 11/9-31/10/2024; v1.0 nguyên trạng (sàn 2.0, chế độ cân bằng 0.721)",
+    "debris_flow": "lũ bùn đá Làng Nủ (một polygon vẽ tay, 11.2 ha, chỉ phủ một phần): recall pixel 0.915, 95% pixel qua kiểm tra biến đổi NDVI, vùng mô hình báo liền 64.6 ha bao toàn bộ dải; precision và IoU với polygon (0.32, 0.31) thấp do nhãn thiếu, không phải do mô hình",
+    "regions_scene_wide": {
+      "total": 47,
+      "area_km2": 178
+    },
+    "reviewed_non_scar_regions": "12 vùng lớn nhất ngoài dải lũ (id 4, 20, 48, 34, 3, 12, 24, 44, 1, 36, 47, 19), Google Earth Historical Imagery",
+    "results": {
+      "human_reviewed_landslide": "id 48 (22.10765N 104.58713E, 4.8 ha, conf 0.957)",
+      "possible_landslide": "id 44 (22.13117N 104.58751E, 1.5 ha); id 19 (22.18273N 104.50102E, 1.1 ha, đất cam sát đường 19/9/2024)",
+      "false_alarms": "trầm tích và bãi cát lòng sông (id 4, 3, 12), khai thác cát (id 20), san lấp công trình (id 34, 36, 24), taluy đường có từ trước (id 1), đồi cỏ khô (id 47)",
+      "region_precision": "1/12 chắc chắn, tối đa 3/12 nếu cả hai \"có thể\" là sạt"
+    },
+    "notes": [
+      "lần đầu thử trên cảnh thứ hai, tham số không đổi",
+      "mẫu nhỏ: 12 vùng lớn nhất, chưa duyệt 35 vùng nhỏ còn lại",
+      "temporal_check = no_change vẫn bỏ sót taluy sát đường nhỏ (id 19)"
+    ],
+    "landslide_id48": {
+      "site": "22.10765N 104.58713E (Phúc Khánh, Lào Cai), vết sạt sườn thật, polygon vẽ tay 4.32 ha từ ảnh Google Earth 6/2025, độ dốc ~20 độ, 100% pixel hợp lệ, 96% pixel qua quy tắc biến đổi NDVI",
+      "by_mode": {
+        "sensitive": {
+          "threshold": 0.532,
+          "recall": 0.991,
+          "precision": 0.773,
+          "IoU": 0.767,
+          "Dice": 0.868
+        },
+        "balanced": {
+          "threshold": 0.721,
+          "recall": 0.949,
+          "precision": 0.847,
+          "IoU": 0.81,
+          "Dice": 0.895
+        },
+        "conservative": {
+          "threshold": 0.904,
+          "recall": 0.866,
+          "precision": 0.928,
+          "IoU": 0.811,
+          "Dice": 0.896
+        }
+      },
+      "caveats": [
+        "vết này được chọn vì mô hình đã báo nó nên không đo được recall trên vết sạt chưa biết",
+        "một vết lớn, sáng, sạch trên nền rừng (trường hợp dễ)",
+        "một polygon vẽ tay; dải đường mòn trơ phía nam vết không nằm trong polygon"
+      ]
+    }
+  },
+  "notes": [
+    "conf của mô hình không phải xác suất sạt lở"
+  ],
+  "random_sample_review": {
+    "sample": "20 vùng báo ngẫu nhiên (hạt giống 42) ở VN008 (8), VN014 (8), VN010 (4), ngưỡng 0.5, sàn 0.05",
+    "result": "0 vết sạt, 20 không phải (10 bằng Google Earth, 10 bằng chuỗi NDVI Sentinel-2: bằng chứng yếu hơn)",
+    "precision_ci95_upper": "khoảng 16% (Wilson)",
+    "after_floor_2_0": "3/20 điểm vẫn bị báo (VN008: 1, VN010: 2)",
+    "caveat": "20 điểm nằm ở nơi Google có ảnh nên có thể không đại diện"
+  },
+  "docs_revision": {
+    "date": "2026-10-28",
+    "note": "chỉ sửa văn bản; tham số đóng băng v1.0 không đổi",
+    "backup": "model_card_before_docfix.json"
+  },
+  "object_level_recall_v1_0": {
+    "scope": "12 slope patches: 11 VN013 manual-reviewed + Lang Nu id48; union of flagged regions touching the patch",
+    "caveats": [
+      "n=12, wide CIs",
+      "two scenes of the same event, patches not fully independent",
+      "id48 was selected because the model flagged it (selection bias)",
+      "VN013 thresholds/floor tuned on the same scene"
+    ],
+    "modes": {
+      "sensitive_0.532": {
+        "touch": "10/12",
+        "iou>=0.1": "10/12",
+        "iou>=0.3": "9/12 (75%, CI 47-91)",
+        "iou>=0.5": "6/12",
+        "median_iou": "0.44 (CI 0.21-0.73)"
+      },
+      "balanced_0.721": {
+        "touch": "10/12",
+        "iou>=0.1": "9/12",
+        "iou>=0.3": "7/12 (58%, CI 32-81)",
+        "iou>=0.5": "5/12 (42%)",
+        "median_iou": "0.32 (CI 0.13-0.60)"
+      },
+      "conservative_0.904": {
+        "touch": "9/12",
+        "iou>=0.1": "6/12",
+        "iou>=0.3": "5/12",
+        "iou>=0.5": "2/12",
+        "median_iou": "0.14 (CI 0.01-0.43)"
+      }
+    },
+    "balanced_by_size_iou>=0.3": {
+      "<0.5ha": "1/1",
+      "0.5-2ha": "3/6",
+      ">=2ha": "3/5"
+    },
+    "balanced_missed_iou_0": [
+      "1.20 ha",
+      "1.26 ha"
+    ],
+    "source": "reports/object_recall_v1_0.csv, object_recall_v1_0_per_patch.csv"
+  },
+  "independent_holdout_VN020_LucYen": {
+    "scene": "Luc Yen (Yen Bai), ROI [104.71,22.04,104.83,22.16], ~165 km2, post 2024-09-11/2024-10-31, pre 2024-07-15/2024-09-07",
+    "model": "v1.0 frozen, balanced 0.721, no change to floor/threshold/rules",
+    "regions": 12,
+    "area_ha": 7.2,
+    "change_detected": 1,
+    "no_change": 11,
+    "review": {
+      "human_confirmed": 0,
+      "human_rejected": 12,
+      "needs_field_check": 0,
+      "method": "Google Earth 2018/2019 vs 2025, one reviewer, by eye, no imagery between 9/2024",
+      "causes": "quarries (a Cuong, Thai Thinh, Van Khoa, Hoang Luc Yen, Cau Vong), stone-processing sheds, roadside works"
+    },
+    "region_precision": "0/12 (Wilson 95% CI 0-24%)",
+    "false_alarm_per_km2": 0.07,
+    "recall": "not measurable: no landslide scar was identified in this ROI; blind sweep not done",
+    "n_obs_median": {
+      "pre": 3,
+      "post": 5
+    },
+    "source": "reports/geojson/VN020_candidates_v1_balanced.geojson, reports/review_queue_VN020.csv"
+  },
+  "flags_v0_1_experimental": {
+    "flag": "preexisting_bare",
+    "rule": "fraction of pixels with pre-event NDVI < 0.4 inside the region >= 0.3",
+    "purpose": "mark likely quarries/construction sites already bare before the event; region is NOT removed",
+    "evidence_change_detected_reviewed": {
+      "flagged_false_alarms": "7/8",
+      "flagged_human_confirmed_landslides": "1/8 (VN013 id9, label itself uncertain)",
+      "missed_false_alarm": "VN013 id8 (terraces, pre_bare 0.04)"
+    },
+    "caveat": "threshold chosen on the same 27 reviewed regions (VN013 + VN020); not independently validated; v1.0 unchanged",
+    "files": "src/flags.py, reports/v1_1_flag_features.csv, reports/geojson/*_flags.geojson"
+  },
+  "independent_holdout_VN021_VanBan": {
+    "scene": "Van Ban (Lao Cai), ROI [104.10,22.00,104.22,22.12], ~165 km2, same season as VN013",
+    "model": "v1.0 frozen balanced 0.721, flags-v0.1 applied after",
+    "regions": 4,
+    "area_ha": 5.7,
+    "review": {
+      "human_confirmed": 0,
+      "human_rejected": 4
+    },
+    "causes": "hydropower reservoir (water), new residential plot grading, road widening, closed forest (low_obs)",
+    "region_precision": "0/4",
+    "recall": "not measured: no scar identified, blind sweep not done",
+    "combined_with_VN020": "0/16 regions are landslides (Wilson 95% CI 0-19%)",
+    "n_obs_median": {
+      "pre": 5,
+      "post": 4
+    }
+  },
+  "langnu_region_review_v1_0": {
+    "reviewed_regions": 22,
+    "human_confirmed": "3 (id48, id28, id8)",
+    "needs_field_check": "4 (id44, id19, id49, id29)",
+    "human_rejected": 15,
+    "not_reviewed": "24 regions (<0.3 ha or no_change); debris-flow region id41 excluded",
+    "region_precision_certain": "3/22 (14%); up to 7/22 (32%) if all uncertain were slides",
+    "flag_preexisting_bare": "2/2 flagged change_detected regions were false alarms; both confirmed slides (id28, id8) had pre_bare 0 and were not flagged",
+    "caveat": "one reviewer by eye; no imagery between 9/2024 and 6/2025 for id49/id29; id52 has an unflagged bare patch just outside the frame (possible miss)"
+  },
+  "blind_sweep_VN020": {
+    "cells_scanned": "16/16 (grid 4x4, ~3.3 km each)",
+    "altitude": "~14000-16000 ft, Google Earth Pro, 2019/2021 vs 2025",
+    "landslide_scars_found": 0,
+    "low_confidence_candidates": 2,
+    "detectable_size": "~1-2 ha and larger; small scars (<~0.7 ha) not detectable at this altitude",
+    "recall": "not computable (no positive reference scars)",
+    "consistent_with": "12/12 model regions in VN020 were quarries or works",
+    "caveat": "one reviewer, by eye, imagery only 2019/2021 and 2025, no imagery between 9/2024 and 6/2025"
+  },
+  "blind_sweep_VN021": {
+    "cells_scanned": "16/16",
+    "altitude": "~17000-18000 ft, Google Earth Pro, 2019/2022 vs 2025-04",
+    "landslide_scars_found": 0,
+    "low_confidence_candidates": 1,
+    "detectable_size": "~1-2 ha and larger",
+    "recall": "not computable (no positive reference scars)",
+    "consistent_with": "0/4 model regions in VN021 were landslides",
+    "caveat": "one reviewer, by eye; no imagery between 9/2024 and 4/2025"
+  },
+  "langnu_small_regions_random_sample": {
+    "sample": "12 of 24 unreviewed regions, random seed 42, all 12 reviewed",
+    "human_confirmed": "1/12 (id33; Wilson 95% CI 2-35%)",
+    "needs_field_check": 2,
+    "human_rejected": 9,
+    "by_temporal_check": "change_detected 1 confirmed, 2 uncertain, 3 rejected; no_change 0/6",
+    "outside_frame_check_id52": "elongated old scar already visible in 7/2021, revegetated by 6/2025: pre-Yagi, not a missed Yagi landslide",
+    "caveat": "one reviewer by eye; very small regions (0.1-0.8 ha); no imagery between 2021 and 9/2024 for most"
+  }
+}

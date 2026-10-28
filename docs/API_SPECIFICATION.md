@@ -11,8 +11,9 @@
 | Core | GET /api/v1/landslides/active | Incident GeoJSON. |
 | Core | GET /api/v1/landslides/geofence | Server-side spatial query; not the target continuous citizen tracking flow. |
 | Core | GET /api/v1/landslides/offline-sync | Legacy incident export without the new forecast contract. |
-| AI :8001 | POST /api/v1/inference | Old scene/bbox/slope_avg/ndvi_drop simulation, not 24h forecasting. |
-| AI | GET /api/v1/models/info | Prototype metadata, not evidence of a trained released model. |
+| AI :8001 | POST /api/v1/inference | Legacy bbox call. A bbox carries no imagery, so it returns `status: no_imagery` and no polygon (the old simulation was removed). |
+| AI | POST /api/v1/inference/scene | Landslide candidates (GeoJSON schema 2.0) from post/pre GeoTIFFs inside `SCENE_DIR`, model v1.0 ONNX. Candidates need human verification; not 24h forecasting. |
+| AI | GET /api/v1/models/info | Reads `model_card.json` (modes, std floor, metrics) and checks the ONNX sha256. `ready: false` until the model files are installed. |
 | GIS :8002 | POST /api/v1/gis/query-satellite | Fixed sample scene response. |
 | GIS | POST /api/v1/gis/tiling | Geographic grid generation, not rainfall feature engineering. |
 | GIS | GET /api/v1/gis/mvt/{z}/{x}/{y}.pbf | Empty tile prototype. |
