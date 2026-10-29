@@ -44,16 +44,21 @@ class NotificationService {
   }) async {
     try {
       final vibrationPattern = Int64List.fromList([0, 1000, 500, 1000, 500, 1500]);
+      // Kênh Android không đổi được âm sau khi tạo, nên đổi ID khi đổi âm (kênh cũ 'emergency_channel' chỉ có tiếng "ting")
       final androidDetails = AndroidNotificationDetails(
-        'emergency_channel',
+        'emergency_alarm',
         'Cảnh Báo Sạt Lở Khẩn Cấp',
         channelDescription: 'Kênh phát cảnh báo nguy hiểm sạt lở đất',
         importance: Importance.max,
         priority: Priority.high,
+        category: AndroidNotificationCategory.alarm,
         fullScreenIntent: true,
         enableVibration: true,
         vibrationPattern: vibrationPattern,
         playSound: true,
+        // Còi hú 8 giây (res/raw/emergency_siren.wav) phát trên luồng báo thức, to hơn tiếng thông báo thường
+        sound: const RawResourceAndroidNotificationSound('emergency_siren'),
+        audioAttributesUsage: AudioAttributesUsage.alarm,
       );
 
       final details = NotificationDetails(android: androidDetails);
