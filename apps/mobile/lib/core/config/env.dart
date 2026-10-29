@@ -13,7 +13,7 @@ class AppEnv {
   /// Web client ID (client_type 3 trong google-services.json); không phải bí mật.
   static const String googleServerClientId = String.fromEnvironment(
     'GOOGLE_SERVER_CLIENT_ID',
-    defaultValue: '484674000797-5dcns0a47mg8rk2mfanteocgeknfe9ii.apps.googleusercontent.com',
+    defaultValue: '84828367416-heo3i1rtcodh4d96lphs25o2fti2j8bu.apps.googleusercontent.com',
   );
 
   /// Khóa MapTiler Cloud cho nền bản đồ (truyền bằng --dart-define=MAPTILER_KEY=...; không ghi vào repo).
