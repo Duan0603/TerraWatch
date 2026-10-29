@@ -4,6 +4,7 @@ import '../../alerts/presentation/alerts_screen.dart';
 import '../../geofence/data/forecast_repository.dart';
 import '../../map/presentation/map_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
+import '../../report/data/report_repository.dart';
 import 'home_screen.dart';
 
 /// Khung điều hướng 4 tab (Trang chủ, Bản đồ, Cảnh báo, Hồ sơ)
@@ -21,6 +22,7 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _syncReports();
     _syncForecasts();
   }
 
@@ -32,7 +34,17 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) _syncForecasts();
+    if (state == AppLifecycleState.resumed) {
+      _syncReports();
+      _syncForecasts();
+    }
+  }
+
+  /// Gửi các báo cáo hiện trường còn chờ (mất mạng lần trước); lỗi thì để lần sau, không làm phiền người dùng
+  Future<void> _syncReports() async {
+    try {
+      await ReportRepository().syncPending();
+    } catch (_) {}
   }
 
   /// Cập nhật bộ đệm vùng dự báo khi mở app / quay lại app; không có mạng thì giữ bộ đệm cũ (nó sẽ tự chuyển thành "đã cũ")
