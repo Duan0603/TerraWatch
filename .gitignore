@@ -50,3 +50,7 @@ yarn-error.log*
 # Temporary & Output directories
 scratch/
 .playwright-mcp/
+
+# AI service: model weights and scene rasters are not committed
+services/ai-service/models/*.onnx
+services/ai-service/scenes/
