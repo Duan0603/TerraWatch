@@ -10,7 +10,7 @@
 
 The owner selected a 24-hour MVP. Inputs combine rainfall history, issued precipitation forecasts and terrain. Predictions support officer review and admin warnings; they do not confirm that an event occurred, locate a precise landslide scar or determine an exact failure time.
 
-Current inference.py still contains the old slope/NDVI formula and synthetic polygon. Its fixed F1/IoU fields are not evaluation results. No trained rainfall/terrain model is supplied in this revision.
+`services/ai-service` no longer contains the old slope/NDVI formula or synthetic polygon. It runs a different model: the frozen DeepLabV3+ scar-segmentation model, whose output is candidates for human review (see `services/ai-service/models/model_card.json`). The old fixed F1/IoU values were never evaluation results and were removed. No trained rainfall/terrain model is supplied in this revision.
 
 ## 2. Scientific reference and data candidates
 

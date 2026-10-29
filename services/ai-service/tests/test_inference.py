@@ -60,5 +60,58 @@ class InferenceTests(unittest.TestCase):
         self.assertLess(modes["balanced"], modes["conservative"])
 
 
+class GuardTests(unittest.TestCase):
+    """Fake model files in a temp dir: checks the guards that run before any raster is read."""
+
+    def setUp(self):
+        import hashlib, json, tempfile
+        self.d = tempfile.TemporaryDirectory()
+        self.addCleanup(self.d.cleanup)
+        onnx, card = os.path.join(self.d.name, "m.onnx"), os.path.join(self.d.name, "card.json")
+        open(onnx, "wb").write(b"not a real model")
+        self.sha = hashlib.sha256(b"not a real model").hexdigest()
+        self.card = dict(name="t", modes={"sensitive": 0.5, "balanced": 0.7, "conservative": 0.9},
+                         input={"preprocessing": {"std_floor_multiplier": 2.0}}, artifact={"sha256": self.sha})
+        json.dump(self.card, open(card, "w"))
+        self.p = LandslidePredictor(onnx, card, self.d.name)
+
+    def test_sha_mismatch_refuses_to_run(self):
+        import json
+        self.card["artifact"]["sha256"] = "0" * 64
+        json.dump(self.card, open(self.p.card_path, "w"))
+        with self.assertRaisesRegex(RuntimeError, "sha256"):
+            self.p.predict_scene("a.tif", "b.tif", "c.tif")
+
+    def test_busy_when_all_slots_taken(self):
+        self.assertTrue(self.p._slots.acquire(blocking=False))  # the only slot (MAX_CONCURRENT_SCENES=1)
+        with self.assertRaises(inference.Busy):
+            self.p.predict_scene("a.tif", "b.tif", "c.tif")
+
+    def test_slot_is_released_after_a_failed_run(self):
+        for _ in range(2):  # files do not exist: fails inside the run, the slot must still be freed
+            with self.assertRaises((FileNotFoundError, ImportError)):
+                self.p.predict_scene("a.tif", "b.tif", "c.tif")
+
+
+class SeasonTests(unittest.TestCase):
+    def test_vn013_periods_are_accepted(self):
+        self.assertEqual(inference.season_warnings("2024-07-15/2024-09-07", "2024-09-11/2024-10-31"), [])
+
+    def test_same_dates_previous_year_are_accepted(self):
+        self.assertEqual(inference.season_warnings("2023-09-11/2023-10-31", "2024-09-11/2024-10-31"), [])
+
+    def test_opposite_season_warns(self):
+        w = inference.season_warnings("2024-02-01/2024-03-01", "2024-09-11/2024-10-31")
+        self.assertTrue(any("seasonal cycle" in x for x in w))
+
+    def test_pre_after_post_warns(self):
+        w = inference.season_warnings("2024-10-01/2024-11-01", "2024-09-11/2024-09-30")
+        self.assertTrue(any("must end before" in x for x in w))
+
+    def test_missing_or_bad_periods_say_unverified(self):
+        for args in (("", ""), ("2024-07-15", "2024-09-11/2024-10-31")):
+            self.assertTrue(any("not verified" in x for x in inference.season_warnings(*args)))
+
+
 if __name__ == "__main__":
     unittest.main()

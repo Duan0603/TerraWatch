@@ -13,6 +13,8 @@ import hashlib
 import json
 import logging
 import os
+import threading
+from datetime import date
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -26,8 +28,31 @@ MODES = ("sensitive", "balanced", "conservative")
 NOTE = "candidates need human verification; conf is not a landslide probability; temporal_check is not confirmation"
 
 
+class Busy(Exception):
+    """All scene slots are in use (MAX_CONCURRENT_SCENES)."""
+
+
+def season_warnings(pre_period: Optional[str], post_period: Optional[str], max_gap_days: float = 90) -> List[str]:
+    """Periods are 'YYYY-MM-DD/YYYY-MM-DD'. The NDVI check needs a pre image of the same season as the post image."""
+    if not pre_period or not post_period:
+        return ["pre_period/post_period not given: same-season requirement not verified"]
+    try:
+        (pa, pb), (qa, qb) = [tuple(date.fromisoformat(x) for x in p.split("/")) for p in (pre_period, post_period)]
+    except ValueError:
+        return ["periods must be 'YYYY-MM-DD/YYYY-MM-DD': same-season requirement not verified"]
+    out = []
+    if pb >= qa:
+        out.append("pre period must end before the post period starts")
+    gap = ((pa.toordinal() + pb.toordinal()) / 2 - (qa.toordinal() + qb.toordinal()) / 2) % 365.25
+    gap = min(gap, 365.25 - gap)
+    if gap > max_gap_days:
+        out.append(f"pre and post are {gap:.0f} days apart in the seasonal cycle (> {max_gap_days:.0f}): temporal_check may be unreliable")
+    return out
+
+
 def load_card(path: str):
-    card = json.load(open(path, encoding="utf-8"))
+    with open(path, encoding="utf-8") as f:
+        card = json.load(f)
     modes = card["modes"]
     floor = card.get("input", {}).get("preprocessing", {}).get("std_floor_multiplier")
     assert floor is not None, "model card is missing input.preprocessing.std_floor_multiplier"
@@ -96,15 +121,22 @@ class LandslidePredictor:
         self.model_path = model_path or os.getenv("ONNX_MODEL_PATH", "models/deeplabv3plus_r50_l4s_tilenorm.onnx")
         self.card_path = card_path or os.getenv("MODEL_CARD_PATH", "models/model_card.json")
         self.scene_dir = scene_dir or os.getenv("SCENE_DIR", "scenes")
+        self.max_pixels = int(os.getenv("MAX_SCENE_PIXELS", "16000000"))  # ~4000x4000 px, about 3 GB of arrays
+        self._slots = threading.BoundedSemaphore(int(os.getenv("MAX_CONCURRENT_SCENES", "1")))
         self._session = None
         self._sha = None
+
+    @staticmethod
+    def _expected_sha(card: Dict[str, Any]) -> Optional[str]:
+        return (card.get("artifact") or {}).get("sha256") or card.get("sha256")
 
     def is_ready(self) -> bool:
         return os.path.isfile(self.model_path) and os.path.isfile(self.card_path)
 
     def _sha256(self) -> str:
         if self._sha is None:
-            self._sha = hashlib.sha256(open(self.model_path, "rb").read()).hexdigest()
+            with open(self.model_path, "rb") as f:
+                self._sha = hashlib.sha256(f.read()).hexdigest()
         return self._sha
 
     def model_info(self) -> Dict[str, Any]:
@@ -113,7 +145,7 @@ class LandslidePredictor:
             info["detail"] = f"missing {self.model_path} or {self.card_path}"
             return info
         card, modes, floor = load_card(self.card_path)
-        expected = (card.get("artifact") or {}).get("sha256") or card.get("sha256")
+        expected = self._expected_sha(card)
         info.update(name=card.get("name"), runtime="onnxruntime", std_floor_multiplier=floor, modes=modes,
                     default_mode="balanced", temporal_rule=CHANGE["rule"], schema_version=SCHEMA,
                     sha256_ok=(self._sha256() == expected), metrics=card.get("metrics"),
@@ -140,21 +172,35 @@ class LandslidePredictor:
     def predict_scene(self, ref_tif: str, post_tif: str, pre_tif: str, mode: str = "balanced",
                       meta: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """ref_tif: 8-band reference image (grid and slope in band 7). post_tif/pre_tif: Sentinel-2 composites
-        (B2,B3,B4,B8,B11,B12,ndvi,n_obs) of the same season. Files are looked up inside SCENE_DIR only."""
+        (B2,B3,B4,B8,B11,B12,ndvi,n_obs) of the same season. Files are looked up inside SCENE_DIR only.
+        Refuses to run if the ONNX sha256 differs from the model card, and answers Busy when all slots are in use."""
         if mode not in MODES:
             raise ValueError(f"mode must be one of {MODES}")
         for n in (ref_tif, post_tif, pre_tif):
             self._check_name(n)
         if not self.is_ready():
             raise RuntimeError("model files are not installed")
+        card, modes, floor = load_card(self.card_path)
+        if self._sha256() != self._expected_sha(card):
+            raise RuntimeError("ONNX sha256 does not match model_card.json; refusing to run")
+        if not self._slots.acquire(blocking=False):
+            raise Busy("another scene is being processed; retry later")
+        try:
+            return self._run_scene(card, modes, floor, (ref_tif, post_tif, pre_tif), mode, meta or {})
+        finally:
+            self._slots.release()
+
+    def _run_scene(self, card, modes, floor, names, mode, meta):
         import rasterio
         from rasterio import Affine
         from scipy import ndimage
-        meta = meta or {}
-        card, modes, floor = load_card(self.card_path)
         thr = float(modes[mode])
         sha = self._sha256()
-        ref_p, post_p, pre_p = self._resolve(ref_tif), self._resolve(post_tif), self._resolve(pre_tif)
+        ref_p, post_p, pre_p = paths = [self._resolve(n) for n in names]
+        for p in paths:
+            with rasterio.open(p) as r:
+                if r.width * r.height > self.max_pixels:
+                    raise ValueError(f"scene too large: {r.width}x{r.height} px exceeds MAX_SCENE_PIXELS={self.max_pixels}")
         with rasterio.open(ref_p) as src:
             ot, crs = src.transform, src.crs
             ref = src.read().astype("float32")
@@ -203,7 +249,8 @@ class LandslidePredictor:
         return dict(
             type="FeatureCollection", features=feats,
             metadata=dict(schema_version=SCHEMA, model=card["name"], model_sha256=sha, mode=mode, threshold=thr,
-                          std_floor=floor, note=NOTE, **meta),
+                          std_floor=floor, note=NOTE,
+                          warnings=season_warnings(meta.get("pre_period"), meta.get("post_period")), **meta),
             summary=dict(n_regions=len(feats), area_ha=round(sum(f["properties"]["area_ha"] for f in feats), 1),
                          n_change_detected=len(cd), area_change_detected_ha=round(sum(p["area_ha"] for p in cd), 1),
                          n_not_assessable=sum(f["properties"]["temporal_check"] == "not_assessable" for f in feats),

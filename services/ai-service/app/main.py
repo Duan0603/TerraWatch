@@ -1,8 +1,7 @@
 from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
-from app.services.inference import LandslidePredictor
+from app.services.inference import Busy, LandslidePredictor
 from app.services.event_listener import start_redis_listener
 
 app = FastAPI(
@@ -15,14 +14,7 @@ app = FastAPI(
 def startup_event():
     start_redis_listener()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
+# No CORS: this service is called server-to-server (core-api), never from a browser.
 predictor = LandslidePredictor()
 
 class InferenceRequest(BaseModel):
@@ -44,6 +36,8 @@ class SceneRequest(BaseModel):
     mode: str = Field("balanced", description="sensitive | balanced | conservative")
     image_source: str = ""
     image_period: str = ""
+    pre_period: str = Field("", example="2024-07-15/2024-09-07", description="YYYY-MM-DD/YYYY-MM-DD; used to check the pre image is of the same season")
+    post_period: str = Field("", example="2024-09-11/2024-10-31", description="YYYY-MM-DD/YYYY-MM-DD")
 
 @app.get("/health")
 def health_check():
@@ -68,7 +62,10 @@ def run_scene_inference(req: SceneRequest):
     """Landslide candidates (GeoJSON, schema 2.0) for one scene. Candidates need human verification."""
     try:
         return predictor.predict_scene(req.ref_tif, req.post_tif, req.pre_tif, req.mode,
-                                       meta={"image_source": req.image_source, "image_period": req.image_period})
+                                       meta={"image_source": req.image_source, "image_period": req.image_period,
+                                             "pre_period": req.pre_period, "post_period": req.post_period})
+    except Busy as e:
+        raise HTTPException(status_code=429, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except FileNotFoundError as e:

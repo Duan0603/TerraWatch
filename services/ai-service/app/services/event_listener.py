@@ -31,9 +31,9 @@ def start_redis_listener():
                         payload = event.get('payload', {})
                         logger.info(f"⚡ [EventBus Inbound] Type: {event_type} | ID: {event_id} | Payload: {payload}")
 
-                        # If new satellite scene is ingested, trigger async preprocessing / batch inference
+                        # Not implemented: scenes are exported by hand and processed with POST /api/v1/inference/scene.
                         if event_type == "SATELLITE_SCENE_INGESTED":
-                            logger.info(f"🚀 [Async Processing] Initiating automated landslide segmentation for scene: {payload.get('scene_id')}")
+                            logger.info(f"[EventBus] Scene {payload.get('scene_id')} ingested; no automatic segmentation is wired (use POST /api/v1/inference/scene)")
 
                     except json.JSONDecodeError:
                         logger.warning(f"Failed to parse event message: {data_str}")
