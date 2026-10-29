@@ -11,6 +11,8 @@ import '../../alerts/data/alerts_repository.dart';
 import '../../alerts/presentation/subscription_screen.dart';
 import '../../auth/data/auth_models.dart';
 import '../../auth/data/auth_repository.dart';
+import '../../report/data/report_repository.dart';
+import '../../report/presentation/my_reports_screen.dart';
 import 'change_password_screen.dart';
 import 'edit_profile_screen.dart';
 
@@ -27,6 +29,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   List<SubscribedArea>? _subscriptions;
   String? _subscriptionsError;
   int _alertCount = 0;
+  int _reportCount = 0;
 
   @override
   void initState() {
@@ -106,6 +109,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadAlertCount() async {
     final history = await LocalStorage.getAlertHistory();
     if (mounted) setState(() => _alertCount = history.length);
+    _loadReportCount();
+  }
+
+  Future<void> _loadReportCount() async {
+    try {
+      final count = await ReportRepository().sentCount();
+      if (mounted) setState(() => _reportCount = count);
+    } catch (_) {} // chưa có dữ liệu cục bộ: giữ số 0
+  }
+
+  Future<void> _openMyReports() async {
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => const MyReportsScreen()));
+    _loadReportCount();
   }
 
   Future<void> _removeSubscription(SubscribedArea area) async {
@@ -154,6 +170,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   label: 'Chỉnh sửa hồ sơ',
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EditProfileScreen())),
                 ),
+                _ActionRow(icon: Icons.assignment_outlined, label: 'Báo cáo của tôi', onTap: _openMyReports),
                 if (user?.authProvider == 'email')
                   _ActionRow(
                     icon: Icons.lock_outline,
@@ -169,6 +186,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 12),
               _SettingsSection(title: 'Thống kê', children: [
                 _InfoRow(label: 'Cảnh báo đã nhận', value: '$_alertCount'),
+                _InfoRow(label: 'Báo cáo đã gửi', value: '$_reportCount'),
               ]),
               const SizedBox(height: 24),
               SizedBox(

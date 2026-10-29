@@ -12,5 +12,5 @@ class AppConstants {
 
   // SQLite Config
   static const String dbName = 'geosentry_local.db';
-  static const int dbVersion = 2;
+  static const int dbVersion = 3;
 }
