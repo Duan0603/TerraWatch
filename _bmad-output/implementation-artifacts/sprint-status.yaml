@@ -42,7 +42,7 @@ development_status:
   epic-5: backlog
   5-1-citizen-alert-subscription-emergency-alert-reception-push-sms: backlog
   5-2-mobile-community-field-report-photo-gps: backlog
-  5-3-expiry-aware-offline-geofencing-sqlite: backlog
+  5-3-expiry-aware-offline-geofencing-sqlite: ready-for-dev
   5-9-mobile-hazard-map: review
   5-4-24h-forecast-end-to-end-integration-demo: backlog
   5-5-mobile-citizen-login-jwt: review

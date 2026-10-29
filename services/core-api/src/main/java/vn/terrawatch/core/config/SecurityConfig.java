@@ -50,6 +50,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/google").permitAll()
                 .requestMatchers("/api/v1/auth/me", "/api/v1/auth/me/**", "/api/v1/auth/password").authenticated()
                 .requestMatchers("/api/v1/alerts/**").authenticated()
+                .requestMatchers("/api/v1/forecasts/**").authenticated()
                 // Story 1.3 review: this diagnostic/circuit-breaker/event-bus test endpoint became
                 // internet-reachable for the first time once the gateway added a route for it
                 // (previously internal-network-only). Require a valid session (any role) rather
