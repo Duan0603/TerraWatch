@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../alerts/presentation/alerts_screen.dart';
+import '../../geofence/data/forecast_repository.dart';
 import '../../map/presentation/map_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
 import 'home_screen.dart';
@@ -13,8 +14,33 @@ class MainShell extends StatefulWidget {
   State<MainShell> createState() => _MainShellState();
 }
 
-class _MainShellState extends State<MainShell> {
+class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
   int _index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _syncForecasts();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _syncForecasts();
+  }
+
+  /// Cập nhật bộ đệm vùng dự báo khi mở app / quay lại app; không có mạng thì giữ bộ đệm cũ (nó sẽ tự chuyển thành "đã cũ")
+  Future<void> _syncForecasts() async {
+    try {
+      await ForecastRepository().sync();
+    } catch (_) {}
+  }
 
   @override
   Widget build(BuildContext context) {

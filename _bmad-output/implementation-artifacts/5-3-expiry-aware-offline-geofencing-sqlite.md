@@ -3,7 +3,7 @@ baseline_commit: e622085
 ---
 # Story 5.3: Expiry-aware offline geofencing
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -21,8 +21,8 @@ so that I am never alarmed by an expired forecast and never told I am "safe" by 
 1. **AC1 — Sync API:** `GET /api/v1/forecasts/offline-sync` (any signed-in user; no token → 401) returns `{serverTime, items[]}`. Each item: `runId, unitId, unitVersion, hazardLevel (low|medium|high|extreme), probability, issuedAt, validFrom, validUntil (UTC ISO-8601), modelVersion, geometry (GeoJSON Polygon)`. Items are forecast runs with `review_status='approved'`, `is_active=true` and `valid_until > now`. Pending, rejected, superseded, inactive and already-expired runs are never returned. The gateway routes `/api/v1/forecasts`.
 2. **AC2 — Local cache:** the phone stores per zone: run id, unit id, unit version, hazard level, probability, issued/valid-from/valid-until (UTC), model version, polygon, and a bounding box (indexed). A sync replaces the whole cache in one transaction (zones the server no longer lists — revoked, rejected or superseded — disappear), and `last_sync_at` is stored. A failed sync changes nothing.
 3. **AC3 — Local geofencing:** given the GPS position, the app finds candidate zones by bounding box in SQLite, then decides with a point-in-polygon test (not a distance to a centre). Nothing is sent to the server; continuous GPS stays on the phone. A point exactly on an edge counts as inside.
-4. **AC4 — Expiry-aware status:** the result is one of `warning` (inside at least one zone with `valid_from ≤ now < valid_until`; reports the highest hazard level and the soonest `valid_until`), `stale` (the cache has zones but none is currently valid, or it was never synced / last synced more than 24 h ago; says when the data expired or was last synced) or `none` ("no current warning"). The app never shows the words "safe" / "an toàn" as a conclusion. An expired zone never raises an alarm. Boundaries are tested: `now == valid_until` is expired, `now == valid_from` is valid; times compare in UTC and display in local time.
-5. **AC5 — Alarm:** entering a `warning` zone triggers the existing emergency notification (sound/vibration within what the platform permits) once per zone per run (no repeat on every GPS fix). The app does not claim to override silent mode. Foreground monitoring only in this story.
+4. **AC4 — Expiry-aware status:** the result is one of `warning` (inside at least one zone with `valid_from ≤ now < valid_until`; reports the highest hazard level and the soonest `valid_until`), `stale` or `none` ("no current warning"). `stale` when, and only when, there is no valid zone at the position and: the cache was never synced, or last synced more than 24 h ago, or the position is inside an expired zone, or every cached zone has expired. Otherwise `none`. A valid zone still raises the alarm when the last sync is older than 24 h (a missed alarm is worse than a possibly revoked one; the screen shows the sync time). The app never shows "safe" / "an toàn" as a conclusion and says "this is not a safety confirmation". An expired zone never raises an alarm. Boundaries: `now == valid_until` is expired, `now == valid_from` is valid; instants are UTC, shown in local time.
+5. **AC5 — Alarm:** a `warning` raises the existing emergency notification (`NotificationService.showEmergencyAlert`: sound and vibration within what the platform permits, no claim to override silent mode) once per forecast run, not on every GPS fix. A switch on the screen follows the GPS (a fix every 25 m) while the screen is open; the position is only evaluated on the phone. Monitoring while the app is in the background or closed is out of scope.
 6. **AC6 — Sync triggers and offline start:** the cache is synced on app start / resume when signed in and online; a failed or offline sync keeps the old cache (which then ages to `stale`). The app still starts and evaluates with a stored session and no network.
 7. **AC7 — Screen:** a "Cảnh báo vị trí" screen (reachable from Home) shows the status card (warning / stale / none), the number of cached zones, `last_sync_at`, a "Đồng bộ" button and a "Kiểm tra vị trí" button (explicit GPS read). Text states that the position is evaluated on the phone.
 8. **AC8 — Scale:** the test suite loads ≥ 10,000 zones into the cache and a lookup returns correctly; the measured time is reported in the completion notes (it is a capacity check, not an accuracy result).
@@ -31,11 +31,11 @@ so that I am never alarmed by an expired forecast and never told I am "safe" by 
 
 - [x] **Task 1: Backend endpoint** (AC: #1) — `ForecastRepository` (JdbcTemplate), `ForecastOfflineSyncResponse`/item DTO, `ForecastController`, `SecurityConfig` (authenticated), gateway location, `AuthExceptionHandler` coverage; demo seed script `services/core-api/scripts/seed-demo-forecasts.sql`.
 - [x] **Task 2: Backend tests** (AC: #1) — integration test with real PostGIS rows (current, upcoming, pending, rejected, superseded, inactive, unavailable, expired) and 401 without token; revoked run disappears from the next snapshot.
-- [ ] **Task 3: Mobile data layer** (AC: #2, #8) — `ForecastZone` model, `ZoneStore` (SQLite `forecast_zones` + `last_sync_at`), `ForecastRepository.sync()` (full replace in a transaction).
-- [ ] **Task 4: Geofencing logic** (AC: #3, #4, #5) — pure `GeofenceEvaluator` (injectable clock) using the existing `GeoMath.isPointInPolygon`; replaces the unused centroid-500 m `OfflineGeofencingService`.
-- [ ] **Task 5: Screen and triggers** (AC: #5-#7) — `geofence_screen.dart`, Home entry, sync on start/resume in `MainShell`.
-- [ ] **Task 6: Mobile tests and build** (AC: #3, #4, #8) — boundary / expiry / timezone / revocation / offline-keeps-cache / 10,000 zones; `flutter analyze`, `flutter test`, debug build.
-- [ ] **Task 7: Real stack check** — seed demo zones, run the endpoint through the gateway, sync on a phone, stop the gateway, confirm warning and stale behaviour.
+- [x] **Task 3: Mobile data layer** (AC: #2, #8) — `ForecastZone` model, `ZoneStore` (SQLite `forecast_zones` + `last_sync_at`), `ForecastRepository.sync()` (full replace in a transaction).
+- [x] **Task 4: Geofencing logic** (AC: #3, #4, #5) — pure `GeofenceEvaluator` (injectable clock) using the existing `GeoMath.isPointInPolygon`; replaces the unused centroid-500 m `OfflineGeofencingService`.
+- [x] **Task 5: Screen and triggers** (AC: #5-#7) — `geofence_screen.dart`, Home entry, sync on start/resume in `MainShell`.
+- [x] **Task 6: Mobile tests and build** (AC: #3, #4, #8) — boundary / expiry / timezone / revocation / offline-keeps-cache / 10,000 zones; `flutter analyze`, `flutter test`, debug build.
+- [ ] **Task 7: Real stack check** — seed demo zones (done), call the endpoint through the gateway (done); sync on a phone, stop the gateway, confirm warning and stale behaviour (pending).
 
 ## Dev Notes
 
@@ -62,4 +62,18 @@ Claude Sonnet 5.5 (claude-sonnet-5-5)
 
 ### Completion Notes List
 
+- Backend `GET /api/v1/forecasts/offline-sync` implemented on `feature/core-forecast-offline-sync` (this branch is stacked on it). Core API suite 40/40 (3 new in `ForecastApiTest`). Verified through the rebuilt gateway with a real user: no token → 401; with the demo seed only `DEMO_NOW` is returned (expired and pending runs are not), instants end in `Z`, geometry is a closed Polygon.
+- Mobile: `flutter analyze` clean, `flutter test` 62/62 (new: `offline_geofence_test.dart`, `zone_store_sqlite_test.dart` using `sqflite_common_ffi`, added as a dev dependency). Covers polygon edge/vertex, `valid_until`/`valid_from` boundaries to the millisecond, `+07:00` vs `Z`, 24 h sync age, revocation, offline keeps the cache, malformed payload rejected whole, alarm once per run, screen states and the absence of the word "safe".
+- AC8 capacity check (desktop SQLite via ffi, not a phone): 10,000 zones written in 418 ms, one point decision (bbox query + polygon test) in 9 ms. Capacity only, not an accuracy result.
+- Decisions: warning wins over a stale sync (a valid zone alarms even if the last sync is older than 24 h); "inside an expired zone" is its own stale reason; a malformed item rejects the whole sync so the previous cache survives; the phone clock is trusted for expiry (`shortcut`, no server-time offset yet).
+- Replaced the unused centroid-500 m `OfflineGeofencingService` and the always-green "Đang hoạt động" Home card (green read as "safe"). `hazard_polygons` is left in the schema untouched (old installs keep an empty table).
+- GPS: `currentPosition()` waits 30 s and falls back to a last known fix of at most 10 minutes.
+- Not verified: a phone run (GPS permission flow, real alarm sound/vibration, `adb reverse` sync, stopping the gateway), `flutter build apk`, and the position-stream switch (no automated test; the explicit check path is tested). Demo data only: the forecast tables are empty until the AI forecast writer exists.
+
 ### File List
+
+- services/core-api: `ForecastController`, `ForecastService`, `ForecastRepository`, `ForecastZoneResponse`, `ForecastOfflineSyncResponse`, `SecurityConfig`, `ForecastApiTest`, `scripts/seed-demo-forecasts.sql`; gateway/nginx.conf
+- apps/mobile/lib/features/geofence/data: `forecast_zone.dart`, `zone_store.dart`, `forecast_repository.dart`, `geofence_evaluator.dart`, `device_location.dart`; presentation/`geofence_screen.dart`
+- apps/mobile/lib: `core/utils/geo_math.dart`, `core/storage/local_storage.dart`, `core/constants/api_endpoints.dart`, `features/home/presentation/home_screen.dart`, `main_shell.dart`; removed `services/geofencing_service.dart`
+- apps/mobile: `pubspec.yaml`, `pubspec.lock` (sqflite_common_ffi dev), `test/offline_geofence_test.dart`, `test/zone_store_sqlite_test.dart`
+- _bmad-output/implementation-artifacts: this story, `sprint-status.yaml`

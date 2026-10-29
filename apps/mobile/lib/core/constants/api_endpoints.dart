@@ -13,6 +13,7 @@ class ApiEndpoints {
   static const String landslidesActive = '/api/v1/landslides/active';
   static const String landslidesOfflineSync = '/api/v1/landslides/offline-sync';
   static const String landslidesGeofence = '/api/v1/landslides/geofence';
+  static const String forecastsOfflineSync = '/api/v1/forecasts/offline-sync';
 
   // Alerts & Notifications (Story 5.1 & FR4)
   static const String alertSubscriptions = '/api/v1/alerts/subscriptions';
