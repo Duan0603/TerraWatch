@@ -136,7 +136,7 @@ class LocalStorage {
   }
 
   /// Lấy tổng số vùng dự báo đang lưu trong SQLite (Story 5.3)
-  static Future<int> getHazardCount() async {
+  static Future<int> getZoneCount() async {
     try {
       final db = await database;
       final result = await db.rawQuery('SELECT COUNT(*) as total FROM forecast_zones');

@@ -18,13 +18,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _hazardCount = 0;
+  int _zoneCount = 0;
   StreamSubscription? _alertSubscription;
 
   @override
   void initState() {
     super.initState();
-    _loadHazardCount();
+    _loadZoneCount();
     _listenEmergencyAlerts();
   }
 
@@ -49,11 +49,11 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<void> _loadHazardCount() async {
-    final count = await LocalStorage.getHazardCount();
+  Future<void> _loadZoneCount() async {
+    final count = await LocalStorage.getZoneCount();
     if (mounted) {
       setState(() {
-        _hazardCount = count;
+        _zoneCount = count;
       });
     }
   }
@@ -87,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(12),
                 onTap: () async {
                   await Navigator.push(context, MaterialPageRoute(builder: (_) => const GeofenceScreen()));
-                  _loadHazardCount();
+                  _loadZoneCount();
                 },
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
@@ -102,9 +102,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        _hazardCount == 0
+                        _zoneCount == 0
                             ? 'Chưa có vùng dự báo trên máy. Bấm để đồng bộ khi có mạng.'
-                            : 'Đã lưu $_hazardCount vùng dự báo trên máy. Bấm để kiểm tra vị trí của bạn.',
+                            : 'Đã lưu $_zoneCount vùng dự báo trên máy. Bấm để kiểm tra vị trí của bạn.',
                         textAlign: TextAlign.center,
                         style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
                       ),

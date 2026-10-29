@@ -53,7 +53,7 @@ class GeoMath {
   }
 
   /// Như [isPointInPolygon] nhưng điểm nằm đúng trên cạnh hoặc đỉnh cũng tính là bên trong
-  /// shortcut: so sánh độ lệch bằng epsilon 1e-12 độ (~0.1 µm), đủ cho tọa độ GPS; chỉ xét vòng ngoài, bỏ qua lỗ
+  /// shortcut: so sánh tích có hướng với epsilon 1e-12 (lệch ~10 µm trên cạnh dài 1 km), đủ cho tọa độ GPS; chỉ xét vòng ngoài, bỏ qua lỗ
   static bool isPointInOrOnPolygon(double pointLat, double pointLon, List<List<double>> ring) {
     const eps = 1e-12;
     for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {

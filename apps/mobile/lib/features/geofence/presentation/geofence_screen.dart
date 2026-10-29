@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../core/network/api_exceptions.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../services/notification_service.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../data/device_location.dart';
 import '../data/forecast_repository.dart';
@@ -23,8 +24,18 @@ class GeofenceScreen extends StatefulWidget {
   final EmergencyAlarm? alarm;
   final Future<DevicePosition> Function()? locationProvider;
   final Stream<DevicePosition> Function()? positionStream;
+  final Future<void> Function()? notificationPermission;
 
-  const GeofenceScreen({super.key, this.store, this.repository, this.clock, this.alarm, this.locationProvider, this.positionStream});
+  const GeofenceScreen({
+    super.key,
+    this.store,
+    this.repository,
+    this.clock,
+    this.alarm,
+    this.locationProvider,
+    this.positionStream,
+    this.notificationPermission,
+  });
 
   @override
   State<GeofenceScreen> createState() => _GeofenceScreenState();
@@ -69,6 +80,8 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
       await action();
     } on ApiException catch (e) {
       if (mounted) setState(() => _message = e.message);
+    } catch (_) {
+      if (mounted) setState(() => _message = 'Không đọc được dữ liệu dự báo trên máy');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -81,26 +94,32 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
       });
 
   Future<void> _check() => _run(() async {
+        await (widget.notificationPermission ?? NotificationService.requestPermission)();
         final position = await (widget.locationProvider ?? currentPosition)();
         final result = await _monitor.check(position.latitude, position.longitude);
         if (mounted) setState(() => _result = result);
         await _refreshSummary();
       });
 
-  void _toggleWatch(bool on) {
-    if (!on) {
-      _watch?.cancel();
-      setState(() => _watch = null);
-      return;
-    }
+  void _stopWatch() {
+    _watch?.cancel();
+    setState(() => _watch = null);
+  }
+
+  Future<void> _toggleWatch(bool on) async {
+    if (!on) return _stopWatch();
+    await (widget.notificationPermission ?? NotificationService.requestPermission)();
+    if (!mounted) return;
     setState(() {
       _watch = (widget.positionStream ?? positionUpdates)().listen(
         (p) async {
           final result = await _monitor.check(p.latitude, p.longitude);
           if (mounted) setState(() => _result = result);
         },
-        onError: (_) {
-          if (mounted) setState(() => _message = 'Không theo dõi được vị trí. Hãy bật GPS và quyền vị trí');
+        onError: (Object e) {
+          if (!mounted) return;
+          _stopWatch();
+          setState(() => _message = e is ApiException ? e.message : 'Không theo dõi được vị trí. Hãy bật GPS và quyền vị trí');
         },
       );
     });

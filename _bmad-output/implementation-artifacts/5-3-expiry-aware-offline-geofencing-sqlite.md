@@ -77,3 +77,23 @@ Claude Sonnet 5.5 (claude-sonnet-5-5)
 - apps/mobile/lib: `core/utils/geo_math.dart`, `core/storage/local_storage.dart`, `core/constants/api_endpoints.dart`, `features/home/presentation/home_screen.dart`, `main_shell.dart`; removed `services/geofencing_service.dart`
 - apps/mobile: `pubspec.yaml`, `pubspec.lock` (sqflite_common_ffi dev), `test/offline_geofence_test.dart`, `test/zone_store_sqlite_test.dart`
 - _bmad-output/implementation-artifacts: this story, `sprint-status.yaml`
+
+### Review Findings (bmad-code-review, 2026-10-30)
+
+Scope: `main...feature/mobile-offline-geofencing` (27 files, ~1,800 lines) against this story. The three layers (Blind Hunter, Edge Case Hunter, Acceptance Auditor) were run inline by the author's session, not by independent subagents, so treat this as a self-review and ask a teammate for a second pair of eyes.
+
+Fixed in this branch:
+- **[High] Silent alarm on Android 13+:** `POST_NOTIFICATIONS` was declared but never requested, and `showEmergencyAlert` swallows the error, so a warning would show no notification. Added `NotificationService.requestPermission()`, called when the citizen checks the position or switches monitoring on.
+- **[Medium] Reuse miss:** the existing `LocationService.checkAndRequestPermission()` (checks GPS service + permission) was reimplemented; `device_location.dart` now uses it.
+- **[Medium] Monitoring switch could stay on after an error** (no permission, GPS off): the stream now checks permission first and a stream error switches the monitor off and shows the reason.
+- **[Low]** unexpected local-data errors (SQLite) were unhandled in button handlers → generic message; `getHazardCount` renamed `getZoneCount` (it counts zones now); misleading epsilon comment corrected; `docs/API_SPECIFICATION.md` marks offline-sync as implemented and the gateway route as added.
+
+Accepted / deferred (not bugs for this story):
+- Phone clock is trusted for expiry and sync age (`shortcut`: use `serverTime` offset later).
+- Full-snapshot sync is unbounded (~0.5 KB/zone, gzip is already on at the gateway); add delta/ETag if zone count grows.
+- Holes in polygons are ignored; assessment units are simple Polygons.
+- The alarm de-duplication set is in memory, so a restart may ring once more for the same run.
+- Background/closed-app monitoring is out of scope (needs a foreground service and background-location consent).
+- If the notification permission is denied the in-app card still shows the warning but no system alarm rings.
+
+Open: Task 7 phone run. Status stays `review` until the phone check is done.

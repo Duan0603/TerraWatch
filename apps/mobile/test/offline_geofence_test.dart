@@ -284,6 +284,7 @@ void main() {
         home: GeofenceScreen(
           store: store,
           clock: () => clock,
+          notificationPermission: () async {},
           alarm: ({required title, required body}) async => rings.add(body),
           locationProvider: () async => (latitude: 22.0, longitude: 104.1),
         ),
@@ -305,6 +306,7 @@ void main() {
         home: GeofenceScreen(
           store: store,
           clock: () => clock,
+          notificationPermission: () async {},
           alarm: ({required title, required body}) async => fail('must not ring'),
           locationProvider: () async => (latitude: 22.0, longitude: 104.1),
         ),
@@ -323,6 +325,7 @@ void main() {
         home: GeofenceScreen(
           store: store,
           clock: () => clock,
+          notificationPermission: () async {},
           locationProvider: () async => throw const ApiException(message: 'Không lấy được vị trí hiện tại'),
         ),
       ));
