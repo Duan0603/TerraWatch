@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class FirebaseIdTokenVerifierTest {
-    private static final String PROJECT = "terrawatch-defense";
+    private static final String PROJECT = "terrawatch-ac26f";
     private final KeyPair signer = newKeyPair();
     private final KeyPair attacker = newKeyPair();
     private final FirebaseIdTokenVerifier verifier = new FirebaseIdTokenVerifier(PROJECT,

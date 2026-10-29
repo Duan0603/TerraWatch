@@ -3,6 +3,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../alerts/presentation/alerts_screen.dart';
 import '../../map/presentation/map_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
+import '../../report/data/report_repository.dart';
 import 'home_screen.dart';
 
 /// Khung điều hướng 4 tab (Trang chủ, Bản đồ, Cảnh báo, Hồ sơ)
@@ -13,8 +14,33 @@ class MainShell extends StatefulWidget {
   State<MainShell> createState() => _MainShellState();
 }
 
-class _MainShellState extends State<MainShell> {
+class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
   int _index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _syncReports();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _syncReports();
+  }
+
+  /// Gửi các báo cáo hiện trường còn chờ (mất mạng lần trước); lỗi thì để lần sau, không làm phiền người dùng
+  Future<void> _syncReports() async {
+    try {
+      await ReportRepository().syncPending();
+    } catch (_) {}
+  }
 
   @override
   Widget build(BuildContext context) {

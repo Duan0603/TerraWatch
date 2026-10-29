@@ -7,7 +7,7 @@ jwt:
 
 # Firebase project whose Google sign-in ID tokens Core API accepts (/api/v1/auth/google)
 firebase:
-  project-id: ${FIREBASE_PROJECT_ID:terrawatch-defense}
+  project-id: ${FIREBASE_PROJECT_ID:terrawatch-ac26f}
 
 spring:
   application:
