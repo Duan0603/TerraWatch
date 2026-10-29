@@ -85,6 +85,9 @@ class GoogleFcmSenderTest {
         assertEquals("sender@test-proj.iam.gserviceaccount.com", claims.getIssuer());
         assertEquals("https://www.googleapis.com/auth/firebase.messaging", claims.get("scope"));
         assertTrue(claims.getAudience().iterator().next().endsWith("/token"));
+        // Google rejects an array-valued aud ("Failed audience check"): the raw payload must carry a plain string
+        String payload = new String(java.util.Base64.getUrlDecoder().decode(assertion.get().split("\\.")[1]), StandardCharsets.UTF_8);
+        assertTrue(json.readTree(payload).get("aud").isTextual(), payload);
         assertEquals("Bearer ya29.test", authorization.get());
 
         JsonNode message = json.readTree(fcmBody.get()).get("message");

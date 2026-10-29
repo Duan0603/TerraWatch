@@ -97,7 +97,8 @@ public class GoogleFcmSender implements FcmSender {
         if (accessToken != null && Instant.now().isBefore(accessTokenExpiry.minusSeconds(60))) return accessToken;
         Instant now = Instant.now();
         String assertion = Jwts.builder().issuer(clientEmail).subject(clientEmail)
-            .audience().add(tokenUri.toString()).and()
+            // single(): Google's token endpoint rejects an `aud` that is a JSON array (found against the real endpoint)
+            .audience().single(tokenUri.toString())
             .claim("scope", SCOPE)
             .issuedAt(Date.from(now)).expiration(Date.from(now.plusSeconds(3600)))
             .signWith(privateKey, Jwts.SIG.RS256).compact();
