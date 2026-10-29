@@ -88,7 +88,34 @@ class LocalStorage {
         received_at TEXT
       )
     ''');
+
+    // 4. Bộ đệm vùng dự báo đã duyệt để kiểm tra vị trí ngoại tuyến (Story 5.3)
+    // shortcut: chỉ mục B-tree trên khung bao đủ cho ~10.000 vùng; dùng R-Tree khi cần hàng trăm nghìn vùng
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS forecast_zones (
+        run_id TEXT PRIMARY KEY,
+        unit_id TEXT NOT NULL,
+        unit_version TEXT NOT NULL,
+        hazard_level TEXT NOT NULL,
+        probability REAL,
+        issued_at INTEGER NOT NULL,
+        valid_from INTEGER NOT NULL,
+        valid_until INTEGER NOT NULL,
+        model_version TEXT NOT NULL,
+        polygon TEXT NOT NULL,
+        min_lat REAL NOT NULL,
+        max_lat REAL NOT NULL,
+        min_lon REAL NOT NULL,
+        max_lon REAL NOT NULL
+      )
+    ''');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_zone_bbox ON forecast_zones (min_lat, max_lat, min_lon, max_lon)');
+    await db.execute('CREATE TABLE IF NOT EXISTS cache_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
   }
+
+  /// Cho phép bài kiểm thử tạo lược đồ trên CSDL riêng
+  static Future<void> createTables(Database db) => _createTablesIfNotExist(db);
 
   /// Máy đã cài bản cũ (offline_reports chỉ có 7 cột): thêm các cột còn thiếu, không mất dữ liệu cũ
   static Future<void> _addMissingReportColumns(Database db) async {
@@ -140,11 +167,11 @@ class LocalStorage {
     } catch (_) {}
   }
 
-  /// Lấy tổng số lượng vùng sạt lở đang lưu trong SQLite
-  static Future<int> getHazardCount() async {
+  /// Lấy tổng số vùng dự báo đang lưu trong SQLite (Story 5.3)
+  static Future<int> getZoneCount() async {
     try {
       final db = await database;
-      final result = await db.rawQuery('SELECT COUNT(*) as total FROM hazard_polygons');
+      final result = await db.rawQuery('SELECT COUNT(*) as total FROM forecast_zones');
       return Sqflite.firstIntValue(result) ?? 0;
     } catch (_) {
       return 0;

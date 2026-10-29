@@ -4,6 +4,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../../../core/storage/local_storage.dart';
 import '../../../services/notification_service.dart';
+import '../../geofence/presentation/geofence_screen.dart';
 import '../../report/presentation/report_screen.dart';
 import '../../alerts/presentation/alerts_screen.dart';
 import '../../alerts/presentation/subscription_screen.dart';
@@ -17,13 +18,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _hazardCount = 0;
+  int _zoneCount = 0;
   StreamSubscription? _alertSubscription;
 
   @override
   void initState() {
     super.initState();
-    _loadHazardCount();
+    _loadZoneCount();
     _listenEmergencyAlerts();
   }
 
@@ -48,11 +49,11 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<void> _loadHazardCount() async {
-    final count = await LocalStorage.getHazardCount();
+  Future<void> _loadZoneCount() async {
+    final count = await LocalStorage.getZoneCount();
     if (mounted) {
       setState(() {
-        _hazardCount = count;
+        _zoneCount = count;
       });
     }
   }
@@ -80,26 +81,35 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Status Card (Geofencing Offline)
+            // Geofencing ngoại tuyến: số vùng dự báo đã lưu; bấm để kiểm tra vị trí (Story 5.3)
             Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  children: [
-                    const Icon(Icons.shield_outlined, color: AppColors.safe, size: 56),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Geofencing Ngoại Tuyến: Đang Hoạt Động',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Đã nạp $_hazardCount đa giác sạt lở vào SQLite thiết bị\n(Tự động hú còi khi mất sóng 4G/WiFi)',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
-                    ),
-                  ],
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () async {
+                  await Navigator.push(context, MaterialPageRoute(builder: (_) => const GeofenceScreen()));
+                  _loadZoneCount();
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    children: [
+                      const Icon(Icons.my_location, color: AppColors.primary, size: 48),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Cảnh báo vị trí ngoại tuyến',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _zoneCount == 0
+                            ? 'Chưa có vùng dự báo trên máy. Bấm để đồng bộ khi có mạng.'
+                            : 'Đã lưu $_zoneCount vùng dự báo trên máy. Bấm để kiểm tra vị trí của bạn.',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

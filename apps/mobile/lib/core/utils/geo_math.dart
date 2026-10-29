@@ -52,5 +52,21 @@ class GeoMath {
     return inside;
   }
 
+  /// Như [isPointInPolygon] nhưng điểm nằm đúng trên cạnh hoặc đỉnh cũng tính là bên trong
+  /// shortcut: so sánh tích có hướng với epsilon 1e-12 (lệch ~10 µm trên cạnh dài 1 km), đủ cho tọa độ GPS; chỉ xét vòng ngoài, bỏ qua lỗ
+  static bool isPointInOrOnPolygon(double pointLat, double pointLon, List<List<double>> ring) {
+    const eps = 1e-12;
+    for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      final ax = ring[j][0], ay = ring[j][1], bx = ring[i][0], by = ring[i][1];
+      final cross = (pointLon - ax) * (by - ay) - (pointLat - ay) * (bx - ax);
+      final withinBox = pointLon >= min(ax, bx) - eps &&
+          pointLon <= max(ax, bx) + eps &&
+          pointLat >= min(ay, by) - eps &&
+          pointLat <= max(ay, by) + eps;
+      if (cross.abs() <= eps && withinBox) return true;
+    }
+    return isPointInPolygon(pointLat, pointLon, ring);
+  }
+
   static double _toRadians(double degree) => degree * pi / 180.0;
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../alerts/presentation/alerts_screen.dart';
+import '../../geofence/data/forecast_repository.dart';
 import '../../map/presentation/map_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../../report/data/report_repository.dart';
@@ -22,6 +23,7 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _syncReports();
+    _syncForecasts();
   }
 
   @override
@@ -32,13 +34,23 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) _syncReports();
+    if (state == AppLifecycleState.resumed) {
+      _syncReports();
+      _syncForecasts();
+    }
   }
 
   /// Gửi các báo cáo hiện trường còn chờ (mất mạng lần trước); lỗi thì để lần sau, không làm phiền người dùng
   Future<void> _syncReports() async {
     try {
       await ReportRepository().syncPending();
+    } catch (_) {}
+  }
+
+  /// Cập nhật bộ đệm vùng dự báo khi mở app / quay lại app; không có mạng thì giữ bộ đệm cũ (nó sẽ tự chuyển thành "đã cũ")
+  Future<void> _syncForecasts() async {
+    try {
+      await ForecastRepository().sync();
     } catch (_) {}
   }
 

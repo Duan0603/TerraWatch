@@ -30,9 +30,9 @@ Auth and SMS/FCM are not completed. Existing Swagger is served by each service; 
 | Core officer/admin | GET /api/v1/forecasts/queue | Review forecast proposals with quality/validity. |
 | Core officer/admin | PATCH /api/v1/forecasts/{id}/review | Approve/reject a warning proposal, not an event occurrence. |
 | Core authorized clients | GET /api/v1/forecasts/active | Published, approved and currently valid forecast geometries. |
-| Core authorized clients | GET /api/v1/forecasts/offline-sync | Forecast geometry, validity and revocation/supersession metadata. |
+| Core authorized clients | GET /api/v1/forecasts/offline-sync | **Implemented (Story 5.3).** Signed-in users; full snapshot `{serverTime, items[]}` of approved, active, available, unexpired runs with Polygon geometry and UTC validity. A run no longer listed was revoked or superseded: clients replace their cache. |
 
-The AI and Core share a route name on different hosts. Public /api/v1/forecasts targets Core. If internal AI routing uses the current gateway prefix rewrite, /api/v1/ai/forecasts maps to AI /api/v1/forecasts; service authentication/network restriction is required. Add an explicit Core gateway location: current Nginx does not route /api/v1/forecasts.
+The AI and Core share a route name on different hosts. Public /api/v1/forecasts targets Core. If internal AI routing uses the current gateway prefix rewrite, /api/v1/ai/forecasts maps to AI /api/v1/forecasts; service authentication/network restriction is required. The gateway now routes /api/v1/forecasts to Core (added with offline-sync).
 
 Existing auth, reports, subscriptions/device and alert capabilities remain required; see PRD/epics for implementation status. Forecast/incident coexistence is intentional.
 

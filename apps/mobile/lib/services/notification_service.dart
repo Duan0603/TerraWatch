@@ -27,6 +27,16 @@ class NotificationService {
     );
   }
 
+  /// Android 13+ chặn thông báo cho tới khi người dùng cho phép; gọi trước khi cần phát còi.
+  /// Lỗi (thiết bị không hỗ trợ, môi trường kiểm thử) thì bỏ qua: còi sẽ không phát nhưng ứng dụng vẫn chạy.
+  static Future<void> requestPermission() async {
+    try {
+      await _notificationsPlugin
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          ?.requestNotificationsPermission();
+    } catch (_) {}
+  }
+
   /// Phát thông báo khẩn cấp với độ ưu tiên cao nhất, rung mạnh và còi hú (AC3)
   static Future<void> showEmergencyAlert({
     required String title,
