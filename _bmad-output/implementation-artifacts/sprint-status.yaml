@@ -22,7 +22,7 @@ development_status:
   2-1-rainfall-observation-forecast-ingestion: done
   2-2-dem-terrain-feature-extraction: done
   2-3-as-of-rainfall-terrain-feature-snapshots: done
-  2-4-community-field-report-api-gps-photo-upload: backlog
+  2-4-community-field-report-api-gps-photo-upload: review
   epic-2-retrospective: optional
 
   epic-3: backlog
