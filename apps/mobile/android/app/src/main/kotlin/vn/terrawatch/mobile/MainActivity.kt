@@ -1,4 +1,4 @@
-package com.example.geosentry_mobile
+package vn.terrawatch.mobile
 
 import io.flutter.embedding.android.FlutterActivity
 

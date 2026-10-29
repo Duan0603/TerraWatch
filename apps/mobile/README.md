@@ -19,5 +19,5 @@ samples, guidance on mobile development, and a full API reference.
 ## Cấu hình chạy app
 
 - **API:** mặc định `http://127.0.0.1:8080` (gateway). Máy thật qua USB: `adb reverse tcp:8080 tcp:8080`. Ghi đè bằng `--dart-define=API_BASE_URL=...`.
-- **Đăng nhập Google (Story 5.6):** cần `android/app/google-services.json` (không commit). Lấy ở Firebase console → project `terrawatch-defense` → Project settings → app `terrawatch-mobile`. Mỗi máy dev phải thêm SHA-1 debug của mình vào app đó (`./gradlew signingReport` trong `android/`). Thiếu file thì app vẫn build, chỉ nút Google không dùng được.
+- **Đăng nhập Google (Story 5.6):** cần `android/app/google-services.json` (không commit). Lấy ở Firebase console → project `terrawatch-ac26f` (TerraWatch) → Project settings → app Android `vn.terrawatch.mobile` (tên gói mới, đổi từ `com.example.geosentry_mobile` vì trùng mã OAuth với project Firebase cũ). Mỗi máy dev phải thêm SHA-1 debug của mình vào app đó (`./gradlew signingReport` trong `android/`). Thiếu file thì app vẫn build, chỉ nút Google không dùng được.
 - Backend phải có `POST /api/v1/auth/google` thì nút Google mới đăng nhập được.
