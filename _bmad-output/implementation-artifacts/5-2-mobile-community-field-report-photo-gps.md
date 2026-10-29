@@ -3,7 +3,7 @@ baseline_commit: e622085
 ---
 # Story 5.2: Mobile field reports (photo + GPS, offline queue)
 
-Status: in-progress
+Status: review
 
 ## Story
 
@@ -27,11 +27,11 @@ so that officers receive my evidence once I am online again, without duplicates.
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1: Local storage** (AC: #3, #4) — SQLite v3: add columns to `offline_reports` (`client_report_id`, `user_id`, `observed_at`, `accuracy_m`, `image_bytes`, `photo_id`, `server_report_id`, `server_status`, `last_error`) with a safe upgrade for existing installs.
-- [ ] **Task 2: Data layer** (AC: #2-#5) — `FieldReport` model, `ReportStore` (SQLite implementation), `ReportRepository` (submit, syncPending, retry, refreshStatuses), UUID v4 helper.
-- [ ] **Task 3: Screens** (AC: #1, #6, #7) — real `report_screen.dart`, new `my_reports_screen.dart`, Profile entry and real sent count.
-- [ ] **Task 4: Auto sync** (AC: #5) — `MainShell` triggers `syncPending` on start and on resume.
-- [ ] **Task 5: Tests and build** — unit tests with an in-memory store and a mock HTTP client; widget test for the form; `flutter analyze`, `flutter test`, Android debug build.
+- [x] **Task 1: Local storage** (AC: #3, #4) — SQLite v3: add columns to `offline_reports` (`client_report_id`, `user_id`, `observed_at`, `accuracy_m`, `image_bytes`, `photo_id`, `server_report_id`, `server_status`, `last_error`) with a safe upgrade for existing installs.
+- [x] **Task 2: Data layer** (AC: #2-#5) — `FieldReport` model, `ReportStore` (SQLite implementation), `ReportRepository` (submit, syncPending, retry, refreshStatuses), UUID v4 helper.
+- [x] **Task 3: Screens** (AC: #1, #6, #7) — real `report_screen.dart`, new `my_reports_screen.dart`, Profile entry and real sent count.
+- [x] **Task 4: Auto sync** (AC: #5) — `MainShell` triggers `syncPending` on start and on resume.
+- [x] **Task 5: Tests and build** — unit tests with an in-memory store and a mock HTTP client; widget test for the form; `flutter analyze`, `flutter test`, Android debug build.
 
 ## Dev Notes
 
@@ -52,6 +52,20 @@ so that officers receive my evidence once I am online again, without duplicates.
 
 ### Agent Model Used
 
+Claude Sonnet 5.5 (claude-sonnet-5-5)
+
 ### Completion Notes List
 
+- Implemented as specified: photo (camera/gallery, shrunk) + explicit GPS + time seen + description; local-first SQLite queue; send = upload photo then post report with a client-generated UUID; retries reuse the id and the uploaded `photoId`; auto sync on app start/resume, after a report, and by pull-to-refresh / "Gửi lại"; "Báo cáo của tôi" list with local and server status; Profile shows the real sent count.
+- Offline logic is covered by 9 unit tests with an in-memory store and a fake server (offline then retry without duplicate, no second photo upload, 400 becomes failed and is not retried automatically, 5xx/401 stay pending, sync stops at the first network failure, only the signed-in user's reports are sent, status refresh) and 3 widget tests; `flutter analyze` clean, `flutter test` 50/50.
+- **Verified against the real backend** (Story 2.4 on the local stack): registered a throwaway user, ran `ReportRepository` over real HTTP: photo uploaded, report `sent` with a server id, the same `clientReportId` returned the same report (no duplicate), status refresh worked, and the photo URL served `image/png`. Test data removed afterwards.
+- Not verified on a phone: camera/gallery picking, the GPS permission flow, the date/time pickers, and a real airplane-mode round trip.
+
 ### File List
+
+- apps/mobile/lib/core/constants/app_constants.dart (SQLite v3), core/storage/local_storage.dart (offline_reports columns + safe upgrade)
+- apps/mobile/lib/features/report/data/field_report.dart, report_store.dart, report_repository.dart (new)
+- apps/mobile/lib/features/report/presentation/report_screen.dart (rewritten), my_reports_screen.dart (new)
+- apps/mobile/lib/features/profile/presentation/profile_screen.dart, features/home/presentation/main_shell.dart
+- apps/mobile/test/field_report_test.dart, report_screen_test.dart (new)
+- _bmad-output/implementation-artifacts/5-2-mobile-community-field-report-photo-gps.md, sprint-status.yaml
