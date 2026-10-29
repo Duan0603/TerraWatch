@@ -5,6 +5,9 @@ venv/
 .env
 .env.local
 .env.*.local
+# Firebase service account keys and other secrets (never commit)
+secrets/
+*service-account*.json
 __pycache__/
 *.pyc
 

@@ -48,6 +48,10 @@ services:
       REDIS_URL: redis://redis:6379
       AI_SERVICE_URL: http://ai-service:8001
       GIS_SERVICE_URL: http://gis-service:8002
+      # Firebase service account key for sending push (Story 5.1); the file is optional, without it pushes are not sent
+      FIREBASE_SERVICE_ACCOUNT_FILE: /secrets/firebase-service-account.json
+    volumes:
+      - ./secrets:/secrets:ro
     ports:
       - "3000:3000"
     depends_on:
