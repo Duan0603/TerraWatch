@@ -9,7 +9,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
 
-@RestControllerAdvice(assignableTypes = {AuthController.class, AlertSubscriptionController.class, ProfileAvatarController.class})
+@RestControllerAdvice(assignableTypes = {AuthController.class, AlertSubscriptionController.class, ProfileAvatarController.class, CommunityReportController.class})
 public class AuthExceptionHandler {
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Map<String, String>> authError(ResponseStatusException error) {

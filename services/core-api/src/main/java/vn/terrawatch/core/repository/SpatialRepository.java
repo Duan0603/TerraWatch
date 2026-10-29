@@ -154,15 +154,6 @@ public class SpatialRepository {
     }
 
     // Community Reports (core_schema)
-    public Map<String, Object> submitCommunityReport(UUID userId, double lon, double lat, String imageUrl, String description) {
-        String sql = """
-            INSERT INTO core_schema.community_reports (user_id, location, image_url, description, status)
-            VALUES (?, ST_SetSRID(ST_MakePoint(?, ?), 4326), ?, ?, 'submitted')
-            RETURNING report_id, user_id, report_time, image_url, description, status
-            """;
-        return jdbcTemplate.queryForMap(sql, userId, lon, lat, imageUrl, description);
-    }
-
     public List<Map<String, Object>> listCommunityReports() {
         String sql = """
             SELECT 
@@ -171,6 +162,7 @@ public class SpatialRepository {
                 r.image_url,
                 r.description,
                 r.status,
+                r.observed_at,
                 ST_X(r.location) AS longitude,
                 ST_Y(r.location) AS latitude,
                 u.full_name AS submitter_name

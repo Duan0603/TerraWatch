@@ -70,4 +70,17 @@ class ErrorStatusOverHttpTest {
         assertThat(send(HttpMethod.PUT, "/api/v1/auth/me/avatar", headers, Map.of("imageBase64", "")))
             .isEqualTo(HttpStatus.BAD_REQUEST);
     }
+
+    @Test
+    void fieldReportErrorsKeepTheirRealStatusInsteadOfBecoming401() {
+        HttpHeaders headers = registerAndAuthorize();
+        // unknown photo is public and must be 404, bad photo 400, an invalid report 400
+        assertThat(send(HttpMethod.GET, "/api/v1/community-reports/photos/" + UUID.randomUUID(), new HttpHeaders(), null))
+            .isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(send(HttpMethod.POST, "/api/v1/community-reports/photos", headers, Map.of("imageBase64", "aGVsbG8=")))
+            .isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(send(HttpMethod.POST, "/api/v1/community-reports", headers,
+            Map.of("clientReportId", UUID.randomUUID().toString(), "longitude", 104.1, "latitude", 95.0,
+                "description", "x", "observedAt", "2026-10-01T00:00:00Z"))).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
 }
