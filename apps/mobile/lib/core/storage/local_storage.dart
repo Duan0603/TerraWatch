@@ -62,9 +62,19 @@ class LocalStorage {
         image_path TEXT,
         description TEXT,
         created_at TEXT,
-        status TEXT DEFAULT 'pending'
+        status TEXT DEFAULT 'pending',
+        client_report_id TEXT,
+        user_id TEXT,
+        observed_at TEXT,
+        accuracy_m REAL,
+        image_bytes BLOB,
+        photo_id TEXT,
+        server_report_id INTEGER,
+        server_status TEXT,
+        last_error TEXT
       )
     ''');
+    await _addMissingReportColumns(db);
 
     // 3. Bảng lưu trữ lịch sử cảnh báo khẩn cấp đã nhận (Story 5.1)
     await db.execute('''
@@ -78,6 +88,28 @@ class LocalStorage {
         received_at TEXT
       )
     ''');
+  }
+
+  /// Máy đã cài bản cũ (offline_reports chỉ có 7 cột): thêm các cột còn thiếu, không mất dữ liệu cũ
+  static Future<void> _addMissingReportColumns(Database db) async {
+    const columns = {
+      'client_report_id': 'TEXT',
+      'user_id': 'TEXT',
+      'observed_at': 'TEXT',
+      'accuracy_m': 'REAL',
+      'image_bytes': 'BLOB',
+      'photo_id': 'TEXT',
+      'server_report_id': 'INTEGER',
+      'server_status': 'TEXT',
+      'last_error': 'TEXT',
+    };
+    final existing = (await db.rawQuery('PRAGMA table_info(offline_reports)')).map((r) => r['name']).toSet();
+    for (final entry in columns.entries) {
+      if (!existing.contains(entry.key)) {
+        await db.execute('ALTER TABLE offline_reports ADD COLUMN ${entry.key} ${entry.value}');
+      }
+    }
+    await db.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_report_client_id ON offline_reports (client_report_id)');
   }
 
   /// Thêm bản tin cảnh báo mới vào SQLite
