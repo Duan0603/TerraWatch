@@ -6,6 +6,8 @@ import '../features/alerts/data/alert_models.dart';
 
 /// Dịch vụ kích hoạt cảnh báo & thông báo khẩn cấp cục bộ trên máy (Story 5.1 & AC3)
 class NotificationService {
+  static const alarmChannelId = 'emergency_alarm';
+
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
@@ -25,6 +27,37 @@ class NotificationService {
         // Có thể mở màn hình chi tiết khi bấm vào thông báo
       },
     );
+    await _createAlarmChannel();
+  }
+
+  /// Tạo sẵn kênh còi hú: thông báo FCM khi app đóng chỉ phát đúng còi nếu kênh `emergency_alarm` đã tồn tại
+  static Future<void> _createAlarmChannel() async {
+    try {
+      await _notificationsPlugin
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(AndroidNotificationChannel(
+            alarmChannelId,
+            'Cảnh Báo Sạt Lở Khẩn Cấp',
+            description: 'Kênh phát cảnh báo nguy hiểm sạt lở đất',
+            importance: Importance.max,
+            playSound: true,
+            sound: const RawResourceAndroidNotificationSound('emergency_siren'),
+            audioAttributesUsage: AudioAttributesUsage.alarm,
+            enableVibration: true,
+            vibrationPattern: Int64List.fromList([0, 1000, 500, 1000, 500, 1500]),
+          ));
+    } catch (_) {}
+  }
+
+  /// Hệ thống có đang cho phép app hiện thông báo không (false thì sẽ không nghe còi); null nếu không xác định được
+  static Future<bool?> areEnabled() async {
+    try {
+      return await _notificationsPlugin
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          ?.areNotificationsEnabled();
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Android 13+ chặn thông báo cho tới khi người dùng cho phép; gọi trước khi cần phát còi.
@@ -46,7 +79,7 @@ class NotificationService {
       final vibrationPattern = Int64List.fromList([0, 1000, 500, 1000, 500, 1500]);
       // Kênh Android không đổi được âm sau khi tạo, nên đổi ID khi đổi âm (kênh cũ 'emergency_channel' chỉ có tiếng "ting")
       final androidDetails = AndroidNotificationDetails(
-        'emergency_alarm',
+        alarmChannelId,
         'Cảnh Báo Sạt Lở Khẩn Cấp',
         channelDescription: 'Kênh phát cảnh báo nguy hiểm sạt lở đất',
         importance: Importance.max,
@@ -71,6 +104,12 @@ class NotificationService {
     } catch (_) {
       // Tránh crash nếu chưa cấp quyền POST_NOTIFICATIONS trên Android 13+
     }
+  }
+
+  /// Mở màn hình đỏ cho một cảnh báo đã được hệ thống hiện sẵn (người dùng bấm thông báo FCM): chỉ lưu và mở, không phát còi lần nữa
+  static Future<void> openAlert(AlertModel alert) async {
+    await LocalStorage.insertAlert(alert.toMap());
+    _alertStreamController.add(alert);
   }
 
   /// Kích hoạt chuông còi báo động khẩn cấp, lưu vào SQLite và phát sự kiện mở màn hình đỏ

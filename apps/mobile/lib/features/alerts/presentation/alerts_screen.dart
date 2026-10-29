@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/storage/local_storage.dart';
 import '../../../services/notification_service.dart';
@@ -9,22 +10,29 @@ import 'emergency_alert_screen.dart';
 
 /// Màn hình quản lý đăng ký & lịch sử cảnh báo khẩn cấp (Story 5.1 - AC4)
 class AlertsScreen extends StatefulWidget {
-  const AlertsScreen({super.key});
+  final AlertsRepository? repository;
+  final Future<bool?> Function()? notificationsEnabled;
+  final DateTime Function()? clock;
+
+  const AlertsScreen({super.key, this.repository, this.notificationsEnabled, this.clock});
 
   @override
   State<AlertsScreen> createState() => _AlertsScreenState();
 }
 
 class _AlertsScreenState extends State<AlertsScreen> {
-  final _alertsRepo = AlertsRepository();
+  late final AlertsRepository _alertsRepo = widget.repository ?? AlertsRepository();
   List<AlertModel> _alertHistory = [];
   bool _isLoading = true;
+  bool _notificationsBlocked = false;
   String _currentSubscribedArea = 'Xã Bản Hồ, Sa Pa, Lào Cai';
 
   @override
   void initState() {
     super.initState();
     _loadAlertHistory();
+    _resyncThenReload();
+    _checkNotifications();
   }
 
   Future<void> _loadAlertHistory() async {
@@ -36,6 +44,25 @@ class _AlertsScreenState extends State<AlertsScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  /// Bù các cảnh báo lỡ push và cập nhật thu hồi/hết hạn từ máy chủ; không có mạng thì giữ lịch sử trên máy
+  Future<void> _resyncThenReload() async {
+    try {
+      await _alertsRepo.resync();
+    } catch (_) {}
+    if (mounted) await _loadAlertHistory();
+  }
+
+  Future<void> _checkNotifications() async {
+    final enabled = await (widget.notificationsEnabled ?? NotificationService.areEnabled)();
+    if (mounted) setState(() => _notificationsBlocked = enabled == false);
+  }
+
+  Future<void> _enableNotifications() async {
+    await NotificationService.requestPermission();
+    await _checkNotifications();
+    if (_notificationsBlocked) await Geolocator.openAppSettings(); // đã bị từ chối hẳn: chỉ bật được trong Cài đặt
   }
 
   Future<void> _openSubscription() async {
@@ -118,13 +145,37 @@ class _AlertsScreenState extends State<AlertsScreen> {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: _loadAlertHistory,
+        onRefresh: _resyncThenReload,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (_notificationsBlocked)
+                Card(
+                  color: AppColors.cardSurface,
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      const Row(children: [
+                        Icon(Icons.notifications_off_outlined, color: AppColors.warning),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text('Thông báo của TerraWatch đang bị tắt',
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ]),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Bạn sẽ không nghe còi và không thấy cảnh báo khi app đóng. Hãy bật thông báo cho TerraWatch.',
+                        style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                      ),
+                      const SizedBox(height: 8),
+                      OutlinedButton(onPressed: _enableNotifications, child: const Text('Bật thông báo')),
+                    ]),
+                  ),
+                ),
               // Banner Đăng Ký Vùng
               Card(
                 color: AppColors.cardSurface,
@@ -206,15 +257,15 @@ class _AlertsScreenState extends State<AlertsScreen> {
                   ),
                   child: const Column(
                     children: [
-                      Icon(Icons.check_circle_outline, color: AppColors.safe, size: 48),
+                      Icon(Icons.inbox_outlined, color: AppColors.textMuted, size: 48),
                       SizedBox(height: 12),
                       Text(
-                        'Chưa có cảnh báo nguy hiểm nào',
+                        'Chưa có cảnh báo nào',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       SizedBox(height: 4),
                       Text(
-                        'Tất cả các khu vực theo dõi đang trong ngưỡng an toàn.',
+                        'Chưa nhận bản tin nào. Việc chưa có cảnh báo không phải xác nhận an toàn.',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
                       ),
@@ -230,8 +281,13 @@ class _AlertsScreenState extends State<AlertsScreen> {
                   itemBuilder: (context, index) {
                     final item = _alertHistory[index];
                     final isExtreme = item.severity.toLowerCase() == 'extreme';
+                    final state = item.stateAt((widget.clock ?? DateTime.now)());
+                    final issued = formatAlertTime(item.issuedAt ?? item.receivedAt);
+                    final until = formatAlertTime(item.validUntil);
 
-                    return Card(
+                    return Opacity(
+                      opacity: state == AlertState.active ? 1 : 0.6,
+                      child: Card(
                       color: AppColors.cardSurface,
                       child: InkWell(
                         borderRadius: BorderRadius.circular(12),
@@ -266,11 +322,11 @@ class _AlertsScreenState extends State<AlertsScreen> {
                                       ),
                                     ),
                                   ),
+                                  const SizedBox(width: 8),
+                                  _StateChip(state),
                                   const Spacer(),
                                   Text(
-                                    item.receivedAt.length >= 16
-                                        ? item.receivedAt.substring(0, 16).replaceAll('T', ' ')
-                                        : item.receivedAt,
+                                    issued ?? '',
                                     style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
                                   ),
                                 ],
@@ -292,17 +348,52 @@ class _AlertsScreenState extends State<AlertsScreen> {
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
                               ),
+                              if (until != null) ...[
+                                const SizedBox(height: 6),
+                                Text('Hiệu lực đến $until',
+                                    style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                              ],
                             ],
                           ),
                         ),
                       ),
-                    );
+                    ));
                   },
                 ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+/// dd/MM HH:mm theo giờ địa phương; null nếu thiếu hoặc sai dạng
+String? formatAlertTime(String? iso) {
+  final t = iso == null ? null : DateTime.tryParse(iso)?.toLocal();
+  if (t == null) return null;
+  String two(int n) => n.toString().padLeft(2, '0');
+  return '${two(t.day)}/${two(t.month)} ${two(t.hour)}:${two(t.minute)}';
+}
+
+class _StateChip extends StatelessWidget {
+  final AlertState state;
+  const _StateChip(this.state);
+
+  @override
+  Widget build(BuildContext context) {
+    final (label, color) = switch (state) {
+      AlertState.active => ('Còn hiệu lực', AppColors.primary),
+      AlertState.expired => ('Đã hết hạn', AppColors.textMuted),
+      AlertState.revoked => ('Đã thu hồi', AppColors.warning),
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        border: Border.all(color: color),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(label, style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: color)),
     );
   }
 }

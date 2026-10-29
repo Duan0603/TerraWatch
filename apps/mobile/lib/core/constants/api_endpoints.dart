@@ -17,7 +17,9 @@ class ApiEndpoints {
 
   // Alerts & Notifications (Story 5.1 & FR4)
   static const String alertSubscriptions = '/api/v1/alerts/subscriptions';
+  static const String alertDevices = '/api/v1/alerts/devices';
   static const String deviceRegister = '/api/v1/alerts/devices/register';
+  static const String alertBroadcasts = '/api/v1/alerts/broadcasts';
   static const String notificationsBroadcast = '/api/v1/notifications/broadcast';
 
   // Community Reports (Story 5.2 - Crowdsourcing)

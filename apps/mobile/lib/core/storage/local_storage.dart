@@ -85,9 +85,13 @@ class LocalStorage {
         message TEXT,
         severity TEXT,
         area_name TEXT,
-        received_at TEXT
+        received_at TEXT,
+        issued_at TEXT,
+        valid_until TEXT,
+        status TEXT DEFAULT 'active'
       )
     ''');
+    await _upgradeAlertHistory(db);
 
     // 4. Bộ đệm vùng dự báo đã duyệt để kiểm tra vị trí ngoại tuyến (Story 5.3)
     // shortcut: chỉ mục B-tree trên khung bao đủ cho ~10.000 vùng; dùng R-Tree khi cần hàng trăm nghìn vùng
@@ -112,6 +116,21 @@ class LocalStorage {
     await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_zone_bbox ON forecast_zones (min_lat, max_lat, min_lon, max_lon)');
     await db.execute('CREATE TABLE IF NOT EXISTS cache_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
+  }
+
+  /// Máy đã cài bản cũ: thêm cột hiệu lực, gộp các bản tin trùng broadcast_id rồi chặn trùng về sau (Story 5.1)
+  static Future<void> _upgradeAlertHistory(Database db) async {
+    const columns = {'issued_at': 'TEXT', 'valid_until': 'TEXT', 'status': "TEXT DEFAULT 'active'"};
+    final existing = (await db.rawQuery('PRAGMA table_info(alert_history)')).map((r) => r['name']).toSet();
+    for (final entry in columns.entries) {
+      if (!existing.contains(entry.key)) {
+        await db.execute('ALTER TABLE alert_history ADD COLUMN ${entry.key} ${entry.value}');
+      }
+    }
+    await db.execute(
+        "DELETE FROM alert_history WHERE broadcast_id != '' AND id NOT IN (SELECT MAX(id) FROM alert_history WHERE broadcast_id != '' GROUP BY broadcast_id)");
+    await db.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_alert_broadcast ON alert_history (broadcast_id) WHERE broadcast_id != ''");
   }
 
   /// Cho phép bài kiểm thử tạo lược đồ trên CSDL riêng
@@ -139,10 +158,22 @@ class LocalStorage {
     await db.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_report_client_id ON offline_reports (client_report_id)');
   }
 
-  /// Thêm bản tin cảnh báo mới vào SQLite
+  /// Lưu bản tin cảnh báo: cùng broadcast_id thì cập nhật dòng cũ thay vì thêm dòng trùng,
+  /// và một bản tin đã bị thu hồi không bao giờ quay lại "còn hiệu lực" vì một tin đến muộn
   static Future<int> insertAlert(Map<String, dynamic> alert) async {
     try {
       final db = await database;
+      final broadcastId = alert['broadcast_id'];
+      if (broadcastId is String && broadcastId.isNotEmpty) {
+        final existing = await db.query('alert_history', where: 'broadcast_id = ?', whereArgs: [broadcastId]);
+        if (existing.isNotEmpty) {
+          final row = existing.first;
+          final values = Map<String, dynamic>.of(alert)..remove('id');
+          if (row['status'] == 'revoked') values['status'] = 'revoked';
+          await db.update('alert_history', values, where: 'id = ?', whereArgs: [row['id']]);
+          return row['id'] as int;
+        }
+      }
       return await db.insert('alert_history', alert);
     } catch (_) {
       return -1;

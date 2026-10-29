@@ -53,8 +53,8 @@ class ApiClient {
         () => _client.put(_buildUri(endpoint), headers: _buildHeaders(null), body: jsonEncode(body)),
       );
 
-  Future<Map<String, dynamic>> delete(String endpoint) => _run(
-        () => _client.delete(_buildUri(endpoint), headers: _buildHeaders(null)),
+  Future<Map<String, dynamic>> delete(String endpoint, {dynamic body}) => _run(
+        () => _client.delete(_buildUri(endpoint), headers: _buildHeaders(null), body: body != null ? jsonEncode(body) : null),
       );
 
   Future<Map<String, dynamic>> _run(Future<http.Response> Function() call) async {

@@ -1,6 +1,5 @@
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/network/api_client.dart';
-import '../../../core/storage/session.dart';
 import '../../../core/storage/local_storage.dart';
 import 'alert_models.dart';
 
@@ -28,21 +27,33 @@ class AlertsRepository {
     await _apiClient.delete('${ApiEndpoints.alertSubscriptions}/$subscriptionId');
   }
 
-  /// AC2: Đăng ký FCM Device Token (POST /api/v1/alerts/devices/register)
-  Future<bool> registerDeviceToken(String fcmToken, {String? userId}) async {
+  /// Đăng ký FCM token của máy cho tài khoản đang đăng nhập (POST /api/v1/alerts/devices/register); trả về thành công hay không
+  Future<bool> registerDeviceToken(String fcmToken) async {
     try {
-      await _apiClient.post(
-        '/api/v1/alerts/devices/register',
-        body: {
-          'userId': userId ?? Session.user.value?.userId ?? 'citizen_anonymous',
-          'fcmToken': fcmToken,
-          'deviceType': 'ANDROID',
-        },
-      );
+      await _apiClient.post(ApiEndpoints.deviceRegister, body: {'fcmToken': fcmToken, 'deviceType': 'android'});
       return true;
     } catch (_) {
       return false;
     }
+  }
+
+  /// Gỡ FCM token khỏi tài khoản (đăng xuất); phải gọi khi còn phiên đăng nhập
+  Future<void> unregisterDeviceToken(String fcmToken) async {
+    try {
+      await _apiClient.delete(ApiEndpoints.alertDevices, body: {'fcmToken': fcmToken});
+    } catch (_) {}
+  }
+
+  /// Đồng bộ lại từ máy chủ: bản tin lỡ push xuất hiện, bản tin bị thu hồi chuyển trạng thái, bản tin trùng được gộp.
+  /// Lỗi mạng được ném ra để người gọi quyết định có báo hay không. Trả về số bản tin đã nhận từ máy chủ.
+  Future<int> resync() async {
+    final response = await _apiClient.get(ApiEndpoints.alertBroadcasts);
+    final data = response['data'];
+    if (data is! List) return 0;
+    for (final item in data) {
+      await saveAlert(AlertModel.fromBroadcastJson(item as Map<String, dynamic>));
+    }
+    return data.length;
   }
 
   /// Lấy danh sách vùng giám sát trọng điểm (AOI) để người dân lựa chọn

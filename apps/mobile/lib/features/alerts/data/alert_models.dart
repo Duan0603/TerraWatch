@@ -37,6 +37,11 @@ class AlertModel {
   final String areaName;
   final String receivedAt;
 
+  /// Giờ phát lệnh và hạn hiệu lực (ISO-8601 UTC, có thể rỗng với bản tin cũ); [status] là active hoặc revoked
+  final String? issuedAt;
+  final String? validUntil;
+  final String status;
+
   AlertModel({
     this.id,
     required this.broadcastId,
@@ -45,7 +50,18 @@ class AlertModel {
     required this.severity,
     required this.areaName,
     required this.receivedAt,
+    this.issuedAt,
+    this.validUntil,
+    this.status = 'active',
   });
+
+  /// Trạng thái hiển thị: thu hồi thắng hết hạn; hết hạn khi đúng giờ validUntil trở đi
+  AlertState stateAt(DateTime now) {
+    if (status == 'revoked') return AlertState.revoked;
+    final until = validUntil == null ? null : DateTime.tryParse(validUntil!);
+    if (until != null && !now.isBefore(until)) return AlertState.expired;
+    return AlertState.active;
+  }
 
   Map<String, dynamic> toMap() => {
         if (id != null) 'id': id,
@@ -55,6 +71,9 @@ class AlertModel {
         'severity': severity,
         'area_name': areaName,
         'received_at': receivedAt,
+        'issued_at': issuedAt,
+        'valid_until': validUntil,
+        'status': status,
       };
 
   factory AlertModel.fromMap(Map<String, dynamic> map) => AlertModel(
@@ -65,6 +84,9 @@ class AlertModel {
         severity: map['severity'] ?? 'high',
         areaName: map['area_name'] ?? '',
         receivedAt: map['received_at'] ?? '',
+        issuedAt: map['issued_at'] as String?,
+        validUntil: map['valid_until'] as String?,
+        status: (map['status'] as String?) ?? 'active',
       );
 
   factory AlertModel.fromFcmPayload(Map<String, dynamic> data) => AlertModel(
@@ -74,8 +96,25 @@ class AlertModel {
         severity: data['severity'] ?? 'extreme',
         areaName: data['areaName'] ?? 'Khu vực trọng điểm',
         receivedAt: DateTime.now().toIso8601String(),
+        issuedAt: data['issuedAt'],
+        validUntil: data['validUntil'],
+      );
+
+  /// Một phần tử của `GET /api/v1/alerts/broadcasts` (đồng bộ lại)
+  factory AlertModel.fromBroadcastJson(Map<String, dynamic> json) => AlertModel(
+        broadcastId: json['broadcastId'] as String,
+        title: (json['title'] as String?) ?? '',
+        message: (json['message'] as String?) ?? '',
+        severity: (json['severity'] as String?) ?? 'high',
+        areaName: (json['areaName'] as String?) ?? 'Khu vực trọng điểm',
+        receivedAt: (json['issuedAt'] as String?) ?? DateTime.now().toIso8601String(),
+        issuedAt: json['issuedAt'] as String?,
+        validUntil: json['validUntil'] as String?,
+        status: (json['status'] as String?) ?? 'active',
       );
 }
+
+enum AlertState { active, expired, revoked }
 
 /// Vùng người dùng đã đăng ký nhận cảnh báo (GET /api/v1/alerts/subscriptions)
 class SubscribedArea {
