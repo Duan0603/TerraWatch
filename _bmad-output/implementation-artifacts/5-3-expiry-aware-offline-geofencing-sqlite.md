@@ -97,3 +97,11 @@ Accepted / deferred (not bugs for this story):
 - If the notification permission is denied the in-app card still shows the warning but no system alarm rings.
 
 Open: Task 7 phone run. Status stays `review` until the phone check is done.
+
+### Post-merge fix: the alarm had no siren (2026-10-30, branch `feature/mobile-emergency-siren`)
+
+Phone test (Xiaomi): the zone warning appeared and the first report was "no siren". The notification had been posted on `emergency_channel` (importance 5, vibration) but its sound was only the system default notification tone (`content://settings/system/notification_sound`), and `assets/sounds` holds no siren file. A siren was added, **but it was not the reason for the first silence**: the tester had not enabled notifications for the app on the phone. After enabling them the siren was heard. So two things were true: (1) app notifications must be allowed in Android settings (Android 13+ also asks at runtime; MIUI can block them separately), and (2) the old channel only had a "ting".
+- Added `android/app/src/main/res/raw/emergency_siren.wav` (8 s, 700-1300 Hz sweep, generated, no third-party audio) and `keep.xml` so release shrinking does not drop it.
+- `showEmergencyAlert` now uses a new channel `emergency_alarm` (an Android channel's sound cannot be changed after creation) with that sound, `AudioAttributesUsage.alarm` (alarm stream) and `AndroidNotificationCategory.alarm`. The same path serves the Story 5.1 emergency broadcast.
+- **Verified on a phone:** siren audible once notifications were enabled. Not compared against the old "ting" channel on the same device.
+- Limits: the alarm stream volume is separate from media/ringer volume and may be low; Do-Not-Disturb can still mute it; the sound plays once for 8 s (not looping); `FSI_REQUESTED_BUT_DENIED` on Android 14 only affects a full-screen pop-up, not the sound. The app does not yet tell the citizen when notifications are blocked (possible follow-up).
