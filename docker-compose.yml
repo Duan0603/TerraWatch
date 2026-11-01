@@ -45,7 +45,8 @@ services:
       DATABASE_URL: jdbc:postgresql://postgres:5432/terrawatch
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgrespassword
-      REDIS_URL: redis://redis:6379
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       AI_SERVICE_URL: http://ai-service:8001
       GIS_SERVICE_URL: http://gis-service:8002
     ports:
