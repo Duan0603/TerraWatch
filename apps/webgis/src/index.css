@@ -695,6 +695,43 @@ body {
   background: #FFFFFF !important;
 }
 
+/* ── RESPONSIVE GRID HELPERS ── */
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.broadcast-scope-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.broadcast-channels-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 18px;
+}
+
+/* ── LOGIN PAGE BODY OVERRIDE ── */
+body.page-login {
+  overflow: auto;
+  height: auto;
+  min-height: 100vh;
+}
+
 /* ── MOBILE TAB BAR ── */
 .mobile-tab-bar {
   display: none;
@@ -791,6 +828,26 @@ body {
 
   /* Sidebar overview grid 2-col → 4-col on mobile for space */
   .sidebar-overview { grid-template-columns: repeat(4, 1fr); }
+
+  /* Form grids: stack to 1 column on mobile */
+  .form-grid-2,
+  .broadcast-channels-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid-3,
+  .broadcast-scope-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Remove left border separator when channels grid stacks */
+  .broadcast-channels-grid > div + div {
+    border-left: none !important;
+    padding-left: 0 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 12px;
+    margin-top: 4px;
+  }
 }
 
 

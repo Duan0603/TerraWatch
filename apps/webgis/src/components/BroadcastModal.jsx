@@ -237,7 +237,7 @@ export default function BroadcastModal({
                 <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 }}>
                   <Radio size={14} color="#38bdf8" /> 1. PHẠM VI PHÁT CẢNH BÁO (GEOFENCING & AOI):
                 </label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                <div className="broadcast-scope-grid">
                   {[
                     { id: 'buffer_500m', title: 'Vòng đệm 500m', desc: 'Bán kính khẩn cấp ta-luy' },
                     { id: 'buffer_1000m', title: 'Vòng đệm 1.000m', desc: 'Khu dân cư xung quanh' },
@@ -272,16 +272,7 @@ export default function BroadcastModal({
               </div>
 
               {/* 2. Chọn Kênh Phát Tin & Xem Trước Người Nhận */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: 16,
-                background: 'rgba(0, 0, 0, 0.35)',
-                border: '1px solid rgba(255, 255, 255, 0.06)',
-                borderRadius: 10,
-                padding: 14,
-                marginBottom: 18
-              }}>
+              <div className="broadcast-channels-grid">
                 {/* Checkbox Kênh truyền */}
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 8 }}>
