@@ -85,7 +85,7 @@ export default function Navbar({
           title="Xem nhật ký phát lệnh cảnh báo SMS / FCM"
         >
           <History size={14} />
-          Lịch sử lệnh
+          <span className="btn-label">Lịch sử lệnh</span>
         </button>
 
         {/* Phát cảnh báo — Admin only */}
@@ -102,7 +102,7 @@ export default function Navbar({
           title={isAdmin ? 'Phát cảnh báo (SMS / App Push)' : 'Cần quyền Admin'}
         >
           <BellRing size={14} />
-          Phát cảnh báo
+          <span className="btn-label">Phát cảnh báo</span>
         </button>
 
         {/* Xuất báo cáo */}
@@ -112,7 +112,7 @@ export default function Navbar({
           title="Xuất báo cáo"
         >
           <FileText size={14} />
-          Xuất báo cáo
+          <span className="btn-label">Xuất báo cáo</span>
         </button>
 
         {/* Notification bell */}
