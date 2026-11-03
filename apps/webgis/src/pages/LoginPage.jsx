@@ -58,6 +58,11 @@ export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    document.body.classList.add('page-login');
+    return () => document.body.classList.remove('page-login');
+  }, []);
+
   // Đếm ngược 60s gửi lại mã OTP
   useEffect(() => {
     let timer;
@@ -397,7 +402,7 @@ export default function LoginPage() {
           <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 8, textAlign: 'center' }}>
             Nút chọn nhanh tài khoản diễn tập:
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+          <div className="form-grid-3">
             <button
               type="button"
               onClick={() => handleQuickLogin('citizen')}
@@ -946,7 +951,7 @@ export default function LoginPage() {
                 </div>
 
                 {/* Email & Phone */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+                <div className="form-grid-2" style={{ marginBottom: 12 }}>
                   <div>
                     <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
                       Email <span style={{ color: '#f87171' }}>*</span>
@@ -1060,7 +1065,7 @@ export default function LoginPage() {
                 )}
 
                 {/* Password & Confirm Password */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 18 }}>
+                <div className="form-grid-2" style={{ marginBottom: 18 }}>
                   <div>
                     <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
                       Mật khẩu <span style={{ color: '#f87171' }}>*</span>
