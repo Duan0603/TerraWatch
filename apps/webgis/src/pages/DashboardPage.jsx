@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { List, Map } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import VerificationQueue from '../components/VerificationQueue';
 import DetailPanel from '../components/DetailPanel';
@@ -17,6 +18,7 @@ export default function DashboardPage() {
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [alertPromptEvent, setAlertPromptEvent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [mobileTab, setMobileTab] = useState('map');
 
   // Story 4.4: Emergency Alert Broadcast States
   const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);
@@ -107,21 +109,39 @@ export default function DashboardPage() {
 
       {/* 2. Main Operational Layout */}
       <div className="main-layout">
-        {/* Left Sidebar: Verification Queue */}
         <VerificationQueue
           events={events}
           selectedEventId={selectedEventId}
-          onSelectEvent={setSelectedEventId}
+          onSelectEvent={(id) => { setSelectedEventId(id); setMobileTab('map'); }}
           onVerifyEvent={handleVerify}
           onResetData={handleResetData}
+          className={mobileTab === 'map' ? 'mobile-hidden' : ''}
         />
 
-        {/* Right Canvas: Detail & Map Inspector */}
         <DetailPanel
           selectedEvent={selectedEvent}
           events={events}
           onSelectEvent={setSelectedEventId}
+          className={mobileTab === 'list' ? 'mobile-hidden' : ''}
         />
+      </div>
+
+      {/* Mobile Bottom Tab Bar */}
+      <div className="mobile-tab-bar">
+        <button
+          className={`mobile-tab-btn${mobileTab === 'list' ? ' active' : ''}`}
+          onClick={() => setMobileTab('list')}
+        >
+          <List size={20} />
+          Danh sách
+        </button>
+        <button
+          className={`mobile-tab-btn${mobileTab === 'map' ? ' active' : ''}`}
+          onClick={() => setMobileTab('map')}
+        >
+          <Map size={20} />
+          Bản đồ
+        </button>
       </div>
 
       {/* 3. Post-Approval Emergency Alert Prompt (Story 4.2 -> Story 4.4 Bridge) */}

@@ -3,11 +3,11 @@ import { Mountain, MapPin, Satellite, ShieldAlert } from 'lucide-react';
 import MapViewer from './MapViewer';
 import RainfallEvidencePanel from './RainfallEvidencePanel';
 
-export default function DetailPanel({ selectedEvent, events, onSelectEvent }) {
+export default function DetailPanel({ selectedEvent, events, onSelectEvent, className = '' }) {
   if (!selectedEvent) return null;
 
   return (
-    <main className="map-canvas-area" style={{ position: 'relative', flex: 1, height: '100%', overflow: 'hidden', background: '#E8F2EF' }}>
+    <main className={`map-canvas-area${className ? ' ' + className : ''}`} style={{ position: 'relative', flex: 1, height: '100%', overflow: 'hidden', background: '#E8F2EF' }}>
       {/* HUD Top-Left Overlay */}
       <div className="map-hud-overlay">
         <div>
