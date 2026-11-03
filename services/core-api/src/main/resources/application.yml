@@ -80,3 +80,12 @@ logging:
     root: INFO
     vn.terrawatch: DEBUG
     org.springframework.security: WARN
+
+
+# Story 4.1: Forecast job orchestration
+forecast:
+  recovery:
+    poll-interval-ms: ${FORECAST_RECOVERY_POLL_MS:60000}
+    stuck-timeout-minutes: ${FORECAST_STUCK_TIMEOUT_MIN:5}
+  job:
+    max-retries: ${FORECAST_MAX_RETRIES:3}
