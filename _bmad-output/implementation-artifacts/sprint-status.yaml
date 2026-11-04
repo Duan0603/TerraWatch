@@ -1,5 +1,5 @@
 # generated: 2026-10-02
-# last_updated: 2026-11-01
+# last_updated: 2026-11-04
 # project: SECapstone
 # project_key: TERRA
 # tracking_system: file-system
@@ -32,11 +32,12 @@ development_status:
   3-4-hazard-levels-explanations-and-quality-policy: backlog
   epic-3-retrospective: optional
 
-  epic-4: in-progress
+  epic-4: done
   4-1-persisted-forecast-jobs-redis-events-resilience: done
   4-2-webgis-forecast-review-queue: done
   4-3-rainfall-terrain-24h-hazard-dashboard: done
   4-4-admin-emergency-alert-broadcast-sms-app-push-notification: done
+  4-4-backend-admin-broadcast-persistence-delivery: done
   epic-4-retrospective: optional
 
   epic-5: backlog

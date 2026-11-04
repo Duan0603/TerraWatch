@@ -102,11 +102,11 @@ public class ForecastController {
         if (run == null) return ResponseEntity.notFound().build();
 
         // Persist review record
-        reviewRepo.save(new ForecastReview(id, reviewerId, req.decision(), req.reasonNotes()));
+        reviewRepo.saveAndFlush(new ForecastReview(id, reviewerId, req.decision(), req.reasonNotes()));
 
         // Update run status
         run.setReviewStatus(req.decision());
-        runRepo.save(run);
+        runRepo.saveAndFlush(run);
 
         // Notify after persist
         try {
