@@ -64,6 +64,7 @@ public class SecurityConfig {
                 // routes stay permitAll below to avoid regressing Stories 4.2/4.3/4.4 (see story
                 // 1.1's Dev Notes -> Architecture Compliance for why the blanket rule is untouched).
                 .requestMatchers(HttpMethod.POST, "/api/v1/notifications/broadcast").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/v1/notifications/broadcast/*/revoke").hasRole("ADMIN")
                 .requestMatchers("/api/v1/**").permitAll()
                 .anyRequest().authenticated()
             );

@@ -2,6 +2,8 @@ package vn.terrawatch.core.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -30,6 +32,7 @@ class ForecastJobApiTest {
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
     @Autowired JdbcTemplate jdbc;
+    @PersistenceContext EntityManager entityManager;
 
     /** Register a user and return JWT token. */
     private String citizenToken() throws Exception {
@@ -46,7 +49,8 @@ class ForecastJobApiTest {
             .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
         String token = json.readTree(body).get("token").asText();
         // Promote to officer
-        jdbc.update("UPDATE core_schema.users SET role = 'officer' WHERE email = 'officer@api-test.example'");
+        jdbc.update("UPDATE core_schema.users SET role = CAST('officer' AS core_schema.user_role) WHERE email = 'officer@api-test.example'");
+        entityManager.clear();
         // Re-login to get token with officer role
         body = mvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON)
                 .content(json.writeValueAsString(Map.of("email", "officer@api-test.example", "password", "secret123"))))
@@ -70,7 +74,7 @@ class ForecastJobApiTest {
             VALUES (?, ?, now(), now() - interval '1 hour', now() + interval '23 hours',
                 ?, 0.75, 'high', 'test-model', 'test-th',
                 CAST(? AS core_schema.forecast_review_status), ?,
-                CAST(? AS core_schema.forecast_job_status), ?)
+                ?, ?)
             """, id, unitId, availability, reviewStatus, active, jobStatus.toLowerCase(), "key-" + id);
         return id;
     }

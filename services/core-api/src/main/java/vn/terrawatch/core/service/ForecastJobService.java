@@ -47,9 +47,10 @@ public class ForecastJobService {
         run.setSnapshotId(snapshotId);
         run.setModelVersion(modelVersion);
         run.setThresholdVersion(thresholdVersion);
-        run.setIssuedAt(OffsetDateTime.now());
-        run.setValidFrom(OffsetDateTime.now());
-        run.setValidUntil(OffsetDateTime.now().plusHours(24));
+        OffsetDateTime now = OffsetDateTime.now().truncatedTo(java.time.temporal.ChronoUnit.HOURS);
+        run.setIssuedAt(now);
+        run.setValidFrom(now);
+        run.setValidUntil(now.plusHours(24));
         run.generateIdempotencyKey();
 
         // Idempotency check
@@ -60,7 +61,7 @@ public class ForecastJobService {
         }
 
         run.setJobStatus(JobStatus.PENDING);
-        ForecastRun saved = repo.save(run);
+        ForecastRun saved = repo.saveAndFlush(run);
         log.info("Created forecast job {} for unit {} (PENDING)", saved.getRunId(), unitId);
 
         // Optional Redis wakeup — non-fatal
