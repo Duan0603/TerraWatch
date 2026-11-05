@@ -34,3 +34,44 @@
 .live-rain-panel footer { display: flex; align-items: center; gap: 12px; justify-content: space-between; margin-top: 12px; font-size: 9px; line-height: 1.8; color: #435c55; border-top: 1px solid var(--border); padding-top: 10px; }
 .live-rain-panel a { display: inline-block; margin-top: 10px; font-size: 10px; color: var(--primary-dark); text-underline-offset: 3px; }
 @media (max-width: 600px) { .live-rain-panel { bottom: 12px; right: 12px; width: calc(100% - 24px); max-height: 60%; } }
+
+/* ── Inject Tool ──────────────────────────────────────────────────────── */
+.inj-wrap { margin-top: 14px; border-top: 1px dashed var(--border); padding-top: 12px; }
+.inj-toggle { width: 100% !important; justify-content: flex-start !important; gap: 6px !important; font-size: 12px !important; font-weight: 700 !important; color: #7c3aed !important; border-color: #c4b5fd !important; background: #f5f3ff !important; padding: 7px 10px !important; border-radius: 8px !important; }
+.inj-toggle:hover { background: #ede9fe !important; }
+.inj-toggle span { flex: 1; text-align: left; }
+.inj-body { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+.inj-desc { font-size: 11px; line-height: 1.7; color: #6b7280; }
+.inj-scenarios { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.inj-scen-btn { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 8px 10px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--surface-2); cursor: pointer; font: inherit; transition: border-color .12s, background .12s; }
+.inj-scen-btn:hover { border-color: var(--scen-color, #6b7280); }
+.inj-scen-btn.active { border-color: var(--scen-color, #6b7280); background: color-mix(in srgb, var(--scen-color, #6b7280) 8%, var(--surface)); }
+.inj-scen-name { font-size: 12px; font-weight: 700; color: var(--scen-color, var(--text-1)); }
+.inj-scen-mm { font-size: 10px; font-weight: 600; color: var(--text-2); }
+.inj-scen-desc { font-size: 9px; color: var(--text-3, #9ca3af); line-height: 1.4; }
+.inj-terrain-note { font-size: 10px; color: #6b7280; background: var(--surface-2); border-radius: 6px; padding: 7px 9px; line-height: 1.6; }
+.inj-fire-btn { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 16px; border-radius: 8px; border: none; background: #7c3aed; color: white; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; transition: background .12s; }
+.inj-fire-btn:hover:not(:disabled) { background: #6d28d9; }
+.inj-fire-btn:disabled { opacity: .55; cursor: not-allowed; }
+.inj-spin { display: inline-block; width: 12px; height: 12px; border: 2px solid rgba(255,255,255,.4); border-top-color: white; border-radius: 50%; animation: inj-spin .7s linear infinite; }
+@keyframes inj-spin { to { transform: rotate(360deg); } }
+.inj-error { font-size: 11px; color: #b91c1c; background: #fef2f2; border-radius: 6px; padding: 7px 9px; }
+.inj-result { border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 7px; border: 1.5px solid; }
+.inj-result-safe, .inj-result-low { background: #f0fdf4; border-color: #bbf7d0; }
+.inj-result-medium { background: #fefce8; border-color: #fef08a; }
+.inj-result-high { background: #fff7ed; border-color: #fed7aa; }
+.inj-result-extreme { background: #fff1f2; border-color: #fecdd3; }
+.inj-result-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.inj-result-score { font-size: 12px; font-weight: 600; color: var(--text-1); }
+.inj-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.inj-badge-safe, .inj-badge-low { background: #dcfce7; color: #15803d; }
+.inj-badge-medium { background: #fef9c3; color: #854d0e; }
+.inj-badge-high { background: #fed7aa; color: #9a3412; }
+.inj-badge-extreme { background: #fecdd3; color: #9f1239; }
+.inj-result-row { display: flex; align-items: center; gap: 6px; font-size: 14px; font-variant-numeric: tabular-nums; }
+.inj-result-row small { display: block; font-size: 9px; color: #6b7280; margin-top: 2px; }
+.inj-result-row b { font-size: 11px; color: #6b7280; }
+.inj-result-rain { font-size: 11px; color: #374151; line-height: 1.6; }
+.inj-queue-ok { font-size: 11px; color: #166534; background: #dcfce7; border-radius: 6px; padding: 7px 10px; line-height: 1.6; font-weight: 600; }
+.inj-queue-hint { font-weight: 400; color: #15803d; }
+.inj-queue-skip { font-size: 11px; color: #6b7280; font-style: italic; }

@@ -1,0 +1,129 @@
+/* ── Auto Simulator Page ───────────────────────────────────────────── */
+.asim-page { min-height: 100dvh; display: flex; flex-direction: column; background: var(--bg); color: var(--text-1); font-family: inherit; }
+.asim-page button { font: inherit; cursor: pointer; }
+.asim-page :focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+
+/* Header */
+.asim-header { padding: 14px 24px; display: flex; align-items: center; gap: 16px; background: var(--surface); border-bottom: 1px solid var(--border); min-height: 68px; }
+.asim-back { display: inline-flex; align-items: center; gap: 7px; text-decoration: none; color: var(--primary-dark); font-weight: 700; font-size: 13px; white-space: nowrap; }
+.asim-title h1 { font-size: 18px; font-weight: 700; }
+.asim-title span { font-size: 11px; color: var(--text-2); }
+.asim-status-pill { margin-left: auto; display: flex; align-items: center; gap: 7px; padding: 6px 14px; border-radius: 20px; background: var(--surface-2); border: 1px solid var(--border); font-size: 12px; font-weight: 600; white-space: nowrap; color: var(--text-2); }
+.asim-status-pill.running { background: #fff0f0; border-color: #fecaca; color: #dc2626; }
+.asim-status-pill.done { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+.asim-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.asim-status-pill.running .asim-dot { animation: asim-pulse 1.2s ease-in-out infinite; }
+@keyframes asim-pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* Controls */
+.asim-controls { padding: 12px 24px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.asim-ctrl-label { font-size: 12px; font-weight: 600; color: var(--text-2); white-space: nowrap; }
+.asim-speed-row { display: flex; align-items: center; gap: 8px; }
+.asim-speed-btn { padding: 5px 12px; border-radius: 6px; border: 1.5px solid var(--border); background: var(--surface); color: var(--text-1); font-size: 12px; font-weight: 500; transition: border-color .12s, background .12s; }
+.asim-speed-btn:hover:not(:disabled) { border-color: var(--primary); background: var(--primary-light); }
+.asim-speed-btn.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary-dark); font-weight: 700; }
+.asim-speed-btn:disabled { opacity: .45; cursor: not-allowed; }
+.asim-ctrl-btns { display: flex; align-items: center; gap: 8px; }
+.asim-btn-start { display: flex; align-items: center; gap: 8px; padding: 9px 20px; border-radius: 8px; border: none; background: var(--primary); color: white; font-size: 13px; font-weight: 700; transition: background .12s, transform .1s; }
+.asim-btn-start:hover { background: var(--primary-dark); transform: translateY(-1px); }
+.asim-btn-stop { display: flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 8px; border: none; background: #dc2626; color: white; font-size: 13px; font-weight: 700; }
+.asim-btn-stop:hover { background: #b91c1c; }
+.asim-btn-reset { display: flex; align-items: center; gap: 6px; padding: 9px 14px; border-radius: 8px; border: 1.5px solid var(--border); background: transparent; color: var(--text-2); font-size: 13px; }
+.asim-btn-reset:hover { border-color: var(--primary); color: var(--primary); }
+.asim-btn-map { display: flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 8px; border: none; background: #16a34a; color: white; font-size: 13px; font-weight: 700; transition: background .12s, transform .1s; }
+.asim-btn-map:hover { background: #15803d; transform: translateY(-1px); }
+.asim-progress-track { flex: 1; min-width: 120px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.asim-progress-bar { height: 100%; background: var(--primary); border-radius: 3px; transition: width .3s ease; }
+
+/* Layout */
+.asim-layout { display: grid; grid-template-columns: 1fr 320px; flex: 1; min-height: 0; }
+
+/* Feed (left) */
+.asim-feed { padding: 20px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.asim-feed-header { display: flex; align-items: center; justify-content: space-between; }
+.asim-section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-2); margin-bottom: 10px; }
+.asim-done-count { font-size: 12px; color: var(--text-2); }
+.asim-table-wrap { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--border); }
+.asim-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.asim-table thead tr { background: var(--surface-2); }
+.asim-table th { padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-2); border-bottom: 1px solid var(--border); white-space: nowrap; }
+.asim-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.asim-table tbody tr:last-child td { border-bottom: none; }
+.asim-table tbody tr { background: var(--surface); transition: background .15s; }
+.asim-table tbody tr:nth-child(even) { background: var(--surface-2); }
+.asim-row-active { background: var(--primary-light) !important; }
+.asim-row-done { }
+.asim-row-error td { color: var(--text-3); }
+.asim-idx { color: var(--text-3); font-size: 11px; width: 24px; }
+.asim-col-scenario, .asim-col-terrain { display: flex; align-items: center; gap: 8px; }
+.asim-icon { font-size: 18px; flex-shrink: 0; }
+.asim-scen-label { font-size: 13px; font-weight: 600; }
+.asim-scen-desc { font-size: 10px; color: var(--text-2); }
+.asim-terrain-loc { font-size: 10px; color: var(--text-2); }
+.as-score-cell { display: flex; align-items: center; gap: 7px; }
+.as-mini-bar-wrap { width: 60px; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+.as-mini-bar { height: 100%; border-radius: 3px; transition: width .4s ease; }
+.as-score-cell span { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.asim-hazard-score { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.asim-dash { color: var(--text-3); }
+.asim-pulse { color: var(--primary); font-weight: 700; animation: asim-pulse 0.9s ease-in-out infinite; }
+.asim-analyzing { display: flex; align-items: center; gap: 5px; color: var(--primary); font-size: 12px; font-weight: 600; }
+.asim-err-badge { font-size: 11px; color: var(--risk-extreme); background: var(--risk-extreme-bg); padding: 2px 8px; border-radius: 4px; }
+
+/* Alert badges */
+.asim-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.as-badge-safe    { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+.as-badge-low     { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+.as-badge-medium  { background: #fefce8; border: 1px solid #fef08a; color: #854d0e; }
+.as-badge-high    { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; }
+.as-badge-extreme { background: #fff1f2; border: 1px solid #fecdd3; color: #9f1239; }
+.as-badge-pending { background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2); }
+
+/* Summary (right) */
+.asim-summary { background: var(--surface); border-left: 1px solid var(--border); padding: 20px 18px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+.asim-summary-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 40px 20px; color: var(--text-2); text-align: center; font-size: 13px; line-height: 1.6; }
+.asim-summary-placeholder svg { opacity: .3; }
+
+/* Count grid */
+.asim-count-grid { display: flex; flex-direction: column; gap: 8px; }
+.asim-count-box { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--radius-md); }
+.asim-count-num { font-size: 24px; font-weight: 800; min-width: 32px; }
+.asim-count-label { font-size: 12px; font-weight: 600; }
+
+/* Danger list */
+.asim-danger-section { background: var(--surface-2); border-radius: var(--radius-md); padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.asim-danger-title { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; color: var(--text-2); padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.asim-danger-item { padding: 8px 10px; border-radius: 6px; }
+.asim-danger-item.as-high    { background: #fff7ed; border-left: 3px solid #f97316; }
+.asim-danger-item.as-extreme { background: #fff1f2; border-left: 3px solid #ef4444; animation: asim-shake-in .3s ease; }
+@keyframes asim-shake-in { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-2px)} 75%{transform:translateX(2px)} }
+.asim-danger-loc { font-size: 12px; margin-bottom: 4px; }
+.asim-danger-score { display: flex; align-items: center; justify-content: space-between; }
+.asim-danger-score span:first-child { font-size: 15px; font-weight: 800; }
+
+/* Notification flow */
+.asim-notif-section { display: flex; flex-direction: column; gap: 10px; }
+.asim-notif-header-row { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--text-1); padding: 8px 0 4px; border-top: 1px solid var(--border); }
+.asim-notif-card { border-radius: var(--radius-md); padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.asim-notif-card.as-medium  { background: #fefce8; border: 1.5px solid #fef08a; }
+.asim-notif-card.as-high    { background: #fff7ed; border: 1.5px solid #fed7aa; }
+.asim-notif-card.as-extreme { background: #fff1f2; border: 2px solid #fecdd3; }
+.asim-notif-top { display: flex; align-items: center; justify-content: space-between; }
+.asim-notif-title-row { font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 5px; }
+.asim-notif-time { font-size: 11px; color: var(--text-2); }
+.asim-notif-body { font-size: 12px; line-height: 1.8; }
+.asim-notif-action { font-size: 12px; font-weight: 700; padding-top: 6px; border-top: 1px solid rgba(0,0,0,.08); }
+.asim-notif-more { font-size: 12px; color: var(--text-2); text-align: center; padding: 6px; border: 1px dashed var(--border); border-radius: 6px; }
+.asim-flag { font-size: 10px; background: #fef9c3; color: #854d0e; padding: 1px 5px; border-radius: 3px; margin-left: 4px; }
+
+/* All-safe */
+.asim-all-safe { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 24px 16px; background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: var(--radius-md); text-align: center; color: #166534; }
+.asim-all-safe p { font-size: 12px; opacity: .8; margin-top: 4px; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .asim-layout { grid-template-columns: 1fr; }
+  .asim-summary { border-left: none; border-top: 1px solid var(--border); }
+  .asim-table th:nth-child(4), .asim-table td:nth-child(4),
+  .asim-table th:nth-child(5), .asim-table td:nth-child(5) { display: none; }
+}

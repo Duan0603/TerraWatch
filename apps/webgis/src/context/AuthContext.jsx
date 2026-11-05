@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import authApi from '../api/authApi';
 
 const AuthContext = createContext(null);
@@ -9,11 +10,27 @@ export function AuthProvider({ children }) {
     const saved = localStorage.getItem('terrawatch_user');
     return saved ? JSON.parse(saved) : null;
   });
+  const navigate = useNavigate();
 
   const isAuthenticated = !!token;
   // Không đoán/mặc định role: nếu thiếu role thật từ backend, coi như chưa xác định quyền
-  // (least privilege) thay vì âm thầm gán 'officer' cho một tài khoản không rõ vai trò.
   const role = user?.role || null;
+
+  const logout = useCallback(() => {
+    authApi.logout();
+    localStorage.removeItem('terrawatch_token');
+    localStorage.removeItem('terrawatch_user');
+    setToken(null);
+    setUser(null);
+    navigate('/login', { replace: true });
+  }, [navigate]);
+
+  // Lắng nghe event khi axiosClient nhận 401 — logout sạch qua React Router thay vì hard redirect
+  useEffect(() => {
+    const handler = () => logout();
+    window.addEventListener('tw:auth-expired', handler);
+    return () => window.removeEventListener('tw:auth-expired', handler);
+  }, [logout]);
 
   const login = async (email, password) => {
     const data = await authApi.login({ email, password });
@@ -26,12 +43,6 @@ export function AuthProvider({ children }) {
     setToken(jwtToken);
     setUser(userData);
     return userData;
-  };
-
-  const logout = () => {
-    authApi.logout();
-    setToken(null);
-    setUser(null);
   };
 
   return (

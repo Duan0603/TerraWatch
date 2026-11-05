@@ -26,7 +26,7 @@ public class ForecastRepository {
     /** Runs a citizen may rely on right now: approved, active, available and not yet expired. */
     public List<ForecastZoneResponse> listApprovedUnexpired() {
         return jdbc.query("""
-            SELECT f.run_id, f.unit_id, f.unit_version, f.hazard_level::text AS hazard_level, f.probability,
+            SELECT f.run_id, f.unit_id, u.unit_name, f.unit_version, f.hazard_level::text AS hazard_level, f.probability,
                    f.issued_at, f.valid_from, f.valid_until, f.model_version, ST_AsGeoJSON(u.geom) AS geometry
             FROM core_schema.forecast_runs f
             JOIN gis_schema.spatial_assessment_units u ON u.unit_id = f.unit_id
@@ -131,8 +131,8 @@ public class ForecastRepository {
     private ForecastZoneResponse zone(ResultSet rs, int row) throws SQLException {
         try {
             return new ForecastZoneResponse(
-                rs.getObject("run_id", UUID.class), rs.getString("unit_id"), rs.getString("unit_version"),
-                rs.getString("hazard_level"), (Double) rs.getObject("probability"),
+                rs.getObject("run_id", UUID.class), rs.getString("unit_id"), rs.getString("unit_name"),
+                rs.getString("unit_version"), rs.getString("hazard_level"), (Double) rs.getObject("probability"),
                 rs.getObject("issued_at", OffsetDateTime.class).toInstant(),
                 rs.getObject("valid_from", OffsetDateTime.class).toInstant(),
                 rs.getObject("valid_until", OffsetDateTime.class).toInstant(),

@@ -54,11 +54,12 @@ import MapErrorBoundary from './MapErrorBoundary';
  * Component MapViewer - Bản đồ viễn thám giám sát trượt lở 3D thời gian thực (Story 1.1, 1.2, 1.3)
  * @param {MapViewerProps} props
  */
-export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldReports = [], aoi = null }) {
+export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldReports = [], aoi = null, onCenterChange, onMapClick, injectMarkers = [] }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
   const clickMarkerRef = useRef(null);
+  const injectMarkersRef = useRef([]);
   const startTimeRef = useRef(performance.now());
   const hasMeasuredIdleRef = useRef(false);
 
@@ -265,6 +266,10 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
         ? [selectedEvent.lng, selectedEvent.lat]
         : DEFAULT_CAMERA.center;
 
+      // Mark the initial selection as already "visited" so the flyTo effect does not
+      // re-animate to the same location immediately after mount.
+      prevSelectedEventIdRef.current = selectedEvent?.id ?? null;
+
       const map = new maplibregl.Map({
         container: mapContainerRef.current,
         style: STYLE_URL,
@@ -316,6 +321,15 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
         if (markersRef.current.length === 0) {
           renderCommunityReportMarkers(map);
         }
+
+        // Phát tọa độ trung tâm bản đồ ra ngoài để các component khác dùng (inject tool)
+        const c = map.getCenter();
+        onCenterChange?.({ lat: c.lat, lng: c.lng });
+      });
+
+      map.on('moveend', () => {
+        const c = mapRef.current?.getCenter();
+        if (c) onCenterChange?.({ lat: c.lat, lng: c.lng });
       });
 
       // Lọc lỗi nạp Style/DEM chính vs lỗi tile đơn lẻ (AC 1.1.6)
@@ -354,6 +368,9 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
 
         const lng = e.lngLat.lng;
         const lat = e.lngLat.lat;
+
+        // Thông báo vị trí click cho inject panel
+        onMapClick?.({ lat, lng });
 
         // Popup hiển thị tọa độ định dạng 5 chữ số thập phân, không có nút clipboard (AC 1.4.2)
         const popupContent = `
@@ -396,6 +413,9 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
         }
         markersRef.current.forEach(m => m.remove());
         markersRef.current = [];
+        injectMarkersRef.current.forEach(m => m.remove());
+        injectMarkersRef.current = [];
+        // inject-zones layers/source cleaned up when map is removed
         if (mapRef.current) {
           mapRef.current.remove();
           mapRef.current = null;
@@ -406,6 +426,100 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
       setMapError(ERROR_MESSAGE);
     }
   }, []); // Run once on mount (R3)
+
+  // Render inject result markers + polygon zones lên bản đồ
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const map = mapRef.current;
+
+    // Xóa marker badge cũ
+    injectMarkersRef.current.forEach(m => m.remove());
+    injectMarkersRef.current = [];
+
+    const COLORS = { EXTREME: '#dc2626', HIGH: '#d97706', MEDIUM: '#ca8a04', LOW: '#16a34a', SAFE: '#16a34a' };
+    const LABELS = { EXTREME: 'CỰC NGUY HIỂM', HIGH: 'NGUY CƠ CAO', MEDIUM: 'TRUNG BÌNH', LOW: 'THẤP', SAFE: 'AN TOÀN' };
+
+    // Cập nhật GeoJSON source cho inject zones (polygon khoanh vùng)
+    const features = injectMarkers
+      .filter(im => Array.isArray(im.unit_polygon) && im.unit_polygon.length >= 3)
+      .map(im => ({
+        type: 'Feature',
+        properties: {
+          alert_level: im.alert_level,
+          hazard_score: im.hazard_score,
+          unit_name: im.unit_name || im.unit_id || '',
+          run_id: im.run_id || '',
+          rain_7d: im.rain_7d_mm,
+          forecast_24h: im.forecast_24h_mm,
+        },
+        geometry: { type: 'Polygon', coordinates: [im.unit_polygon] }
+      }));
+
+    const geojson = { type: 'FeatureCollection', features };
+
+    if (map.getSource('inject-zones')) {
+      map.getSource('inject-zones').setData(geojson);
+    } else {
+      map.addSource('inject-zones', { type: 'geojson', data: geojson });
+
+      map.addLayer({
+        id: 'inject-zones-fill',
+        type: 'fill',
+        source: 'inject-zones',
+        paint: {
+          'fill-color': ['match', ['get', 'alert_level'],
+            'EXTREME', '#dc2626', 'HIGH', '#d97706', 'MEDIUM', '#eab308', 'LOW', '#22c55e', '#22c55e'],
+          'fill-opacity': 0.35,
+        }
+      });
+      map.addLayer({
+        id: 'inject-zones-outline',
+        type: 'line',
+        source: 'inject-zones',
+        paint: {
+          'line-color': ['match', ['get', 'alert_level'],
+            'EXTREME', '#dc2626', 'HIGH', '#d97706', 'MEDIUM', '#eab308', 'LOW', '#22c55e', '#22c55e'],
+          'line-width': 3,
+          'line-dasharray': [3, 1.5],
+          'line-opacity': 0.9,
+        }
+      });
+
+      map.on('click', 'inject-zones-fill', (e) => {
+        const p = e.features[0]?.properties;
+        if (!p) return;
+        const color = COLORS[p.alert_level] || '#6b7280';
+        const label = LABELS[p.alert_level] || p.alert_level;
+        const popupEl = document.createElement('div');
+        popupEl.style.cssText = 'font-size:12px;padding:4px;font-family:Inter,sans-serif;min-width:170px';
+        const title = document.createElement('div');
+        title.style.cssText = `font-weight:700;color:${color};margin-bottom:6px;font-size:13px;`;
+        title.textContent = `⚡ ${label}`;
+        const name = document.createElement('div'); name.style.cssText = 'font-weight:600;margin-bottom:4px;'; name.textContent = p.unit_name;
+        const score = document.createElement('div'); score.textContent = `Hazard score: ${Number(p.hazard_score).toFixed(4)}`;
+        const rain = document.createElement('div'); rain.textContent = `Mưa 7 ngày: ${p.rain_7d} mm`;
+        const f24 = document.createElement('div'); f24.textContent = `Dự báo 24h: ${p.forecast_24h} mm`;
+        const rid = document.createElement('div'); rid.style.cssText = 'color:#6b7280;font-size:10px;margin-top:4px;'; rid.textContent = `Run #${String(p.run_id).slice(0, 8)} · Chờ thẩm định`;
+        popupEl.append(title, name, score, rain, f24, rid);
+        new maplibregl.Popup({ offset: 5 }).setDOMContent(popupEl).setLngLat(e.lngLat).addTo(map);
+      });
+      map.on('mouseenter', 'inject-zones-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'inject-zones-fill', () => { map.getCanvas().style.cursor = ''; });
+    }
+
+    // Badge marker tại centroid
+    injectMarkers.forEach(im => {
+      const color = COLORS[im.alert_level] || '#6b7280';
+      const label = LABELS[im.alert_level] || im.alert_level;
+      const el = document.createElement('div');
+      el.style.cssText = `background:${color};color:white;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;border:2px solid white;box-shadow:0 2px 10px rgba(0,0,0,0.4);cursor:pointer;white-space:nowrap;font-family:Inter,sans-serif;`;
+      el.textContent = `⚡ ${label}`;
+      const marker = new maplibregl.Marker({ element: el })
+        .setLngLat([im.lng, im.lat])
+        .addTo(map);
+      injectMarkersRef.current.push(marker);
+    });
+  }, [injectMarkers, mapLoaded]);
 
   // 1b. Đồng bộ nguồn GeoJSON sạt lở khi prop events thay đổi (AC 1.5.2)
   useEffect(() => {

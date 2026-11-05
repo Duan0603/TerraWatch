@@ -5,6 +5,8 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import CitizenPage from './pages/CitizenPage';
 const ModelDemoPage = lazy(() => import('./pages/ModelDemoPage'));
+const RainSimulatorPage = lazy(() => import('./pages/RainSimulatorPage'));
+const AutoSimPage = lazy(() => import('./pages/AutoSimPage'));
 
 // Route bảo vệ: yêu cầu đăng nhập trước khi vào Trung tâm Chỉ huy
 function ProtectedRoute({ children }) {
@@ -25,11 +27,13 @@ function HomeByRole() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
+    <BrowserRouter>
+      <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/model-demo" element={<Suspense fallback={<p role="status">Đang mở demo mô hình…</p>}><ModelDemoPage /></Suspense>} />
+          <Route path="/rain-simulator" element={<Suspense fallback={<p role="status">Đang mở mô phỏng…</p>}><RainSimulatorPage /></Suspense>} />
+          <Route path="/auto-sim" element={<Suspense fallback={<p role="status">Đang mở kiểm thử…</p>}><AutoSimPage /></Suspense>} />
           <Route
             path="/"
             element={
@@ -40,7 +44,7 @@ export default function App() {
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }

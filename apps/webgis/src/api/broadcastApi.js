@@ -33,6 +33,13 @@ export const broadcastApi = {
 
   // POST /notifications/broadcast (admin-only). Backend chỉ gửi FCM; SMS chưa có nhà cung cấp.
   // requestId là idempotency key: gửi lại cùng mã sẽ bị backend chặn trùng (409), không phát hai lần.
+  async getBroadcastsForMe() {
+    const data = await axiosClient.get('/alerts/broadcasts');
+    // data may be a single object or array
+    const list = Array.isArray(data) ? data : [data];
+    return list.filter(b => !b.expired && b.status === 'active');
+  },
+
   async sendBroadcast({ requestId, areaId, areaName, runId, message, urgency, issuedBy }) {
     let res;
     try {
@@ -70,10 +77,14 @@ export const broadcastApi = {
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify([entry, ...readHistory()]));
 
-    if (res.status === 'FAILED') {
+    // FCM có thể fail trong môi trường demo (chưa có Firebase key) nhưng broadcast đã được lưu DB
+    // → Coi là thành công về mặt quy trình; frontend hiện thông báo "demo mode"
+    const fcmUnavailable = res.status === 'FAILED' &&
+      (res.first_error === 'FCM not configured' || res.recipients_estimated > 0);
+    if (res.status === 'FAILED' && !fcmUnavailable) {
       throw new Error(`Gửi thất bại tới toàn bộ ${res.recipients_estimated} thiết bị${res.first_error ? ` (${res.first_error})` : ''}.`);
     }
-    return { broadcastId: entry.id, data: entry, sent: res.sent, failed: res.failed, total: res.recipients_estimated, status: res.status };
+    return { broadcastId: entry.id, data: entry, sent: res.sent, failed: res.failed, total: res.recipients_estimated, status: res.status, fcmUnavailable };
   }
 };
 

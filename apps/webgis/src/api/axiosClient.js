@@ -29,9 +29,10 @@ axiosClient.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('terrawatch_token');
       localStorage.removeItem('terrawatch_user');
-      // Không tự chuyển trang nếu đang ở trang login
+      // Dùng custom event thay vì hard-redirect để React Router xử lý điều hướng đúng cách
+      // và ReviewDialog có thể hiện thông báo lỗi trước khi chuyển trang
       if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+        window.dispatchEvent(new CustomEvent('tw:auth-expired'));
       }
     }
     return Promise.reject(error);

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 import vn.terrawatch.core.entity.User;
+import vn.terrawatch.core.repository.AlertSubscriptionRepository;
 import vn.terrawatch.core.repository.UserRepository;
 import vn.terrawatch.core.security.FirebaseIdTokenVerifier;
 import vn.terrawatch.core.security.JwtTokenProvider;
@@ -29,7 +30,8 @@ class GoogleAuthServiceTest {
 
     @BeforeEach
     void setUp() {
-        google = new GoogleAuthService(users, passwords, verifier, new AuthService(users, passwords, tokens));
+        google = new GoogleAuthService(users, passwords, verifier,
+            new AuthService(users, passwords, tokens, mock(AlertSubscriptionRepository.class)));
     }
 
     @Test

@@ -8,6 +8,7 @@ import org.springframework.web.server.ResponseStatusException;
 import vn.terrawatch.core.dto.LoginRequest;
 import vn.terrawatch.core.dto.RegisterRequest;
 import vn.terrawatch.core.entity.User;
+import vn.terrawatch.core.repository.AlertSubscriptionRepository;
 import vn.terrawatch.core.repository.UserRepository;
 import vn.terrawatch.core.security.JwtTokenProvider;
 
@@ -20,13 +21,14 @@ import static org.mockito.Mockito.*;
 
 class AuthServiceTest {
     private final UserRepository users = mock(UserRepository.class);
+    private final AlertSubscriptionRepository subscriptions = mock(AlertSubscriptionRepository.class);
     private final BCryptPasswordEncoder passwords = new BCryptPasswordEncoder();
     private final JwtTokenProvider tokens = new JwtTokenProvider("test-only-secret-at-least-thirty-two-bytes-long", 60_000);
     private AuthService auth;
 
     @BeforeEach
     void setUp() {
-        auth = new AuthService(users, passwords, tokens);
+        auth = new AuthService(users, passwords, tokens, subscriptions);
     }
 
     @Test
