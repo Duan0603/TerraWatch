@@ -460,7 +460,9 @@ body {
   font-weight: 600;
 }
 .event-status.pending { color: var(--risk-high); }
-.event-status.verified { color: var(--risk-low); }
+.event-status.approved { color: var(--risk-low); }
+.event-status.superseded { color: var(--text-3); }
+.risk-tag.unavailable { background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; }
 .event-status.rejected { color: var(--text-3); }
 
 .event-location {
@@ -857,3 +859,9 @@ body.page-login {
 
 
 
+
+/* Bảng bằng chứng xếp chồng ở góc dưới phải bản đồ */
+.map-evidence-stack { position: absolute; bottom: 20px; right: 20px; width: min(380px, calc(100% - 32px)); max-height: calc(100% - 100px); overflow-y: auto; z-index: 10; display: flex; flex-direction: column; gap: 12px; }
+.map-evidence-stack .live-rain-panel { position: static; width: 100%; max-height: none; flex-shrink: 0; }
+.map-evidence-stack .evidence-panel { flex-shrink: 0; }
+@media (max-width: 600px) { .map-evidence-stack { bottom: 12px; right: 12px; width: calc(100% - 24px); max-height: 60%; } }

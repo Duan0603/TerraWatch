@@ -1,6 +1,9 @@
 # Story 4.4: Admin Emergency Alert Broadcast (SMS & FCM Mobile App Push)
 
-Status: done
+Status: review
+
+> **Rework 2026-11-05 (Huy):** story ban đầu viết theo dữ liệu giả/Mapbox; đã nối API thật theo `epics.md` (pivot 13/10). Chọn khu vực thật (`areaId`), chỉ kênh FCM (SMS chưa có nhà cung cấp), hiển thị đúng kết quả sent/failed/NO_RECIPIENTS, dẫn chiếu `runId` dự báo đã duyệt còn hạn (backend lưu `run_id`, `valid_until` theo dự báo).
+> **Còn thiếu để `done`:** demo end-to-end trên stack thật (test backend đã qua trên Postgres thật 2026-11-05, 77/77; UI mới thử trên API giả) với dữ liệu forecast thật (Story 5.4).
 
 ## Story Overview
 **Story Key:** `4-4-admin-emergency-alert-broadcast-sms-app-push-notification`  

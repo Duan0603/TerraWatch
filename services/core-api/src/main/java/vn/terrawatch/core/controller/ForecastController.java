@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import vn.terrawatch.core.dto.*;
 import vn.terrawatch.core.entity.ForecastReview;
 import vn.terrawatch.core.entity.ForecastRun;
@@ -80,6 +81,15 @@ public class ForecastController {
                 .toList();
     }
 
+    @GetMapping("/review-queue")
+    @PreAuthorize("hasAnyRole('OFFICER', 'ADMIN')")
+    @Operation(summary = "Forecast proposals with rainfall/terrain evidence for officer review (status: pending|approved|rejected|all)")
+    public List<ForecastReviewItem> reviewQueue(@RequestParam(defaultValue = "pending") String status) {
+        if (!List.of("pending", "approved", "rejected", "all").contains(status))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status");
+        return service.reviewQueue(status);
+    }
+
     @GetMapping("/active")
     @Operation(summary = "Approved, active, unexpired forecasts")
     public List<ForecastJobResponse> active() {
@@ -100,6 +110,18 @@ public class ForecastController {
                                     @AuthenticationPrincipal UUID reviewerId) {
         ForecastRun run = runRepo.findById(id).orElse(null);
         if (run == null) return ResponseEntity.notFound().build();
+
+        // A review is a decision on a live proposal: refuse stale, already-decided, unavailable or superseded runs.
+        if (!"pending".equals(run.getReviewStatus()))
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Forecast already " + run.getReviewStatus());
+        if (run.getValidUntil().isBefore(OffsetDateTime.now()))
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Forecast expired; request a new run");
+        if (runRepo.existsNewer(run.getUnitId(), run.getRunId(), run.getIssuedAt()))
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Superseded by a newer forecast for this unit");
+        if ("approved".equals(req.decision()) && !"available".equals(run.getAvailability()))
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Unavailable forecast cannot be approved");
+        if ("rejected".equals(req.decision()) && (req.reasonNotes() == null || req.reasonNotes().isBlank()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A reason is required to reject a forecast");
 
         // Persist review record
         reviewRepo.saveAndFlush(new ForecastReview(id, reviewerId, req.decision(), req.reasonNotes()));

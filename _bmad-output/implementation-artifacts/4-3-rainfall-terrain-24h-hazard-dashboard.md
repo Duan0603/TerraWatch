@@ -1,6 +1,9 @@
 # Story 4.3: Rainfall, Terrain & 24h Hazard Forecast Dashboard (3D WebGIS)
 
-Status: done
+Status: review
+
+> **Rework 2026-11-05 (Huy):** story ban đầu viết theo dữ liệu giả/Mapbox; đã nối API thật theo `epics.md` (pivot 13/10). Bản đồ MapLibre (không dùng Mapbox) hiển thị hình học ô đánh giá thật, AOI, báo cáo hiện trường; panel mưa quan trắc vs dự báo, so sánh các lần chạy, trạng thái hết hạn/không có dự báo, múi giờ UTC+7.
+> **Còn thiếu để `done`:** demo end-to-end trên stack thật (test backend đã qua trên Postgres thật 2026-11-05, 77/77; UI mới thử trên API giả) với dữ liệu forecast thật (Story 5.4).
 
 ## Story Overview
 **Story Key:** `4-3-rainfall-terrain-24h-hazard-dashboard`  
