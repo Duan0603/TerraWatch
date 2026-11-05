@@ -28,7 +28,32 @@ import {
 } from '../config/mapConfig';
 import { DEFAULT_LOCATION_ID } from '../data/mountainLocations';
 import LocationSelector from './LocationSelector';
+import MapErrorBoundary from './MapErrorBoundary';
 
+/**
+ * @typedef {Object} GeoEvent
+ * @property {string} id - Mã định danh sự cố sạt lở
+ * @property {string} location - Tên địa điểm hành chính
+ * @property {'CRITICAL'|'HIGH'|'MODERATE'|'LOW'} [risk] - Cấp độ rủi ro sạt trượt
+ * @property {string} [status] - Trạng thái xác minh hoặc cảnh báo
+ * @property {Array<[number, number]>} [polygon] - Tọa độ đa giác vùng cảnh báo
+ * @property {number} [lat] - Vĩ độ tâm điểm
+ * @property {number} [lng] - Kinh độ tâm điểm
+ */
+
+/**
+ * @typedef {Object} MapViewerProps
+ * @property {GeoEvent[]} [events] - Danh sách các sự cố sạt lở thực địa
+ * @property {GeoEvent|null} [selectedEvent] - Sự cố hiện đang được người dùng chọn
+ * @property {(event: GeoEvent) => void} [onSelectEvent] - Callback khi click chọn sự cố
+ * @property {Array<{id: number, coords: [number, number], description: string, time: string}>} [fieldReports] - Báo cáo hiện trường của người dân
+ * @property {Object|null} [aoi] - GeoJSON FeatureCollection ranh giới vùng giám sát
+ */
+
+/**
+ * Component MapViewer - Bản đồ viễn thám giám sát trượt lở 3D thời gian thực (Story 1.1, 1.2, 1.3)
+ * @param {MapViewerProps} props
+ */
 export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldReports = [], aoi = null }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
@@ -576,6 +601,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
         <button
           onClick={resetDefaultView}
           title="Về góc nhìn toàn cảnh mặc định (Toàn Việt Nam)"
+          aria-label="Về góc nhìn toàn cảnh mặc định (Toàn Việt Nam)"
           className="map-ctrl-btn"
           style={{
             background: 'rgba(255,255,255,0.92)',
@@ -601,6 +627,8 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
         <button
           onClick={toggle3D}
           title={is3D ? "Chuyển về góc nhìn phẳng 2D" : "Bật góc nhìn khối địa hình 3D"}
+          aria-label={is3D ? "Chuyển về góc nhìn phẳng 2D" : "Bật góc nhìn khối địa hình 3D"}
+          aria-pressed={is3D}
           className="map-ctrl-btn"
           style={{
             background: is3D ? '#087B70' : 'rgba(255,255,255,0.92)',
@@ -627,6 +655,8 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
           <button
             onClick={toggleSatellite}
             title={isSatellite ? "Chuyển về bản đồ địa hình (vector)" : "Bật nền ảnh vệ tinh thực địa"}
+            aria-label={isSatellite ? "Chuyển về bản đồ địa hình (vector)" : "Bật nền ảnh vệ tinh thực địa"}
+            aria-pressed={isSatellite}
             className="map-ctrl-btn"
             style={{
               background: isSatellite ? '#087B70' : 'rgba(255,255,255,0.92)',
