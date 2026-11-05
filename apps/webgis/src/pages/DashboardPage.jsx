@@ -8,10 +8,13 @@ import BroadcastModal from '../components/BroadcastModal';
 import BroadcastHistoryModal from '../components/BroadcastHistoryModal';
 import landslideApi from '../api/landslideApi';
 import { useAuth } from '../context/AuthContext';
+import { useResponsive } from '../hooks/useResponsive';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
 export default function DashboardPage() {
   const { user, role } = useAuth();
   const isAdmin = role === 'admin';
+  const { isMobile } = useResponsive();
 
   const [events, setEvents] = useState([]);
   const [selectedEventId, setSelectedEventId] = useState(null);
@@ -24,6 +27,17 @@ export default function DashboardPage() {
   const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [broadcastTargetEvent, setBroadcastTargetEvent] = useState(null);
+
+  // Keyboard navigation shortcuts for emergency operations
+  useKeyboardShortcuts({
+    Escape: () => {
+      if (isBroadcastOpen) setIsBroadcastOpen(false);
+      else if (isHistoryOpen) setIsHistoryOpen(false);
+      else if (alertPromptEvent) setAlertPromptEvent(null);
+    },
+    'Alt+m': () => setMobileTab('map'),
+    'Alt+l': () => setMobileTab('list'),
+  });
 
   // Tải danh sách sự cố từ API / Mock data
   const loadEvents = async () => {
@@ -127,22 +141,26 @@ export default function DashboardPage() {
       </div>
 
       {/* Mobile Bottom Tab Bar */}
-      <div className="mobile-tab-bar">
+      <nav className="mobile-tab-bar" role="tablist" aria-label="Điều hướng giao diện di động">
         <button
+          role="tab"
+          aria-selected={mobileTab === 'list'}
           className={`mobile-tab-btn${mobileTab === 'list' ? ' active' : ''}`}
           onClick={() => setMobileTab('list')}
         >
-          <List size={20} />
-          Danh sách
+          <List size={20} aria-hidden="true" />
+          <span>Danh sách</span>
         </button>
         <button
+          role="tab"
+          aria-selected={mobileTab === 'map'}
           className={`mobile-tab-btn${mobileTab === 'map' ? ' active' : ''}`}
           onClick={() => setMobileTab('map')}
         >
-          <Map size={20} />
-          Bản đồ
+          <Map size={20} aria-hidden="true" />
+          <span>Bản đồ</span>
         </button>
-      </div>
+      </nav>
 
       {/* 3. Post-Approval Emergency Alert Prompt (Story 4.2 -> Story 4.4 Bridge) */}
       <EmergencyAlertPrompt
