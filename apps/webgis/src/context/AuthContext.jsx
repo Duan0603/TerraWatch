@@ -20,7 +20,7 @@ export function AuthProvider({ children }) {
     const jwtToken = data.token || data.accessToken;
     const userData = data.user || {
       email,
-      role: data.role || (email.toLowerCase().includes('citizen') ? 'citizen' : (email.toLowerCase().includes('officer') ? 'officer' : 'admin')),
+      role: data.role || (email.toLowerCase().includes('officer') ? 'officer' : (email.toLowerCase().includes('admin') ? 'admin' : 'citizen')),
       fullName: email.toLowerCase().includes('citizen')
         ? 'Anh Giàng A Páo (Người dân)'
         : (email.toLowerCase().includes('admin') ? 'Quản Trị Viên (Admin)' : 'Cán Bộ Thẩm Định')
