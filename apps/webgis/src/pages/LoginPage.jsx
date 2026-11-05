@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   ShieldAlert, 
   Lock, 
@@ -396,6 +396,8 @@ export default function LoginPage() {
             )}
           </button>
         </form>
+
+        <Link to="/model-demo" className="model-demo-login-link">Xem demo mô hình trên dữ liệu lịch sử <ArrowRight size={16} /></Link>
 
         {/* Quick Demo Helper (Hữu ích khi demo cho Hội đồng chấm thi) */}
         <div style={{ marginTop: 22, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.08)' }}>

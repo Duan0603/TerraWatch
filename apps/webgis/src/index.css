@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
+.nav-model-demo-link { text-decoration: none; white-space: nowrap; }
+.model-demo-login-link { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 18px; padding: 12px 10px; border: 1px solid #3c7066; border-radius: 8px; color: #7ee2c3; font-size: 12px; text-decoration: none; text-align: center; }
+.model-demo-login-link:hover { background: #16483f; color: white; }
+.model-demo-login-link:focus-visible { outline: 3px solid #7ee2c3; outline-offset: 3px; }
+
 :root {
   /* Brand */
   --primary: #087B70;
