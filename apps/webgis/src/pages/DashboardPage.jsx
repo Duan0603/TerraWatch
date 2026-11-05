@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { List, Map } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import VerificationQueue from '../components/VerificationQueue';
 import DetailPanel from '../components/DetailPanel';
@@ -7,21 +8,36 @@ import BroadcastModal from '../components/BroadcastModal';
 import BroadcastHistoryModal from '../components/BroadcastHistoryModal';
 import landslideApi from '../api/landslideApi';
 import { useAuth } from '../context/AuthContext';
+import { useResponsive } from '../hooks/useResponsive';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
 export default function DashboardPage() {
   const { user, role } = useAuth();
   const isAdmin = role === 'admin';
+  const { isMobile } = useResponsive();
 
   const [events, setEvents] = useState([]);
   const [selectedEventId, setSelectedEventId] = useState(null);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [alertPromptEvent, setAlertPromptEvent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [mobileTab, setMobileTab] = useState('map');
 
   // Story 4.4: Emergency Alert Broadcast States
   const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [broadcastTargetEvent, setBroadcastTargetEvent] = useState(null);
+
+  // Keyboard navigation shortcuts for emergency operations
+  useKeyboardShortcuts({
+    Escape: () => {
+      if (isBroadcastOpen) setIsBroadcastOpen(false);
+      else if (isHistoryOpen) setIsHistoryOpen(false);
+      else if (alertPromptEvent) setAlertPromptEvent(null);
+    },
+    'Alt+m': () => setMobileTab('map'),
+    'Alt+l': () => setMobileTab('list'),
+  });
 
   // Tải danh sách sự cố từ API / Mock data
   const loadEvents = async () => {
@@ -107,22 +123,44 @@ export default function DashboardPage() {
 
       {/* 2. Main Operational Layout */}
       <div className="main-layout">
-        {/* Left Sidebar: Verification Queue */}
         <VerificationQueue
           events={events}
           selectedEventId={selectedEventId}
-          onSelectEvent={setSelectedEventId}
+          onSelectEvent={(id) => { setSelectedEventId(id); setMobileTab('map'); }}
           onVerifyEvent={handleVerify}
           onResetData={handleResetData}
+          className={mobileTab === 'map' ? 'mobile-hidden' : ''}
         />
 
-        {/* Right Canvas: Detail & Map Inspector */}
         <DetailPanel
           selectedEvent={selectedEvent}
           events={events}
           onSelectEvent={setSelectedEventId}
+          className={mobileTab === 'list' ? 'mobile-hidden' : ''}
         />
       </div>
+
+      {/* Mobile Bottom Tab Bar */}
+      <nav className="mobile-tab-bar" role="tablist" aria-label="Điều hướng giao diện di động">
+        <button
+          role="tab"
+          aria-selected={mobileTab === 'list'}
+          className={`mobile-tab-btn${mobileTab === 'list' ? ' active' : ''}`}
+          onClick={() => setMobileTab('list')}
+        >
+          <List size={20} aria-hidden="true" />
+          <span>Danh sách</span>
+        </button>
+        <button
+          role="tab"
+          aria-selected={mobileTab === 'map'}
+          className={`mobile-tab-btn${mobileTab === 'map' ? ' active' : ''}`}
+          onClick={() => setMobileTab('map')}
+        >
+          <Map size={20} aria-hidden="true" />
+          <span>Bản đồ</span>
+        </button>
+      </nav>
 
       {/* 3. Post-Approval Emergency Alert Prompt (Story 4.2 -> Story 4.4 Bridge) */}
       <EmergencyAlertPrompt

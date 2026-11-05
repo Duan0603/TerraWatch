@@ -11,8 +11,9 @@
 | Core | GET /api/v1/landslides/active | Incident GeoJSON. |
 | Core | GET /api/v1/landslides/geofence | Server-side spatial query; not the target continuous citizen tracking flow. |
 | Core | GET /api/v1/landslides/offline-sync | Legacy incident export without the new forecast contract. |
-| AI :8001 | POST /api/v1/inference | Old scene/bbox/slope_avg/ndvi_drop simulation, not 24h forecasting. |
-| AI | GET /api/v1/models/info | Prototype metadata, not evidence of a trained released model. |
+| AI :8001 | POST /api/v1/inference | Legacy bbox call. A bbox carries no imagery, so it returns `status: no_imagery` and no polygon (the old simulation was removed). |
+| AI | POST /api/v1/inference/scene | Landslide candidates (GeoJSON schema 2.0) from post/pre GeoTIFFs inside `SCENE_DIR`, model v1.0 ONNX. Candidates need human verification; not 24h forecasting. |
+| AI | GET /api/v1/models/info | Reads `model_card.json` (modes, std floor, metrics) and checks the ONNX sha256. `ready: false` until the model files are installed. |
 | GIS :8002 | POST /api/v1/gis/query-satellite | Fixed sample scene response. |
 | GIS | POST /api/v1/gis/tiling | Geographic grid generation, not rainfall feature engineering. |
 | GIS | GET /api/v1/gis/mvt/{z}/{x}/{y}.pbf | Empty tile prototype. |
@@ -29,9 +30,9 @@ Auth and SMS/FCM are not completed. Existing Swagger is served by each service; 
 | Core officer/admin | GET /api/v1/forecasts/queue | Review forecast proposals with quality/validity. |
 | Core officer/admin | PATCH /api/v1/forecasts/{id}/review | Approve/reject a warning proposal, not an event occurrence. |
 | Core authorized clients | GET /api/v1/forecasts/active | Published, approved and currently valid forecast geometries. |
-| Core authorized clients | GET /api/v1/forecasts/offline-sync | Forecast geometry, validity and revocation/supersession metadata. |
+| Core authorized clients | GET /api/v1/forecasts/offline-sync | **Implemented (Story 5.3).** Signed-in users; full snapshot `{serverTime, items[]}` of approved, active, available, unexpired runs with Polygon geometry and UTC validity. A run no longer listed was revoked or superseded: clients replace their cache. |
 
-The AI and Core share a route name on different hosts. Public /api/v1/forecasts targets Core. If internal AI routing uses the current gateway prefix rewrite, /api/v1/ai/forecasts maps to AI /api/v1/forecasts; service authentication/network restriction is required. Add an explicit Core gateway location: current Nginx does not route /api/v1/forecasts.
+The AI and Core share a route name on different hosts. Public /api/v1/forecasts targets Core. If internal AI routing uses the current gateway prefix rewrite, /api/v1/ai/forecasts maps to AI /api/v1/forecasts; service authentication/network restriction is required. The gateway now routes /api/v1/forecasts to Core (added with offline-sync).
 
 Existing auth, reports, subscriptions/device and alert capabilities remain required; see PRD/epics for implementation status. Forecast/incident coexistence is intentional.
 

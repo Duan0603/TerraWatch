@@ -1,0 +1,7 @@
+# Model weights and scene rasters are mounted at run time (see docker-compose.yml), not baked into the image
+models/
+scenes/
+tests/
+__pycache__/
+*.pyc
+.env

@@ -614,3 +614,241 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
+
+/* ── MAPLIBRE CONTROLS & RESPONSIVE (Story 1.2 AC 1.2.3, AC 1.2.5) ── */
+
+.maplibregl-ctrl-top-right {
+  top: 10px !important;
+  right: 10px !important;
+}
+
+.maplibregl-ctrl-group {
+  background: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(4px) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+}
+
+.maplibregl-ctrl-group button {
+  width: 32px !important;
+  height: 32px !important;
+  border: none !important;
+}
+
+.maplibregl-ctrl-group button:hover {
+  background: var(--surface-2) !important;
+}
+
+.map-floating-controls {
+  right: 58px !important;
+}
+
+@media (max-width: 1024px) {
+  .map-floating-controls {
+    right: 58px !important;
+    gap: 6px !important;
+  }
+  .map-floating-controls .btn-text {
+    display: none !important;
+  }
+  .map-floating-controls .map-ctrl-btn {
+    padding: 7px !important;
+  }
+  .location-selector-label {
+    display: none !important;
+  }
+  .location-selector-trigger {
+    padding: 6px 8px !important;
+    gap: 6px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .location-selector-menu {
+    width: 220px !important;
+    right: -20px !important;
+  }
+}
+
+/* ── LOCATION SELECTOR (Story 1.3 AC 1.3.2, AC 1.3.4) ── */
+.location-selector-trigger:hover {
+  border-color: var(--primary) !important;
+  box-shadow: 0 4px 12px rgba(8, 123, 112, 0.12) !important;
+}
+
+.location-option-item:hover {
+  background: var(--surface-2) !important;
+}
+
+.location-option-item.active:hover {
+  background: #E4F4F1 !important;
+}
+
+/* ── COORDINATE INSPECTOR POPUP (Story 1.4 AC 1.4.2) ── */
+.coord-popup-box .maplibregl-popup-content {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 16px rgba(23, 37, 36, 0.15) !important;
+  border: 1px solid var(--border) !important;
+  padding: 8px 12px !important;
+  background: #FFFFFF !important;
+}
+
+/* ── RESPONSIVE GRID HELPERS ── */
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.broadcast-scope-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.broadcast-channels-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 18px;
+}
+
+/* ── LOGIN PAGE BODY OVERRIDE ── */
+body.page-login {
+  overflow: auto;
+  height: auto;
+  min-height: 100vh;
+}
+
+/* ── MOBILE TAB BAR ── */
+.mobile-tab-bar {
+  display: none;
+}
+
+/* ── TABLET (769px – 1024px) ── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .nav-brand-sub { display: none; }
+  .status-chip { display: none; }
+  .nav-user-info { display: none; }
+  .nav-right { gap: 8px; }
+
+  .sidebar { width: 250px; }
+}
+
+/* ── MOBILE (≤ 768px) ── */
+@media (max-width: 768px) {
+  .top-nav {
+    height: 56px;
+    padding: 0 12px;
+  }
+
+  .nav-brand-sub { display: none; }
+  .nav-links { display: none; }
+  .status-chip { display: none; }
+  .nav-user-info { display: none; }
+  .nav-right { gap: 4px; }
+
+  /* Hide text labels inside buttons, keep icons */
+  .btn-label { display: none; }
+
+  /* Compact buttons on mobile */
+  .btn-ghost { padding: 6px 8px; }
+  .btn-danger { padding: 7px 10px; }
+
+  /* Stack layout vertically */
+  .main-layout { flex-direction: column; overflow: hidden; }
+
+  /* Sidebar becomes full height / width */
+  .sidebar {
+    width: 100%;
+    height: 100%;
+    border-right: none;
+    flex: 1;
+  }
+
+  .sidebar.mobile-hidden { display: none; }
+  .map-canvas-area.mobile-hidden { display: none; }
+
+  /* HUD overlay compact */
+  .map-hud-overlay {
+    top: 8px;
+    left: 8px;
+    padding: 6px 10px;
+    gap: 8px;
+  }
+  .hud-divider { display: none; }
+  .hud-label { font-size: 9px; }
+  .hud-value { font-size: 10px; }
+
+  /* Alert prompt above tab bar */
+  .alert-prompt-wrapper {
+    bottom: 68px;
+    width: calc(100% - 24px);
+  }
+
+  /* Mobile tab bar */
+  .mobile-tab-bar {
+    display: flex;
+    height: 56px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+    z-index: 20;
+  }
+
+  .mobile-tab-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border: none;
+    background: transparent;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+
+  .mobile-tab-btn.active { color: var(--primary); }
+
+  /* Sidebar overview grid 2-col → 4-col on mobile for space */
+  .sidebar-overview { grid-template-columns: repeat(4, 1fr); }
+
+  /* Form grids: stack to 1 column on mobile */
+  .form-grid-2,
+  .broadcast-channels-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid-3,
+  .broadcast-scope-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Remove left border separator when channels grid stacks */
+  .broadcast-channels-grid > div + div {
+    border-left: none !important;
+    padding-left: 0 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 12px;
+    margin-top: 4px;
+  }
+}
+
+
+

@@ -35,7 +35,6 @@ public class AiServiceClient {
         Map<String, Object> payload = new HashMap<>();
         payload.put("satellite_scene_id", sceneId);
         payload.put("bbox", new double[]{minLon, minLat, maxLon, maxLat});
-        payload.put("confidence_threshold", 0.75);
 
         log.info("Calling AI Service: {} for scene: {}", endpoint, sceneId);
         ResponseEntity<Map> response = restTemplate.postForEntity(endpoint, payload, Map.class);
@@ -54,5 +53,24 @@ public class AiServiceClient {
         fallback.put("message", "AI Inference Service is temporarily unavailable. Request queued for batch processing.");
         fallback.put("detected_polygons", Collections.emptyList());
         return fallback;
+    }
+
+    /**
+     * Story 4.1: Request 24h rainfall-terrain forecast from AI Service.
+     * Returns the raw AI response map, or null on circuit-breaker fallback.
+     */
+    @CircuitBreaker(name = "aiService", fallbackMethod = "fallbackForecast")
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> requestForecast(Map<String, Object> forecastRequest) {
+        String endpoint = aiServiceUrl + "/api/v1/forecasts";
+        log.info("Requesting forecast from AI: {} for unit: {}", endpoint, forecastRequest.get("assessment_unit_id"));
+        ResponseEntity<Map> response = restTemplate.postForEntity(endpoint, forecastRequest, Map.class);
+        return response.getBody();
+    }
+
+    /** Fallback: returns null so caller knows AI was unavailable — never fabricate a forecast. */
+    public Map<String, Object> fallbackForecast(Map<String, Object> forecastRequest, Throwable throwable) {
+        log.warn("⚠️ AI forecast unavailable for unit {}: {}", forecastRequest.get("assessment_unit_id"), throwable.getMessage());
+        return null;
     }
 }

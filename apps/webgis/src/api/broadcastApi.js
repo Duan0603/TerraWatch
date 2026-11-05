@@ -71,14 +71,12 @@ const saveStoredHistory = (list) => {
 
 export const broadcastApi = {
   // 1. Lấy danh sách lịch sử phát cảnh báo
+  // LƯU Ý: Core API chưa có endpoint đọc lịch sử (chỉ có POST /api/v1/notifications/broadcast
+  // để phát lệnh, không có GET để liệt kê lại — core_schema.alert_broadcasts/alert_deliveries
+  // đã có bảng từ Story 1.2 nhưng chưa có API đọc). Lưu lịch sử cục bộ, cập nhật thêm mỗi khi
+  // sendBroadcast() phát lệnh thật thành công, thay vì gọi một URL không tồn tại.
   async getBroadcastHistory() {
-    try {
-      const data = await axiosClient.get('/core/broadcasts/history');
-      return data;
-    } catch (err) {
-      console.warn('Backend Core API chưa kết nối, sử dụng lịch sử phát cảnh báo cục bộ:', err.message);
-      return getStoredHistory();
-    }
+    return getStoredHistory();
   },
 
   // 2. Tính toán xem trước số lượng người nhận theo bán kính / phạm vi
@@ -142,16 +140,53 @@ export const broadcastApi = {
   },
 
   // 3. Phát lệnh cảnh báo khẩn cấp (SMS & FCM)
+  // Gọi thật `POST /api/v1/notifications/broadcast` (qua alias gateway /core/notifications/broadcast
+  // -> xem gateway/nginx.conf). Endpoint này giờ CHỈ admin gọi được (SecurityConfig.java), axiosClient
+  // tự đính kèm Bearer token của người đang đăng nhập; citizen/officer gọi sẽ nhận 403 thật.
   async sendBroadcast(payload) {
+    const preview = this.getRecipientPreview(payload.scope, payload.radiusMeters);
     try {
-      const res = await axiosClient.post('/core/broadcasts', payload);
-      return res;
+      const res = await axiosClient.post('/core/notifications/broadcast', {
+        eventId: payload.landslideId ? String(payload.landslideId) : null,
+        riskLevel: (payload.urgency || 'HIGH').toLowerCase(),
+        message: payload.message,
+        targetArea: payload.location
+      });
+
+      const newEntry = {
+        id: res.event_id ? `BC-${res.event_id}` : `BC-${Date.now().toString().slice(-8)}`,
+        timestamp: res.timestamp || (new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC'),
+        location: payload.location || 'Khu vực trọng điểm',
+        scope: payload.scope || 'buffer_500m',
+        scopeLabel: payload.scopeLabel || 'Vùng đệm nguy cơ khẩn cấp',
+        channels: payload.channels || ['sms', 'fcm'],
+        recipientsTotal: res.recipients_estimated ?? preview.total,
+        deliveredCount: res.recipients_estimated ?? preview.total,
+        failedCount: 0,
+        status: res.status || 'DISPATCHED',
+        message: payload.message,
+        issuedBy: payload.issuedBy || 'Admin Tổng Chỉ Huy',
+        urgency: payload.urgency || 'HIGH'
+      };
+
+      // Chưa có API đọc lịch sử thật (xem getBroadcastHistory) -> lưu vết cục bộ để
+      // BroadcastHistoryModal hiển thị được các lệnh đã phát thật.
+      saveStoredHistory([newEntry, ...getStoredHistory()]);
+
+      return {
+        success: true,
+        broadcastId: newEntry.id,
+        summary: `Đã phát thật qua Core API tới ước tính ${newEntry.recipientsTotal} người dân qua kênh [${(res.channels || payload.channels).join ? (res.channels || payload.channels).join(', ') : res.channels}]`,
+        data: newEntry
+      };
     } catch (err) {
-      console.warn('Lưu vết phát lệnh cảnh báo vào LocalStorage do Backend Core API offline:', err.message);
-      
-      const history = getStoredHistory();
-      const preview = this.getRecipientPreview(payload.scope, payload.radiusMeters);
-      
+      // Lỗi thật từ backend (403 không phải admin, 401 chưa đăng nhập, 400 payload sai...)
+      // phải báo cho người dùng, không được giả vờ phát lệnh thành công.
+      if (err.response) {
+        throw err;
+      }
+      // Chỉ mô phỏng khi thật sự không gọi được backend (offline dev).
+      console.warn('Không kết nối được Core API, lưu lệnh phát cảnh báo cục bộ (demo offline):', err.message);
       const newEntry = {
         id: `BC-${Date.now().toString().slice(-8)}`,
         timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC',
@@ -160,24 +195,20 @@ export const broadcastApi = {
         scopeLabel: payload.scopeLabel || 'Vùng đệm nguy cơ khẩn cấp',
         channels: payload.channels || ['sms', 'fcm'],
         recipientsTotal: preview.total,
-        deliveredCount: preview.total - 2, // Giả lập tỷ lệ thành công 99.5%
+        deliveredCount: preview.total - 2,
         failedCount: 2,
         status: 'DELIVERED',
         message: payload.message,
         issuedBy: payload.issuedBy || 'Admin Tổng Chỉ Huy',
         urgency: payload.urgency || 'HIGH'
       };
-
-      const updated = [newEntry, ...history];
-      saveStoredHistory(updated);
-
-      // Mô phỏng độ trễ phát lệnh viễn thông thực tế (800ms)
+      saveStoredHistory([newEntry, ...getStoredHistory()]);
       await new Promise(r => setTimeout(r, 600));
-
       return {
         success: true,
+        isMock: true,
         broadcastId: newEntry.id,
-        summary: `Đã phát thành công tới ${preview.total} người dân qua kênh [${payload.channels.join(', ').toUpperCase()}]`,
+        summary: `[Demo offline] Đã phát tới ${preview.total} người dân qua kênh [${payload.channels.join(', ').toUpperCase()}]`,
         data: newEntry
       };
     }

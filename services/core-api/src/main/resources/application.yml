@@ -1,6 +1,15 @@
 server:
   port: 3000
 
+jwt:
+  secret: ${JWT_SECRET}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+# Firebase project whose Google sign-in ID tokens Core API accepts (/api/v1/auth/google)
+firebase:
+  project-id: ${FIREBASE_PROJECT_ID:terrawatch-ac26f}
+  service-account-file: ${FIREBASE_SERVICE_ACCOUNT_FILE:}
+
 spring:
   application:
     name: terrawatch-core-api
@@ -72,3 +81,12 @@ logging:
     root: INFO
     vn.terrawatch: DEBUG
     org.springframework.security: WARN
+
+
+# Story 4.1: Forecast job orchestration
+forecast:
+  recovery:
+    poll-interval-ms: ${FORECAST_RECOVERY_POLL_MS:60000}
+    stuck-timeout-minutes: ${FORECAST_STUCK_TIMEOUT_MIN:5}
+  job:
+    max-retries: ${FORECAST_MAX_RETRIES:3}

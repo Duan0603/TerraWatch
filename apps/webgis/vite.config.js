@@ -12,7 +12,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          mapbox: ['mapbox-gl'],
+          maplibre: ['maplibre-gl'],
           reactVendor: ['react', 'react-dom', 'react-router-dom']
         }
       }

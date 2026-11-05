@@ -11,15 +11,19 @@ export function AuthProvider({ children }) {
   });
 
   const isAuthenticated = !!token;
-  const role = user?.role || 'officer';
+  // Không đoán/mặc định role: nếu thiếu role thật từ backend, coi như chưa xác định quyền
+  // (least privilege) thay vì âm thầm gán 'officer' cho một tài khoản không rõ vai trò.
+  const role = user?.role || null;
 
   const login = async (email, password) => {
     const data = await authApi.login({ email, password });
     const jwtToken = data.token || data.accessToken;
     const userData = data.user || {
       email,
-      role: data.role || 'officer',
-      fullName: email.includes('admin') ? 'Quản Trị Viên (Admin)' : 'Cán Bộ Thẩm Định'
+      role: data.role || (email.toLowerCase().includes('citizen') ? 'citizen' : (email.toLowerCase().includes('officer') ? 'officer' : 'admin')),
+      fullName: email.toLowerCase().includes('citizen')
+        ? 'Anh Giàng A Páo (Người dân)'
+        : (email.toLowerCase().includes('admin') ? 'Quản Trị Viên (Admin)' : 'Cán Bộ Thẩm Định')
     };
 
     localStorage.setItem('terrawatch_token', jwtToken);

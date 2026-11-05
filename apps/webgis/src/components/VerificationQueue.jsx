@@ -8,6 +8,7 @@ export default function VerificationQueue({
   onSelectEvent,
   onVerifyEvent,
   onResetData,
+  className = '',
 }) {
   const [filter, setFilter] = useState('all');
 
@@ -23,7 +24,7 @@ export default function VerificationQueue({
   });
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar${className ? ' ' + className : ''}`}>
       {/* Header */}
       <div className="sidebar-header">
         <div className="sidebar-eyebrow">Trung tâm điều hành</div>
