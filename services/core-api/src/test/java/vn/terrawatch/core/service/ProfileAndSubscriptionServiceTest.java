@@ -30,7 +30,8 @@ class ProfileAndSubscriptionServiceTest {
     private final UserRepository users = mock(UserRepository.class);
     private final BCryptPasswordEncoder passwords = new BCryptPasswordEncoder();
     private final AuthService auth = new AuthService(users, passwords,
-        new JwtTokenProvider("test-only-secret-at-least-thirty-two-bytes-long", 60_000));
+        new JwtTokenProvider("test-only-secret-at-least-thirty-two-bytes-long", 60_000),
+        mock(AlertSubscriptionRepository.class));
     private final AlertSubscriptionRepository subs = mock(AlertSubscriptionRepository.class);
     private final MonitoringAreaJpaRepository areas = mock(MonitoringAreaJpaRepository.class);
     private final AlertSubscriptionService subscriptions = new AlertSubscriptionService(subs, areas, users);

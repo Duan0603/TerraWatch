@@ -8,6 +8,7 @@ import BroadcastModal from '../components/BroadcastModal';
 import BroadcastHistoryModal from '../components/BroadcastHistoryModal';
 import ReviewDialog from '../components/ReviewDialog';
 import forecastApi, { apiErrorMessage } from '../api/forecastApi';
+import { loadSimResults, subscribeSimResults, simResultsToEvents, clearSimResults } from '../api/simBus';
 import { useAuth } from '../context/AuthContext';
 import { useResponsive } from '../hooks/useResponsive';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
@@ -33,6 +34,9 @@ export default function DashboardPage() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [broadcastTargetEvent, setBroadcastTargetEvent] = useState(null);
 
+  // Lớp mô phỏng AI: hiện thêm trên bản đồ nhưng không đưa vào hàng đợi thẩm định
+  const [simEvents, setSimEvents] = useState(() => simResultsToEvents(loadSimResults()));
+
   // Keyboard navigation shortcuts for emergency operations
   useKeyboardShortcuts({
     Escape: () => {
@@ -49,7 +53,12 @@ export default function DashboardPage() {
       const data = await forecastApi.getReviewQueue('all');
       setEvents(data);
       setLoadError(null);
-      setSelectedEventId(prev => (data.some(e => e.id === prev) ? prev : data[0]?.id ?? null));
+      setSelectedEventId(prev => {
+        // Initial load: pick first item. Subsequent refreshes: keep current selection
+        // to prevent map from flying when queue updates after inject.
+        if (prev === null) return data[0]?.id ?? null;
+        return data.some(e => e.id === prev) ? prev : null;
+      });
     } catch (err) {
       setLoadError(apiErrorMessage(err, 'Không tải được hàng đợi dự báo'));
     }
@@ -88,7 +97,22 @@ export default function DashboardPage() {
     }
   };
 
+  // Lắng nghe broadcast từ AutoSimPage (tab khác)
+  useEffect(() => subscribeSimResults(
+    (r) => setSimEvents(simResultsToEvents(r)),
+    ()  => setSimEvents([])
+  ), []);
+
+  // Làm mới hàng đợi ngay khi LiveRainfallPanel inject thành công
+  useEffect(() => {
+    const handler = () => loadEvents();
+    window.addEventListener('tw:queue-refresh', handler);
+    return () => window.removeEventListener('tw:queue-refresh', handler);
+  }, [loadEvents]);
+
   const selectedEvent = events.find(e => e.id === selectedEventId) || null;
+  // Merge: real events cho queue, sim events chỉ hiện trên bản đồ
+  const mapEvents = [...events, ...simEvents];
 
   // Mở form phát cảnh báo — không bao giờ tự gửi.
   const handleOpenBroadcast = (ev = null) => {
@@ -113,6 +137,18 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {simEvents.length > 0 && (
+        <div role="status" style={{ background: '#fffbeb', color: '#92400e', borderBottom: '1px solid #fcd34d', padding: '7px 16px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 14 }}>⚡</span>
+          <strong>Mô phỏng AI</strong>: đang hiển thị {simEvents.length} vùng nguy cơ mô phỏng trên bản đồ
+          <span style={{ opacity: .6, marginLeft: 4 }}>(không phải dữ liệu thực)</span>
+          <button className="btn-ghost" style={{ marginLeft: 'auto', fontSize: 12, color: '#92400e' }}
+            onClick={() => { clearSimResults(); setSimEvents([]); }}>
+            ✕ Xóa lớp mô phỏng
+          </button>
+        </div>
+      )}
+
       <div className="main-layout">
         <VerificationQueue
           events={events}
@@ -125,7 +161,7 @@ export default function DashboardPage() {
 
         <DetailPanel
           selectedEvent={selectedEvent}
-          events={events}
+          events={mapEvents}
           onSelectEvent={setSelectedEventId}
           fieldReports={fieldReports}
           aoi={aoi}

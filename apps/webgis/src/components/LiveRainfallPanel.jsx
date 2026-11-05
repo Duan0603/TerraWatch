@@ -1,13 +1,33 @@
-import React, { useEffect, useState } from 'react';
-import { CloudRain, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { CloudRain, RefreshCw, ChevronDown, ChevronUp, Zap } from 'lucide-react';
 import './LiveRainfallPanel.css';
 
 const valueText = value => value === null || value === undefined ? 'Chưa đủ dữ liệu' : `${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 }).format(value)} mm`;
 const timeText = value => value ? new Date(value).toLocaleString('vi-VN', { hour12: false }) : 'Chưa có lần lấy thành công';
 
+const INJECT_SCENARIOS = [
+  { key: 'dry',      label: 'Khô hạn',   mm7d: '4 mm',   desc: 'Không ảnh hưởng nguy cơ',    color: '#6b7280' },
+  { key: 'moderate', label: 'Trung bình', mm7d: '113 mm', desc: 'Mức cơ bản, nguy cơ thấp',   color: '#2563eb' },
+  { key: 'heavy',    label: 'Mưa to',     mm7d: '450 mm', desc: 'Nguy cơ trung bình–cao',      color: '#d97706' },
+  { key: 'extreme',  label: 'Cực đoan',   mm7d: '860 mm', desc: 'Mô phỏng như Làng Nủ 2024',  color: '#dc2626' },
+];
+
+const ALERT_BADGE = {
+  SAFE:    { label: 'An toàn',          cls: 'inj-badge-safe'    },
+  LOW:     { label: 'Nguy cơ thấp',     cls: 'inj-badge-low'     },
+  MEDIUM:  { label: 'Nguy cơ trung bình', cls: 'inj-badge-medium' },
+  HIGH:    { label: 'Nguy cơ cao',      cls: 'inj-badge-high'    },
+  EXTREME: { label: 'Cực kỳ nguy hiểm', cls: 'inj-badge-extreme' },
+};
+
 export default function LiveRainfallPanel({ selectedEvent }) {
   const [snapshot, setSnapshot] = useState(null), [error, setError] = useState('');
   const [loading, setLoading] = useState(true), [reload, setReload] = useState(0), [collapsed, setCollapsed] = useState(false);
+  const [injectOpen, setInjectOpen] = useState(false);
+  const [injectScenario, setInjectScenario] = useState('heavy');
+  const [injectLoading, setInjectLoading] = useState(false);
+  const [injectResult, setInjectResult] = useState(null);
+  const [injectError, setInjectError] = useState('');
   const latitude = selectedEvent?.lat, longitude = selectedEvent?.lng;
   useEffect(() => {
     let controller;
@@ -39,6 +59,37 @@ export default function LiveRainfallPanel({ selectedEvent }) {
   const data = snapshot?.data;
   const prediction = data?.gru_inference;
   const stale = error || snapshot?.stale;
+
+  const handleInject = useCallback(async () => {
+    if (!prediction?.ready || !prediction?.static_values) return;
+    setInjectLoading(true); setInjectError(''); setInjectResult(null);
+    try {
+      const configured = import.meta.env.VITE_API_BASE_URL;
+      const base = configured || (['5173', '5174'].includes(window.location.port)
+        ? `${window.location.protocol}//${window.location.hostname}:8080` : window.location.origin);
+      const body = {
+        unit_id: selectedEvent?.unit?.unit_id || null,
+        lat: selectedEvent?.lat ?? null,
+        lng: selectedEvent?.lng ?? null,
+        scenario: injectScenario,
+        slope_deg: prediction.static_values.slope_deg,
+        clay_pct: prediction.static_values.clay_pct,
+        sand_pct: prediction.static_values.sand_pct,
+        bulk_density_g_cm3: prediction.static_values.bulk_density_g_cm3,
+      };
+      const res = await fetch(`${base}/api/v1/ai/simulate/inject`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.detail || 'Lỗi inject');
+      setInjectResult(json);
+      if (json.forecast_in_queue) window.dispatchEvent(new CustomEvent('tw:queue-refresh'));
+    } catch (e) {
+      setInjectError(e.message);
+    } finally {
+      setInjectLoading(false);
+    }
+  }, [prediction, selectedEvent, injectScenario]);
   const chart = data?.hourly.filter(h => {
     const delta = (new Date(h.interval_end)-new Date(data.as_of))/3600000;
     return delta > -12 && delta <= 12;
@@ -83,6 +134,66 @@ export default function LiveRainfallPanel({ selectedEvent }) {
           <details><summary>Đất và độ dốc dùng cho ô này</summary><p className="live-gru-period">
             Dốc {prediction.static_values.slope_deg.toFixed(1)}° · Sét {prediction.static_values.clay_pct.toFixed(1)}% · Cát {prediction.static_values.sand_pct.toFixed(1)}% · Khối lượng thể tích {prediction.static_values.bulk_density_g_cm3.toFixed(2)} g/cm³.
           </p></details>
+
+          {/* ── Inject Tool ──────────────────────────────────────── */}
+          <div className="inj-wrap">
+            <button type="button" className="inj-toggle" onClick={() => { setInjectOpen(v => !v); setInjectResult(null); setInjectError(''); }}>
+              <Zap size={14} /> <span>Inject Mưa vào Hệ thống</span>
+              {injectOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+            </button>
+            {injectOpen && <div className="inj-body">
+              <p className="inj-desc">Chọn kịch bản mưa → inject vào GRU với địa hình ô này → tạo <strong>forecast_run thật</strong> trong hàng đợi thẩm định.</p>
+              <div className="inj-scenarios">
+                {INJECT_SCENARIOS.map(s => (
+                  <button key={s.key} type="button"
+                    className={`inj-scen-btn${injectScenario === s.key ? ' active' : ''}`}
+                    style={{ '--scen-color': s.color }}
+                    onClick={() => { setInjectScenario(s.key); setInjectResult(null); setInjectError(''); }}>
+                    <span className="inj-scen-name">{s.label}</span>
+                    <span className="inj-scen-mm">{s.mm7d} / 7 ngày</span>
+                    <span className="inj-scen-desc">{s.desc}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="inj-terrain-note">
+                Địa hình dùng: dốc <strong>{prediction.static_values.slope_deg.toFixed(1)}°</strong> · sét <strong>{prediction.static_values.clay_pct.toFixed(1)}%</strong> · cát <strong>{prediction.static_values.sand_pct.toFixed(1)}%</strong>
+              </div>
+              <button type="button" className="inj-fire-btn" onClick={handleInject} disabled={injectLoading}>
+                {injectLoading ? <><span className="inj-spin" /> Đang tính toán…</> : <><Zap size={14} /> Inject Lượng Mưa</>}
+              </button>
+              {injectError && <p className="inj-error">{injectError}</p>}
+              {injectResult && (
+                <div className={`inj-result inj-result-${injectResult.alert_level.toLowerCase()}`}>
+                  <div className="inj-result-top">
+                    <span className={`inj-badge ${ALERT_BADGE[injectResult.alert_level]?.cls}`}>
+                      {ALERT_BADGE[injectResult.alert_level]?.label}
+                    </span>
+                    <span className="inj-result-score">Nguy cơ: <strong>{injectResult.hazard_score.toFixed(4)}</strong></span>
+                  </div>
+                  <div className="inj-result-row">
+                    <span>{injectResult.temporal_score.toFixed(3)} <small>Mưa</small></span>
+                    <b>×</b>
+                    <span>{injectResult.spatial_score.toFixed(3)} <small>Địa hình</small></span>
+                    <b>=</b>
+                    <span><strong>{injectResult.hazard_score.toFixed(4)}</strong></span>
+                  </div>
+                  <div className="inj-result-rain">
+                    Mưa 7 ngày: <strong>{injectResult.rain_7d_mm} mm</strong> · 24h tới: <strong>{injectResult.forecast_24h_mm} mm</strong>
+                  </div>
+                  {injectResult.forecast_in_queue ? (
+                    <div className="inj-queue-ok">
+                      ✓ Đã tạo forecast #{injectResult.run_id.slice(0, 8)} · <strong>Đang chờ thẩm định trong hàng đợi</strong>
+                      <br /><span className="inj-queue-hint">Hàng đợi vừa tự làm mới — tìm mục mới trong danh sách bên trái.</span>
+                    </div>
+                  ) : injectResult.alert_level === 'SAFE' ? (
+                    <div className="inj-queue-skip">Kịch bản này không tạo cảnh báo (ngưỡng an toàn).</div>
+                  ) : (
+                    <div className="inj-error">Không ghi vào DB: {injectResult.db_error}</div>
+                  )}
+                </div>
+              )}
+            </div>}
+          </div>
         </section> : <p className="live-rain-model-hold">GRU chưa có kết quả: {prediction?.reason || 'đang chờ đầu vào và mô hình'}. Tác vụ sẽ tự thử lại; không tạo điểm giả.</p>}
       </>}
       <footer><span>Lấy thành công: {timeText(snapshot?.last_success_at)}<br />Server tự lấy mỗi {Math.round((snapshot?.refresh_interval_seconds || 3600)/60)} phút; web kiểm tra mỗi phút.</span>

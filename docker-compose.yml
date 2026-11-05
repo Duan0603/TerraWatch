@@ -41,7 +41,7 @@ services:
     environment:
       SERVER_PORT: 3000
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set (see .env.example) - refusing to start with an empty JWT signing key}
-      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-604800000}
       DATABASE_URL: jdbc:postgresql://postgres:5432/terrawatch
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgrespassword
@@ -49,6 +49,10 @@ services:
       REDIS_PORT: 6379
       AI_SERVICE_URL: http://ai-service:8001
       GIS_SERVICE_URL: http://gis-service:8002
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-ducduancute@gmail.com}
+      SMTP_PASS: ${SMTP_PASS:-ijptkiovtsrzdfve}
     ports:
       - "3000:3000"
     depends_on:
@@ -67,6 +71,11 @@ services:
     environment:
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: terrawatch
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
     volumes:
       - ./services/ai-service/app:/app/app
       # ONNX weights + model card and scene GeoTIFFs are not in the image (see services/ai-service/models/README.md)
@@ -77,6 +86,7 @@ services:
       - "8001:8001"
     depends_on:
       - redis
+      - postgres
     networks:
       - terrawatch-net
 

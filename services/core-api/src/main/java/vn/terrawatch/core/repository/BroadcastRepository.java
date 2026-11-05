@@ -19,6 +19,8 @@ public class BroadcastRepository {
 
     public record RunRef(UUID runId, String unitId, OffsetDateTime validUntil) {}
 
+    public record EmailRecipient(UUID userId, String email, String fullName) {}
+
     private final JdbcTemplate jdbc;
 
     public BroadcastRepository(JdbcTemplate jdbc) {
@@ -40,6 +42,43 @@ public class BroadcastRepository {
             WHERE s.is_active AND s.channel_push AND s.area_id IN (%s)
             """.formatted(in), (rs, i) -> new Recipient(rs.getObject("user_id", UUID.class), rs.getString("fcm_token")),
             areaIds.toArray());
+    }
+
+    /**
+     * Citizens who should receive an email for a broadcast:
+     * (1) subscribed to any of the affected areas, OR
+     * (2) have their registered province matching any spatial unit in those areas.
+     * Union ensures location-registered users without a manual subscription are also notified.
+     */
+    public List<EmailRecipient> emailRecipients(List<Integer> areaIds) {
+        String in = String.join(",", areaIds.stream().map(a -> "?").toList());
+        // areaIds is used twice in the UNION — pass it twice as varargs
+        Object[] params = java.util.stream.Stream.concat(
+            areaIds.stream(), areaIds.stream()).toArray();
+        return jdbc.query("""
+            SELECT DISTINCT u.user_id, u.email, u.full_name
+            FROM core_schema.users u
+            WHERE u.role = 'citizen'
+              AND (
+                -- Kênh 1: đã đăng ký theo dõi vùng bị ảnh hưởng
+                EXISTS (
+                    SELECT 1 FROM core_schema.alert_subscriptions s
+                    WHERE s.user_id = u.user_id AND s.is_active
+                      AND s.area_id IN (%1$s)
+                )
+                OR
+                -- Kênh 2: địa chỉ đăng ký nằm trong tỉnh/huyện của vùng bị ảnh hưởng
+                EXISTS (
+                    SELECT 1 FROM gis_schema.spatial_assessment_units sau
+                    WHERE sau.is_active AND sau.area_id IN (%1$s)
+                      AND u.province IS NOT NULL AND u.province <> ''
+                      AND LOWER(u.province) = LOWER(sau.admin_province)
+                )
+              )
+            """.formatted(in),
+            (rs, i) -> new EmailRecipient(rs.getObject("user_id", UUID.class),
+                rs.getString("email"), rs.getString("full_name")),
+            params);
     }
 
     /** The forecast a broadcast may cite: approved, active, available and not expired. */

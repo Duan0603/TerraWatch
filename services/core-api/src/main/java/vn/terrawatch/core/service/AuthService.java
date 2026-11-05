@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import vn.terrawatch.core.dto.*;
 import vn.terrawatch.core.entity.User;
+import vn.terrawatch.core.repository.AlertSubscriptionRepository;
 import vn.terrawatch.core.repository.UserRepository;
 import vn.terrawatch.core.security.JwtTokenProvider;
 import vn.terrawatch.core.security.Role;
@@ -21,14 +22,17 @@ public class AuthService {
     private final UserRepository users;
     private final BCryptPasswordEncoder passwords;
     private final JwtTokenProvider tokens;
+    private final AlertSubscriptionRepository subscriptions;
     private static final java.time.LocalDate MIN_BIRTH_DATE = java.time.LocalDate.of(1900, 1, 1);
 
     private final String dummyHash;
 
-    public AuthService(UserRepository users, BCryptPasswordEncoder passwords, JwtTokenProvider tokens) {
+    public AuthService(UserRepository users, BCryptPasswordEncoder passwords, JwtTokenProvider tokens,
+                       AlertSubscriptionRepository subscriptions) {
         this.users = users;
         this.passwords = passwords;
         this.tokens = tokens;
+        this.subscriptions = subscriptions;
         this.dummyHash = passwords.encode("unused-login-timing-check");
     }
 
@@ -47,6 +51,12 @@ public class AuthService {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
             }
             throw error;
+        }
+        // Auto-subscribe citizen to every active monitoring area so they receive alert emails immediately
+        try {
+            subscriptions.autoSubscribeToAllActiveAreas(user.getUserId());
+        } catch (Exception ignored) {
+            // Non-fatal: user is registered; they can subscribe manually later
         }
         return response(user);
     }

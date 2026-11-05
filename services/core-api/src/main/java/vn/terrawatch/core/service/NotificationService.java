@@ -33,11 +33,14 @@ public class NotificationService {
     private final BroadcastRepository broadcasts;
     private final DeviceTokenRepository devices;
     private final FcmSender fcm;
+    private final EmailAlertService email;
 
-    public NotificationService(BroadcastRepository broadcasts, DeviceTokenRepository devices, FcmSender fcm) {
+    public NotificationService(BroadcastRepository broadcasts, DeviceTokenRepository devices,
+                                FcmSender fcm, EmailAlertService email) {
         this.broadcasts = broadcasts;
         this.devices = devices;
         this.fcm = fcm;
+        this.email = email;
     }
 
     public Map<String, Object> broadcastAlert(BroadcastAlertRequest req, UUID senderId) {
@@ -57,14 +60,21 @@ public class NotificationService {
         logger.info("[ALERT DISPATCH] Event: {}, Risk: {}, Area: {}", req.eventId(), level, req.targetArea());
 
         List<Area> areas = matchAreas(req);
-        List<Recipient> recipients = areas.isEmpty() ? List.of() : broadcasts.recipients(areas.stream().map(Area::id).toList());
+        List<Integer> areaIds = areas.stream().map(Area::id).toList();
+
+        // Resolve cả hai kênh độc lập nhau: FCM cần device token, email chỉ cần subscription
+        List<Recipient> fcmRecipients = areaIds.isEmpty() ? List.of() : broadcasts.recipients(areaIds);
+        List<BroadcastRepository.EmailRecipient> emailList = areaIds.isEmpty() ? List.of() : broadcasts.emailRecipients(areaIds);
+
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("event_id", req.eventId());
         result.put("risk_level", level);
-        result.put("channels", List.of("FCM_PUSH"));
+        result.put("channels", List.of("FCM_PUSH", "EMAIL"));
         result.put("sms", "NOT_SENT: no SMS provider is connected");
         result.put("timestamp", java.time.Instant.now().toString());
-        if (recipients.isEmpty()) {
+
+        // Dừng sớm chỉ khi KHÔNG CÓ AI nhận được qua bất kỳ kênh nào
+        if (fcmRecipients.isEmpty() && emailList.isEmpty()) {
             result.put("recipients_estimated", 0);
             result.put("status", "NO_RECIPIENTS");
             return result;
@@ -75,9 +85,11 @@ public class NotificationService {
         Area area = areas.get(0);
         OffsetDateTime validUntil = run != null ? run.validUntil() : OffsetDateTime.now().plusHours(VALID_HOURS);
         String idempotencyKey = req.eventId() != null && !req.eventId().isBlank() ? req.eventId().trim() : null;
+        int totalRecipients = fcmRecipients.isEmpty() ? emailList.size() : fcmRecipients.size();
+
         BroadcastRepository.Stored stored;
         try {
-            stored = broadcasts.insert(senderId, title, body, level, area.id(), validUntil, recipients.size(), idempotencyKey, run);
+            stored = broadcasts.insert(senderId, title, body, level, area.id(), validUntil, totalRecipients, idempotencyKey, run);
         } catch (org.springframework.dao.DuplicateKeyException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Duplicate alert broadcast: event_id already processed");
         }
@@ -91,23 +103,32 @@ public class NotificationService {
         data.put("issuedAt", stored.issuedAt().toString());
         data.put("validUntil", validUntil.toInstant().toString());
 
+        // Kênh FCM push — chỉ những ai đã đăng ký thiết bị
         int sent = 0;
         List<String> errors = new ArrayList<>();
-        for (Recipient to : recipients) {
+        for (Recipient to : fcmRecipients) {
             FcmSender.Result outcome = fcm.send(to.fcmToken(), new FcmSender.Message(title, body, data));
             broadcasts.insertDelivery(stored.broadcastId(), to, outcome.ok(), outcome.error());
             if (outcome.ok()) sent++;
             else errors.add(outcome.error());
             if (outcome.unregistered()) devices.forget(to.fcmToken());
         }
-        broadcasts.updateCounts(stored.broadcastId(), sent, recipients.size() - sent);
+        if (!fcmRecipients.isEmpty()) broadcasts.updateCounts(stored.broadcastId(), sent, fcmRecipients.size() - sent);
+
+        // Kênh Email — chạy song song, không phụ thuộc FCM
+        email.sendBroadcastEmails(emailList, title, body, level, area.name(),
+            stored.issuedAt(), validUntil.toInstant());
+        logger.info("[EMAIL] Đã kích hoạt gửi email cho {} người nhận vùng {}", emailList.size(), area.name());
+
         result.put("broadcast_id", stored.broadcastId().toString());
-        result.put("recipients_estimated", recipients.size());
-        result.put("devices", recipients.size());
+        result.put("recipients_estimated", totalRecipients);
+        result.put("email_recipients", emailList.size());
+        result.put("devices", fcmRecipients.size());
         result.put("sent", sent);
-        result.put("failed", recipients.size() - sent);
+        result.put("failed", fcmRecipients.size() - sent);
         if (!errors.isEmpty()) result.put("first_error", errors.get(0));
-        result.put("status", sent == 0 ? "FAILED" : sent == recipients.size() ? "DISPATCHED" : "PARTIAL");
+        result.put("status", emailList.isEmpty() && sent == 0 ? "FAILED" :
+            (sent == fcmRecipients.size() && !fcmRecipients.isEmpty()) ? "DISPATCHED" : "PARTIAL");
         result.put("payload", Map.of("title", title, "body", body));
         return result;
     }

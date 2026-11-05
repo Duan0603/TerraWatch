@@ -58,7 +58,7 @@ export const forecastApi = {
       const ring = z.geometry.coordinates[0];
       return {
         id: z.runId,
-        location: z.unitId,
+        location: z.unitName || z.unitId,
         lng: ring.reduce((s, p) => s + p[0], 0) / ring.length,
         lat: ring.reduce((s, p) => s + p[1], 0) / ring.length,
         polygon: ring,

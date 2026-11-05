@@ -865,3 +865,5 @@ body.page-login {
 .map-evidence-stack .live-rain-panel { position: static; width: 100%; max-height: none; flex-shrink: 0; }
 .map-evidence-stack .evidence-panel { flex-shrink: 0; }
 @media (max-width: 600px) { .map-evidence-stack { bottom: 12px; right: 12px; width: calc(100% - 24px); max-height: 60%; } }
+
+@keyframes inj-spin { to { transform: rotate(360deg); } }

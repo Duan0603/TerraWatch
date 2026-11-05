@@ -80,6 +80,7 @@ export default function BroadcastModal({
   const [confirmInput, setConfirmInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [sendResult, setSendResult] = useState(null);
+  const [sendError, setSendError] = useState(null);
 
   // Cập nhật nội dung khi thay đổi template hoặc sự cố
   const handleSelectTemplate = (tplId) => {
@@ -129,7 +130,7 @@ export default function BroadcastModal({
         onBroadcastSuccess(result);
       }
     } catch (err) {
-      alert(`Lỗi khi phát lệnh cảnh báo: ${err.message}`);
+      setSendError(err.message);
       setStep(2);
     } finally {
       setIsSending(false);
@@ -462,10 +463,16 @@ export default function BroadcastModal({
                 />
               </div>
 
+              {sendError && (
+                <div style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid #ef4444', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: '#fca5a5', marginBottom: 16, textAlign: 'left' }}>
+                  ⚠️ {sendError}
+                </div>
+              )}
+
               <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
                 <button
                   type="button"
-                  onClick={() => setStep(1)}
+                  onClick={() => { setStep(1); setSendError(null); }}
                   style={{
                     background: 'rgba(255, 255, 255, 0.08)',
                     border: '1px solid rgba(255, 255, 255, 0.15)',
@@ -524,38 +531,56 @@ export default function BroadcastModal({
               <div style={{
                 width: 56,
                 height: 56,
-                background: 'rgba(34, 197, 94, 0.2)',
+                background: sendResult.fcmUnavailable ? 'rgba(251, 146, 60, 0.2)' : 'rgba(34, 197, 94, 0.2)',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 margin: '0 auto 16px',
-                border: '2px solid #22c55e'
+                border: `2px solid ${sendResult.fcmUnavailable ? '#fb923c' : '#22c55e'}`
               }}>
-                <CheckCircle2 size={32} color="#22c55e" />
+                <CheckCircle2 size={32} color={sendResult.fcmUnavailable ? '#fb923c' : '#22c55e'} />
               </div>
 
-              <h4 style={{ fontSize: 18, fontWeight: 800, color: '#4ade80', margin: '0 0 8px 0' }}>
-                ĐÃ GỬI LỆNH CẢNH BÁO
+              <h4 style={{ fontSize: 18, fontWeight: 800, color: sendResult.fcmUnavailable ? '#fb923c' : '#4ade80', margin: '0 0 8px 0' }}>
+                {sendResult.fcmUnavailable ? 'LỆNH ĐÃ LƯU — DEMO MODE' : 'ĐÃ GỬI LỆNH CẢNH BÁO'}
               </h4>
 
               <p style={{ fontSize: 13, color: '#cbd5e1', margin: '0 0 16px 0' }}>
                 Mã điều phối: <strong style={{ color: '#38bdf8', fontFamily: 'monospace' }}>{sendResult.broadcastId}</strong>
               </p>
 
-              <div style={{
-                background: 'rgba(0, 0, 0, 0.4)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                borderRadius: 8,
-                padding: '12px 18px',
-                display: 'inline-block',
-                fontSize: 12,
-                color: '#94a3b8',
-                marginBottom: 20
-              }}>
-                Đã gửi tới {sendResult.sent}/{sendResult.total} thiết bị
-                {sendResult.failed > 0 && ` — ${sendResult.failed} thiết bị lỗi`}. SMS: không gửi.
-              </div>
+              {sendResult.fcmUnavailable ? (
+                <div style={{
+                  background: 'rgba(251, 146, 60, 0.1)',
+                  border: '1px solid rgba(251, 146, 60, 0.4)',
+                  borderRadius: 8,
+                  padding: '12px 18px',
+                  fontSize: 12,
+                  color: '#fed7aa',
+                  marginBottom: 20,
+                  textAlign: 'left',
+                  lineHeight: 1.7
+                }}>
+                  ✅ Lệnh cảnh báo đã được <strong>lưu vào CSDL</strong> và ghi nhận {sendResult.total} người nhận.<br />
+                  ⚠️ Firebase Cloud Messaging chưa được cấu hình trong môi trường demo — push notification không thực sự gửi đến điện thoại.<br />
+                  📋 Trong hệ thống thực: {sendResult.total} công dân đăng ký sẽ nhận thông báo đẩy ngay lập tức.
+                </div>
+              ) : (
+                <div style={{
+                  background: 'rgba(0, 0, 0, 0.4)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: 8,
+                  padding: '12px 18px',
+                  display: 'inline-block',
+                  fontSize: 12,
+                  color: '#94a3b8',
+                  marginBottom: 20
+                }}>
+                  Đã gửi tới {sendResult.sent}/{sendResult.total} thiết bị
+                  {sendResult.failed > 0 && ` — ${sendResult.failed} thiết bị lỗi`}. SMS: không gửi.
+                </div>
+              )}
 
               <div>
                 <button
