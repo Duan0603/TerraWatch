@@ -455,7 +455,9 @@ body {
   font-weight: 600;
 }
 .event-status.pending { color: var(--risk-high); }
-.event-status.verified { color: var(--risk-low); }
+.event-status.approved { color: var(--risk-low); }
+.event-status.superseded { color: var(--text-3); }
+.risk-tag.unavailable { background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; }
 .event-status.rejected { color: var(--text-3); }
 
 .event-location {

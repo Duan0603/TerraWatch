@@ -26,11 +26,10 @@ import {
   ERROR_MESSAGE,
   ATTRIBUTIONS
 } from '../config/mapConfig';
-import { COMMUNITY_REPORTS } from '../data/mockEvents';
 import { DEFAULT_LOCATION_ID } from '../data/mountainLocations';
 import LocationSelector from './LocationSelector';
 
-export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
+export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldReports = [], aoi = null }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
@@ -51,6 +50,9 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
     eventsRef.current = events;
   }, [events]);
 
+  const fieldReportsRef = useRef(fieldReports);
+  const aoiRef = useRef(aoi);
+
   const onSelectEventRef = useRef(onSelectEvent);
   useEffect(() => {
     onSelectEventRef.current = onSelectEvent;
@@ -68,9 +70,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
           location: ev.location,
           risk: ev.risk,
           status: ev.status,
-          confidence: ev.confidence,
-          slope: ev.slope,
-          areaM2: ev.areaM2
+          expired: Boolean(ev.expired) || ev.status === 'superseded'
         },
         geometry: {
           type: 'Polygon',
@@ -133,9 +133,11 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
             'extreme', '#ef4444',
             'high', '#f97316',
             'medium', '#eab308',
+            'unavailable', '#94a3b8',
             /* default */ '#10b981'
           ],
-          'fill-opacity': 0.45
+          // Hết hạn / bị thay thế: mờ hẳn để không bị nhầm với cảnh báo đang hiệu lực
+          'fill-opacity': ['case', ['get', 'expired'], 0.12, 0.45]
         }
       });
 
@@ -170,13 +172,30 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
     }
   };
 
-  // Nạp các marker Báo cáo hiện trường cộng đồng (AC 1.5.4)
+  // Ranh giới vùng giám sát (AOI) thật từ backend
+  const ensureAoiLayer = (map) => {
+    if (!map || !map.getStyle()) return;
+    const data = aoiRef.current || { type: 'FeatureCollection', features: [] };
+    if (map.getSource('aoi-boundaries')) {
+      map.getSource('aoi-boundaries').setData(data);
+      return;
+    }
+    map.addSource('aoi-boundaries', { type: 'geojson', data });
+    map.addLayer({
+      id: 'aoi-boundaries-line',
+      type: 'line',
+      source: 'aoi-boundaries',
+      paint: { 'line-color': '#087B70', 'line-width': 2, 'line-dasharray': [3, 2] }
+    });
+  };
+
+  // Marker báo cáo hiện trường của người dân (tách biệt với vùng dự báo)
   const renderCommunityReportMarkers = (map) => {
     if (!map) return;
     markersRef.current.forEach(m => m.remove());
     markersRef.current = [];
 
-    COMMUNITY_REPORTS.forEach(rep => {
+    fieldReportsRef.current.forEach(rep => {
       const el = document.createElement('div');
       el.className = 'community-report-marker';
       el.innerHTML = `
@@ -185,14 +204,20 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
         </div>
       `;
 
-      const popup = new maplibregl.Popup({ offset: 25 }).setHTML(`
-        <div style="color: #0f172a; padding: 4px; font-family: sans-serif;">
-          <div style="font-weight: 700; font-size: 12px; margin-bottom: 2px; color: #dc2626;">📍 BÁO CÁO CỘNG ĐỒNG</div>
-          <div style="font-size: 11px; font-weight: 600; margin-bottom: 2px;">${rep.reporterName}</div>
-          <div style="font-size: 10px; color: #475569; margin-bottom: 4px;">${rep.description}</div>
-          <div style="font-size: 9px; color: #64748b;">Gửi lúc: ${rep.time}</div>
-        </div>
-      `);
+      // Nội dung do người dân nhập: dùng textContent, không bao giờ innerHTML.
+      const box = document.createElement('div');
+      box.style.cssText = 'color:#0f172a;padding:4px;font-family:sans-serif;max-width:220px';
+      const title = document.createElement('div');
+      title.style.cssText = 'font-weight:700;font-size:12px;margin-bottom:2px;color:#dc2626';
+      title.textContent = '📍 BÁO CÁO HIỆN TRƯỜNG (chưa kiểm chứng)';
+      const desc = document.createElement('div');
+      desc.style.cssText = 'font-size:11px;color:#475569;margin-bottom:4px';
+      desc.textContent = rep.description || '(không có mô tả)';
+      const when = document.createElement('div');
+      when.style.cssText = 'font-size:9px;color:#64748b';
+      when.textContent = 'Thời điểm: ' + (rep.time ? new Date(rep.time).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }) + ' (UTC+7)' : '—');
+      box.append(title, desc, when);
+      const popup = new maplibregl.Popup({ offset: 25 }).setDOMContent(box);
 
       const marker = new maplibregl.Marker({ element: el })
         .setLngLat(rep.coords)
@@ -249,6 +274,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
       // Lắng nghe tải style (hỗ trợ khôi phục an toàn sau khi đổi hoặc nạp lại style) (AC 1.5.2)
       map.on('style.load', () => {
         setupTerrainAndSky(map);
+        ensureAoiLayer(map);
         ensureLandslideLayers(map, eventsRef.current);
         if (markersRef.current.length === 0) {
           renderCommunityReportMarkers(map);
@@ -260,6 +286,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
         setMapError(null);
 
         setupTerrainAndSky(map);
+        ensureAoiLayer(map);
         ensureLandslideLayers(map, eventsRef.current);
         if (markersRef.current.length === 0) {
           renderCommunityReportMarkers(map);
@@ -366,6 +393,15 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent }) {
       ensureLandslideLayers(map, events);
     }
   }, [events, mapLoaded]);
+
+  // 1c. Đồng bộ lớp AOI và marker báo cáo hiện trường khi dữ liệu từ API đến sau
+  useEffect(() => {
+    aoiRef.current = aoi;
+    fieldReportsRef.current = fieldReports;
+    if (!mapRef.current || !mapLoaded) return;
+    ensureAoiLayer(mapRef.current);
+    renderCommunityReportMarkers(mapRef.current);
+  }, [aoi, fieldReports, mapLoaded]);
 
   // 2. Camera FlyTo mượt mà khi Cán bộ chọn sự cố từ hàng đợi (AC 1.5.5, FR-MAP-12)
   const prevSelectedEventIdRef = useRef(null);

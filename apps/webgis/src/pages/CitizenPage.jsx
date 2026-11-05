@@ -1,24 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, LogOut, MapPin } from 'lucide-react';
 import DetailPanel from '../components/DetailPanel';
-import landslideApi from '../api/landslideApi';
+import forecastApi, { apiErrorMessage } from '../api/forecastApi';
 import { useAuth } from '../context/AuthContext';
 
 // Trang tối giản cho công dân (citizen): chỉ xem bản đồ các điểm sạt lở ĐÃ PHÊ DUYỆT
-// (status === 'verified') cùng bằng chứng mưa/địa hình — không có nút thẩm định/phát
+// (đã duyệt, còn hiệu lực) cùng bằng chứng mưa/địa hình — không có nút thẩm định/phát
 // cảnh báo nào (những thao tác đó chỉ dành cho officer/admin trên DashboardPage).
 export default function CitizenPage() {
   const { user, logout } = useAuth();
   const [events, setEvents] = useState([]);
   const [selectedEventId, setSelectedEventId] = useState(null);
+  const [loadError, setLoadError] = useState(null);
 
+  // Vùng cảnh báo đã duyệt và còn hiệu lực (cùng nguồn với bộ nhớ ngoại tuyến của ứng dụng di động)
   useEffect(() => {
-    landslideApi.getLandslides({ status: 'verified' }).then((data) => {
+    forecastApi.getApprovedZones().then((data) => {
       setEvents(data);
       if (data.length > 0) {
         setSelectedEventId(data[0].id);
       }
-    });
+    }).catch((err) => setLoadError(apiErrorMessage(err, 'Không tải được vùng cảnh báo')));
   }, []);
 
   const selectedEvent = events.find((e) => e.id === selectedEventId) || null;
@@ -83,7 +85,8 @@ export default function CitizenPage() {
               </div>
             </div>
           ))}
-          {events.length === 0 && (
+          {loadError && <div role="alert" style={{ padding: 16, fontSize: 12, color: '#B91C1C' }}>{loadError}</div>}
+          {events.length === 0 && !loadError && (
             <div style={{ padding: 16, fontSize: 12, color: '#64748b' }}>
               Hiện chưa có cảnh báo nào đã được xác nhận tại khu vực bạn đăng ký.
             </div>
