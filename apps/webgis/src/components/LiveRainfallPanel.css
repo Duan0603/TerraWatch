@@ -21,6 +21,16 @@
 .live-rain-chart text { font-size: 9px; fill: #435c55; font-family: inherit; }
 .live-rain-chart-key { display: flex; justify-content: space-between; font-size: 9px; color: #435c55; }
 .live-rain-model-hold { margin: 14px 0; font-size: 10px; line-height: 1.7; color: #6d4b20; background: #fff6e7; padding: 9px; border-radius: 6px; }
+.live-gru-result { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
+.live-gru-result h3 { font-size: 12px; }
+.live-gru-equation { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin: 14px 0; font-size: 16px; font-variant-numeric: tabular-nums; }
+.live-gru-equation > span { text-align: center; }
+.live-gru-equation small { display: block; font-size: 9px; color: #435c55; margin-top: 5px; }
+.live-gru-equation strong { color: var(--primary-dark); }
+.live-gru-equation > b { font-size: 11px; color: #435c55; }
+.live-gru-period { font-size: 10px; line-height: 1.7; color: #435c55; overflow-wrap: anywhere; }
+.live-gru-result details { font-size: 10px; margin: 12px 0; }
+.live-gru-result summary { cursor: pointer; color: var(--primary-dark); font-weight: 600; margin-bottom: 8px; }
 .live-rain-panel footer { display: flex; align-items: center; gap: 12px; justify-content: space-between; margin-top: 12px; font-size: 9px; line-height: 1.8; color: #435c55; border-top: 1px solid var(--border); padding-top: 10px; }
 .live-rain-panel a { display: inline-block; margin-top: 10px; font-size: 10px; color: var(--primary-dark); text-underline-offset: 3px; }
 @media (max-width: 600px) { .live-rain-panel { bottom: 12px; right: 12px; width: calc(100% - 24px); max-height: 60%; } }

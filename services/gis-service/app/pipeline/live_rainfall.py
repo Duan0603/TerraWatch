@@ -117,6 +117,15 @@ class LiveWeatherRepository:
                     (location['key'], location['name'], location['latitude'], location['longitude'],
                      Json(payload) if payload is not None else None, payload is not None, error))
 
+    def save_prediction(self, key, as_of, prediction):
+        # A prediction retry must not make old weather look newly fetched.
+        with self.connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute('''UPDATE gis_schema.live_rainfall_snapshots
+                    SET payload=jsonb_set(payload,'{gru_inference}',%s::jsonb)
+                    WHERE location_key=%s AND payload->>'as_of'=%s''',
+                    (Json(prediction), key, as_of))
+
 
 class LiveRainfallService:
     def __init__(self):
@@ -127,6 +136,44 @@ class LiveRainfallService:
         self.thread = None
         self.state = {'enabled': self.enabled, 'interval_seconds': self.interval, 'running': False,
                       'last_cycle_at': None, 'last_error': None, 'locations': 0}
+
+    def predict(self, location, data):
+        attempted = utc_now().isoformat()
+        def held(reason):
+            return {'ready': False, 'reason': reason, 'attempted_at': attempted, 'experimental': True}
+        if not os.getenv('LIVE_GRU_ENABLED', 'true').lower() == 'true':
+            return held('DISABLED')
+        try:
+            as_of = datetime.fromisoformat(data['as_of'])
+            if as_of.tzinfo is None or not 0 <= (utc_now()-as_of).total_seconds() <= 5400:
+                return held('WEATHER_STALE')
+            path = Path(__file__).resolve().parents[1] / 'config/live_gru_static_features.json'
+            registry = json.loads(path.read_text(encoding='utf8'))
+            static = registry['locations'].get(location['key'])
+            if not static or not static.get('ready'):
+                return held('STATIC_FEATURES_UNAVAILABLE')
+            hourly = {datetime.fromisoformat(h['interval_end']): h['mm'] for h in data['hourly']}
+            history = [hourly.get(as_of-timedelta(hours=h)) for h in range(167, -1, -1)]
+            forecast = data['forecast_24h']
+            if any(v is None or not math.isfinite(v) or v < 0 for v in history) or forecast['mm'] is None or forecast['valid_hours'] != 24:
+                return held('INCOMPLETE_WEATHER')
+            body = {'unit_id': static['unit_id'], 'history': history, 'forecast_24h_mm': forecast['mm'],
+                    'static': static['values'], 'issue_time': as_of.isoformat(), 'weather_source': 'OPEN_METEO'}
+            base = os.getenv('AI_SERVICE_URL', 'http://ai-service:8001').rstrip('/')
+            response = requests.post(base+'/api/v1/inference/gru/live', json=body, timeout=(3, 15))
+            response.raise_for_status()
+            result = response.json()
+            for key in ('temporal_score', 'spatial_score', 'hazard_score'):
+                if not math.isfinite(result[key]) or not 0 <= result[key] <= 1:
+                    raise ValueError('Invalid model score')
+            if result['unit_id'] != static['unit_id'] or result['issue_time'] != as_of.isoformat():
+                raise ValueError('Model result does not match requested unit/time')
+            return {'ready': True, 'experimental': True, 'attempted_at': attempted, **result,
+                    'static_values': static['values'], 'static_coverage': static['coverage'],
+                    'static_source_sha256': registry['source_sha256'], 'grid_version': static['grid_version']}
+        except Exception as exc:
+            LOG.warning('Experimental GRU unavailable for %s: %s', location['key'], type(exc).__name__)
+            return held('MODEL_UNAVAILABLE_OR_INVALID_INPUT')
 
     def locations(self):
         path = Path(__file__).resolve().parents[1] / 'config/live_rainfall_locations.json'
@@ -172,9 +219,18 @@ class LiveRainfallService:
                     break
                 cached = self.repo.get(location['key'])
                 if cached and (utc_now()-cached['last_attempt_at']).total_seconds() < self.interval:
+                    payload = cached.get('payload')
+                    if payload:
+                        previous = payload.get('gru_inference', {})
+                        attempted = previous.get('attempted_at')
+                        retry_due = not attempted or (utc_now()-datetime.fromisoformat(attempted)).total_seconds() >= 300
+                        if not previous.get('ready') and retry_due:
+                            self.repo.save_prediction(location['key'], payload['as_of'], self.predict(location, payload))
                     continue
                 try:
-                    self.repo.save(location, payload=self.fetch(location))
+                    payload = self.fetch(location)
+                    payload['gru_inference'] = self.predict(location, payload)
+                    self.repo.save(location, payload=payload)
                 except Exception as exc:
                     # Exception text/URLs can contain a commercial API key. Store only a safe type/status.
                     status = getattr(getattr(exc, 'response', None), 'status_code', None)

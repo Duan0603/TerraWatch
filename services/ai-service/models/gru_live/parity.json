@@ -1,0 +1,10 @@
+{
+  "cases": 24,
+  "max_abs_error_vs_pytorch": {
+    "temporal_score": 2.384185791015625e-07,
+    "spatial_score": 0.0,
+    "hazard_score": 1.4699463490863707e-07
+  },
+  "checkpoint_sha256": "71101b315e540f7cf292efea82c103236260d790a9a74b56cf469c30addcad8e",
+  "tolerance": 1e-05
+}

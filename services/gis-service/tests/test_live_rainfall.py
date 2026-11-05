@@ -90,5 +90,25 @@ class LiveRainfallTests(unittest.TestCase):
         self.assertTrue(any(p['key'] == '21.8450,104.0850' for p in locations))
         self.assertFalse(any(p['name'] == 'missing' for p in locations))
 
+    def test_inference_is_held_for_stale_or_incomplete_weather(self):
+        service = LiveRainfallService()
+        location = {'key': '21.8450,104.0850'}
+        payload = normalize_weather(self.raw, self.now)
+        self.assertEqual(service.predict(location, payload)['reason'], 'WEATHER_STALE')
+        now = utc_now().replace(minute=0, second=0, microsecond=0)
+        payload['as_of'] = now.isoformat()
+        payload['hourly'] = []
+        self.assertEqual(service.predict(location, payload)['reason'], 'INCOMPLETE_WEATHER')
+
+    def test_cached_prediction_update_does_not_re_fetch_weather(self):
+        service = self.service()
+        service.repo.get.return_value = {'last_attempt_at': utc_now(),
+            'payload': {'as_of': utc_now().isoformat(), 'gru_inference': {'ready': False}}}
+        service.predict = MagicMock(return_value={'ready': True})
+        service.run_once()
+        service.fetch.assert_not_called()
+        service.repo.save_prediction.assert_called_once()
+        service.repo.save.assert_not_called()
+
 
 if __name__ == '__main__': unittest.main()

@@ -37,6 +37,7 @@ export default function LiveRainfallPanel({ selectedEvent }) {
   }, [latitude, longitude, reload]);
 
   const data = snapshot?.data;
+  const prediction = data?.gru_inference;
   const stale = error || snapshot?.stale;
   const chart = data?.hourly.filter(h => {
     const delta = (new Date(h.interval_end)-new Date(data.as_of))/3600000;
@@ -71,7 +72,18 @@ export default function LiveRainfallPanel({ selectedEvent }) {
           </svg>
           <div className="live-rain-chart-key"><span>Đã qua: xanh</span><span>Dự báo: nâu</span></div>
         </figure>
-        <p className="live-rain-model-hold">GRU chưa chạy trực tiếp: cần đầu vào IMERG + GFS phù hợp với lúc huấn luyện.</p>
+        {prediction?.ready ? <section className="live-gru-result" aria-label="Dự báo tự động thử nghiệm">
+          <h3>GRU · Dự báo tự động 24 giờ</h3>
+          <p className="live-gru-equation"><span>{prediction.temporal_score.toFixed(3)} <small>Mưa</small></span><b>×</b>
+            <span>{prediction.spatial_score.toFixed(3)} <small>Địa hình · đất</small></span><b>=</b>
+            <span><strong>{prediction.hazard_score.toFixed(3)}</strong> <small>Điểm nguy cơ</small></span></p>
+          <p className="live-gru-period">{timeText(prediction.issue_time)} → {timeText(prediction.valid_until)}<br />{prediction.unit_id}</p>
+          {(stale || new Date(prediction.valid_until) <= new Date()) && <p className="live-rain-error">Kết quả cũ hoặc đầu vào chưa cập nhật. Không dùng như dự báo mới.</p>}
+          <p className="live-rain-model-hold">Dự báo thử nghiệm: Open-Meteo khác nguồn IMERG + GFS khi train; mốc chạy là giờ cập nhật hiện tại. Điểm chưa phải xác suất và không tự phát cảnh báo.</p>
+          <details><summary>Đất và độ dốc dùng cho ô này</summary><p className="live-gru-period">
+            Dốc {prediction.static_values.slope_deg.toFixed(1)}° · Sét {prediction.static_values.clay_pct.toFixed(1)}% · Cát {prediction.static_values.sand_pct.toFixed(1)}% · Khối lượng thể tích {prediction.static_values.bulk_density_g_cm3.toFixed(2)} g/cm³.
+          </p></details>
+        </section> : <p className="live-rain-model-hold">GRU chưa có kết quả: {prediction?.reason || 'đang chờ đầu vào và mô hình'}. Tác vụ sẽ tự thử lại; không tạo điểm giả.</p>}
       </>}
       <footer><span>Lấy thành công: {timeText(snapshot?.last_success_at)}<br />Server tự lấy mỗi {Math.round((snapshot?.refresh_interval_seconds || 3600)/60)} phút; web kiểm tra mỗi phút.</span>
         <button type="button" onClick={() => { setLoading(true); setReload(n => n+1); }} aria-label="Đọc lại dữ liệu mưa đã lưu"><RefreshCw size={15} /></button>

@@ -42,15 +42,17 @@ docker compose up -d --build
 
 Mở bản đồ chính ở `http://localhost:5173`; chọn khu vực để xem bảng mưa cập nhật. Nút đọc lại trong bảng chỉ đọc snapshot; không ép nhà cung cấp cập nhật. `/model-demo` vẫn phát lại dữ liệu lịch sử, không trộn mưa hiện tại vào thí nghiệm 2018/2020.
 
-## Giới hạn với mô hình GRU
+## Tự chạy mô hình GRU (chế độ thử nghiệm)
 
-Checkpoint GRU được huấn luyện bằng IMERG 168h + GFS 24h. Open-Meteo không được âm thầm coi là nguồn tương đương. API trả `gru_inference.ready=false` với lý do khác nguồn; giao diện không tạo điểm dự báo sạt lở mới từ chuỗi này.
+Sau yêu cầu bật suy luận tự động, GIS gọi AI service khi có chuỗi đủ 168 giờ, dự báo đủ 24 giờ và đất/độ dốc đủ phủ. Hiện 14 điểm đã có các biến static từ lưới nghiên cứu thật. Kết quả được lưu trong `gru_inference`, hiển thị riêng ba điểm thành phần/ghép và khoảng hiệu lực trên bản đồ chính. Có thể tắt bằng `LIVE_GRU_ENABLED=false` trong `.env` gốc.
 
-Để chạy GRU theo nguồn huấn luyện cần tích hợp IMERG và GFS đúng phiên bản/độ trễ, đồng bộ đất/độ dốc cho từng ô và kiểm tra dữ liệu có sẵn tại giờ phát hành. Nguồn NASA có thể yêu cầu tài khoản Earthdata/PPS; dữ liệu trạm Việt Nam cần API/quyền truy cập từ đơn vị sở hữu. Không yêu cầu gửi mật khẩu trong chat. Những tài khoản đó chưa phải điều kiện để dùng chức năng mưa Open-Meteo vừa thêm.
+Checkpoint được train bằng IMERG + GFS, còn luồng hiện tại dùng Open-Meteo và khoảng 24h lăn từ đầu giờ cập nhật. Đây là **dự báo thử nghiệm khác nguồn và khác mốc giờ train**, không phải hiệu quả NEXT24H đã xác minh. Kết quả không phải xác suất đã hiệu chỉnh và không tự phát cảnh báo. Điểm thiếu đầu vào giữ `ready=false` và lý do; nếu AI lỗi nhưng thời tiết còn mới, chỉ thử suy luận lại sau 5 phút, không đổi thời điểm lấy thời tiết.
+
+Để kiểm chứng theo nguồn train vẫn cần IMERG/GFS đúng phiên bản/độ trễ và bộ đánh giá độc lập. Xem [tài liệu suy luận tự động](LIVE_GRU_FORECAST_VI.md). Không cần thêm API key để chạy chế độ thử nghiệm Open-Meteo này.
 
 ## Kiểm tra đã thực hiện
 
-- 10 unittest cho ranh giờ, thiếu timestamp, thiếu dự báo, NaN, đơn vị, timestamp trùng, tọa độ, bỏ qua cache mới, khóa worker, lọc lỗi chứa bí mật và ô DB thiếu tên/tọa độ không chặn các điểm hợp lệ.
+- 12 unittest cho ranh giờ, thiếu timestamp, thiếu dự báo, NaN, đơn vị, timestamp trùng, tọa độ, bỏ qua cache mới, khóa worker, lọc lỗi chứa bí mật, ô DB thiếu tên/tọa độ, chặn suy luận thiếu/cũ và cập nhật riêng kết quả không làm mới thời tiết.
 - Kiểm tra PostgreSQL thật: ghi một snapshot thử, mô phỏng lỗi nguồn, xác nhận payload và `last_success_at` trước đó còn nguyên; dọn đúng dòng thử sau kiểm tra.
 - API thật: 14/14 điểm có payload thành công, không lỗi; mẫu Mù Cang Chải đủ 168 giờ lịch sử và 24 giờ dự báo.
 - Web build đạt. Chưa xác nhận bố cục bằng ảnh chụp trình duyệt trong phiên này.

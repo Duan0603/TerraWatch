@@ -1,0 +1,299 @@
+{
+  "source_sha256": "a74c60bdb514934317ef25d41d3b2da20df89f127ab16b4fcb31d49981c3105a",
+  "locations": {
+    "21.8450,104.0850": {
+      "name": "Mù Cang Chải (Yên Bái) - Sườn Đèo Khau Phạ",
+      "latitude": 21.845,
+      "longitude": 104.085,
+      "key": "21.8450,104.0850",
+      "unit_id": "UTM48N_1km_405000_2415000",
+      "values": {
+        "slope_deg": 27.030586463308335,
+        "clay_pct": 30.787500023841858,
+        "sand_pct": 31.181249618530273,
+        "bulk_density_g_cm3": 1.105624996125698
+      },
+      "coverage": {
+        "slope_deg": 1.0,
+        "clay_pct": 1.0,
+        "sand_pct": 1.0,
+        "bulk_density_g_cm3": 1.0
+      },
+      "grid_version": "vn_research_1km_utm48_v1_cdf76c9397fa",
+      "ready": true
+    },
+    "21.8600,104.1100": {
+      "name": "Quốc Lộ 32 - Bản Dế Xu Phình",
+      "latitude": 21.86,
+      "longitude": 104.11,
+      "key": "21.8600,104.1100",
+      "unit_id": "UTM48N_1km_408000_2417000",
+      "values": {
+        "slope_deg": 28.414843946790697,
+        "clay_pct": 30.96875035762787,
+        "sand_pct": 32.137500405311584,
+        "bulk_density_g_cm3": 1.0531249791383743
+      },
+      "coverage": {
+        "slope_deg": 1.0,
+        "clay_pct": 1.0,
+        "sand_pct": 1.0,
+        "bulk_density_g_cm3": 1.0
+      },
+      "grid_version": "vn_research_1km_utm48_v1_cdf76c9397fa",
+      "ready": true
+    },
+    "22.5100,104.2800": {
+      "name": "Huyện Bắc Hà (Lào Cai) - Xã Nậm Khánh",
+      "latitude": 22.51,
+      "longitude": 104.28,
+      "key": "22.5100,104.2800",
+      "unit_id": "UTM48N_1km_425000_2489000",
+      "values": {
+        "slope_deg": 26.1173522121191,
+        "clay_pct": 30.324999809265137,
+        "sand_pct": 30.793749451637268,
+        "bulk_density_g_cm3": 1.141874983906746
+      },
+      "coverage": {
+        "slope_deg": 1.0,
+        "clay_pct": 1.0,
+        "sand_pct": 1.0,
+        "bulk_density_g_cm3": 1.0
+      },
+      "grid_version": "vn_research_1km_utm48_v1_cdf76c9397fa",
+      "ready": true
+    },
+    "22.3500,104.4200": {
+      "name": "Bảo Yên (Lào Cai) - Thung lũng Làng Nủ",
+      "latitude": 22.35,
+      "longitude": 104.42,
+      "key": "22.3500,104.4200",
+      "unit_id": "UTM48N_1km_440000_2471000",
+      "values": {
+        "slope_deg": 28.66229303921461,
+        "clay_pct": 30.356249809265137,
+        "sand_pct": 31.393749713897705,
+        "bulk_density_g_cm3": 1.1493749767541885
+      },
+      "coverage": {
+        "slope_deg": 1.0,
+        "clay_pct": 1.0,
+        "sand_pct": 1.0,
+        "bulk_density_g_cm3": 1.0
+      },
+      "grid_version": "vn_research_1km_utm48_v1_cdf76c9397fa",
+      "ready": true
+    },
+    "22.5250,103.8550": {
+      "name": "Ô 001 - Sườn Ta-luy Dốc Bản Qua",
+      "latitude": 22.525000000000002,
+      "longitude": 103.85499999999999,
+      "key": "22.5250,103.8550",
+      "unit_id": "UTM48N_1km_382000_2491000",
+      "values": {
+        "slope_deg": 26.24285551096201,
+        "clay_pct": 31.18749988079071,
+        "sand_pct": 32.57499945163727,
+        "bulk_density_g_cm3": 1.1131250113248825
+      },
+      "coverage": {
+        "slope_deg": 1.0,
+        "clay_pct": 1.0,
+        "sand_pct": 1.0,
+        "bulk_density_g_cm3": 1.0
+      },
+      "grid_version": "vn_research_1km_utm48_v1_cdf76c9397fa",
+      "ready": true
+    },
+    "22.5250,103.8650": {
+      "name": "Ô 002 - Lưu Vực Suối Ngòi Phát",
+      "latitude": 22.525000000000002,
+      "longitude": 103.86500000000001,
+      "key": "22.5250,103.8650",
+      "unit_id": "UTM48N_1km_383000_2491000",
+      "values": {
+        "slope_deg": 28.00133337330818,
+        "clay_pct": 32.418750047683716,
+        "sand_pct": 31.768749475479126,
+        "bulk_density_g_cm3": 1.1274999976158142
+      },
+      "coverage": {
+        "slope_deg": 1.0,
+        "clay_pct": 1.0,
+        "sand_pct": 1.0,
+        "bulk_density_g_cm3": 1.0
+      },
+      "grid_version": "vn_research_1km_utm48_v1_cdf76c9397fa",
+      "ready": true
+    },
+    "22.5150,103.8450": {
+      "name": "Ô 003 - Dốc Tỉnh Lộ 156B",
+      "latitude": 22.514999999999997,
+      "longitude": 103.84499999999998,
+      "key": "22.5150,103.8450",
+      "unit_id": "UTM48N_1km_381000_2490000",
+      "values": {
+        "slope_deg": 27.402275600719452,
+        "clay_pct": 31.343749523162842,
+        "sand_pct": 32.58125019073486,
+        "bulk_density_g_cm3": 1.0549999549984932
+      },
+      "coverage": {
+        "slope_deg": 1.0,
+        "clay_pct": 1.0,
+        "sand_pct": 1.0,
+        "bulk_density_g_cm3": 1.0
+      },
+      "grid_version": "vn_research_1km_utm48_v1_cdf76c9397fa",
+      "ready": true
+    },
+    "22.5650,103.8250": {
+      "name": "Ô 006 - Sườn Dốc Trịnh Tường",
+      "latitude": 22.564999999999998,
+      "longitude": 103.82499999999999,
+      "key": "22.5650,103.8250",
+      "unit_id": "UTM48N_1km_379000_2495000",
+      "values": {
+        "slope_deg": 26.72284068698883,
+        "clay_pct": 31.143750071525574,
+        "sand_pct": 30.93750011920929,
+        "bulk_density_g_cm3": 1.125
+      },
+      "coverage": {
+        "slope_deg": 1.0,
+        "clay_pct": 1.0,
+        "sand_pct": 1.0,
+        "bulk_density_g_cm3": 1.0
+      },
+      "grid_version": "vn_research_1km_utm48_v1_cdf76c9397fa",
+      "ready": true
+    },
+    "22.5850,103.7950": {
+      "name": "Ô 007 - Lưu Vực Suối A Mú Sung",
+      "latitude": 22.584999999999997,
+      "longitude": 103.79499999999999,
+      "key": "22.5850,103.7950",
+      "unit_id": "UTM48N_1km_376000_2498000",
+      "values": {
+        "slope_deg": 21.083490125098823,
+        "clay_pct": 32.27500021457672,
+        "sand_pct": 31.993749499320984,
+        "bulk_density_g_cm3": 1.153124988079071
+      },
+      "coverage": {
+        "slope_deg": 1.0,
+        "clay_pct": 1.0,
+        "sand_pct": 1.0,
+        "bulk_density_g_cm3": 1.0
+      },
+      "grid_version": "vn_research_1km_utm48_v1_cdf76c9397fa",
+      "ready": true
+    },
+    "22.3150,103.8750": {
+      "name": "Ô 004 - Thung Lũng Mường Hoa",
+      "latitude": 22.314999999999994,
+      "longitude": 103.875,
+      "key": "22.3150,103.8750",
+      "unit_id": "UTM48N_1km_384000_2468000",
+      "values": {
+        "slope_deg": 26.487515526676177,
+        "clay_pct": 27.24999988079071,
+        "sand_pct": 32.362499713897705,
+        "bulk_density_g_cm3": 1.1043750196695328
+      },
+      "coverage": {
+        "slope_deg": 1.0,
+        "clay_pct": 1.0,
+        "sand_pct": 1.0,
+        "bulk_density_g_cm3": 1.0
+      },
+      "grid_version": "vn_research_1km_utm48_v1_cdf76c9397fa",
+      "ready": true
+    },
+    "22.3550,103.7850": {
+      "name": "Ô 005 - Ta-luy Đèo Ô Quy Hồ",
+      "latitude": 22.355,
+      "longitude": 103.78500000000001,
+      "key": "22.3550,103.7850",
+      "unit_id": "UTM48N_1km_374000_2472000",
+      "values": {
+        "slope_deg": 23.4390795699358,
+        "clay_pct": 29.68125009536743,
+        "sand_pct": 32.75625014305115,
+        "bulk_density_g_cm3": 1.0299999713897705
+      },
+      "coverage": {
+        "slope_deg": 1.0,
+        "clay_pct": 1.0,
+        "sand_pct": 1.0,
+        "bulk_density_g_cm3": 1.0
+      },
+      "grid_version": "vn_research_1km_utm48_v1_cdf76c9397fa",
+      "ready": true
+    },
+    "22.4050,103.8350": {
+      "name": "Ô 008 - Bản Khoang Ta-luy Âm",
+      "latitude": 22.405,
+      "longitude": 103.83500000000001,
+      "key": "22.4050,103.8350",
+      "unit_id": "UTM48N_1km_380000_2478000",
+      "values": {
+        "slope_deg": 21.242920902991294,
+        "clay_pct": 27.08750009536743,
+        "sand_pct": 33.52500033378601,
+        "bulk_density_g_cm3": 1.0637499690055847
+      },
+      "coverage": {
+        "slope_deg": 1.0,
+        "clay_pct": 1.0,
+        "sand_pct": 1.0,
+        "bulk_density_g_cm3": 1.0
+      },
+      "grid_version": "vn_research_1km_utm48_v1_cdf76c9397fa",
+      "ready": true
+    },
+    "22.3050,103.9050": {
+      "name": "Ô 009 - Tả Van Sườn Tây",
+      "latitude": 22.304999999999996,
+      "longitude": 103.905,
+      "key": "22.3050,103.9050",
+      "unit_id": "UTM48N_1km_387000_2466000",
+      "values": {
+        "slope_deg": 12.372767634707689,
+        "clay_pct": 29.59999990463257,
+        "sand_pct": 32.10000002384186,
+        "bulk_density_g_cm3": 1.137499988079071
+      },
+      "coverage": {
+        "slope_deg": 1.0,
+        "clay_pct": 1.0,
+        "sand_pct": 1.0,
+        "bulk_density_g_cm3": 1.0
+      },
+      "grid_version": "vn_research_1km_utm48_v1_cdf76c9397fa",
+      "ready": true
+    },
+    "22.2850,103.8650": {
+      "name": "Ô 010 - Hầu Thào Ta-luy Dương",
+      "latitude": 22.284999999999997,
+      "longitude": 103.86500000000001,
+      "key": "22.2850,103.8650",
+      "unit_id": "UTM48N_1km_383000_2464000",
+      "values": {
+        "slope_deg": 26.67431381931901,
+        "clay_pct": 28.712499856948853,
+        "sand_pct": 31.518749833106995,
+        "bulk_density_g_cm3": 1.0199999809265137
+      },
+      "coverage": {
+        "slope_deg": 1.0,
+        "clay_pct": 1.0,
+        "sand_pct": 1.0,
+        "bulk_density_g_cm3": 1.0
+      },
+      "grid_version": "vn_research_1km_utm48_v1_cdf76c9397fa",
+      "ready": true
+    }
+  }
+}
