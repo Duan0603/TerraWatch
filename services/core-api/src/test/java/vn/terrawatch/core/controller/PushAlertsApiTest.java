@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import vn.terrawatch.core.client.FcmSender;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -117,6 +118,55 @@ class PushAlertsApiTest {
         assertNotNull(result.get("broadcast_id"));
         assertEquals(1, jdbc.queryForObject("SELECT count(*) FROM core_schema.alert_broadcasts", Integer.class));
         assertEquals(1, jdbc.queryForObject("SELECT count(*) FROM core_schema.alert_deliveries", Integer.class));
+    }
+
+    private UUID forecastRun(String review, String validUntil) {
+        jdbc.update("""
+            INSERT INTO gis_schema.spatial_assessment_units (unit_id, admin_province, admin_district, geom)
+            VALUES ('PUSH_U1', 'Lao Cai', 'Bat Xat', ST_GeomFromText('POLYGON((103.9 22.5, 104.0 22.5, 104.0 22.6, 103.9 22.6, 103.9 22.5))', 4326))
+            """);
+        UUID id = UUID.randomUUID();
+        jdbc.update("""
+            INSERT INTO core_schema.forecast_runs (run_id, unit_id, issued_at, valid_from, valid_until, availability, probability,
+                hazard_level, model_version, threshold_version, review_status, is_active)
+            VALUES (?, 'PUSH_U1', now(), now() - interval '1 hour', now() + CAST(? AS interval), 'available', 0.8, 'high', 'm', 't',
+                CAST(? AS core_schema.forecast_review_status), TRUE)
+            """, id, validUntil, review);
+        return id;
+    }
+
+    @Test
+    void broadcastCitingAnApprovedForecastStoresTheRunAndItsValidity() throws Exception {
+        when(fcm.send(anyString(), any())).thenReturn(FcmSender.Result.sent());
+        citizen("run@push-test.example", "t-run", 1, List.of("PUSH"));
+        UUID run = forecastRun("approved", "10 hours");
+
+        broadcast(admin(), Map.of("riskLevel", "high", "areaId", 1, "runId", run.toString()));
+
+        assertEquals(run, jdbc.queryForObject("SELECT run_id FROM core_schema.alert_broadcasts", UUID.class));
+        Integer hours = jdbc.queryForObject("SELECT round(extract(epoch FROM (valid_until - now())) / 3600)::int FROM core_schema.alert_broadcasts", Integer.class);
+        assertEquals(10, hours, "validity follows the forecast, not the default 24h");
+    }
+
+    @Test
+    void broadcastCannotCiteAPendingOrExpiredForecast() throws Exception {
+        citizen("run2@push-test.example", "t-run2", 1, List.of("PUSH"));
+        String admin = admin();
+        for (UUID run : List.of(forecastRun("pending", "10 hours"))) {
+            call(HttpMethod.POST, "/api/v1/notifications/broadcast", admin, Map.of("riskLevel", "high", "areaId", 1, "runId", run.toString()))
+                .andExpect(status().isConflict());
+        }
+        UUID expired = UUID.randomUUID();
+        jdbc.update("""
+            INSERT INTO core_schema.forecast_runs (run_id, unit_id, issued_at, valid_from, valid_until, availability, hazard_level,
+                model_version, threshold_version, review_status, is_active)
+            VALUES (?, 'PUSH_U1', now() - interval '30 hours', now() - interval '30 hours', now() - interval '6 hours', 'available', 'high',
+                'm', 't', CAST('approved' AS core_schema.forecast_review_status), TRUE)
+            """, expired);
+        call(HttpMethod.POST, "/api/v1/notifications/broadcast", admin, Map.of("riskLevel", "high", "areaId", 1, "runId", expired.toString()))
+            .andExpect(status().isConflict());
+        verifyNoInteractions(fcm);
+        assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM core_schema.alert_broadcasts", Integer.class));
     }
 
     @Test

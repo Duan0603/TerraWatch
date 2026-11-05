@@ -3,6 +3,7 @@ package vn.terrawatch.core.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.terrawatch.core.dto.ForecastOfflineSyncResponse;
+import vn.terrawatch.core.dto.ForecastReviewItem;
 import vn.terrawatch.core.repository.ForecastRepository;
 
 import java.time.Instant;
@@ -13,6 +14,11 @@ public class ForecastService {
 
     public ForecastService(ForecastRepository forecasts) {
         this.forecasts = forecasts;
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<ForecastReviewItem> reviewQueue(String status) {
+        return forecasts.reviewQueue(status);
     }
 
     @Transactional(readOnly = true)
