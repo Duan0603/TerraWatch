@@ -1,0 +1,12 @@
+{
+  "checkpoint_sha256": "71101b315e540f7cf292efea82c103236260d790a9a74b56cf469c30addcad8e",
+  "rows_checked": 2521,
+  "max_abs_error_vs_published_6decimal_csv": {
+    "temporal": 5.302925110139967e-07,
+    "spatial": 7.430954342046991e-05,
+    "hazard": 7.33426769882195e-05
+  },
+  "flag_disagreements_at_050": 0,
+  "all_within_1e_4": true,
+  "limitations": "Small numeric differences stem from checkpoint spatial coefficients rounded to four decimals and published predictions rounded to six decimals; checkpoint not modified. CPU only verified."
+}
