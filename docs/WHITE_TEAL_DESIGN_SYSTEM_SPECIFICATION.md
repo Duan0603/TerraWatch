@@ -74,3 +74,19 @@ Label Small      10px / Weight 700            -> Badge cấp độ nguy cơ
    - Kênh thông báo độ ưu tiên tối đa (`Importance.max`, `Priority.high`).
    - Tần số âm thanh còi báo động `800Hz - 1200Hz` dạng xung nhịp liên tục để xuyên qua tiếng mưa bão.
    - Hỗ trợ đầy đủ cờ tắt chuông khi người dùng xác nhận đã đến nơi trú ẩn an toàn.
+
+---
+
+## 6. Thành Phần Giao Diện Chuẩn (Reusable Design Components)
+
+### 6.1 Huy Hiệu Nguy Cơ (`HazardBadge`)
+Widget chuẩn hóa hiển thị cấp độ rủi ro thiên tai trên Mobile:
+```dart
+// Cách dùng 1: Truyền trực tiếp Style
+HazardBadge(style: HazardBadgeTheme.critical)
+
+// Cách dùng 2: Tự động chuẩn hóa từ chuỗi dữ liệu Backend
+HazardBadge.fromSeverity('CRITICAL', showEnglish: false)
+```
+- **Hỗ trợ song ngữ:** Tiếng Việt (`labelVi`) và Tiếng Anh (`labelEn`).
+- **Hình dạng:** Pill bo tròn chuẩn (`AppRadius.rPill`), tích hợp icon cảnh báo nhận diện nhanh.
