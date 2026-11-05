@@ -104,3 +104,18 @@ export const MOUNTAIN_LOCATIONS = [
 export function getLocationById(id) {
   return MOUNTAIN_LOCATIONS.find(loc => loc.id === id);
 }
+
+// Re-export geospatial risk utilities for deep mapping integration
+export {
+  VIETNAM_LANDSLIDE_GEOJSON,
+  LANDSLIDE_RISK_ZONES,
+  getLandslideZoneById,
+  getZonesByProvince,
+  getZonesBySusceptibilityTier,
+  getCriticalRiskZones,
+  calculateDistanceKm,
+  findNearestRiskZone,
+  evaluateRainfallAlertLevel,
+  getNationalLandslideRiskSummary
+} from './vietnamRiskData.js';
+
