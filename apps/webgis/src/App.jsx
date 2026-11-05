@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import CitizenPage from './pages/CitizenPage';
+const ModelDemoPage = lazy(() => import('./pages/ModelDemoPage'));
 
 // Route bảo vệ: yêu cầu đăng nhập trước khi vào Trung tâm Chỉ huy
 function ProtectedRoute({ children }) {
@@ -28,6 +29,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/model-demo" element={<Suspense fallback={<p role="status">Đang mở demo mô hình…</p>}><ModelDemoPage /></Suspense>} />
           <Route
             path="/"
             element={

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MapPin, Clock, Ruler } from 'lucide-react';
 import MapViewer from './MapViewer';
 import RainfallEvidencePanel from './RainfallEvidencePanel';
+import LiveRainfallPanel from './LiveRainfallPanel';
 import { fmtVN } from '../utils/time';
 
 export default function DetailPanel({ selectedEvent, events, onSelectEvent, fieldReports, aoi, className = '' }) {
@@ -41,11 +42,18 @@ export default function DetailPanel({ selectedEvent, events, onSelectEvent, fiel
         aoi={aoi}
       />
 
-      {selectedEvent && evidenceOpen && <RainfallEvidencePanel selectedEvent={selectedEvent} onClose={() => setEvidenceOpen(false)} />}
-      {selectedEvent && !evidenceOpen && (
-        <button className="btn-ghost" style={{ position: 'absolute', bottom: 20, right: 20, zIndex: 10, background: '#fff' }} onClick={() => setEvidenceOpen(true)}>
-          Xem bằng chứng mưa & địa hình
-        </button>
+      {/* Hai nguồn bằng chứng: dự báo đã lưu của hệ thống (trên) và mưa cập nhật theo tọa độ (dưới) */}
+      {selectedEvent && (
+        <div className="map-evidence-stack">
+          {evidenceOpen
+            ? <RainfallEvidencePanel selectedEvent={selectedEvent} onClose={() => setEvidenceOpen(false)} />
+            : (
+              <button className="btn-ghost" style={{ background: '#fff' }} onClick={() => setEvidenceOpen(true)}>
+                Xem bằng chứng dự báo & địa hình
+              </button>
+            )}
+          <LiveRainfallPanel key={`${selectedEvent.lat},${selectedEvent.lng}`} selectedEvent={selectedEvent} />
+        </div>
       )}
     </main>
   );

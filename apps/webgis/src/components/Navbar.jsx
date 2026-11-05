@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { ShieldCheck, LogOut, Activity, BellRing, History } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -34,6 +35,7 @@ export default function Navbar({
 
       {/* Right controls */}
       <div className="nav-right">
+        <Link to="/model-demo" className="btn-ghost nav-model-demo-link">Demo mô hình</Link>
         <div className="status-chip">
           <span className="live-dot" />
           Hệ thống trực tuyến

@@ -9,12 +9,15 @@ import BroadcastHistoryModal from '../components/BroadcastHistoryModal';
 import ReviewDialog from '../components/ReviewDialog';
 import forecastApi, { apiErrorMessage } from '../api/forecastApi';
 import { useAuth } from '../context/AuthContext';
+import { useResponsive } from '../hooks/useResponsive';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
 const REFRESH_MS = 60000; // làm mới để trạng thái "hết hạn" luôn đúng
 
 export default function DashboardPage() {
   const { user, role } = useAuth();
   const isAdmin = role === 'admin';
+  const { isMobile } = useResponsive();
 
   const [events, setEvents] = useState([]);
   const [selectedEventId, setSelectedEventId] = useState(null);
@@ -29,6 +32,17 @@ export default function DashboardPage() {
   const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [broadcastTargetEvent, setBroadcastTargetEvent] = useState(null);
+
+  // Keyboard navigation shortcuts for emergency operations
+  useKeyboardShortcuts({
+    Escape: () => {
+      if (isBroadcastOpen) setIsBroadcastOpen(false);
+      else if (isHistoryOpen) setIsHistoryOpen(false);
+      else if (alertPromptEvent) setAlertPromptEvent(null);
+    },
+    'Alt+m': () => setMobileTab('map'),
+    'Alt+l': () => setMobileTab('list'),
+  });
 
   const loadEvents = useCallback(async () => {
     try {
@@ -119,16 +133,27 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="mobile-tab-bar">
-        <button className={`mobile-tab-btn${mobileTab === 'list' ? ' active' : ''}`} onClick={() => setMobileTab('list')}>
-          <List size={20} />
-          Danh sách
+      {/* Mobile Bottom Tab Bar */}
+      <nav className="mobile-tab-bar" role="tablist" aria-label="Điều hướng giao diện di động">
+        <button
+          role="tab"
+          aria-selected={mobileTab === 'list'}
+          className={`mobile-tab-btn${mobileTab === 'list' ? ' active' : ''}`}
+          onClick={() => setMobileTab('list')}
+        >
+          <List size={20} aria-hidden="true" />
+          <span>Danh sách</span>
         </button>
-        <button className={`mobile-tab-btn${mobileTab === 'map' ? ' active' : ''}`} onClick={() => setMobileTab('map')}>
-          <Map size={20} />
-          Bản đồ
+        <button
+          role="tab"
+          aria-selected={mobileTab === 'map'}
+          className={`mobile-tab-btn${mobileTab === 'map' ? ' active' : ''}`}
+          onClick={() => setMobileTab('map')}
+        >
+          <Map size={20} aria-hidden="true" />
+          <span>Bản đồ</span>
         </button>
-      </div>
+      </nav>
 
       <ReviewDialog target={reviewTarget} onCancel={() => setReviewTarget(null)} onSubmit={submitReview} />
 

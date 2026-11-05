@@ -2,6 +2,10 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
+from typing import Literal
+from datetime import datetime, timedelta
+from functools import lru_cache
+from app.services.live_gru import LiveGRU
 from app.services.inference import LandslidePredictor
 from app.services.event_listener import start_redis_listener
 
@@ -24,6 +28,55 @@ app.add_middleware(
 )
 
 predictor = LandslidePredictor()
+
+
+@lru_cache(maxsize=1)
+def live_gru_model():
+    return LiveGRU()
+
+
+class LiveStaticFeatures(BaseModel):
+    slope_deg: float = Field(..., ge=0, le=90, allow_inf_nan=False)
+    clay_pct: float = Field(..., ge=0, le=100, allow_inf_nan=False)
+    sand_pct: float = Field(..., ge=0, le=100, allow_inf_nan=False)
+    bulk_density_g_cm3: float = Field(..., gt=0, le=3, allow_inf_nan=False)
+
+
+class LiveGRURequest(BaseModel):
+    unit_id: str = Field(..., min_length=1, max_length=100)
+    history: List[float] = Field(..., min_length=168, max_length=168)
+    forecast_24h_mm: float = Field(..., ge=0, allow_inf_nan=False)
+    static: LiveStaticFeatures
+    issue_time: datetime
+    weather_source: Literal['OPEN_METEO']
+
+
+@app.get('/api/v1/models/gru/info')
+def gru_model_info():
+    try:
+        model = live_gru_model()
+        return {'ready': True, 'model_id': model.card['model_id'],
+                'checkpoint_sha256': model.card['source_checkpoint_sha256'],
+                'experimental_only': True}
+    except (OSError, ValueError, KeyError):
+        return {'ready': False, 'reason': 'GRU_ARTIFACT_UNAVAILABLE_OR_INVALID'}
+
+
+@app.post('/api/v1/inference/gru/live')
+def run_live_gru(req: LiveGRURequest):
+    if req.issue_time.tzinfo is None:
+        raise HTTPException(status_code=422, detail='issue_time requires a timezone')
+    try:
+        result = live_gru_model().predict(req.history, req.forecast_24h_mm, req.static.model_dump())
+    except (OSError, KeyError):
+        raise HTTPException(status_code=503, detail='GRU artifact unavailable')
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+    return {**result, 'unit_id': req.unit_id, 'issue_time': req.issue_time.isoformat(),
+            'valid_until': (req.issue_time+timedelta(hours=24)).isoformat(),
+            'weather_source': req.weather_source, 'experimental_source_shift': True,
+            'experimental_rolling_clock': True,
+            'notice': 'Dự báo thử nghiệm bằng Open-Meteo; khác nguồn và mốc giờ dữ liệu train IMERG + GFS.'}
 
 class InferenceRequest(BaseModel):
     satellite_scene_id: str = Field(..., example="S2A_MSIL2A_20261001T033531")

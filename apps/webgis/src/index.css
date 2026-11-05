@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
+.nav-model-demo-link { text-decoration: none; white-space: nowrap; }
+.model-demo-login-link { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 18px; padding: 12px 10px; border: 1px solid #3c7066; border-radius: 8px; color: #7ee2c3; font-size: 12px; text-decoration: none; text-align: center; }
+.model-demo-login-link:hover { background: #16483f; color: white; }
+.model-demo-login-link:focus-visible { outline: 3px solid #7ee2c3; outline-offset: 3px; }
+
 :root {
   /* Brand */
   --primary: #087B70;
@@ -854,3 +859,9 @@ body.page-login {
 
 
 
+
+/* Bảng bằng chứng xếp chồng ở góc dưới phải bản đồ */
+.map-evidence-stack { position: absolute; bottom: 20px; right: 20px; width: min(380px, calc(100% - 32px)); max-height: calc(100% - 100px); overflow-y: auto; z-index: 10; display: flex; flex-direction: column; gap: 12px; }
+.map-evidence-stack .live-rain-panel { position: static; width: 100%; max-height: none; flex-shrink: 0; }
+.map-evidence-stack .evidence-panel { flex-shrink: 0; }
+@media (max-width: 600px) { .map-evidence-stack { bottom: 12px; right: 12px; width: calc(100% - 24px); max-height: 60%; } }

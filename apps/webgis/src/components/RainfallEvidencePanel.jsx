@@ -60,8 +60,7 @@ export default function RainfallEvidencePanel({ selectedEvent: ev, onClose }) {
 
   return (
     <div className="evidence-panel" style={{
-      position: 'absolute', bottom: 20, right: 20, width: 380, maxHeight: 'calc(100vh - 110px)', overflowY: 'auto',
-      background: '#fff', border: '1px solid #DCE5E2', borderRadius: 14, boxShadow: '0 8px 32px rgba(23,37,36,0.12)', zIndex: 10,
+      width: '100%', background: '#fff', border: '1px solid #DCE5E2', borderRadius: 14, boxShadow: '0 8px 32px rgba(23,37,36,0.12)',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 10px', borderBottom: '1px solid #DCE5E2' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
