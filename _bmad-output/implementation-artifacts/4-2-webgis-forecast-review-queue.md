@@ -2,6 +2,9 @@
 
 Status: review
 
+> **Rework 2026-11-05 (Huy):** story ban đầu viết theo dữ liệu giả/Mapbox; đã nối API thật theo `epics.md` (pivot 13/10). Hàng đợi dùng `GET /forecasts/review-queue` (endpoint mới); duyệt qua `PATCH /forecasts/{id}/review` có lý do, chặn hết hạn/đã duyệt/bị thay thế (409).
+> **Còn thiếu để `done`:** demo end-to-end trên stack thật (test backend đã qua trên Postgres thật 2026-11-05, 77/77; UI mới thử trên API giả) với dữ liệu forecast thật (Story 5.4).
+
 ## Story Overview
 **Story Key:** `4-2-webgis-forecast-review-queue`  
 **Epic:** Epic 4: Forecast orchestration, WebGIS and warnings  
