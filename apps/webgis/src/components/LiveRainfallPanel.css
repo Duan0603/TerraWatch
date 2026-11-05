@@ -1,0 +1,26 @@
+.live-rain-panel { position: absolute; bottom: 20px; right: 20px; width: min(380px, calc(100% - 32px)); max-height: calc(100% - 100px); overflow-y: auto; z-index: 10; background: var(--surface); border-radius: 14px; box-shadow: 0 8px 28px #17252426; color: var(--text-1); scrollbar-width: thin; scrollbar-color: #9cb9b0 transparent; }
+.live-rain-panel header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.live-rain-panel header > div { display: flex; gap: 8px; align-items: center; color: var(--primary-dark); }
+.live-rain-panel h2 { font-size: 13px; }
+.live-rain-panel button { background: var(--surface-2); border: 1px solid var(--border); color: var(--primary-dark); border-radius: 6px; padding: 7px; display: inline-flex; cursor: pointer; }
+.live-rain-panel :focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+.live-rain-body { padding: 12px 16px 16px; }
+.live-rain-location { font-size: 11px; line-height: 1.7; color: #435c55; }
+.live-rain-source { font-size: 10px; color: #435c55; line-height: 1.7; margin-top: 8px; }
+.live-rain-status { font-size: 11px; font-weight: 600; margin: 12px 0; padding: 9px; background: var(--surface-2); border-radius: 6px; color: var(--primary-dark); }
+.live-rain-error { color: #8a3b22; font-size: 11px; line-height: 1.7; margin: 8px 0; overflow-wrap: anywhere; }
+.live-rain-values { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.live-rain-values > div { padding: 10px 4px; background: var(--surface-2); border-radius: 6px; text-align: center; }
+.live-rain-values dt { font-size: 9px; color: #435c55; line-height: 1.5; }
+.live-rain-values dd { font-size: 13px; font-weight: 700; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.live-rain-coverage { color: #435c55; font-size: 10px; line-height: 1.7; margin: 12px 0; }
+.live-rain-chart { border-top: 1px solid var(--border); padding-top: 12px; }
+.live-rain-chart figcaption { font-size: 11px; font-weight: 600; }
+.live-rain-chart figcaption span { display: block; font-size: 10px; font-weight: 400; color: #435c55; margin-top: 5px; }
+.live-rain-chart svg { width: 100%; margin-top: 8px; }
+.live-rain-chart text { font-size: 9px; fill: #435c55; font-family: inherit; }
+.live-rain-chart-key { display: flex; justify-content: space-between; font-size: 9px; color: #435c55; }
+.live-rain-model-hold { margin: 14px 0; font-size: 10px; line-height: 1.7; color: #6d4b20; background: #fff6e7; padding: 9px; border-radius: 6px; }
+.live-rain-panel footer { display: flex; align-items: center; gap: 12px; justify-content: space-between; margin-top: 12px; font-size: 9px; line-height: 1.8; color: #435c55; border-top: 1px solid var(--border); padding-top: 10px; }
+.live-rain-panel a { display: inline-block; margin-top: 10px; font-size: 10px; color: var(--primary-dark); text-underline-offset: 3px; }
+@media (max-width: 600px) { .live-rain-panel { bottom: 12px; right: 12px; width: calc(100% - 24px); max-height: 60%; } }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Mountain, MapPin, Satellite, ShieldAlert } from 'lucide-react';
 import MapViewer from './MapViewer';
-import RainfallEvidencePanel from './RainfallEvidencePanel';
+import LiveRainfallPanel from './LiveRainfallPanel';
 
 export default function DetailPanel({ selectedEvent, events, onSelectEvent, className = '' }) {
   if (!selectedEvent) return null;
@@ -44,7 +44,8 @@ export default function DetailPanel({ selectedEvent, events, onSelectEvent, clas
       />
 
       {/* 3. Bảng Bằng Chứng Dự Báo Mưa 24H (Story 4.3 AC4) */}
-      <RainfallEvidencePanel
+      <LiveRainfallPanel
+        key={`${selectedEvent.lat},${selectedEvent.lng}`}
         selectedEvent={selectedEvent}
       />
     </main>

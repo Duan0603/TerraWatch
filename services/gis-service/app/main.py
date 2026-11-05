@@ -15,6 +15,7 @@ from app.pipeline.terrain_client import OpenMeteoElevationClient
 from app.pipeline.terrain_repository import TerrainRepository
 from app.pipeline.snapshot_processor import SnapshotProcessor
 from app.pipeline.snapshot_repository import SnapshotRepository
+from app.pipeline.live_rainfall import LiveRainfallService
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("gis-service")
@@ -41,6 +42,34 @@ terrain_client = OpenMeteoElevationClient()
 terrain_repo = TerrainRepository()
 snapshot_processor = SnapshotProcessor()
 snapshot_repo = SnapshotRepository()
+live_rainfall = LiveRainfallService()
+
+
+@app.on_event("startup")
+def start_live_weather():
+    live_rainfall.start()
+
+
+@app.on_event("shutdown")
+def stop_live_weather():
+    live_rainfall.stop()
+
+
+@app.get("/api/v1/gis/rainfall/live/status")
+def live_weather_status():
+    return {"success": True, **live_rainfall.state}
+
+
+@app.get("/api/v1/gis/rainfall/live")
+def live_weather(latitude: float = Query(..., ge=-90, le=90), longitude: float = Query(..., ge=-180, le=180)):
+    """Read scheduled snapshots only; arbitrary browser requests never trigger upstream calls."""
+    try:
+        result = live_rainfall.read(latitude, longitude)
+    except Exception:
+        raise HTTPException(status_code=503, detail="Kho dữ liệu mưa tạm thời chưa sẵn sàng. Vui lòng thử lại.")
+    if result is None:
+        raise HTTPException(status_code=404, detail="Điểm chưa có dữ liệu. Tác vụ tự động đang khởi tạo hoặc điểm chưa đăng ký theo dõi.")
+    return {"success": True, **result}
 
 # --- Request / Response Models ---
 class IngestRainfallRequest(BaseModel):
