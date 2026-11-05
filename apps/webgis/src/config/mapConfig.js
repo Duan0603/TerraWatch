@@ -1,6 +1,6 @@
 // MapLibre GL JS Configuration & 3D Terrain Presets
 
-const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY;
+const MAPTILER_KEY = import.meta.env?.VITE_MAPTILER_KEY || (typeof process !== 'undefined' ? process.env?.VITE_MAPTILER_KEY : undefined);
 const HAS_MAPTILER_KEY = Boolean(MAPTILER_KEY);
 
 // Nền bản đồ: MapTiler Topo (hillshade + đường đồng mức + màu thực vật/đất phủ theo loại)

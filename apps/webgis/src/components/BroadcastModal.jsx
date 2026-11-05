@@ -34,6 +34,20 @@ const TEMPLATES = [
   }
 ];
 
+/**
+ * @typedef {Object} BroadcastModalProps
+ * @property {boolean} isOpen - Trạng thái hiển thị modal phát tán
+ * @property {function} onClose - Callback đóng modal
+ * @property {Object|null} [event] - Sự cố trọng tâm cần phát thông báo
+ * @property {Object[]} [allEvents] - Danh sách tất cả sự cố hiện hành
+ * @property {Object|null} [currentUser] - Người dùng đăng nhập có quyền chỉ huy
+ * @property {function} [onBroadcastSuccess] - Callback khi phát lệnh thành công
+ */
+
+/**
+ * Component BroadcastModal - Cửa sổ điều hành phát lệnh khẩn cấp qua đa kênh (SMS, FCM, Loa còi)
+ * @param {BroadcastModalProps} props
+ */
 export default function BroadcastModal({ 
   isOpen, 
   onClose, 
@@ -158,7 +172,11 @@ export default function BroadcastModal({
       zIndex: 1000,
       padding: 20
     }}>
-      <div style={{
+      <div 
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="broadcast-modal-heading"
+        style={{
         maxWidth: 720,
         width: '100%',
         background: 'rgba(13, 19, 34, 0.98)',
