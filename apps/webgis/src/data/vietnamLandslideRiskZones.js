@@ -1,0 +1,21542 @@
+export const riskZonesData = {
+  "type": "FeatureCollection",
+  "metadata": {
+    "dataset_name": "Vietnam Mountainous Landslide Susceptibility Zones",
+    "version": "2.4.0",
+    "crs": "EPSG:4326 (WGS84)",
+    "total_zones": 103,
+    "generated_date": "2026-11-05",
+    "provider": "TerraWatch Geospatial AI Research Group",
+    "accreditation": "Ministry of Natural Resources and Environment (MONRE) Standard"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "LC-SP",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.017896,
+              22.3364
+            ],
+            [
+              104.0592,
+              22.368455
+            ],
+            [
+              104.064536,
+              22.404207
+            ],
+            [
+              104.025891,
+              22.425128
+            ],
+            [
+              103.972084,
+              22.427249
+            ],
+            [
+              103.9335,
+              22.426622
+            ],
+            [
+              103.912389,
+              22.436665
+            ],
+            [
+              103.893337,
+              22.451268
+            ],
+            [
+              103.869137,
+              22.457677
+            ],
+            [
+              103.8438,
+              22.456787
+            ],
+            [
+              103.818133,
+              22.459253
+            ],
+            [
+              103.787818,
+              22.466214
+            ],
+            [
+              103.754575,
+              22.466831
+            ],
+            [
+              103.725733,
+              22.455155
+            ],
+            [
+              103.701157,
+              22.437418
+            ],
+            [
+              103.674129,
+              22.419076
+            ],
+            [
+              103.650172,
+              22.39588
+            ],
+            [
+              103.650793,
+              22.365123
+            ],
+            [
+              103.686136,
+              22.3364
+            ],
+            [
+              103.732481,
+              22.319834
+            ],
+            [
+              103.752784,
+              22.308441
+            ],
+            [
+              103.738578,
+              22.285128
+            ],
+            [
+              103.717942,
+              22.247269
+            ],
+            [
+              103.720249,
+              22.212129
+            ],
+            [
+              103.746509,
+              22.194177
+            ],
+            [
+              103.779869,
+              22.188154
+            ],
+            [
+              103.811528,
+              22.181931
+            ],
+            [
+              103.8438,
+              22.176787
+            ],
+            [
+              103.875743,
+              22.183507
+            ],
+            [
+              103.901286,
+              22.2031
+            ],
+            [
+              103.920455,
+              22.224344
+            ],
+            [
+              103.938984,
+              22.240662
+            ],
+            [
+              103.9553,
+              22.257437
+            ],
+            [
+              103.961442,
+              22.279076
+            ],
+            [
+              103.961924,
+              22.300114
+            ],
+            [
+              103.977512,
+              22.316501
+            ],
+            [
+              104.017896,
+              22.3364
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "LC-SP",
+        "name_vi": "Sa Pa",
+        "name_en": "Sa Pa",
+        "province_vi": "Lào Cai",
+        "province_en": "Lao Cai",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          103.8438,
+          22.3364
+        ],
+        "topography": {
+          "mean_elevation_m": 1520,
+          "peak_elevation_m": 3143,
+          "mean_slope_degrees": 32.5,
+          "max_slope_degrees": 68.0,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 1420.5,
+          "topographic_wetness_index_mean": 7.4,
+          "annual_rainfall_mm": 1800,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 2.5,
+          "fault_line_proximity_km": 1.2
+        },
+        "hazard_inventory": {
+          "historical_events_count": 48,
+          "last_major_event_year": 2020,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-LC-SP",
+          "station_name": "Trạm Viễn Thám Sa Pa",
+          "station_lat": 22.3514,
+          "station_lng": 103.8558,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LC-BX",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              103.859377,
+              22.5621
+            ],
+            [
+              103.876868,
+              22.598107
+            ],
+            [
+              103.853766,
+              22.629701
+            ],
+            [
+              103.805503,
+              22.647051
+            ],
+            [
+              103.759238,
+              22.654522
+            ],
+            [
+              103.724409,
+              22.660172
+            ],
+            [
+              103.695796,
+              22.665003
+            ],
+            [
+              103.671016,
+              22.670888
+            ],
+            [
+              103.649361,
+              22.688451
+            ],
+            [
+              103.6215,
+              22.722867
+            ],
+            [
+              103.578677,
+              22.756308
+            ],
+            [
+              103.531172,
+              22.760555
+            ],
+            [
+              103.500413,
+              22.729811
+            ],
+            [
+              103.489066,
+              22.688309
+            ],
+            [
+              103.475445,
+              22.660102
+            ],
+            [
+              103.446497,
+              22.642896
+            ],
+            [
+              103.421513,
+              22.620307
+            ],
+            [
+              103.42747,
+              22.589459
+            ],
+            [
+              103.459206,
+              22.5621
+            ],
+            [
+              103.482777,
+              22.54254
+            ],
+            [
+              103.477728,
+              22.520255
+            ],
+            [
+              103.458945,
+              22.487051
+            ],
+            [
+              103.45269,
+              22.448829
+            ],
+            [
+              103.467184,
+              22.415038
+            ],
+            [
+              103.49571,
+              22.387875
+            ],
+            [
+              103.534149,
+              22.370186
+            ],
+            [
+              103.579872,
+              22.373313
+            ],
+            [
+              103.6215,
+              22.402867
+            ],
+            [
+              103.648166,
+              22.441169
+            ],
+            [
+              103.668039,
+              22.459853
+            ],
+            [
+              103.700499,
+              22.452683
+            ],
+            [
+              103.746291,
+              22.443175
+            ],
+            [
+              103.781993,
+              22.45441
+            ],
+            [
+              103.793055,
+              22.482896
+            ],
+            [
+              103.797551,
+              22.51086
+            ],
+            [
+              103.821561,
+              22.533891
+            ],
+            [
+              103.859377,
+              22.5621
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "LC-BX",
+        "name_vi": "Bát Xát",
+        "name_en": "Bat Xat",
+        "province_vi": "Lào Cai",
+        "province_en": "Lao Cai",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          103.6215,
+          22.5621
+        ],
+        "topography": {
+          "mean_elevation_m": 1280,
+          "peak_elevation_m": 2840,
+          "mean_slope_degrees": 34.2,
+          "max_slope_degrees": 65.5,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 1455.7,
+          "topographic_wetness_index_mean": 7.75,
+          "annual_rainfall_mm": 1910,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 3.3,
+          "fault_line_proximity_km": 2.1
+        },
+        "hazard_inventory": {
+          "historical_events_count": 54,
+          "last_major_event_year": 2021,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-LC-BX",
+          "station_name": "Trạm Viễn Thám Bát Xát",
+          "station_lat": 22.5771,
+          "station_lng": 103.6335,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LC-BH",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.471681,
+              22.5385
+            ],
+            [
+              104.448289,
+              22.560355
+            ],
+            [
+              104.427437,
+              22.577737
+            ],
+            [
+              104.417699,
+              22.596387
+            ],
+            [
+              104.407782,
+              22.616188
+            ],
+            [
+              104.384957,
+              22.627778
+            ],
+            [
+              104.355257,
+              22.628424
+            ],
+            [
+              104.33281,
+              22.633393
+            ],
+            [
+              104.315672,
+              22.659125
+            ],
+            [
+              104.2882,
+              22.697185
+            ],
+            [
+              104.24737,
+              22.71778
+            ],
+            [
+              104.21107,
+              22.702569
+            ],
+            [
+              104.194411,
+              22.664273
+            ],
+            [
+              104.190351,
+              22.628785
+            ],
+            [
+              104.182958,
+              22.606872
+            ],
+            [
+              104.16986,
+              22.591398
+            ],
+            [
+              104.15914,
+              22.574869
+            ],
+            [
+              104.150564,
+              22.55729
+            ],
+            [
+              104.135866,
+              22.5385
+            ],
+            [
+              104.117575,
+              22.515207
+            ],
+            [
+              104.111874,
+              22.488812
+            ],
+            [
+              104.126874,
+              22.466387
+            ],
+            [
+              104.150533,
+              22.449063
+            ],
+            [
+              104.169099,
+              22.428606
+            ],
+            [
+              104.187349,
+              22.403257
+            ],
+            [
+              104.217954,
+              22.389073
+            ],
+            [
+              104.257358,
+              22.403075
+            ],
+            [
+              104.2882,
+              22.437185
+            ],
+            [
+              104.305684,
+              22.46173
+            ],
+            [
+              104.325926,
+              22.458249
+            ],
+            [
+              104.362318,
+              22.439106
+            ],
+            [
+              104.406209,
+              22.429613
+            ],
+            [
+              104.440207,
+              22.439747
+            ],
+            [
+              104.460685,
+              22.461398
+            ],
+            [
+              104.474704,
+              22.485944
+            ],
+            [
+              104.481278,
+              22.512141
+            ],
+            [
+              104.471681,
+              22.5385
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "LC-BH",
+        "name_vi": "Bắc Hà",
+        "name_en": "Bac Ha",
+        "province_vi": "Lào Cai",
+        "province_en": "Lao Cai",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          104.2882,
+          22.5385
+        ],
+        "topography": {
+          "mean_elevation_m": 980,
+          "peak_elevation_m": 1960,
+          "mean_slope_degrees": 28.4,
+          "max_slope_degrees": 58.2,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 1490.9,
+          "topographic_wetness_index_mean": 8.1,
+          "annual_rainfall_mm": 2020,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.1,
+          "fault_line_proximity_km": 3.0
+        },
+        "hazard_inventory": {
+          "historical_events_count": 32,
+          "last_major_event_year": 2022,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-LC-BH",
+          "station_name": "Trạm Viễn Thám Bắc Hà",
+          "station_lat": 22.5535,
+          "station_lng": 104.3002,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LC-MK",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.293578,
+              22.758
+            ],
+            [
+              104.260117,
+              22.773638
+            ],
+            [
+              104.263964,
+              22.791359
+            ],
+            [
+              104.286177,
+              22.820796
+            ],
+            [
+              104.291091,
+              22.852442
+            ],
+            [
+              104.2683,
+              22.871208
+            ],
+            [
+              104.235844,
+              22.879222
+            ],
+            [
+              104.208387,
+              22.892171
+            ],
+            [
+              104.180745,
+              22.914179
+            ],
+            [
+              104.145,
+              22.929608
+            ],
+            [
+              104.10705,
+              22.923814
+            ],
+            [
+              104.077368,
+              22.901158
+            ],
+            [
+              104.056872,
+              22.875598
+            ],
+            [
+              104.042174,
+              22.85241
+            ],
+            [
+              104.035201,
+              22.828981
+            ],
+            [
+              104.034248,
+              22.807263
+            ],
+            [
+              104.022374,
+              22.792385
+            ],
+            [
+              103.983229,
+              22.779976
+            ],
+            [
+              103.93014,
+              22.758
+            ],
+            [
+              103.9022,
+              22.725017
+            ],
+            [
+              103.922443,
+              22.695593
+            ],
+            [
+              103.97143,
+              22.680796
+            ],
+            [
+              104.012681,
+              22.672461
+            ],
+            [
+              104.034687,
+              22.656716
+            ],
+            [
+              104.054125,
+              22.636735
+            ],
+            [
+              104.084083,
+              22.629057
+            ],
+            [
+              104.117634,
+              22.638433
+            ],
+            [
+              104.145,
+              22.649608
+            ],
+            [
+              104.17016,
+              22.648068
+            ],
+            [
+              104.201671,
+              22.638044
+            ],
+            [
+              104.238592,
+              22.633111
+            ],
+            [
+              104.275787,
+              22.637918
+            ],
+            [
+              104.313611,
+              22.649
+            ],
+            [
+              104.348995,
+              22.667263
+            ],
+            [
+              104.363895,
+              22.69662
+            ],
+            [
+              104.341146,
+              22.731354
+            ],
+            [
+              104.293578,
+              22.758
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "LC-MK",
+        "name_vi": "Mường Khương",
+        "name_en": "Muong Khuong",
+        "province_vi": "Lào Cai",
+        "province_en": "Lao Cai",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          104.145,
+          22.758
+        ],
+        "topography": {
+          "mean_elevation_m": 1050,
+          "peak_elevation_m": 2100,
+          "mean_slope_degrees": 29.1,
+          "max_slope_degrees": 61.0,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 1526.1,
+          "topographic_wetness_index_mean": 8.45,
+          "annual_rainfall_mm": 2130,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.9,
+          "fault_line_proximity_km": 3.9
+        },
+        "hazard_inventory": {
+          "historical_events_count": 27,
+          "last_major_event_year": 2023,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-LC-MK",
+          "station_name": "Trạm Viễn Thám Mường Khương",
+          "station_lat": 22.773,
+          "station_lng": 104.157,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LC-SM",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.36831,
+              22.705
+            ],
+            [
+              104.362619,
+              22.717183
+            ],
+            [
+              104.379145,
+              22.73489
+            ],
+            [
+              104.395609,
+              22.759909
+            ],
+            [
+              104.396261,
+              22.785235
+            ],
+            [
+              104.382851,
+              22.806353
+            ],
+            [
+              104.361638,
+              22.82333
+            ],
+            [
+              104.333884,
+              22.832574
+            ],
+            [
+              104.302339,
+              22.827263
+            ],
+            [
+              104.275,
+              22.809728
+            ],
+            [
+              104.254996,
+              22.794457
+            ],
+            [
+              104.234978,
+              22.791708
+            ],
+            [
+              104.209947,
+              22.79385
+            ],
+            [
+              104.188727,
+              22.786075
+            ],
+            [
+              104.181375,
+              22.766949
+            ],
+            [
+              104.178995,
+              22.748708
+            ],
+            [
+              104.160486,
+              22.737866
+            ],
+            [
+              104.122337,
+              22.726227
+            ],
+            [
+              104.089316,
+              22.705
+            ],
+            [
+              104.087863,
+              22.67898
+            ],
+            [
+              104.116976,
+              22.659646
+            ],
+            [
+              104.153992,
+              22.649909
+            ],
+            [
+              104.182539,
+              22.643822
+            ],
+            [
+              104.203517,
+              22.637824
+            ],
+            [
+              104.22214,
+              22.632804
+            ],
+            [
+              104.238463,
+              22.625841
+            ],
+            [
+              104.253892,
+              22.610606
+            ],
+            [
+              104.275,
+              22.589728
+            ],
+            [
+              104.303443,
+              22.5778
+            ],
+            [
+              104.3304,
+              22.584975
+            ],
+            [
+              104.349444,
+              22.603325
+            ],
+            [
+              104.368061,
+              22.617545
+            ],
+            [
+              104.395097,
+              22.625536
+            ],
+            [
+              104.420611,
+              22.638708
+            ],
+            [
+              104.422655,
+              22.662622
+            ],
+            [
+              104.397093,
+              22.688024
+            ],
+            [
+              104.36831,
+              22.705
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "LC-SM",
+        "name_vi": "Si Ma Cai",
+        "name_en": "Si Ma Cai",
+        "province_vi": "Lào Cai",
+        "province_en": "Lao Cai",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          104.275,
+          22.705
+        ],
+        "topography": {
+          "mean_elevation_m": 1120,
+          "peak_elevation_m": 1820,
+          "mean_slope_degrees": 30.5,
+          "max_slope_degrees": 59.4,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 1561.3,
+          "topographic_wetness_index_mean": 8.8,
+          "annual_rainfall_mm": 2240,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 5.7,
+          "fault_line_proximity_km": 4.8
+        },
+        "hazard_inventory": {
+          "historical_events_count": 21,
+          "last_major_event_year": 2024,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-LC-SM",
+          "station_name": "Trạm Viễn Thám Si Ma Cai",
+          "station_lat": 22.72,
+          "station_lng": 104.287,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LC-BT",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.306261,
+              22.381
+            ],
+            [
+              104.319282,
+              22.405389
+            ],
+            [
+              104.323396,
+              22.432582
+            ],
+            [
+              104.316935,
+              22.459738
+            ],
+            [
+              104.30911,
+              22.490006
+            ],
+            [
+              104.298769,
+              22.525629
+            ],
+            [
+              104.272174,
+              22.55311
+            ],
+            [
+              104.226615,
+              22.55051
+            ],
+            [
+              104.180896,
+              22.516502
+            ],
+            [
+              104.152,
+              22.480674
+            ],
+            [
+              104.132227,
+              22.473725
+            ],
+            [
+              104.102575,
+              22.493284
+            ],
+            [
+              104.061783,
+              22.510206
+            ],
+            [
+              104.026395,
+              22.504773
+            ],
+            [
+              104.004103,
+              22.483614
+            ],
+            [
+              103.984255,
+              22.46108
+            ],
+            [
+              103.959459,
+              22.438946
+            ],
+            [
+              103.941174,
+              22.411738
+            ],
+            [
+              103.943445,
+              22.381
+            ],
+            [
+              103.961977,
+              22.353295
+            ],
+            [
+              103.98246,
+              22.329976
+            ],
+            [
+              104.002726,
+              22.309738
+            ],
+            [
+              104.031176,
+              22.29717
+            ],
+            [
+              104.065555,
+              22.295816
+            ],
+            [
+              104.090766,
+              22.293302
+            ],
+            [
+              104.102525,
+              22.268603
+            ],
+            [
+              104.117893,
+              22.22106
+            ],
+            [
+              104.152,
+              22.180674
+            ],
+            [
+              104.195229,
+              22.178283
+            ],
+            [
+              104.226665,
+              22.211376
+            ],
+            [
+              104.243191,
+              22.250399
+            ],
+            [
+              104.259609,
+              22.27496
+            ],
+            [
+              104.282036,
+              22.290778
+            ],
+            [
+              104.298464,
+              22.31108
+            ],
+            [
+              104.300395,
+              22.33634
+            ],
+            [
+              104.298478,
+              22.359644
+            ],
+            [
+              104.306261,
+              22.381
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "LC-BT",
+        "name_vi": "Bảo Thắng",
+        "name_en": "Bao Thang",
+        "province_vi": "Lào Cai",
+        "province_en": "Lao Cai",
+        "susceptibility_tier": "MODERATE",
+        "center_coordinate": [
+          104.152,
+          22.381
+        ],
+        "topography": {
+          "mean_elevation_m": 450,
+          "peak_elevation_m": 1350,
+          "mean_slope_degrees": 21.0,
+          "max_slope_degrees": 47.0,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 1596.5,
+          "topographic_wetness_index_mean": 9.15,
+          "annual_rainfall_mm": 2350,
+          "critical_rainfall_threshold_24h_mm": 220.0,
+          "critical_rainfall_threshold_72h_mm": 341.0
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 2.5,
+          "fault_line_proximity_km": 5.7
+        },
+        "hazard_inventory": {
+          "historical_events_count": 16,
+          "last_major_event_year": 2020,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.65
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 90.0,
+          "watch_orange_mm_24h": 150.0,
+          "warning_red_mm_24h": 220.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-LC-BT",
+          "station_name": "Trạm Viễn Thám Bảo Thắng",
+          "station_lat": 22.396,
+          "station_lng": 104.164,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LC-BY",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.631438,
+              22.253
+            ],
+            [
+              104.633353,
+              22.287355
+            ],
+            [
+              104.603157,
+              22.314242
+            ],
+            [
+              104.572176,
+              22.3344
+            ],
+            [
+              104.557831,
+              22.360709
+            ],
+            [
+              104.545431,
+              22.39297
+            ],
+            [
+              104.515335,
+              22.410543
+            ],
+            [
+              104.472347,
+              22.398942
+            ],
+            [
+              104.436028,
+              22.372945
+            ],
+            [
+              104.412,
+              22.360977
+            ],
+            [
+              104.38816,
+              22.372009
+            ],
+            [
+              104.355297,
+              22.39013
+            ],
+            [
+              104.316413,
+              22.39873
+            ],
+            [
+              104.275987,
+              22.395678
+            ],
+            [
+              104.235879,
+              22.383081
+            ],
+            [
+              104.206412,
+              22.357479
+            ],
+            [
+              104.205532,
+              22.319147
+            ],
+            [
+              104.234997,
+              22.280472
+            ],
+            [
+              104.267891,
+              22.253
+            ],
+            [
+              104.275331,
+              22.231788
+            ],
+            [
+              104.261536,
+              22.204795
+            ],
+            [
+              104.257335,
+              22.1744
+            ],
+            [
+              104.279338,
+              22.155017
+            ],
+            [
+              104.311749,
+              22.147836
+            ],
+            [
+              104.333562,
+              22.133414
+            ],
+            [
+              104.348007,
+              22.09824
+            ],
+            [
+              104.372898,
+              22.057806
+            ],
+            [
+              104.412,
+              22.040977
+            ],
+            [
+              104.451289,
+              22.056871
+            ],
+            [
+              104.479637,
+              22.089429
+            ],
+            [
+              104.498186,
+              22.121602
+            ],
+            [
+              104.50967,
+              22.150543
+            ],
+            [
+              104.514372,
+              22.177389
+            ],
+            [
+              104.521252,
+              22.197479
+            ],
+            [
+              104.547154,
+              22.2097
+            ],
+            [
+              104.59302,
+              22.224905
+            ],
+            [
+              104.631438,
+              22.253
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "LC-BY",
+        "name_vi": "Bảo Yên",
+        "name_en": "Bao Yen",
+        "province_vi": "Lào Cai",
+        "province_en": "Lao Cai",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          104.412,
+          22.253
+        ],
+        "topography": {
+          "mean_elevation_m": 580,
+          "peak_elevation_m": 1650,
+          "mean_slope_degrees": 27.8,
+          "max_slope_degrees": 56.0,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 1631.7,
+          "topographic_wetness_index_mean": 9.5,
+          "annual_rainfall_mm": 2460,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 3.3,
+          "fault_line_proximity_km": 6.6
+        },
+        "hazard_inventory": {
+          "historical_events_count": 38,
+          "last_major_event_year": 2021,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-LC-BY",
+          "station_name": "Trạm Viễn Thám Bảo Yên",
+          "station_lat": 22.268,
+          "station_lng": 104.424,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LC-VB",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.319285,
+              22.081
+            ],
+            [
+              104.2972,
+              22.121386
+            ],
+            [
+              104.25086,
+              22.148545
+            ],
+            [
+              104.212248,
+              22.167235
+            ],
+            [
+              104.186311,
+              22.185918
+            ],
+            [
+              104.160916,
+              22.201626
+            ],
+            [
+              104.132454,
+              22.210075
+            ],
+            [
+              104.106606,
+              22.219139
+            ],
+            [
+              104.082505,
+              22.237946
+            ],
+            [
+              104.053,
+              22.258579
+            ],
+            [
+              104.018564,
+              22.264171
+            ],
+            [
+              103.985837,
+              22.254074
+            ],
+            [
+              103.952036,
+              22.24502
+            ],
+            [
+              103.90765,
+              22.243469
+            ],
+            [
+              103.860603,
+              22.232419
+            ],
+            [
+              103.84089,
+              22.19586
+            ],
+            [
+              103.866294,
+              22.144737
+            ],
+            [
+              103.912653,
+              22.104211
+            ],
+            [
+              103.93546,
+              22.081
+            ],
+            [
+              103.919206,
+              22.058873
+            ],
+            [
+              103.890182,
+              22.025418
+            ],
+            [
+              103.879846,
+              21.987235
+            ],
+            [
+              103.892284,
+              21.954514
+            ],
+            [
+              103.914198,
+              21.92585
+            ],
+            [
+              103.940541,
+              21.898306
+            ],
+            [
+              103.97533,
+              21.880849
+            ],
+            [
+              104.015855,
+              21.883415
+            ],
+            [
+              104.053,
+              21.898579
+            ],
+            [
+              104.085215,
+              21.90964
+            ],
+            [
+              104.117113,
+              21.915784
+            ],
+            [
+              104.143949,
+              21.933251
+            ],
+            [
+              104.154368,
+              21.967693
+            ],
+            [
+              104.15463,
+              22.001015
+            ],
+            [
+              104.173293,
+              22.01586
+            ],
+            [
+              104.226972,
+              22.02161
+            ],
+            [
+              104.290647,
+              22.041697
+            ],
+            [
+              104.319285,
+              22.081
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "LC-VB",
+        "name_vi": "Văn Bàn",
+        "name_en": "Van Ban",
+        "province_vi": "Lào Cai",
+        "province_en": "Lao Cai",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          104.053,
+          22.081
+        ],
+        "topography": {
+          "mean_elevation_m": 820,
+          "peak_elevation_m": 2450,
+          "mean_slope_degrees": 31.2,
+          "max_slope_degrees": 63.5,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 1666.9,
+          "topographic_wetness_index_mean": 7.4,
+          "annual_rainfall_mm": 2570,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.1,
+          "fault_line_proximity_km": 7.5
+        },
+        "hazard_inventory": {
+          "historical_events_count": 41,
+          "last_major_event_year": 2022,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-LC-VB",
+          "station_name": "Trạm Viễn Thám Văn Bàn",
+          "station_lat": 22.096,
+          "station_lng": 104.065,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "HG-MV",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.599343,
+              23.162
+            ],
+            [
+              105.582046,
+              23.191488
+            ],
+            [
+              105.559733,
+              23.214882
+            ],
+            [
+              105.532975,
+              23.230691
+            ],
+            [
+              105.501753,
+              23.236067
+            ],
+            [
+              105.476191,
+              23.237236
+            ],
+            [
+              105.465194,
+              23.252612
+            ],
+            [
+              105.460168,
+              23.292154
+            ],
+            [
+              105.443458,
+              23.337456
+            ],
+            [
+              105.412,
+              23.35652
+            ],
+            [
+              105.380088,
+              23.339993
+            ],
+            [
+              105.356974,
+              23.310685
+            ],
+            [
+              105.335109,
+              23.292978
+            ],
+            [
+              105.307325,
+              23.284685
+            ],
+            [
+              105.283864,
+              23.267742
+            ],
+            [
+              105.2799,
+              23.237008
+            ],
+            [
+              105.29198,
+              23.204962
+            ],
+            [
+              105.300421,
+              23.181349
+            ],
+            [
+              105.294302,
+              23.162
+            ],
+            [
+              105.281639,
+              23.139394
+            ],
+            [
+              105.273088,
+              23.112276
+            ],
+            [
+              105.268801,
+              23.080691
+            ],
+            [
+              105.268078,
+              23.043231
+            ],
+            [
+              105.280114,
+              23.007422
+            ],
+            [
+              105.312673,
+              22.992804
+            ],
+            [
+              105.355838,
+              23.010246
+            ],
+            [
+              105.390488,
+              23.042014
+            ],
+            [
+              105.412,
+              23.05652
+            ],
+            [
+              105.433057,
+              23.044551
+            ],
+            [
+              105.461304,
+              23.028777
+            ],
+            [
+              105.48763,
+              23.03317
+            ],
+            [
+              105.503402,
+              23.054872
+            ],
+            [
+              105.517539,
+              23.074906
+            ],
+            [
+              105.544073,
+              23.087008
+            ],
+            [
+              105.578625,
+              23.102356
+            ],
+            [
+              105.600828,
+              23.129255
+            ],
+            [
+              105.599343,
+              23.162
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "HG-MV",
+        "name_vi": "Mèo Vạc",
+        "name_en": "Meo Vac",
+        "province_vi": "Hà Giang",
+        "province_en": "Ha Giang",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          105.412,
+          23.162
+        ],
+        "topography": {
+          "mean_elevation_m": 1250,
+          "peak_elevation_m": 2150,
+          "mean_slope_degrees": 36.4,
+          "max_slope_degrees": 72.0,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 1702.1,
+          "topographic_wetness_index_mean": 7.75,
+          "annual_rainfall_mm": 2680,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.9,
+          "fault_line_proximity_km": 8.4
+        },
+        "hazard_inventory": {
+          "historical_events_count": 45,
+          "last_major_event_year": 2023,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-HG-MV",
+          "station_name": "Trạm Viễn Thám Mèo Vạc",
+          "station_lat": 23.177,
+          "station_lng": 105.424,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "HG-DV",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.478873,
+              23.279
+            ],
+            [
+              105.482395,
+              23.300404
+            ],
+            [
+              105.481662,
+              23.322916
+            ],
+            [
+              105.463485,
+              23.338168
+            ],
+            [
+              105.436548,
+              23.34239
+            ],
+            [
+              105.420135,
+              23.349472
+            ],
+            [
+              105.417425,
+              23.376728
+            ],
+            [
+              105.412076,
+              23.419325
+            ],
+            [
+              105.391317,
+              23.450929
+            ],
+            [
+              105.361,
+              23.452566
+            ],
+            [
+              105.334163,
+              23.431195
+            ],
+            [
+              105.314914,
+              23.405617
+            ],
+            [
+              105.300407,
+              23.383947
+            ],
+            [
+              105.290341,
+              23.363205
+            ],
+            [
+              105.284354,
+              23.343311
+            ],
+            [
+              105.274814,
+              23.328758
+            ],
+            [
+              105.254255,
+              23.31785
+            ],
+            [
+              105.22984,
+              23.302126
+            ],
+            [
+              105.218863,
+              23.279
+            ],
+            [
+              105.226335,
+              23.255256
+            ],
+            [
+              105.237333,
+              23.23399
+            ],
+            [
+              105.23831,
+              23.208168
+            ],
+            [
+              105.23737,
+              23.175266
+            ],
+            [
+              105.253004,
+              23.1503
+            ],
+            [
+              105.287421,
+              23.151562
+            ],
+            [
+              105.323147,
+              23.175005
+            ],
+            [
+              105.346167,
+              23.194879
+            ],
+            [
+              105.361,
+              23.192566
+            ],
+            [
+              105.379313,
+              23.175145
+            ],
+            [
+              105.403842,
+              23.161297
+            ],
+            [
+              105.430412,
+              23.15878
+            ],
+            [
+              105.457472,
+              23.164034
+            ],
+            [
+              105.483533,
+              23.176186
+            ],
+            [
+              105.499989,
+              23.198758
+            ],
+            [
+              105.498584,
+              23.228925
+            ],
+            [
+              105.4859,
+              23.256978
+            ],
+            [
+              105.478873,
+              23.279
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "HG-DV",
+        "name_vi": "Đồng Văn",
+        "name_en": "Dong Van",
+        "province_vi": "Hà Giang",
+        "province_en": "Ha Giang",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          105.361,
+          23.279
+        ],
+        "topography": {
+          "mean_elevation_m": 1380,
+          "peak_elevation_m": 2080,
+          "mean_slope_degrees": 33.1,
+          "max_slope_degrees": 67.5,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 1737.3,
+          "topographic_wetness_index_mean": 8.1,
+          "annual_rainfall_mm": 2790,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 5.7,
+          "fault_line_proximity_km": 1.2
+        },
+        "hazard_inventory": {
+          "historical_events_count": 34,
+          "last_major_event_year": 2024,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-HG-DV",
+          "station_name": "Trạm Viễn Thám Đồng Văn",
+          "station_lat": 23.294,
+          "station_lng": 105.373,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "HG-VX",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.10459,
+              22.753
+            ],
+            [
+              105.128647,
+              22.778524
+            ],
+            [
+              105.139749,
+              22.809648
+            ],
+            [
+              105.128022,
+              22.83622
+            ],
+            [
+              105.109067,
+              22.858355
+            ],
+            [
+              105.09498,
+              22.886175
+            ],
+            [
+              105.079145,
+              22.919661
+            ],
+            [
+              105.051951,
+              22.944117
+            ],
+            [
+              105.016412,
+              22.949896
+            ],
+            [
+              104.981,
+              22.943691
+            ],
+            [
+              104.948578,
+              22.933274
+            ],
+            [
+              104.921519,
+              22.913219
+            ],
+            [
+              104.907422,
+              22.877943
+            ],
+            [
+              104.906129,
+              22.84048
+            ],
+            [
+              104.897416,
+              22.821761
+            ],
+            [
+              104.859218,
+              22.821933
+            ],
+            [
+              104.80002,
+              22.817581
+            ],
+            [
+              104.757533,
+              22.791631
+            ],
+            [
+              104.757795,
+              22.753
+            ],
+            [
+              104.78712,
+              22.719484
+            ],
+            [
+              104.813868,
+              22.693361
+            ],
+            [
+              104.827689,
+              22.66622
+            ],
+            [
+              104.843406,
+              22.639807
+            ],
+            [
+              104.872065,
+              22.62572
+            ],
+            [
+              104.905747,
+              22.625212
+            ],
+            [
+              104.93334,
+              22.624622
+            ],
+            [
+              104.956192,
+              22.615061
+            ],
+            [
+              104.981,
+              22.603691
+            ],
+            [
+              105.008798,
+              22.598439
+            ],
+            [
+              105.04013,
+              22.593724
+            ],
+            [
+              105.08082,
+              22.583495
+            ],
+            [
+              105.129045,
+              22.580024
+            ],
+            [
+              105.163077,
+              22.603213
+            ],
+            [
+              105.159552,
+              22.651933
+            ],
+            [
+              105.125901,
+              22.701294
+            ],
+            [
+              105.099059,
+              22.732591
+            ],
+            [
+              105.10459,
+              22.753
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "HG-VX",
+        "name_vi": "Vị Xuyên",
+        "name_en": "Vi Xuyen",
+        "province_vi": "Hà Giang",
+        "province_en": "Ha Giang",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          104.981,
+          22.753
+        ],
+        "topography": {
+          "mean_elevation_m": 750,
+          "peak_elevation_m": 2420,
+          "mean_slope_degrees": 29.8,
+          "max_slope_degrees": 61.2,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 1772.5,
+          "topographic_wetness_index_mean": 8.45,
+          "annual_rainfall_mm": 2900,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 2.5,
+          "fault_line_proximity_km": 2.1
+        },
+        "hazard_inventory": {
+          "historical_events_count": 39,
+          "last_major_event_year": 2020,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-HG-VX",
+          "station_name": "Trạm Viễn Thám Vị Xuyên",
+          "station_lat": 22.768,
+          "station_lng": 104.993,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "HG-HS",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.801672,
+              22.684
+            ],
+            [
+              104.819974,
+              22.708345
+            ],
+            [
+              104.832459,
+              22.738492
+            ],
+            [
+              104.840059,
+              22.774532
+            ],
+            [
+              104.838352,
+              22.814239
+            ],
+            [
+              104.816168,
+              22.844308
+            ],
+            [
+              104.773994,
+              22.848829
+            ],
+            [
+              104.729623,
+              22.831718
+            ],
+            [
+              104.697355,
+              22.818166
+            ],
+            [
+              104.672,
+              22.824669
+            ],
+            [
+              104.643092,
+              22.83697
+            ],
+            [
+              104.615201,
+              22.829604
+            ],
+            [
+              104.599465,
+              22.801221
+            ],
+            [
+              104.589546,
+              22.775684
+            ],
+            [
+              104.563936,
+              22.768604
+            ],
+            [
+              104.516293,
+              22.767878
+            ],
+            [
+              104.469158,
+              22.752885
+            ],
+            [
+              104.449135,
+              22.720666
+            ],
+            [
+              104.458706,
+              22.684
+            ],
+            [
+              104.482219,
+              22.652777
+            ],
+            [
+              104.510177,
+              22.629045
+            ],
+            [
+              104.543042,
+              22.614532
+            ],
+            [
+              104.575625,
+              22.608547
+            ],
+            [
+              104.595714,
+              22.599174
+            ],
+            [
+              104.602511,
+              22.571701
+            ],
+            [
+              104.612322,
+              22.531016
+            ],
+            [
+              104.6378,
+              22.503028
+            ],
+            [
+              104.672,
+              22.504669
+            ],
+            [
+              104.702647,
+              22.521831
+            ],
+            [
+              104.732502,
+              22.528903
+            ],
+            [
+              104.770948,
+              22.524093
+            ],
+            [
+              104.81,
+              22.53055
+            ],
+            [
+              104.826663,
+              22.562912
+            ],
+            [
+              104.81331,
+              22.607878
+            ],
+            [
+              104.791441,
+              22.643438
+            ],
+            [
+              104.78689,
+              22.665098
+            ],
+            [
+              104.801672,
+              22.684
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "HG-HS",
+        "name_vi": "Hoàng Su Phì",
+        "name_en": "Hoang Su Phi",
+        "province_vi": "Hà Giang",
+        "province_en": "Ha Giang",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          104.672,
+          22.684
+        ],
+        "topography": {
+          "mean_elevation_m": 1100,
+          "peak_elevation_m": 2419,
+          "mean_slope_degrees": 35.6,
+          "max_slope_degrees": 69.8,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 1807.7,
+          "topographic_wetness_index_mean": 8.8,
+          "annual_rainfall_mm": 3010,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 3.3,
+          "fault_line_proximity_km": 3.0
+        },
+        "hazard_inventory": {
+          "historical_events_count": 62,
+          "last_major_event_year": 2021,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-HG-HS",
+          "station_name": "Trạm Viễn Thám Hoàng Su Phì",
+          "station_lat": 22.699,
+          "station_lng": 104.684,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "HG-XM",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.641711,
+              22.621
+            ],
+            [
+              104.640803,
+              22.645504
+            ],
+            [
+              104.651822,
+              22.675091
+            ],
+            [
+              104.668558,
+              22.715259
+            ],
+            [
+              104.663797,
+              22.754496
+            ],
+            [
+              104.623774,
+              22.76886
+            ],
+            [
+              104.567935,
+              22.751256
+            ],
+            [
+              104.525389,
+              22.725323
+            ],
+            [
+              104.501961,
+              22.720066
+            ],
+            [
+              104.482,
+              22.737333
+            ],
+            [
+              104.454974,
+              22.755133
+            ],
+            [
+              104.424913,
+              22.758259
+            ],
+            [
+              104.395715,
+              22.751787
+            ],
+            [
+              104.363863,
+              22.744208
+            ],
+            [
+              104.330596,
+              22.732178
+            ],
+            [
+              104.307486,
+              22.709173
+            ],
+            [
+              104.300894,
+              22.678685
+            ],
+            [
+              104.301215,
+              22.648896
+            ],
+            [
+              104.298901,
+              22.621
+            ],
+            [
+              104.3032,
+              22.59341
+            ],
+            [
+              104.329685,
+              22.572485
+            ],
+            [
+              104.371676,
+              22.565259
+            ],
+            [
+              104.401189,
+              22.56166
+            ],
+            [
+              104.403419,
+              22.539046
+            ],
+            [
+              104.39653,
+              22.491449
+            ],
+            [
+              104.408141,
+              22.443415
+            ],
+            [
+              104.442432,
+              22.424623
+            ],
+            [
+              104.482,
+              22.437333
+            ],
+            [
+              104.514502,
+              22.459691
+            ],
+            [
+              104.542161,
+              22.476351
+            ],
+            [
+              104.56712,
+              22.491979
+            ],
+            [
+              104.584217,
+              22.514395
+            ],
+            [
+              104.593204,
+              22.539341
+            ],
+            [
+              104.604368,
+              22.559173
+            ],
+            [
+              104.623031,
+              22.576079
+            ],
+            [
+              104.638818,
+              22.596802
+            ],
+            [
+              104.641711,
+              22.621
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "HG-XM",
+        "name_vi": "Xín Mần",
+        "name_en": "Xin Man",
+        "province_vi": "Hà Giang",
+        "province_en": "Ha Giang",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          104.482,
+          22.621
+        ],
+        "topography": {
+          "mean_elevation_m": 1050,
+          "peak_elevation_m": 2280,
+          "mean_slope_degrees": 33.8,
+          "max_slope_degrees": 66.4,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 1842.9,
+          "topographic_wetness_index_mean": 9.15,
+          "annual_rainfall_mm": 1800,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.1,
+          "fault_line_proximity_km": 3.9
+        },
+        "hazard_inventory": {
+          "historical_events_count": 47,
+          "last_major_event_year": 2022,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-HG-XM",
+          "station_name": "Trạm Viễn Thám Xín Mần",
+          "station_lat": 22.636,
+          "station_lng": 104.494,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "HG-YM",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.339246,
+              23.124
+            ],
+            [
+              105.325289,
+              23.148995
+            ],
+            [
+              105.326655,
+              23.176003
+            ],
+            [
+              105.327043,
+              23.206674
+            ],
+            [
+              105.304908,
+              23.228874
+            ],
+            [
+              105.263418,
+              23.232268
+            ],
+            [
+              105.22344,
+              23.224382
+            ],
+            [
+              105.196083,
+              23.221389
+            ],
+            [
+              105.175352,
+              23.228295
+            ],
+            [
+              105.153,
+              23.238499
+            ],
+            [
+              105.126189,
+              23.249103
+            ],
+            [
+              105.091409,
+              23.263228
+            ],
+            [
+              105.046524,
+              23.275735
+            ],
+            [
+              105.003673,
+              23.270419
+            ],
+            [
+              104.985688,
+              23.239508
+            ],
+            [
+              104.998906,
+              23.197198
+            ],
+            [
+              105.019158,
+              23.16408
+            ],
+            [
+              105.018179,
+              23.143559
+            ],
+            [
+              104.998927,
+              23.124
+            ],
+            [
+              104.990141,
+              23.100373
+            ],
+            [
+              105.00686,
+              23.080237
+            ],
+            [
+              105.032319,
+              23.066674
+            ],
+            [
+              105.044209,
+              23.048893
+            ],
+            [
+              105.044665,
+              23.017775
+            ],
+            [
+              105.053281,
+              22.981895
+            ],
+            [
+              105.079687,
+              22.958275
+            ],
+            [
+              105.116256,
+              22.952549
+            ],
+            [
+              105.153,
+              22.958499
+            ],
+            [
+              105.185285,
+              22.973357
+            ],
+            [
+              105.207805,
+              23.000114
+            ],
+            [
+              105.216683,
+              23.033248
+            ],
+            [
+              105.222426,
+              23.055927
+            ],
+            [
+              105.246387,
+              23.059528
+            ],
+            [
+              105.293631,
+              23.057198
+            ],
+            [
+              105.338953,
+              23.068315
+            ],
+            [
+              105.353327,
+              23.094938
+            ],
+            [
+              105.339246,
+              23.124
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "HG-YM",
+        "name_vi": "Yên Minh",
+        "name_en": "Yen Minh",
+        "province_vi": "Hà Giang",
+        "province_en": "Ha Giang",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          105.153,
+          23.124
+        ],
+        "topography": {
+          "mean_elevation_m": 960,
+          "peak_elevation_m": 1890,
+          "mean_slope_degrees": 30.2,
+          "max_slope_degrees": 60.1,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 1878.1,
+          "topographic_wetness_index_mean": 9.5,
+          "annual_rainfall_mm": 1910,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.9,
+          "fault_line_proximity_km": 4.8
+        },
+        "hazard_inventory": {
+          "historical_events_count": 29,
+          "last_major_event_year": 2023,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-HG-YM",
+          "station_name": "Trạm Viễn Thám Yên Minh",
+          "station_lat": 23.139,
+          "station_lng": 105.165,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "HG-QB",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.20154,
+              23.081
+            ],
+            [
+              105.181872,
+              23.107318
+            ],
+            [
+              105.158957,
+              23.128768
+            ],
+            [
+              105.12915,
+              23.143245
+            ],
+            [
+              105.100377,
+              23.152486
+            ],
+            [
+              105.082802,
+              23.166065
+            ],
+            [
+              105.07136,
+              23.189051
+            ],
+            [
+              105.052057,
+              23.210709
+            ],
+            [
+              105.022511,
+              23.217021
+            ],
+            [
+              104.992,
+              23.212458
+            ],
+            [
+              104.961691,
+              23.216121
+            ],
+            [
+              104.921494,
+              23.233275
+            ],
+            [
+              104.872796,
+              23.243301
+            ],
+            [
+              104.839025,
+              23.22431
+            ],
+            [
+              104.839917,
+              23.181315
+            ],
+            [
+              104.863252,
+              23.139432
+            ],
+            [
+              104.876951,
+              23.113917
+            ],
+            [
+              104.866347,
+              23.098416
+            ],
+            [
+              104.845344,
+              23.081
+            ],
+            [
+              104.831088,
+              23.058696
+            ],
+            [
+              104.824242,
+              23.033003
+            ],
+            [
+              104.820676,
+              23.003245
+            ],
+            [
+              104.827515,
+              22.972505
+            ],
+            [
+              104.853843,
+              22.951572
+            ],
+            [
+              104.893262,
+              22.946564
+            ],
+            [
+              104.930231,
+              22.947595
+            ],
+            [
+              104.960658,
+              22.941275
+            ],
+            [
+              104.992,
+              22.932458
+            ],
+            [
+              105.023544,
+              22.940375
+            ],
+            [
+              105.04332,
+              22.970162
+            ],
+            [
+              105.050894,
+              23.000814
+            ],
+            [
+              105.067984,
+              23.009817
+            ],
+            [
+              105.112779,
+              23.001334
+            ],
+            [
+              105.171727,
+              22.999432
+            ],
+            [
+              105.211665,
+              23.018151
+            ],
+            [
+              105.217132,
+              23.049795
+            ],
+            [
+              105.20154,
+              23.081
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "HG-QB",
+        "name_vi": "Quản Bạ",
+        "name_en": "Quan Ba",
+        "province_vi": "Hà Giang",
+        "province_en": "Ha Giang",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          104.992,
+          23.081
+        ],
+        "topography": {
+          "mean_elevation_m": 1020,
+          "peak_elevation_m": 1950,
+          "mean_slope_degrees": 31.5,
+          "max_slope_degrees": 62.0,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 1913.3,
+          "topographic_wetness_index_mean": 7.4,
+          "annual_rainfall_mm": 2020,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 5.7,
+          "fault_line_proximity_km": 5.7
+        },
+        "hazard_inventory": {
+          "historical_events_count": 31,
+          "last_major_event_year": 2024,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-HG-QB",
+          "station_name": "Trạm Viễn Thám Quản Bạ",
+          "station_lat": 23.096,
+          "station_lng": 105.004,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "HG-BM",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.506763,
+              22.753
+            ],
+            [
+              105.480419,
+              22.780071
+            ],
+            [
+              105.430938,
+              22.795014
+            ],
+            [
+              105.386647,
+              22.799958
+            ],
+            [
+              105.374908,
+              22.813664
+            ],
+            [
+              105.387487,
+              22.8507
+            ],
+            [
+              105.389979,
+              22.898318
+            ],
+            [
+              105.363451,
+              22.927399
+            ],
+            [
+              105.320829,
+              22.926899
+            ],
+            [
+              105.281,
+              22.914728
+            ],
+            [
+              105.244904,
+              22.910598
+            ],
+            [
+              105.206475,
+              22.910634
+            ],
+            [
+              105.172265,
+              22.897991
+            ],
+            [
+              105.154177,
+              22.869358
+            ],
+            [
+              105.1495,
+              22.837948
+            ],
+            [
+              105.144184,
+              22.813812
+            ],
+            [
+              105.133751,
+              22.79426
+            ],
+            [
+              105.125159,
+              22.774155
+            ],
+            [
+              105.117084,
+              22.753
+            ],
+            [
+              105.096659,
+              22.727976
+            ],
+            [
+              105.06476,
+              22.692408
+            ],
+            [
+              105.049175,
+              22.649958
+            ],
+            [
+              105.076397,
+              22.620828
+            ],
+            [
+              105.137006,
+              22.620887
+            ],
+            [
+              105.19514,
+              22.63851
+            ],
+            [
+              105.230173,
+              22.645492
+            ],
+            [
+              105.253162,
+              22.631457
+            ],
+            [
+              105.281,
+              22.614728
+            ],
+            [
+              105.312571,
+              22.615155
+            ],
+            [
+              105.339753,
+              22.628726
+            ],
+            [
+              105.367105,
+              22.638184
+            ],
+            [
+              105.404658,
+              22.639545
+            ],
+            [
+              105.448012,
+              22.645112
+            ],
+            [
+              105.481657,
+              22.663812
+            ],
+            [
+              105.49993,
+              22.691654
+            ],
+            [
+              105.508918,
+              22.722061
+            ],
+            [
+              105.506763,
+              22.753
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "HG-BM",
+        "name_vi": "Bắc Mê",
+        "name_en": "Bac Me",
+        "province_vi": "Hà Giang",
+        "province_en": "Ha Giang",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          105.281,
+          22.753
+        ],
+        "topography": {
+          "mean_elevation_m": 680,
+          "peak_elevation_m": 1820,
+          "mean_slope_degrees": 28.9,
+          "max_slope_degrees": 57.5,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 1948.5,
+          "topographic_wetness_index_mean": 7.75,
+          "annual_rainfall_mm": 2130,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 2.5,
+          "fault_line_proximity_km": 6.6
+        },
+        "hazard_inventory": {
+          "historical_events_count": 35,
+          "last_major_event_year": 2020,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-HG-BM",
+          "station_name": "Trạm Viễn Thám Bắc Mê",
+          "station_lat": 22.768,
+          "station_lng": 105.293,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "YB-MC",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.313506,
+              21.854
+            ],
+            [
+              104.285827,
+              21.881466
+            ],
+            [
+              104.23863,
+              21.897371
+            ],
+            [
+              104.213099,
+              21.911364
+            ],
+            [
+              104.221253,
+              21.942678
+            ],
+            [
+              104.234274,
+              21.991983
+            ],
+            [
+              104.221398,
+              22.037242
+            ],
+            [
+              104.181588,
+              22.059833
+            ],
+            [
+              104.132215,
+              22.061691
+            ],
+            [
+              104.085,
+              22.051914
+            ],
+            [
+              104.044871,
+              22.030519
+            ],
+            [
+              104.017973,
+              21.996837
+            ],
+            [
+              104.003152,
+              21.963958
+            ],
+            [
+              103.982873,
+              21.948402
+            ],
+            [
+              103.941757,
+              21.947227
+            ],
+            [
+              103.893021,
+              21.939971
+            ],
+            [
+              103.867392,
+              21.915432
+            ],
+            [
+              103.871344,
+              21.883221
+            ],
+            [
+              103.875155,
+              21.854
+            ],
+            [
+              103.854135,
+              21.822426
+            ],
+            [
+              103.826714,
+              21.781084
+            ],
+            [
+              103.833475,
+              21.741364
+            ],
+            [
+              103.885456,
+              21.72413
+            ],
+            [
+              103.952507,
+              21.731528
+            ],
+            [
+              104.002222,
+              21.742793
+            ],
+            [
+              104.031663,
+              21.740337
+            ],
+            [
+              104.056096,
+              21.726856
+            ],
+            [
+              104.085,
+              21.711914
+            ],
+            [
+              104.12099,
+              21.695684
+            ],
+            [
+              104.167898,
+              21.677342
+            ],
+            [
+              104.222328,
+              21.669509
+            ],
+            [
+              104.264641,
+              21.687947
+            ],
+            [
+              104.277554,
+              21.728679
+            ],
+            [
+              104.272644,
+              21.769971
+            ],
+            [
+              104.279308,
+              21.799145
+            ],
+            [
+              104.303037,
+              21.82418
+            ],
+            [
+              104.313506,
+              21.854
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "YB-MC",
+        "name_vi": "Mù Cang Chải",
+        "name_en": "Mu Cang Chai",
+        "province_vi": "Yên Bái",
+        "province_en": "Yen Bai",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          104.085,
+          21.854
+        ],
+        "topography": {
+          "mean_elevation_m": 1420,
+          "peak_elevation_m": 2985,
+          "mean_slope_degrees": 36.8,
+          "max_slope_degrees": 71.5,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 1983.7,
+          "topographic_wetness_index_mean": 8.1,
+          "annual_rainfall_mm": 2240,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 3.3,
+          "fault_line_proximity_km": 7.5
+        },
+        "hazard_inventory": {
+          "historical_events_count": 74,
+          "last_major_event_year": 2021,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-YB-MC",
+          "station_name": "Trạm Viễn Thám Mù Cang Chải",
+          "station_lat": 21.869,
+          "station_lng": 104.097,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "YB-TT",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.588733,
+              21.523
+            ],
+            [
+              104.587152,
+              21.546522
+            ],
+            [
+              104.584925,
+              21.570903
+            ],
+            [
+              104.586852,
+              21.59988
+            ],
+            [
+              104.580971,
+              21.630773
+            ],
+            [
+              104.558583,
+              21.654645
+            ],
+            [
+              104.526637,
+              21.669903
+            ],
+            [
+              104.494002,
+              21.684036
+            ],
+            [
+              104.459089,
+              21.696432
+            ],
+            [
+              104.421,
+              21.691369
+            ],
+            [
+              104.39104,
+              21.659418
+            ],
+            [
+              104.377706,
+              21.618503
+            ],
+            [
+              104.366356,
+              21.59899
+            ],
+            [
+              104.332066,
+              21.608096
+            ],
+            [
+              104.274394,
+              21.621768
+            ],
+            [
+              104.223249,
+              21.614667
+            ],
+            [
+              104.203681,
+              21.586506
+            ],
+            [
+              104.208391,
+              21.553099
+            ],
+            [
+              104.21508,
+              21.523
+            ],
+            [
+              104.219176,
+              21.494428
+            ],
+            [
+              104.233806,
+              21.468297
+            ],
+            [
+              104.263259,
+              21.44988
+            ],
+            [
+              104.294736,
+              21.437936
+            ],
+            [
+              104.318403,
+              21.424831
+            ],
+            [
+              104.339811,
+              21.410095
+            ],
+            [
+              104.366205,
+              21.402128
+            ],
+            [
+              104.394204,
+              21.400989
+            ],
+            [
+              104.421,
+              21.391369
+            ],
+            [
+              104.455925,
+              21.363975
+            ],
+            [
+              104.505503,
+              21.336595
+            ],
+            [
+              104.553183,
+              21.339182
+            ],
+            [
+              104.572245,
+              21.378283
+            ],
+            [
+              104.560629,
+              21.428932
+            ],
+            [
+              104.546842,
+              21.464667
+            ],
+            [
+              104.5548,
+              21.4839
+            ],
+            [
+              104.576368,
+              21.501005
+            ],
+            [
+              104.588733,
+              21.523
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "YB-TT",
+        "name_vi": "Trạm Tấu",
+        "name_en": "Tram Tau",
+        "province_vi": "Yên Bái",
+        "province_en": "Yen Bai",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          104.421,
+          21.523
+        ],
+        "topography": {
+          "mean_elevation_m": 1360,
+          "peak_elevation_m": 2979,
+          "mean_slope_degrees": 35.2,
+          "max_slope_degrees": 68.7,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2018.9,
+          "topographic_wetness_index_mean": 8.45,
+          "annual_rainfall_mm": 2350,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.1,
+          "fault_line_proximity_km": 8.4
+        },
+        "hazard_inventory": {
+          "historical_events_count": 58,
+          "last_major_event_year": 2022,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-YB-TT",
+          "station_name": "Trạm Viễn Thám Trạm Tấu",
+          "station_lat": 21.538,
+          "station_lng": 104.433,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "YB-VC",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.804845,
+              21.582
+            ],
+            [
+              104.84154,
+              21.614702
+            ],
+            [
+              104.874173,
+              21.659581
+            ],
+            [
+              104.870232,
+              21.703134
+            ],
+            [
+              104.822781,
+              21.724261
+            ],
+            [
+              104.761777,
+              21.722354
+            ],
+            [
+              104.718161,
+              21.721875
+            ],
+            [
+              104.690708,
+              21.739868
+            ],
+            [
+              104.660138,
+              21.760737
+            ],
+            [
+              104.623,
+              21.757226
+            ],
+            [
+              104.592371,
+              21.729411
+            ],
+            [
+              104.56989,
+              21.705831
+            ],
+            [
+              104.538705,
+              21.705904
+            ],
+            [
+              104.489222,
+              21.717298
+            ],
+            [
+              104.435129,
+              21.71578
+            ],
+            [
+              104.395163,
+              21.693631
+            ],
+            [
+              104.372803,
+              21.65928
+            ],
+            [
+              104.365467,
+              21.620536
+            ],
+            [
+              104.380633,
+              21.582
+            ],
+            [
+              104.423773,
+              21.552188
+            ],
+            [
+              104.475544,
+              21.536454
+            ],
+            [
+              104.502854,
+              21.523134
+            ],
+            [
+              104.497816,
+              21.492858
+            ],
+            [
+              104.489099,
+              21.446578
+            ],
+            [
+              104.506055,
+              21.410106
+            ],
+            [
+              104.545619,
+              21.401579
+            ],
+            [
+              104.586474,
+              21.406207
+            ],
+            [
+              104.623,
+              21.397226
+            ],
+            [
+              104.666035,
+              21.374881
+            ],
+            [
+              104.714979,
+              21.367542
+            ],
+            [
+              104.750811,
+              21.394135
+            ],
+            [
+              104.761901,
+              21.441522
+            ],
+            [
+              104.760095,
+              21.484377
+            ],
+            [
+              104.762541,
+              21.513631
+            ],
+            [
+              104.771432,
+              21.536153
+            ],
+            [
+              104.783235,
+              21.558023
+            ],
+            [
+              104.804845,
+              21.582
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "YB-VC",
+        "name_vi": "Văn Chấn",
+        "name_en": "Van Chan",
+        "province_vi": "Yên Bái",
+        "province_en": "Yen Bai",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          104.623,
+          21.582
+        ],
+        "topography": {
+          "mean_elevation_m": 720,
+          "peak_elevation_m": 2100,
+          "mean_slope_degrees": 27.4,
+          "max_slope_degrees": 58.0,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2054.1,
+          "topographic_wetness_index_mean": 8.8,
+          "annual_rainfall_mm": 2460,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.9,
+          "fault_line_proximity_km": 1.2
+        },
+        "hazard_inventory": {
+          "historical_events_count": 39,
+          "last_major_event_year": 2023,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-YB-VC",
+          "station_name": "Trạm Viễn Thám Văn Chấn",
+          "station_lat": 21.597,
+          "station_lng": 104.635,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "YB-VY",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.785691,
+              21.982
+            ],
+            [
+              104.834417,
+              22.022465
+            ],
+            [
+              104.856649,
+              22.072854
+            ],
+            [
+              104.823757,
+              22.108921
+            ],
+            [
+              104.75594,
+              22.11493
+            ],
+            [
+              104.695386,
+              22.105447
+            ],
+            [
+              104.65996,
+              22.105849
+            ],
+            [
+              104.63686,
+              22.120981
+            ],
+            [
+              104.611183,
+              22.137012
+            ],
+            [
+              104.581,
+              22.147515
+            ],
+            [
+              104.546438,
+              22.159499
+            ],
+            [
+              104.504238,
+              22.172987
+            ],
+            [
+              104.459278,
+              22.17292
+            ],
+            [
+              104.425566,
+              22.149747
+            ],
+            [
+              104.406242,
+              22.114792
+            ],
+            [
+              104.386126,
+              22.083886
+            ],
+            [
+              104.357432,
+              22.055688
+            ],
+            [
+              104.34165,
+              22.020218
+            ],
+            [
+              104.366065,
+              21.982
+            ],
+            [
+              104.421166,
+              21.956478
+            ],
+            [
+              104.462329,
+              21.942886
+            ],
+            [
+              104.46035,
+              21.918921
+            ],
+            [
+              104.434488,
+              21.870671
+            ],
+            [
+              104.425655,
+              21.81435
+            ],
+            [
+              104.450148,
+              21.776759
+            ],
+            [
+              104.49334,
+              21.763898
+            ],
+            [
+              104.538316,
+              21.762785
+            ],
+            [
+              104.581,
+              21.767515
+            ],
+            [
+              104.619306,
+              21.785272
+            ],
+            [
+              104.647758,
+              21.815904
+            ],
+            [
+              104.669091,
+              21.84383
+            ],
+            [
+              104.695296,
+              21.85865
+            ],
+            [
+              104.727694,
+              21.870533
+            ],
+            [
+              104.749533,
+              21.893886
+            ],
+            [
+              104.751751,
+              21.92572
+            ],
+            [
+              104.754901,
+              21.954232
+            ],
+            [
+              104.785691,
+              21.982
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "YB-VY",
+        "name_vi": "Văn Yên",
+        "name_en": "Van Yen",
+        "province_vi": "Yên Bái",
+        "province_en": "Yen Bai",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          104.581,
+          21.982
+        ],
+        "topography": {
+          "mean_elevation_m": 540,
+          "peak_elevation_m": 1850,
+          "mean_slope_degrees": 26.2,
+          "max_slope_degrees": 54.5,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2089.3,
+          "topographic_wetness_index_mean": 9.15,
+          "annual_rainfall_mm": 2570,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 5.7,
+          "fault_line_proximity_km": 2.1
+        },
+        "hazard_inventory": {
+          "historical_events_count": 33,
+          "last_major_event_year": 2024,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-YB-VY",
+          "station_name": "Trạm Viễn Thám Văn Yên",
+          "station_lat": 21.997,
+          "station_lng": 104.593,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "YB-LY",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.926661,
+              22.124
+            ],
+            [
+              104.936449,
+              22.155231
+            ],
+            [
+              104.924117,
+              22.184156
+            ],
+            [
+              104.893451,
+              22.202421
+            ],
+            [
+              104.861358,
+              22.212116
+            ],
+            [
+              104.835832,
+              22.219937
+            ],
+            [
+              104.813258,
+              22.225885
+            ],
+            [
+              104.791737,
+              22.228838
+            ],
+            [
+              104.773009,
+              22.23841
+            ],
+            [
+              104.752,
+              22.266105
+            ],
+            [
+              104.71919,
+              22.302679
+            ],
+            [
+              104.678196,
+              22.318717
+            ],
+            [
+              104.648481,
+              22.296174
+            ],
+            [
+              104.641591,
+              22.250352
+            ],
+            [
+              104.643857,
+              22.211136
+            ],
+            [
+              104.634357,
+              22.189222
+            ],
+            [
+              104.614277,
+              22.172135
+            ],
+            [
+              104.604388,
+              22.148994
+            ],
+            [
+              104.614246,
+              22.124
+            ],
+            [
+              104.62878,
+              22.103136
+            ],
+            [
+              104.630543,
+              22.08155
+            ],
+            [
+              104.622891,
+              22.052421
+            ],
+            [
+              104.622034,
+              22.019279
+            ],
+            [
+              104.635015,
+              21.990123
+            ],
+            [
+              104.65705,
+              21.966078
+            ],
+            [
+              104.684885,
+              21.94693
+            ],
+            [
+              104.718758,
+              21.942968
+            ],
+            [
+              104.752,
+              21.966105
+            ],
+            [
+              104.773441,
+              22.007237
+            ],
+            [
+              104.785048,
+              22.036809
+            ],
+            [
+              104.804689,
+              22.036367
+            ],
+            [
+              104.842407,
+              22.020538
+            ],
+            [
+              104.883181,
+              22.0183
+            ],
+            [
+              104.904916,
+              22.039222
+            ],
+            [
+              104.907851,
+              22.069529
+            ],
+            [
+              104.912056,
+              22.096899
+            ],
+            [
+              104.926661,
+              22.124
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "YB-LY",
+        "name_vi": "Lục Yên",
+        "name_en": "Luc Yen",
+        "province_vi": "Yên Bái",
+        "province_en": "Yen Bai",
+        "susceptibility_tier": "MODERATE",
+        "center_coordinate": [
+          104.752,
+          22.124
+        ],
+        "topography": {
+          "mean_elevation_m": 420,
+          "peak_elevation_m": 1450,
+          "mean_slope_degrees": 22.8,
+          "max_slope_degrees": 48.0,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2124.5,
+          "topographic_wetness_index_mean": 9.5,
+          "annual_rainfall_mm": 2680,
+          "critical_rainfall_threshold_24h_mm": 220.0,
+          "critical_rainfall_threshold_72h_mm": 341.0
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 2.5,
+          "fault_line_proximity_km": 3.0
+        },
+        "hazard_inventory": {
+          "historical_events_count": 19,
+          "last_major_event_year": 2020,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.65
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 90.0,
+          "watch_orange_mm_24h": 150.0,
+          "warning_red_mm_24h": 220.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-YB-LY",
+          "station_name": "Trạm Viễn Thám Lục Yên",
+          "station_lat": 22.139,
+          "station_lng": 104.764,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "YB-YB",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.196132,
+              21.841
+            ],
+            [
+              105.166066,
+              21.86645
+            ],
+            [
+              105.139489,
+              21.883909
+            ],
+            [
+              105.131366,
+              21.904397
+            ],
+            [
+              105.132709,
+              21.934261
+            ],
+            [
+              105.122667,
+              21.961549
+            ],
+            [
+              105.096593,
+              21.971268
+            ],
+            [
+              105.068542,
+              21.97096
+            ],
+            [
+              105.046543,
+              21.985129
+            ],
+            [
+              105.021,
+              22.020391
+            ],
+            [
+              104.983897,
+              22.050357
+            ],
+            [
+              104.946461,
+              22.044759
+            ],
+            [
+              104.926101,
+              22.004538
+            ],
+            [
+              104.923068,
+              21.957121
+            ],
+            [
+              104.922478,
+              21.923251
+            ],
+            [
+              104.915621,
+              21.901533
+            ],
+            [
+              104.905871,
+              21.882692
+            ],
+            [
+              104.894209,
+              21.863244
+            ],
+            [
+              104.874506,
+              21.841
+            ],
+            [
+              104.849326,
+              21.810882
+            ],
+            [
+              104.837259,
+              21.774462
+            ],
+            [
+              104.852829,
+              21.744397
+            ],
+            [
+              104.886329,
+              21.728569
+            ],
+            [
+              104.915929,
+              21.716415
+            ],
+            [
+              104.935779,
+              21.69414
+            ],
+            [
+              104.958539,
+              21.670259
+            ],
+            [
+              104.990693,
+              21.669991
+            ],
+            [
+              105.021,
+              21.700391
+            ],
+            [
+              105.039747,
+              21.735218
+            ],
+            [
+              105.056464,
+              21.744057
+            ],
+            [
+              105.086914,
+              21.72741
+            ],
+            [
+              105.129805,
+              21.711986
+            ],
+            [
+              105.168858,
+              21.717559
+            ],
+            [
+              105.194158,
+              21.741533
+            ],
+            [
+              105.2081,
+              21.773245
+            ],
+            [
+              105.210949,
+              21.807676
+            ],
+            [
+              105.196132,
+              21.841
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "YB-YB",
+        "name_vi": "Yên Bình",
+        "name_en": "Yen Binh",
+        "province_vi": "Yên Bái",
+        "province_en": "Yen Bai",
+        "susceptibility_tier": "MODERATE",
+        "center_coordinate": [
+          105.021,
+          21.841
+        ],
+        "topography": {
+          "mean_elevation_m": 380,
+          "peak_elevation_m": 1200,
+          "mean_slope_degrees": 20.4,
+          "max_slope_degrees": 44.5,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2159.7,
+          "topographic_wetness_index_mean": 7.4,
+          "annual_rainfall_mm": 2790,
+          "critical_rainfall_threshold_24h_mm": 220.0,
+          "critical_rainfall_threshold_72h_mm": 341.0
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 3.3,
+          "fault_line_proximity_km": 3.9
+        },
+        "hazard_inventory": {
+          "historical_events_count": 14,
+          "last_major_event_year": 2021,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.65
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 90.0,
+          "watch_orange_mm_24h": 150.0,
+          "warning_red_mm_24h": 220.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-YB-YB",
+          "station_name": "Trạm Viễn Thám Yên Bình",
+          "station_lat": 21.856,
+          "station_lng": 105.033,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "SL-MC",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.817899,
+              20.842
+            ],
+            [
+              104.776541,
+              20.859828
+            ],
+            [
+              104.766351,
+              20.875108
+            ],
+            [
+              104.785404,
+              20.905471
+            ],
+            [
+              104.802088,
+              20.948187
+            ],
+            [
+              104.793552,
+              20.982685
+            ],
+            [
+              104.765798,
+              20.9986
+            ],
+            [
+              104.735267,
+              21.00688
+            ],
+            [
+              104.706294,
+              21.018721
+            ],
+            [
+              104.675,
+              21.027024
+            ],
+            [
+              104.64372,
+              21.018648
+            ],
+            [
+              104.618818,
+              20.995705
+            ],
+            [
+              104.599696,
+              20.971876
+            ],
+            [
+              104.582142,
+              20.952194
+            ],
+            [
+              104.569484,
+              20.930162
+            ],
+            [
+              104.566884,
+              20.904156
+            ],
+            [
+              104.564351,
+              20.882102
+            ],
+            [
+              104.541393,
+              20.865459
+            ],
+            [
+              104.496535,
+              20.842
+            ],
+            [
+              104.460059,
+              20.804261
+            ],
+            [
+              104.464368,
+              20.765662
+            ],
+            [
+              104.507095,
+              20.745471
+            ],
+            [
+              104.555909,
+              20.742495
+            ],
+            [
+              104.586983,
+              20.737551
+            ],
+            [
+              104.605117,
+              20.721472
+            ],
+            [
+              104.625354,
+              20.706179
+            ],
+            [
+              104.650489,
+              20.703583
+            ],
+            [
+              104.675,
+              20.707024
+            ],
+            [
+              104.699524,
+              20.703509
+            ],
+            [
+              104.72873,
+              20.695003
+            ],
+            [
+              104.760378,
+              20.694748
+            ],
+            [
+              104.788711,
+              20.70706
+            ],
+            [
+              104.815663,
+              20.72447
+            ],
+            [
+              104.845193,
+              20.744156
+            ],
+            [
+              104.866334,
+              20.772656
+            ],
+            [
+              104.857874,
+              20.809891
+            ],
+            [
+              104.817899,
+              20.842
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "SL-MC",
+        "name_vi": "Mộc Châu",
+        "name_en": "Moc Chau",
+        "province_vi": "Sơn La",
+        "province_en": "Son La",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          104.675,
+          20.842
+        ],
+        "topography": {
+          "mean_elevation_m": 1050,
+          "peak_elevation_m": 1920,
+          "mean_slope_degrees": 28.6,
+          "max_slope_degrees": 59.0,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2194.9,
+          "topographic_wetness_index_mean": 7.75,
+          "annual_rainfall_mm": 2900,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.1,
+          "fault_line_proximity_km": 4.8
+        },
+        "hazard_inventory": {
+          "historical_events_count": 36,
+          "last_major_event_year": 2022,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-SL-MC",
+          "station_name": "Trạm Viễn Thám Mộc Châu",
+          "station_lat": 20.857,
+          "station_lng": 104.687,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "SL-VH",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.969768,
+              20.753
+            ],
+            [
+              104.955606,
+              20.77075
+            ],
+            [
+              104.964976,
+              20.792922
+            ],
+            [
+              104.981021,
+              20.825242
+            ],
+            [
+              104.984424,
+              20.860741
+            ],
+            [
+              104.972155,
+              20.89195
+            ],
+            [
+              104.949694,
+              20.917506
+            ],
+            [
+              104.918929,
+              20.932606
+            ],
+            [
+              104.882676,
+              20.92588
+            ],
+            [
+              104.851,
+              20.896223
+            ],
+            [
+              104.830596,
+              20.864361
+            ],
+            [
+              104.812826,
+              20.853934
+            ],
+            [
+              104.784971,
+              20.86306
+            ],
+            [
+              104.751509,
+              20.867105
+            ],
+            [
+              104.730338,
+              20.850435
+            ],
+            [
+              104.725414,
+              20.822777
+            ],
+            [
+              104.717425,
+              20.799787
+            ],
+            [
+              104.690541,
+              20.780228
+            ],
+            [
+              104.658032,
+              20.753
+            ],
+            [
+              104.648605,
+              20.718656
+            ],
+            [
+              104.672039,
+              20.690316
+            ],
+            [
+              104.711049,
+              20.675242
+            ],
+            [
+              104.74562,
+              20.667905
+            ],
+            [
+              104.771774,
+              20.662137
+            ],
+            [
+              104.793825,
+              20.657699
+            ],
+            [
+              104.812308,
+              20.650698
+            ],
+            [
+              104.828544,
+              20.630438
+            ],
+            [
+              104.851,
+              20.596223
+            ],
+            [
+              104.884728,
+              20.568918
+            ],
+            [
+              104.919446,
+              20.572026
+            ],
+            [
+              104.94084,
+              20.603252
+            ],
+            [
+              104.951889,
+              20.637292
+            ],
+            [
+              104.969143,
+              20.657599
+            ],
+            [
+              104.995386,
+              20.672777
+            ],
+            [
+              105.010362,
+              20.697181
+            ],
+            [
+              104.997542,
+              20.728133
+            ],
+            [
+              104.969768,
+              20.753
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "SL-VH",
+        "name_vi": "Vân Hồ",
+        "name_en": "Van Ho",
+        "province_vi": "Sơn La",
+        "province_en": "Son La",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          104.851,
+          20.753
+        ],
+        "topography": {
+          "mean_elevation_m": 980,
+          "peak_elevation_m": 1850,
+          "mean_slope_degrees": 29.4,
+          "max_slope_degrees": 60.5,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2230.1,
+          "topographic_wetness_index_mean": 8.1,
+          "annual_rainfall_mm": 3010,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.9,
+          "fault_line_proximity_km": 5.7
+        },
+        "hazard_inventory": {
+          "historical_events_count": 28,
+          "last_major_event_year": 2023,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-SL-VH",
+          "station_name": "Trạm Viễn Thám Vân Hồ",
+          "station_lat": 20.768,
+          "station_lng": 104.863,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "SL-BY",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.542497,
+              21.253
+            ],
+            [
+              104.559868,
+              21.281482
+            ],
+            [
+              104.562577,
+              21.312688
+            ],
+            [
+              104.546803,
+              21.33941
+            ],
+            [
+              104.526901,
+              21.363419
+            ],
+            [
+              104.512117,
+              21.393826
+            ],
+            [
+              104.492148,
+              21.42626
+            ],
+            [
+              104.455793,
+              21.437124
+            ],
+            [
+              104.412735,
+              21.411297
+            ],
+            [
+              104.382,
+              21.368346
+            ],
+            [
+              104.363934,
+              21.346046
+            ],
+            [
+              104.339792,
+              21.358314
+            ],
+            [
+              104.299826,
+              21.382258
+            ],
+            [
+              104.2566,
+              21.38872
+            ],
+            [
+              104.225331,
+              21.372387
+            ],
+            [
+              104.204907,
+              21.345854
+            ],
+            [
+              104.188232,
+              21.317048
+            ],
+            [
+              104.18012,
+              21.285328
+            ],
+            [
+              104.190135,
+              21.253
+            ],
+            [
+              104.212859,
+              21.225915
+            ],
+            [
+              104.231465,
+              21.203242
+            ],
+            [
+              104.241648,
+              21.17941
+            ],
+            [
+              104.256976,
+              21.157727
+            ],
+            [
+              104.285623,
+              21.148691
+            ],
+            [
+              104.315967,
+              21.149132
+            ],
+            [
+              104.335278,
+              21.136422
+            ],
+            [
+              104.351548,
+              21.096159
+            ],
+            [
+              104.382,
+              21.048346
+            ],
+            [
+              104.425121,
+              21.030908
+            ],
+            [
+              104.460307,
+              21.057612
+            ],
+            [
+              104.476007,
+              21.105129
+            ],
+            [
+              104.483094,
+              21.143586
+            ],
+            [
+              104.495256,
+              21.166695
+            ],
+            [
+              104.510061,
+              21.185854
+            ],
+            [
+              104.519344,
+              21.207602
+            ],
+            [
+              104.527128,
+              21.22976
+            ],
+            [
+              104.542497,
+              21.253
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "SL-BY",
+        "name_vi": "Bắc Yên",
+        "name_en": "Bac Yen",
+        "province_vi": "Sơn La",
+        "province_en": "Son La",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          104.382,
+          21.253
+        ],
+        "topography": {
+          "mean_elevation_m": 1280,
+          "peak_elevation_m": 2879,
+          "mean_slope_degrees": 34.8,
+          "max_slope_degrees": 67.2,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2265.3,
+          "topographic_wetness_index_mean": 8.45,
+          "annual_rainfall_mm": 1800,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 5.7,
+          "fault_line_proximity_km": 6.6
+        },
+        "hazard_inventory": {
+          "historical_events_count": 51,
+          "last_major_event_year": 2024,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-SL-BY",
+          "station_name": "Trạm Viễn Thám Bắc Yên",
+          "station_lat": 21.268,
+          "station_lng": 104.394,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "SL-ML",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.309721,
+              21.521
+            ],
+            [
+              104.330722,
+              21.562973
+            ],
+            [
+              104.298279,
+              21.597591
+            ],
+            [
+              104.244263,
+              21.615954
+            ],
+            [
+              104.206363,
+              21.631939
+            ],
+            [
+              104.186353,
+              21.658271
+            ],
+            [
+              104.161118,
+              21.683309
+            ],
+            [
+              104.121687,
+              21.68627
+            ],
+            [
+              104.081655,
+              21.668948
+            ],
+            [
+              104.051,
+              21.655611
+            ],
+            [
+              104.021907,
+              21.66141
+            ],
+            [
+              103.984694,
+              21.676029
+            ],
+            [
+              103.94145,
+              21.682472
+            ],
+            [
+              103.896768,
+              21.677417
+            ],
+            [
+              103.850245,
+              21.664352
+            ],
+            [
+              103.809967,
+              21.639424
+            ],
+            [
+              103.799781,
+              21.598811
+            ],
+            [
+              103.833546,
+              21.553629
+            ],
+            [
+              103.886684,
+              21.521
+            ],
+            [
+              103.914112,
+              21.50046
+            ],
+            [
+              103.900754,
+              21.474464
+            ],
+            [
+              103.877902,
+              21.435954
+            ],
+            [
+              103.882297,
+              21.400535
+            ],
+            [
+              103.91443,
+              21.382495
+            ],
+            [
+              103.949599,
+              21.371539
+            ],
+            [
+              103.976999,
+              21.347981
+            ],
+            [
+              104.008196,
+              21.314417
+            ],
+            [
+              104.051,
+              21.295611
+            ],
+            [
+              104.095366,
+              21.306879
+            ],
+            [
+              104.129381,
+              21.33774
+            ],
+            [
+              104.152968,
+              21.370703
+            ],
+            [
+              104.168691,
+              21.401641
+            ],
+            [
+              104.174311,
+              21.432948
+            ],
+            [
+              104.176328,
+              21.459424
+            ],
+            [
+              104.197306,
+              21.475684
+            ],
+            [
+              104.250156,
+              21.491116
+            ],
+            [
+              104.309721,
+              21.521
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "SL-ML",
+        "name_vi": "Mường La",
+        "name_en": "Muong La",
+        "province_vi": "Sơn La",
+        "province_en": "Son La",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          104.051,
+          21.521
+        ],
+        "topography": {
+          "mean_elevation_m": 1150,
+          "peak_elevation_m": 2750,
+          "mean_slope_degrees": 35.5,
+          "max_slope_degrees": 69.0,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2300.5,
+          "topographic_wetness_index_mean": 8.8,
+          "annual_rainfall_mm": 1910,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 2.5,
+          "fault_line_proximity_km": 7.5
+        },
+        "hazard_inventory": {
+          "historical_events_count": 59,
+          "last_major_event_year": 2020,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-SL-ML",
+          "station_name": "Trạm Viễn Thám Mường La",
+          "station_lat": 21.536,
+          "station_lng": 104.063,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "SL-QN",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              103.892275,
+              21.782
+            ],
+            [
+              103.884448,
+              21.819374
+            ],
+            [
+              103.83872,
+              21.845755
+            ],
+            [
+              103.789097,
+              21.860083
+            ],
+            [
+              103.752635,
+              21.870866
+            ],
+            [
+              103.72392,
+              21.880683
+            ],
+            [
+              103.697163,
+              21.888135
+            ],
+            [
+              103.674164,
+              21.899519
+            ],
+            [
+              103.651934,
+              21.923146
+            ],
+            [
+              103.621,
+              21.951394
+            ],
+            [
+              103.581324,
+              21.963033
+            ],
+            [
+              103.545269,
+              21.949402
+            ],
+            [
+              103.51721,
+              21.926634
+            ],
+            [
+              103.48434,
+              21.913034
+            ],
+            [
+              103.440551,
+              21.903821
+            ],
+            [
+              103.408123,
+              21.880883
+            ],
+            [
+              103.416057,
+              21.842014
+            ],
+            [
+              103.458638,
+              21.805033
+            ],
+            [
+              103.494538,
+              21.782
+            ],
+            [
+              103.492753,
+              21.763806
+            ],
+            [
+              103.464969,
+              21.736309
+            ],
+            [
+              103.444647,
+              21.700083
+            ],
+            [
+              103.44795,
+              21.665174
+            ],
+            [
+              103.468259,
+              21.635548
+            ],
+            [
+              103.498294,
+              21.611007
+            ],
+            [
+              103.53813,
+              21.598818
+            ],
+            [
+              103.582867,
+              21.608008
+            ],
+            [
+              103.621,
+              21.631394
+            ],
+            [
+              103.650391,
+              21.647895
+            ],
+            [
+              103.681304,
+              21.6487
+            ],
+            [
+              103.716079,
+              21.649506
+            ],
+            [
+              103.74,
+              21.667899
+            ],
+            [
+              103.745235,
+              21.698129
+            ],
+            [
+              103.752574,
+              21.720883
+            ],
+            [
+              103.789808,
+              21.732568
+            ],
+            [
+              103.850333,
+              21.749466
+            ],
+            [
+              103.892275,
+              21.782
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "SL-QN",
+        "name_vi": "Quỳnh Nhai",
+        "name_en": "Quynh Nhai",
+        "province_vi": "Sơn La",
+        "province_en": "Son La",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          103.621,
+          21.782
+        ],
+        "topography": {
+          "mean_elevation_m": 740,
+          "peak_elevation_m": 1920,
+          "mean_slope_degrees": 28.5,
+          "max_slope_degrees": 57.0,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2335.7,
+          "topographic_wetness_index_mean": 9.15,
+          "annual_rainfall_mm": 2020,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 3.3,
+          "fault_line_proximity_km": 8.4
+        },
+        "hazard_inventory": {
+          "historical_events_count": 26,
+          "last_major_event_year": 2021,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-SL-QN",
+          "station_name": "Trạm Viễn Thám Quỳnh Nhai",
+          "station_lat": 21.797,
+          "station_lng": 103.633,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "SL-TC",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              103.949754,
+              21.452
+            ],
+            [
+              103.92667,
+              21.485632
+            ],
+            [
+              103.90083,
+              21.51412
+            ],
+            [
+              103.87108,
+              21.537204
+            ],
+            [
+              103.82926,
+              21.548588
+            ],
+            [
+              103.785102,
+              21.548322
+            ],
+            [
+              103.758557,
+              21.556295
+            ],
+            [
+              103.747933,
+              21.594777
+            ],
+            [
+              103.72702,
+              21.654635
+            ],
+            [
+              103.681,
+              21.695315
+            ],
+            [
+              103.627485,
+              21.687636
+            ],
+            [
+              103.590221,
+              21.645644
+            ],
+            [
+              103.566735,
+              21.605659
+            ],
+            [
+              103.539191,
+              21.583212
+            ],
+            [
+              103.507667,
+              21.564921
+            ],
+            [
+              103.490715,
+              21.537296
+            ],
+            [
+              103.493532,
+              21.504976
+            ],
+            [
+              103.497089,
+              21.477177
+            ],
+            [
+              103.486073,
+              21.452
+            ],
+            [
+              103.470033,
+              21.423119
+            ],
+            [
+              103.465112,
+              21.390993
+            ],
+            [
+              103.46952,
+              21.357204
+            ],
+            [
+              103.47406,
+              21.317184
+            ],
+            [
+              103.487053,
+              21.272546
+            ],
+            [
+              103.526716,
+              21.244526
+            ],
+            [
+              103.589345,
+              21.256487
+            ],
+            [
+              103.646503,
+              21.300104
+            ],
+            [
+              103.681,
+              21.335315
+            ],
+            [
+              103.708002,
+              21.333105
+            ],
+            [
+              103.748809,
+              21.307354
+            ],
+            [
+              103.798575,
+              21.29389
+            ],
+            [
+              103.837239,
+              21.307436
+            ],
+            [
+              103.862868,
+              21.333518
+            ],
+            [
+              103.892275,
+              21.357296
+            ],
+            [
+              103.92925,
+              21.381848
+            ],
+            [
+              103.953726,
+              21.414664
+            ],
+            [
+              103.949754,
+              21.452
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "SL-TC",
+        "name_vi": "Thuận Châu",
+        "name_en": "Thuan Chau",
+        "province_vi": "Sơn La",
+        "province_en": "Son La",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          103.681,
+          21.452
+        ],
+        "topography": {
+          "mean_elevation_m": 890,
+          "peak_elevation_m": 2180,
+          "mean_slope_degrees": 30.1,
+          "max_slope_degrees": 61.5,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2370.9,
+          "topographic_wetness_index_mean": 9.5,
+          "annual_rainfall_mm": 2130,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.1,
+          "fault_line_proximity_km": 1.2
+        },
+        "hazard_inventory": {
+          "historical_events_count": 37,
+          "last_major_event_year": 2022,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-SL-TC",
+          "station_name": "Trạm Viễn Thám Thuận Châu",
+          "station_lat": 21.467,
+          "station_lng": 103.693,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "SL-MS",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.188688,
+              21.152
+            ],
+            [
+              104.189315,
+              21.176063
+            ],
+            [
+              104.204962,
+              21.206055
+            ],
+            [
+              104.199178,
+              21.235174
+            ],
+            [
+              104.164071,
+              21.250209
+            ],
+            [
+              104.126685,
+              21.257193
+            ],
+            [
+              104.107356,
+              21.279117
+            ],
+            [
+              104.093084,
+              21.323461
+            ],
+            [
+              104.061103,
+              21.366329
+            ],
+            [
+              104.012,
+              21.378399
+            ],
+            [
+              103.965014,
+              21.35709
+            ],
+            [
+              103.931354,
+              21.322535
+            ],
+            [
+              103.90865,
+              21.289773
+            ],
+            [
+              103.895035,
+              21.259285
+            ],
+            [
+              103.889174,
+              21.231323
+            ],
+            [
+              103.877007,
+              21.211985
+            ],
+            [
+              103.839861,
+              21.200221
+            ],
+            [
+              103.784343,
+              21.182895
+            ],
+            [
+              103.74693,
+              21.152
+            ],
+            [
+              103.754267,
+              21.117023
+            ],
+            [
+              103.789845,
+              21.089768
+            ],
+            [
+              103.816604,
+              21.065174
+            ],
+            [
+              103.825664,
+              21.031662
+            ],
+            [
+              103.842728,
+              20.996738
+            ],
+            [
+              103.886477,
+              20.984669
+            ],
+            [
+              103.941994,
+              21.003966
+            ],
+            [
+              103.984392,
+              21.031495
+            ],
+            [
+              104.012,
+              21.038399
+            ],
+            [
+              104.041724,
+              21.022256
+            ],
+            [
+              104.082444,
+              21.00304
+            ],
+            [
+              104.12953,
+              20.995324
+            ],
+            [
+              104.178992,
+              20.998829
+            ],
+            [
+              104.22758,
+              21.012775
+            ],
+            [
+              104.259581,
+              21.041985
+            ],
+            [
+              104.254979,
+              21.083934
+            ],
+            [
+              104.219391,
+              21.123855
+            ],
+            [
+              104.188688,
+              21.152
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "SL-MS",
+        "name_vi": "Mai Sơn",
+        "name_en": "Mai Son",
+        "province_vi": "Sơn La",
+        "province_en": "Son La",
+        "susceptibility_tier": "MODERATE",
+        "center_coordinate": [
+          104.012,
+          21.152
+        ],
+        "topography": {
+          "mean_elevation_m": 680,
+          "peak_elevation_m": 1750,
+          "mean_slope_degrees": 24.5,
+          "max_slope_degrees": 51.0,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2406.1,
+          "topographic_wetness_index_mean": 7.4,
+          "annual_rainfall_mm": 2240,
+          "critical_rainfall_threshold_24h_mm": 220.0,
+          "critical_rainfall_threshold_72h_mm": 341.0
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.9,
+          "fault_line_proximity_km": 2.1
+        },
+        "hazard_inventory": {
+          "historical_events_count": 22,
+          "last_major_event_year": 2023,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.65
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 90.0,
+          "watch_orange_mm_24h": 150.0,
+          "warning_red_mm_24h": 220.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-SL-MS",
+          "station_name": "Trạm Viễn Thám Mai Sơn",
+          "station_lat": 21.167,
+          "station_lng": 104.024,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "SL-SM",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              103.885991,
+              21.052
+            ],
+            [
+              103.91341,
+              21.075723
+            ],
+            [
+              103.94433,
+              21.109803
+            ],
+            [
+              103.948279,
+              21.145479
+            ],
+            [
+              103.929766,
+              21.175667
+            ],
+            [
+              103.905201,
+              21.204662
+            ],
+            [
+              103.875603,
+              21.233635
+            ],
+            [
+              103.834378,
+              21.251216
+            ],
+            [
+              103.7863,
+              21.249202
+            ],
+            [
+              103.742,
+              21.237336
+            ],
+            [
+              103.702172,
+              21.229291
+            ],
+            [
+              103.663843,
+              21.220548
+            ],
+            [
+              103.636118,
+              21.195948
+            ],
+            [
+              103.629092,
+              21.157617
+            ],
+            [
+              103.626638,
+              21.12798
+            ],
+            [
+              103.593333,
+              21.119371
+            ],
+            [
+              103.520406,
+              21.115306
+            ],
+            [
+              103.448464,
+              21.092626
+            ],
+            [
+              103.427342,
+              21.052
+            ],
+            [
+              103.461729,
+              21.01321
+            ],
+            [
+              103.513341,
+              20.986675
+            ],
+            [
+              103.551077,
+              20.965479
+            ],
+            [
+              103.57842,
+              20.944263
+            ],
+            [
+              103.610387,
+              20.928886
+            ],
+            [
+              103.646279,
+              20.921866
+            ],
+            [
+              103.677511,
+              20.912926
+            ],
+            [
+              103.706657,
+              20.894671
+            ],
+            [
+              103.742,
+              20.877336
+            ],
+            [
+              103.781816,
+              20.87476
+            ],
+            [
+              103.82071,
+              20.882259
+            ],
+            [
+              103.865442,
+              20.884179
+            ],
+            [
+              103.923906,
+              20.881841
+            ],
+            [
+              103.977984,
+              20.896576
+            ],
+            [
+              103.990535,
+              20.939371
+            ],
+            [
+              103.951395,
+              20.992179
+            ],
+            [
+              103.900145,
+              21.030112
+            ],
+            [
+              103.885991,
+              21.052
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "SL-SM",
+        "name_vi": "Sông Mã",
+        "name_en": "Song Ma",
+        "province_vi": "Sơn La",
+        "province_en": "Son La",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          103.742,
+          21.052
+        ],
+        "topography": {
+          "mean_elevation_m": 790,
+          "peak_elevation_m": 1980,
+          "mean_slope_degrees": 29.2,
+          "max_slope_degrees": 58.8,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2441.3,
+          "topographic_wetness_index_mean": 7.75,
+          "annual_rainfall_mm": 2350,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 5.7,
+          "fault_line_proximity_km": 3.0
+        },
+        "hazard_inventory": {
+          "historical_events_count": 34,
+          "last_major_event_year": 2024,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-SL-SM",
+          "station_name": "Trạm Viễn Thám Sông Mã",
+          "station_lat": 21.067,
+          "station_lng": 103.754,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "SL-SC",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              103.741624,
+              20.852
+            ],
+            [
+              103.75958,
+              20.8777
+            ],
+            [
+              103.772102,
+              20.908789
+            ],
+            [
+              103.780605,
+              20.946111
+            ],
+            [
+              103.782387,
+              20.990005
+            ],
+            [
+              103.762124,
+              21.028186
+            ],
+            [
+              103.713142,
+              21.038429
+            ],
+            [
+              103.65436,
+              21.015172
+            ],
+            [
+              103.610456,
+              20.984456
+            ],
+            [
+              103.582,
+              20.977943
+            ],
+            [
+              103.551195,
+              20.995387
+            ],
+            [
+              103.513239,
+              21.007057
+            ],
+            [
+              103.482582,
+              20.993332
+            ],
+            [
+              103.464871,
+              20.966568
+            ],
+            [
+              103.442284,
+              20.948222
+            ],
+            [
+              103.399175,
+              20.938634
+            ],
+            [
+              103.349355,
+              20.921498
+            ],
+            [
+              103.322046,
+              20.889621
+            ],
+            [
+              103.32737,
+              20.852
+            ],
+            [
+              103.35162,
+              20.818659
+            ],
+            [
+              103.382831,
+              20.792502
+            ],
+            [
+              103.421851,
+              20.776111
+            ],
+            [
+              103.46505,
+              20.771458
+            ],
+            [
+              103.495847,
+              20.767731
+            ],
+            [
+              103.506015,
+              20.74398
+            ],
+            [
+              103.512677,
+              20.695676
+            ],
+            [
+              103.538522,
+              20.649621
+            ],
+            [
+              103.582,
+              20.637943
+            ],
+            [
+              103.62313,
+              20.660552
+            ],
+            [
+              103.654922,
+              20.687561
+            ],
+            [
+              103.689709,
+              20.698883
+            ],
+            [
+              103.731148,
+              20.706113
+            ],
+            [
+              103.75962,
+              20.729674
+            ],
+            [
+              103.757929,
+              20.768634
+            ],
+            [
+              103.738626,
+              20.805211
+            ],
+            [
+              103.730006,
+              20.83058
+            ],
+            [
+              103.741624,
+              20.852
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "SL-SC",
+        "name_vi": "Sốp Cộp",
+        "name_en": "Sop Cop",
+        "province_vi": "Sơn La",
+        "province_en": "Son La",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          103.582,
+          20.852
+        ],
+        "topography": {
+          "mean_elevation_m": 920,
+          "peak_elevation_m": 2120,
+          "mean_slope_degrees": 31.0,
+          "max_slope_degrees": 62.1,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2476.5,
+          "topographic_wetness_index_mean": 8.1,
+          "annual_rainfall_mm": 2460,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 2.5,
+          "fault_line_proximity_km": 3.9
+        },
+        "hazard_inventory": {
+          "historical_events_count": 29,
+          "last_major_event_year": 2020,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-SL-SC",
+          "station_name": "Trạm Viễn Thám Sốp Cộp",
+          "station_lat": 20.867,
+          "station_lng": 103.594,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "SL-PY",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.926161,
+              21.253
+            ],
+            [
+              104.914343,
+              21.282748
+            ],
+            [
+              104.906281,
+              21.311844
+            ],
+            [
+              104.913527,
+              21.349993
+            ],
+            [
+              104.914579,
+              21.394736
+            ],
+            [
+              104.883509,
+              21.421994
+            ],
+            [
+              104.826504,
+              21.412454
+            ],
+            [
+              104.774118,
+              21.380345
+            ],
+            [
+              104.742823,
+              21.360997
+            ],
+            [
+              104.721,
+              21.371115
+            ],
+            [
+              104.692363,
+              21.394715
+            ],
+            [
+              104.655872,
+              21.409139
+            ],
+            [
+              104.617252,
+              21.409801
+            ],
+            [
+              104.57707,
+              21.402674
+            ],
+            [
+              104.538728,
+              21.386457
+            ],
+            [
+              104.516379,
+              21.356086
+            ],
+            [
+              104.519132,
+              21.317112
+            ],
+            [
+              104.533182,
+              21.281898
+            ],
+            [
+              104.536515,
+              21.253
+            ],
+            [
+              104.530617,
+              21.223708
+            ],
+            [
+              104.540134,
+              21.195558
+            ],
+            [
+              104.576084,
+              21.179993
+            ],
+            [
+              104.616093,
+              21.176188
+            ],
+            [
+              104.633049,
+              21.161539
+            ],
+            [
+              104.631681,
+              21.118006
+            ],
+            [
+              104.640851,
+              21.060849
+            ],
+            [
+              104.675162,
+              21.026163
+            ],
+            [
+              104.721,
+              21.031115
+            ],
+            [
+              104.760024,
+              21.059881
+            ],
+            [
+              104.789139,
+              21.089643
+            ],
+            [
+              104.812075,
+              21.115352
+            ],
+            [
+              104.82753,
+              21.142219
+            ],
+            [
+              104.837214,
+              21.16791
+            ],
+            [
+              104.853823,
+              21.186086
+            ],
+            [
+              104.885279,
+              21.200826
+            ],
+            [
+              104.916908,
+              21.222857
+            ],
+            [
+              104.926161,
+              21.253
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "SL-PY",
+        "name_vi": "Phù Yên",
+        "name_en": "Phu Yen",
+        "province_vi": "Sơn La",
+        "province_en": "Son La",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          104.721,
+          21.253
+        ],
+        "topography": {
+          "mean_elevation_m": 650,
+          "peak_elevation_m": 1820,
+          "mean_slope_degrees": 27.5,
+          "max_slope_degrees": 56.5,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2511.7,
+          "topographic_wetness_index_mean": 8.45,
+          "annual_rainfall_mm": 2570,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 3.3,
+          "fault_line_proximity_km": 4.8
+        },
+        "hazard_inventory": {
+          "historical_events_count": 30,
+          "last_major_event_year": 2021,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-SL-PY",
+          "station_name": "Trạm Viễn Thám Phù Yên",
+          "station_lat": 21.268,
+          "station_lng": 104.733,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LC-PT",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              103.562736,
+              22.552
+            ],
+            [
+              103.535577,
+              22.582286
+            ],
+            [
+              103.517309,
+              22.608328
+            ],
+            [
+              103.508691,
+              22.636721
+            ],
+            [
+              103.49148,
+              22.661692
+            ],
+            [
+              103.459289,
+              22.672093
+            ],
+            [
+              103.424494,
+              22.670457
+            ],
+            [
+              103.397598,
+              22.671136
+            ],
+            [
+              103.375278,
+              22.680127
+            ],
+            [
+              103.351,
+              22.689792
+            ],
+            [
+              103.323771,
+              22.695701
+            ],
+            [
+              103.291315,
+              22.704598
+            ],
+            [
+              103.248099,
+              22.717854
+            ],
+            [
+              103.200438,
+              22.718974
+            ],
+            [
+              103.172736,
+              22.691195
+            ],
+            [
+              103.182918,
+              22.642304
+            ],
+            [
+              103.215036,
+              22.598051
+            ],
+            [
+              103.232174,
+              22.571497
+            ],
+            [
+              103.218858,
+              22.552
+            ],
+            [
+              103.196924,
+              22.526719
+            ],
+            [
+              103.19417,
+              22.498882
+            ],
+            [
+              103.210885,
+              22.476721
+            ],
+            [
+              103.228055,
+              22.456
+            ],
+            [
+              103.238249,
+              22.426959
+            ],
+            [
+              103.252556,
+              22.393329
+            ],
+            [
+              103.279985,
+              22.370435
+            ],
+            [
+              103.315564,
+              22.364989
+            ],
+            [
+              103.351,
+              22.369792
+            ],
+            [
+              103.383485,
+              22.380562
+            ],
+            [
+              103.408927,
+              22.403897
+            ],
+            [
+              103.420038,
+              22.440726
+            ],
+            [
+              103.421478,
+              22.47384
+            ],
+            [
+              103.436161,
+              22.485503
+            ],
+            [
+              103.480725,
+              22.482304
+            ],
+            [
+              103.538175,
+              22.488604
+            ],
+            [
+              103.570827,
+              22.51593
+            ],
+            [
+              103.562736,
+              22.552
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "LC-PT",
+        "name_vi": "Phong Thổ",
+        "name_en": "Phong Tho",
+        "province_vi": "Lai Châu",
+        "province_en": "Lai Chau",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          103.351,
+          22.552
+        ],
+        "topography": {
+          "mean_elevation_m": 1320,
+          "peak_elevation_m": 3046,
+          "mean_slope_degrees": 36.0,
+          "max_slope_degrees": 71.0,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2546.9,
+          "topographic_wetness_index_mean": 8.8,
+          "annual_rainfall_mm": 2680,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.1,
+          "fault_line_proximity_km": 5.7
+        },
+        "hazard_inventory": {
+          "historical_events_count": 53,
+          "last_major_event_year": 2022,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-LC-PT",
+          "station_name": "Trạm Viễn Thám Phong Thổ",
+          "station_lat": 22.567,
+          "station_lng": 103.363,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LC-SH",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              103.464602,
+              22.351
+            ],
+            [
+              103.441625,
+              22.383727
+            ],
+            [
+              103.413828,
+              22.408651
+            ],
+            [
+              103.380308,
+              22.423507
+            ],
+            [
+              103.348995,
+              22.430662
+            ],
+            [
+              103.331981,
+              22.444296
+            ],
+            [
+              103.326141,
+              22.476693
+            ],
+            [
+              103.313714,
+              22.51696
+            ],
+            [
+              103.285747,
+              22.538329
+            ],
+            [
+              103.252,
+              22.53166
+            ],
+            [
+              103.221851,
+              22.518358
+            ],
+            [
+              103.188922,
+              22.52063
+            ],
+            [
+              103.14654,
+              22.529787
+            ],
+            [
+              103.108699,
+              22.518157
+            ],
+            [
+              103.098375,
+              22.477172
+            ],
+            [
+              103.116092,
+              22.427802
+            ],
+            [
+              103.135604,
+              22.392466
+            ],
+            [
+              103.13466,
+              22.371251
+            ],
+            [
+              103.117234,
+              22.351
+            ],
+            [
+              103.099534,
+              22.324686
+            ],
+            [
+              103.087409,
+              22.292364
+            ],
+            [
+              103.079478,
+              22.253507
+            ],
+            [
+              103.082895,
+              22.212114
+            ],
+            [
+              103.108697,
+              22.183841
+            ],
+            [
+              103.152457,
+              22.182244
+            ],
+            [
+              103.194907,
+              22.197465
+            ],
+            [
+              103.225427,
+              22.203495
+            ],
+            [
+              103.252,
+              22.19166
+            ],
+            [
+              103.282171,
+              22.183523
+            ],
+            [
+              103.307729,
+              22.201135
+            ],
+            [
+              103.320224,
+              22.235338
+            ],
+            [
+              103.331983,
+              22.257702
+            ],
+            [
+              103.364475,
+              22.258624
+            ],
+            [
+              103.416922,
+              22.257802
+            ],
+            [
+              103.462024,
+              22.276179
+            ],
+            [
+              103.476751,
+              22.312211
+            ],
+            [
+              103.464602,
+              22.351
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "LC-SH",
+        "name_vi": "Sìn Hồ",
+        "name_en": "Sin Ho",
+        "province_vi": "Lai Châu",
+        "province_en": "Lai Chau",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          103.252,
+          22.351
+        ],
+        "topography": {
+          "mean_elevation_m": 1450,
+          "peak_elevation_m": 2820,
+          "mean_slope_degrees": 35.2,
+          "max_slope_degrees": 68.4,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2582.1,
+          "topographic_wetness_index_mean": 9.15,
+          "annual_rainfall_mm": 2790,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.9,
+          "fault_line_proximity_km": 6.6
+        },
+        "hazard_inventory": {
+          "historical_events_count": 61,
+          "last_major_event_year": 2023,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-LC-SH",
+          "station_name": "Trạm Viễn Thám Sìn Hồ",
+          "station_lat": 22.366,
+          "station_lng": 103.264,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LC-TD",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              103.775352,
+              22.351
+            ],
+            [
+              103.767425,
+              22.376815
+            ],
+            [
+              103.739618,
+              22.394167
+            ],
+            [
+              103.704386,
+              22.399136
+            ],
+            [
+              103.685748,
+              22.405322
+            ],
+            [
+              103.689429,
+              22.432539
+            ],
+            [
+              103.695146,
+              22.479407
+            ],
+            [
+              103.682256,
+              22.519274
+            ],
+            [
+              103.65248,
+              22.529508
+            ],
+            [
+              103.621,
+              22.515688
+            ],
+            [
+              103.594897,
+              22.499016
+            ],
+            [
+              103.571142,
+              22.487963
+            ],
+            [
+              103.549936,
+              22.474068
+            ],
+            [
+              103.536485,
+              22.451707
+            ],
+            [
+              103.529502,
+              22.427765
+            ],
+            [
+              103.5202,
+              22.409189
+            ],
+            [
+              103.506341,
+              22.392726
+            ],
+            [
+              103.496678,
+              22.372918
+            ],
+            [
+              103.495311,
+              22.351
+            ],
+            [
+              103.491638,
+              22.328193
+            ],
+            [
+              103.476465,
+              22.298401
+            ],
+            [
+              103.461864,
+              22.259136
+            ],
+            [
+              103.471224,
+              22.225341
+            ],
+            [
+              103.509422,
+              22.218046
+            ],
+            [
+              103.555126,
+              22.236919
+            ],
+            [
+              103.586476,
+              22.25616
+            ],
+            [
+              103.603852,
+              22.253762
+            ],
+            [
+              103.621,
+              22.235688
+            ],
+            [
+              103.643526,
+              22.22327
+            ],
+            [
+              103.666922,
+              22.224849
+            ],
+            [
+              103.689957,
+              22.231581
+            ],
+            [
+              103.716492,
+              22.237214
+            ],
+            [
+              103.744026,
+              22.247784
+            ],
+            [
+              103.762722,
+              22.269189
+            ],
+            [
+              103.769494,
+              22.296961
+            ],
+            [
+              103.772464,
+              22.324297
+            ],
+            [
+              103.775352,
+              22.351
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "LC-TD",
+        "name_vi": "Tam Đường",
+        "name_en": "Tam Duong",
+        "province_vi": "Lai Châu",
+        "province_en": "Lai Chau",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          103.621,
+          22.351
+        ],
+        "topography": {
+          "mean_elevation_m": 1180,
+          "peak_elevation_m": 3049,
+          "mean_slope_degrees": 33.4,
+          "max_slope_degrees": 66.0,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2617.3,
+          "topographic_wetness_index_mean": 9.5,
+          "annual_rainfall_mm": 2900,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 5.7,
+          "fault_line_proximity_km": 7.5
+        },
+        "hazard_inventory": {
+          "historical_events_count": 44,
+          "last_major_event_year": 2024,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-LC-TD",
+          "station_name": "Trạm Viễn Thám Tam Đường",
+          "station_lat": 22.366,
+          "station_lng": 103.633,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LC-NN",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              103.195875,
+              22.351
+            ],
+            [
+              103.19576,
+              22.38135
+            ],
+            [
+              103.169859,
+              22.404363
+            ],
+            [
+              103.143676,
+              22.420759
+            ],
+            [
+              103.13738,
+              22.447181
+            ],
+            [
+              103.140689,
+              22.491488
+            ],
+            [
+              103.130585,
+              22.537944
+            ],
+            [
+              103.100363,
+              22.565759
+            ],
+            [
+              103.0605,
+              22.571638
+            ],
+            [
+              103.021,
+              22.563578
+            ],
+            [
+              102.986752,
+              22.542299
+            ],
+            [
+              102.964114,
+              22.504937
+            ],
+            [
+              102.955145,
+              22.463343
+            ],
+            [
+              102.94526,
+              22.439903
+            ],
+            [
+              102.913632,
+              22.439734
+            ],
+            [
+              102.862474,
+              22.441145
+            ],
+            [
+              102.822028,
+              22.422328
+            ],
+            [
+              102.815665,
+              22.38666
+            ],
+            [
+              102.830363,
+              22.351
+            ],
+            [
+              102.835801,
+              22.318837
+            ],
+            [
+              102.82639,
+              22.281236
+            ],
+            [
+              102.827134,
+              22.240759
+            ],
+            [
+              102.857381,
+              22.215778
+            ],
+            [
+              102.905742,
+              22.215712
+            ],
+            [
+              102.947829,
+              22.226175
+            ],
+            [
+              102.97535,
+              22.22747
+            ],
+            [
+              102.99703,
+              22.217107
+            ],
+            [
+              103.021,
+              22.203578
+            ],
+            [
+              103.050223,
+              22.187768
+            ],
+            [
+              103.089126,
+              22.166647
+            ],
+            [
+              103.137901,
+              22.151574
+            ],
+            [
+              103.180206,
+              22.164127
+            ],
+            [
+              103.19363,
+              22.20833
+            ],
+            [
+              103.179017,
+              22.261145
+            ],
+            [
+              103.165497,
+              22.299201
+            ],
+            [
+              103.175624,
+              22.324147
+            ],
+            [
+              103.195875,
+              22.351
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "LC-NN",
+        "name_vi": "Nậm Nhùn",
+        "name_en": "Nam Nhun",
+        "province_vi": "Lai Châu",
+        "province_en": "Lai Chau",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          103.021,
+          22.351
+        ],
+        "topography": {
+          "mean_elevation_m": 950,
+          "peak_elevation_m": 2420,
+          "mean_slope_degrees": 31.8,
+          "max_slope_degrees": 63.0,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2652.5,
+          "topographic_wetness_index_mean": 7.4,
+          "annual_rainfall_mm": 3010,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 2.5,
+          "fault_line_proximity_km": 8.4
+        },
+        "hazard_inventory": {
+          "historical_events_count": 38,
+          "last_major_event_year": 2020,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-LC-NN",
+          "station_name": "Trạm Viễn Thám Nậm Nhùn",
+          "station_lat": 22.366,
+          "station_lng": 103.033,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LC-MT",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              102.950611,
+              22.451
+            ],
+            [
+              102.964587,
+              22.486248
+            ],
+            [
+              102.971818,
+              22.526234
+            ],
+            [
+              102.97633,
+              22.572789
+            ],
+            [
+              102.965555,
+              22.619502
+            ],
+            [
+              102.929478,
+              22.64989
+            ],
+            [
+              102.879834,
+              22.659204
+            ],
+            [
+              102.834851,
+              22.665049
+            ],
+            [
+              102.795179,
+              22.681268
+            ],
+            [
+              102.752,
+              22.691077
+            ],
+            [
+              102.711597,
+              22.666467
+            ],
+            [
+              102.689557,
+              22.612323
+            ],
+            [
+              102.67926,
+              22.569472
+            ],
+            [
+              102.649094,
+              22.566321
+            ],
+            [
+              102.583004,
+              22.584343
+            ],
+            [
+              102.507924,
+              22.583509
+            ],
+            [
+              102.465101,
+              22.549192
+            ],
+            [
+              102.464179,
+              22.498723
+            ],
+            [
+              102.482692,
+              22.451
+            ],
+            [
+              102.503777,
+              22.409843
+            ],
+            [
+              102.532118,
+              22.375745
+            ],
+            [
+              102.571101,
+              22.352789
+            ],
+            [
+              102.607109,
+              22.336676
+            ],
+            [
+              102.628705,
+              22.31283
+            ],
+            [
+              102.645875,
+              22.278153
+            ],
+            [
+              102.674813,
+              22.251584
+            ],
+            [
+              102.713925,
+              22.247952
+            ],
+            [
+              102.752,
+              22.251077
+            ],
+            [
+              102.79285,
+              22.233152
+            ],
+            [
+              102.849595,
+              22.198859
+            ],
+            [
+              102.91322,
+              22.18842
+            ],
+            [
+              102.949866,
+              22.229262
+            ],
+            [
+              102.941451,
+              22.301517
+            ],
+            [
+              102.913153,
+              22.363509
+            ],
+            [
+              102.904801,
+              22.398703
+            ],
+            [
+              102.924989,
+              22.422317
+            ],
+            [
+              102.950611,
+              22.451
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "LC-MT",
+        "name_vi": "Mường Tè",
+        "name_en": "Muong Te",
+        "province_vi": "Lai Châu",
+        "province_en": "Lai Chau",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          102.752,
+          22.451
+        ],
+        "topography": {
+          "mean_elevation_m": 1220,
+          "peak_elevation_m": 2865,
+          "mean_slope_degrees": 34.5,
+          "max_slope_degrees": 69.2,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2687.7,
+          "topographic_wetness_index_mean": 7.75,
+          "annual_rainfall_mm": 1800,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 3.3,
+          "fault_line_proximity_km": 1.2
+        },
+        "hazard_inventory": {
+          "historical_events_count": 57,
+          "last_major_event_year": 2021,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-LC-MT",
+          "station_name": "Trạm Viễn Thám Mường Tè",
+          "station_lat": 22.466,
+          "station_lng": 102.764,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LC-TU",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              103.893637,
+              22.052
+            ],
+            [
+              103.917432,
+              22.077907
+            ],
+            [
+              103.947417,
+              22.11511
+            ],
+            [
+              103.955578,
+              22.156268
+            ],
+            [
+              103.92424,
+              22.180326
+            ],
+            [
+              103.869732,
+              22.176913
+            ],
+            [
+              103.823694,
+              22.163151
+            ],
+            [
+              103.797315,
+              22.164334
+            ],
+            [
+              103.776959,
+              22.181964
+            ],
+            [
+              103.751,
+              22.194004
+            ],
+            [
+              103.724135,
+              22.1865
+            ],
+            [
+              103.701993,
+              22.170862
+            ],
+            [
+              103.677453,
+              22.164455
+            ],
+            [
+              103.64251,
+              22.166138
+            ],
+            [
+              103.603796,
+              22.16104
+            ],
+            [
+              103.574555,
+              22.141929
+            ],
+            [
+              103.557586,
+              22.114145
+            ],
+            [
+              103.548884,
+              22.083461
+            ],
+            [
+              103.553802,
+              22.052
+            ],
+            [
+              103.582761,
+              22.025812
+            ],
+            [
+              103.628077,
+              22.012504
+            ],
+            [
+              103.661272,
+              22.006268
+            ],
+            [
+              103.663912,
+              21.98749
+            ],
+            [
+              103.65129,
+              21.947099
+            ],
+            [
+              103.653777,
+              21.903344
+            ],
+            [
+              103.681085,
+              21.882426
+            ],
+            [
+              103.717947,
+              21.886522
+            ],
+            [
+              103.751,
+              21.894004
+            ],
+            [
+              103.783147,
+              21.891057
+            ],
+            [
+              103.818224,
+              21.888954
+            ],
+            [
+              103.84737,
+              21.904648
+            ],
+            [
+              103.860951,
+              21.936325
+            ],
+            [
+              103.864124,
+              21.968204
+            ],
+            [
+              103.868861,
+              21.991929
+            ],
+            [
+              103.876926,
+              22.011539
+            ],
+            [
+              103.883556,
+              22.031367
+            ],
+            [
+              103.893637,
+              22.052
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "LC-TU",
+        "name_vi": "Tân Uyên",
+        "name_en": "Tan Uyen",
+        "province_vi": "Lai Châu",
+        "province_en": "Lai Chau",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          103.751,
+          22.052
+        ],
+        "topography": {
+          "mean_elevation_m": 880,
+          "peak_elevation_m": 2650,
+          "mean_slope_degrees": 30.2,
+          "max_slope_degrees": 60.5,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2722.9,
+          "topographic_wetness_index_mean": 8.1,
+          "annual_rainfall_mm": 1910,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.1,
+          "fault_line_proximity_km": 2.1
+        },
+        "hazard_inventory": {
+          "historical_events_count": 32,
+          "last_major_event_year": 2022,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-LC-TU",
+          "station_name": "Trạm Viễn Thám Tân Uyên",
+          "station_lat": 22.067,
+          "station_lng": 103.763,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LC-TY",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              103.893581,
+              21.852
+            ],
+            [
+              103.920593,
+              21.881174
+            ],
+            [
+              103.943551,
+              21.919148
+            ],
+            [
+              103.929991,
+              21.952023
+            ],
+            [
+              103.880463,
+              21.96292
+            ],
+            [
+              103.825414,
+              21.955153
+            ],
+            [
+              103.788127,
+              21.948381
+            ],
+            [
+              103.765792,
+              21.954016
+            ],
+            [
+              103.745365,
+              21.966545
+            ],
+            [
+              103.721,
+              21.979213
+            ],
+            [
+              103.690786,
+              21.994045
+            ],
+            [
+              103.651578,
+              22.010113
+            ],
+            [
+              103.608124,
+              22.014068
+            ],
+            [
+              103.576948,
+              21.994311
+            ],
+            [
+              103.567601,
+              21.958701
+            ],
+            [
+              103.566127,
+              21.926122
+            ],
+            [
+              103.552351,
+              21.902884
+            ],
+            [
+              103.531557,
+              21.879691
+            ],
+            [
+              103.531682,
+              21.852
+            ],
+            [
+              103.564193,
+              21.82908
+            ],
+            [
+              103.603478,
+              21.816542
+            ],
+            [
+              103.616578,
+              21.802023
+            ],
+            [
+              103.603233,
+              21.770083
+            ],
+            [
+              103.59279,
+              21.725339
+            ],
+            [
+              103.607177,
+              21.688573
+            ],
+            [
+              103.642015,
+              21.672108
+            ],
+            [
+              103.682522,
+              21.671103
+            ],
+            [
+              103.721,
+              21.679213
+            ],
+            [
+              103.753629,
+              21.698603
+            ],
+            [
+              103.775354,
+              21.728205
+            ],
+            [
+              103.789073,
+              21.75426
+            ],
+            [
+              103.809572,
+              21.764498
+            ],
+            [
+              103.844832,
+              21.765865
+            ],
+            [
+              103.87954,
+              21.776122
+            ],
+            [
+              103.892424,
+              21.800278
+            ],
+            [
+              103.887957,
+              21.827596
+            ],
+            [
+              103.893581,
+              21.852
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "LC-TY",
+        "name_vi": "Than Uyên",
+        "name_en": "Than Uyen",
+        "province_vi": "Lai Châu",
+        "province_en": "Lai Chau",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          103.721,
+          21.852
+        ],
+        "topography": {
+          "mean_elevation_m": 790,
+          "peak_elevation_m": 2520,
+          "mean_slope_degrees": 28.7,
+          "max_slope_degrees": 58.0,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2758.1,
+          "topographic_wetness_index_mean": 8.45,
+          "annual_rainfall_mm": 2020,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.9,
+          "fault_line_proximity_km": 3.0
+        },
+        "hazard_inventory": {
+          "historical_events_count": 29,
+          "last_major_event_year": 2023,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-LC-TY",
+          "station_name": "Trạm Viễn Thám Than Uyên",
+          "station_lat": 21.867,
+          "station_lng": 103.733,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "DB-NP",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              103.05786,
+              21.852
+            ],
+            [
+              103.057725,
+              21.884969
+            ],
+            [
+              103.039967,
+              21.914948
+            ],
+            [
+              103.004178,
+              21.935531
+            ],
+            [
+              102.967818,
+              21.949304
+            ],
+            [
+              102.939922,
+              21.96394
+            ],
+            [
+              102.912913,
+              21.97774
+            ],
+            [
+              102.881428,
+              21.983132
+            ],
+            [
+              102.850878,
+              21.985837
+            ],
+            [
+              102.821,
+              22.004407
+            ],
+            [
+              102.778616,
+              22.041853
+            ],
+            [
+              102.720416,
+              22.070272
+            ],
+            [
+              102.670276,
+              22.058196
+            ],
+            [
+              102.65511,
+              22.00815
+            ],
+            [
+              102.668124,
+              21.953319
+            ],
+            [
+              102.675007,
+              21.918575
+            ],
+            [
+              102.65778,
+              21.898922
+            ],
+            [
+              102.634213,
+              21.878014
+            ],
+            [
+              102.627392,
+              21.852
+            ],
+            [
+              102.633797,
+              21.825928
+            ],
+            [
+              102.635459,
+              21.798661
+            ],
+            [
+              102.631381,
+              21.765531
+            ],
+            [
+              102.63806,
+              21.730756
+            ],
+            [
+              102.663222,
+              21.703485
+            ],
+            [
+              102.697679,
+              21.683292
+            ],
+            [
+              102.734199,
+              21.663637
+            ],
+            [
+              102.776128,
+              21.651002
+            ],
+            [
+              102.821,
+              21.664407
+            ],
+            [
+              102.853366,
+              21.707018
+            ],
+            [
+              102.867645,
+              21.750777
+            ],
+            [
+              102.885511,
+              21.763747
+            ],
+            [
+              102.93181,
+              21.747695
+            ],
+            [
+              102.997882,
+              21.734771
+            ],
+            [
+              103.047804,
+              21.748575
+            ],
+            [
+              103.062288,
+              21.782635
+            ],
+            [
+              103.058141,
+              21.818973
+            ],
+            [
+              103.05786,
+              21.852
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "DB-NP",
+        "name_vi": "Nậm Pồ",
+        "name_en": "Nam Po",
+        "province_vi": "Điện Biên",
+        "province_en": "Dien Bien",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          102.821,
+          21.852
+        ],
+        "topography": {
+          "mean_elevation_m": 1050,
+          "peak_elevation_m": 2180,
+          "mean_slope_degrees": 33.7,
+          "max_slope_degrees": 65.8,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2793.3,
+          "topographic_wetness_index_mean": 8.8,
+          "annual_rainfall_mm": 2130,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 5.7,
+          "fault_line_proximity_km": 3.9
+        },
+        "hazard_inventory": {
+          "historical_events_count": 46,
+          "last_major_event_year": 2024,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-DB-NP",
+          "station_name": "Trạm Viễn Thám Nậm Pồ",
+          "station_lat": 21.867,
+          "station_lng": 102.833,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "DB-MC",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              103.312529,
+              21.721
+            ],
+            [
+              103.261941,
+              21.749668
+            ],
+            [
+              103.20971,
+              21.765524
+            ],
+            [
+              103.189305,
+              21.782546
+            ],
+            [
+              103.198931,
+              21.816674
+            ],
+            [
+              103.202788,
+              21.860426
+            ],
+            [
+              103.176257,
+              21.888218
+            ],
+            [
+              103.13135,
+              21.891154
+            ],
+            [
+              103.089935,
+              21.891193
+            ],
+            [
+              103.051,
+              21.910333
+            ],
+            [
+              103.001508,
+              21.93734
+            ],
+            [
+              102.947465,
+              21.94025
+            ],
+            [
+              102.911752,
+              21.906896
+            ],
+            [
+              102.902554,
+              21.857357
+            ],
+            [
+              102.903555,
+              21.816359
+            ],
+            [
+              102.898693,
+              21.788777
+            ],
+            [
+              102.888358,
+              21.766627
+            ],
+            [
+              102.873904,
+              21.745068
+            ],
+            [
+              102.845459,
+              21.721
+            ],
+            [
+              102.801966,
+              21.687155
+            ],
+            [
+              102.770808,
+              21.642396
+            ],
+            [
+              102.78481,
+              21.602546
+            ],
+            [
+              102.841135,
+              21.58527
+            ],
+            [
+              102.902561,
+              21.58465
+            ],
+            [
+              102.942722,
+              21.576449
+            ],
+            [
+              102.971603,
+              21.552865
+            ],
+            [
+              103.008829,
+              21.536662
+            ],
+            [
+              103.051,
+              21.550333
+            ],
+            [
+              103.082614,
+              21.58281
+            ],
+            [
+              103.107213,
+              21.601961
+            ],
+            [
+              103.145287,
+              21.595127
+            ],
+            [
+              103.202781,
+              21.581581
+            ],
+            [
+              103.261352,
+              21.584956
+            ],
+            [
+              103.303187,
+              21.608777
+            ],
+            [
+              103.32726,
+              21.6435
+            ],
+            [
+              103.333879,
+              21.682555
+            ],
+            [
+              103.312529,
+              21.721
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "DB-MC",
+        "name_vi": "Mường Chà",
+        "name_en": "Muong Cha",
+        "province_vi": "Điện Biên",
+        "province_en": "Dien Bien",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          103.051,
+          21.721
+        ],
+        "topography": {
+          "mean_elevation_m": 920,
+          "peak_elevation_m": 2040,
+          "mean_slope_degrees": 31.0,
+          "max_slope_degrees": 62.4,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2828.5,
+          "topographic_wetness_index_mean": 9.15,
+          "annual_rainfall_mm": 2240,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 2.5,
+          "fault_line_proximity_km": 4.8
+        },
+        "hazard_inventory": {
+          "historical_events_count": 35,
+          "last_major_event_year": 2020,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-DB-MC",
+          "station_name": "Trạm Viễn Thám Mường Chà",
+          "station_lat": 21.736,
+          "station_lng": 103.063,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "DB-MN",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              102.71609,
+              22.152
+            ],
+            [
+              102.641506,
+              22.177986
+            ],
+            [
+              102.600473,
+              22.194087
+            ],
+            [
+              102.616788,
+              22.226047
+            ],
+            [
+              102.652001,
+              22.282475
+            ],
+            [
+              102.655435,
+              22.340476
+            ],
+            [
+              102.617373,
+              22.374925
+            ],
+            [
+              102.56151,
+              22.386884
+            ],
+            [
+              102.505521,
+              22.391202
+            ],
+            [
+              102.451,
+              22.388822
+            ],
+            [
+              102.401413,
+              22.369554
+            ],
+            [
+              102.364092,
+              22.336719
+            ],
+            [
+              102.334099,
+              22.308638
+            ],
+            [
+              102.29837,
+              22.292716
+            ],
+            [
+              102.260877,
+              22.275414
+            ],
+            [
+              102.242108,
+              22.245299
+            ],
+            [
+              102.242612,
+              22.210675
+            ],
+            [
+              102.228191,
+              22.182393
+            ],
+            [
+              102.173174,
+              22.152
+            ],
+            [
+              102.106838,
+              22.105054
+            ],
+            [
+              102.090298,
+              22.050438
+            ],
+            [
+              102.146609,
+              22.016047
+            ],
+            [
+              102.236102,
+              22.012504
+            ],
+            [
+              102.306455,
+              22.018738
+            ],
+            [
+              102.345915,
+              22.011194
+            ],
+            [
+              102.375822,
+              21.992213
+            ],
+            [
+              102.411245,
+              21.977583
+            ],
+            [
+              102.451,
+              21.968822
+            ],
+            [
+              102.495689,
+              21.955935
+            ],
+            [
+              102.54978,
+              21.942048
+            ],
+            [
+              102.605557,
+              21.944907
+            ],
+            [
+              102.64735,
+              21.970977
+            ],
+            [
+              102.676775,
+              22.005443
+            ],
+            [
+              102.712287,
+              22.035299
+            ],
+            [
+              102.752787,
+              22.067027
+            ],
+            [
+              102.762859,
+              22.10946
+            ],
+            [
+              102.71609,
+              22.152
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "DB-MN",
+        "name_vi": "Mường Nhé",
+        "name_en": "Muong Nhe",
+        "province_vi": "Điện Biên",
+        "province_en": "Dien Bien",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          102.451,
+          22.152
+        ],
+        "topography": {
+          "mean_elevation_m": 980,
+          "peak_elevation_m": 2050,
+          "mean_slope_degrees": 30.5,
+          "max_slope_degrees": 61.2,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2863.7,
+          "topographic_wetness_index_mean": 9.5,
+          "annual_rainfall_mm": 2350,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 3.3,
+          "fault_line_proximity_km": 5.7
+        },
+        "hazard_inventory": {
+          "historical_events_count": 39,
+          "last_major_event_year": 2021,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-DB-MN",
+          "station_name": "Trạm Viễn Thám Mường Nhé",
+          "station_lat": 22.167,
+          "station_lng": 102.463,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "DB-TC",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              103.510349,
+              21.952
+            ],
+            [
+              103.493398,
+              21.972039
+            ],
+            [
+              103.495948,
+              21.994105
+            ],
+            [
+              103.507797,
+              22.02425
+            ],
+            [
+              103.508736,
+              22.057634
+            ],
+            [
+              103.49323,
+              22.087281
+            ],
+            [
+              103.467299,
+              22.112767
+            ],
+            [
+              103.432913,
+              22.131617
+            ],
+            [
+              103.390574,
+              22.131124
+            ],
+            [
+              103.351,
+              22.102838
+            ],
+            [
+              103.326594,
+              22.06247
+            ],
+            [
+              103.310778,
+              22.040198
+            ],
+            [
+              103.282322,
+              22.046937
+            ],
+            [
+              103.235833,
+              22.06154
+            ],
+            [
+              103.193308,
+              22.057605
+            ],
+            [
+              103.175179,
+              22.033016
+            ],
+            [
+              103.171816,
+              22.00405
+            ],
+            [
+              103.158873,
+              21.979037
+            ],
+            [
+              103.134458,
+              21.952
+            ],
+            [
+              103.123217,
+              21.919945
+            ],
+            [
+              103.142725,
+              21.891499
+            ],
+            [
+              103.182265,
+              21.87425
+            ],
+            [
+              103.220787,
+              21.864798
+            ],
+            [
+              103.251612,
+              21.857468
+            ],
+            [
+              103.279354,
+              21.852959
+            ],
+            [
+              103.304351,
+              21.849709
+            ],
+            [
+              103.325301,
+              21.835682
+            ],
+            [
+              103.351,
+              21.802838
+            ],
+            [
+              103.391866,
+              21.767028
+            ],
+            [
+              103.43934,
+              21.75829
+            ],
+            [
+              103.470268,
+              21.78713
+            ],
+            [
+              103.477451,
+              21.831727
+            ],
+            [
+              103.481257,
+              21.864768
+            ],
+            [
+              103.50071,
+              21.883016
+            ],
+            [
+              103.525038,
+              21.901444
+            ],
+            [
+              103.529054,
+              21.926943
+            ],
+            [
+              103.510349,
+              21.952
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "DB-TC",
+        "name_vi": "Tủa Chùa",
+        "name_en": "Tua Chua",
+        "province_vi": "Điện Biên",
+        "province_en": "Dien Bien",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          103.351,
+          21.952
+        ],
+        "topography": {
+          "mean_elevation_m": 1100,
+          "peak_elevation_m": 1950,
+          "mean_slope_degrees": 32.4,
+          "max_slope_degrees": 64.0,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2898.9,
+          "topographic_wetness_index_mean": 7.4,
+          "annual_rainfall_mm": 2460,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.1,
+          "fault_line_proximity_km": 6.6
+        },
+        "hazard_inventory": {
+          "historical_events_count": 31,
+          "last_major_event_year": 2022,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-DB-TC",
+          "station_name": "Trạm Viễn Thám Tủa Chùa",
+          "station_lat": 21.967,
+          "station_lng": 103.363,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "DB-DE",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              103.40897,
+              21.321
+            ],
+            [
+              103.438833,
+              21.35333
+            ],
+            [
+              103.448037,
+              21.390553
+            ],
+            [
+              103.424463,
+              21.419874
+            ],
+            [
+              103.385868,
+              21.437441
+            ],
+            [
+              103.35605,
+              21.456469
+            ],
+            [
+              103.333961,
+              21.485682
+            ],
+            [
+              103.301978,
+              21.508265
+            ],
+            [
+              103.258249,
+              21.498808
+            ],
+            [
+              103.221,
+              21.460145
+            ],
+            [
+              103.19883,
+              21.426827
+            ],
+            [
+              103.175524,
+              21.426166
+            ],
+            [
+              103.133765,
+              21.448177
+            ],
+            [
+              103.080281,
+              21.462155
+            ],
+            [
+              103.03507,
+              21.452316
+            ],
+            [
+              103.005815,
+              21.42557
+            ],
+            [
+              102.988223,
+              21.392312
+            ],
+            [
+              102.985057,
+              21.356017
+            ],
+            [
+              103.005025,
+              21.321
+            ],
+            [
+              103.041025,
+              21.294289
+            ],
+            [
+              103.068453,
+              21.274267
+            ],
+            [
+              103.074636,
+              21.249874
+            ],
+            [
+              103.076428,
+              21.218894
+            ],
+            [
+              103.096399,
+              21.196013
+            ],
+            [
+              103.131989,
+              21.191233
+            ],
+            [
+              103.163821,
+              21.18877
+            ],
+            [
+              103.188105,
+              21.163974
+            ],
+            [
+              103.221,
+              21.120145
+            ],
+            [
+              103.268975,
+              21.091992
+            ],
+            [
+              103.313681,
+              21.10667
+            ],
+            [
+              103.335737,
+              21.153729
+            ],
+            [
+              103.339932,
+              21.2017
+            ],
+            [
+              103.34451,
+              21.233769
+            ],
+            [
+              103.355641,
+              21.25557
+            ],
+            [
+              103.367807,
+              21.276025
+            ],
+            [
+              103.382865,
+              21.296977
+            ],
+            [
+              103.40897,
+              21.321
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "DB-DE",
+        "name_vi": "Điện Biên Đông",
+        "name_en": "Dien Bien Dong",
+        "province_vi": "Điện Biên",
+        "province_en": "Dien Bien",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          103.221,
+          21.321
+        ],
+        "topography": {
+          "mean_elevation_m": 880,
+          "peak_elevation_m": 1890,
+          "mean_slope_degrees": 29.8,
+          "max_slope_degrees": 59.5,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2934.1,
+          "topographic_wetness_index_mean": 7.75,
+          "annual_rainfall_mm": 2570,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.9,
+          "fault_line_proximity_km": 7.5
+        },
+        "hazard_inventory": {
+          "historical_events_count": 28,
+          "last_major_event_year": 2023,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-DB-DE",
+          "station_name": "Trạm Viễn Thám Điện Biên Đông",
+          "station_lat": 21.336,
+          "station_lng": 103.233,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "DB-TG",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              103.629726,
+              21.582
+            ],
+            [
+              103.663392,
+              21.620372
+            ],
+            [
+              103.648192,
+              21.656239
+            ],
+            [
+              103.597684,
+              21.673582
+            ],
+            [
+              103.549407,
+              21.678733
+            ],
+            [
+              103.521623,
+              21.68966
+            ],
+            [
+              103.502521,
+              21.708766
+            ],
+            [
+              103.477348,
+              21.720989
+            ],
+            [
+              103.447864,
+              21.718782
+            ],
+            [
+              103.421,
+              21.713915
+            ],
+            [
+              103.394151,
+              21.718703
+            ],
+            [
+              103.361916,
+              21.727739
+            ],
+            [
+              103.327225,
+              21.727821
+            ],
+            [
+              103.294716,
+              21.717115
+            ],
+            [
+              103.261132,
+              21.702433
+            ],
+            [
+              103.226061,
+              21.683044
+            ],
+            [
+              103.206999,
+              21.651928
+            ],
+            [
+              103.225259,
+              21.612986
+            ],
+            [
+              103.273292,
+              21.582
+            ],
+            [
+              103.312374,
+              21.564804
+            ],
+            [
+              103.313254,
+              21.546792
+            ],
+            [
+              103.289004,
+              21.513582
+            ],
+            [
+              103.276363,
+              21.47304
+            ],
+            [
+              103.292512,
+              21.444526
+            ],
+            [
+              103.324304,
+              21.431638
+            ],
+            [
+              103.35544,
+              21.420288
+            ],
+            [
+              103.38597,
+              21.403644
+            ],
+            [
+              103.421,
+              21.393915
+            ],
+            [
+              103.456045,
+              21.403564
+            ],
+            [
+              103.483823,
+              21.427037
+            ],
+            [
+              103.505441,
+              21.450693
+            ],
+            [
+              103.523827,
+              21.471981
+            ],
+            [
+              103.534176,
+              21.496741
+            ],
+            [
+              103.534741,
+              21.523044
+            ],
+            [
+              103.541937,
+              21.542482
+            ],
+            [
+              103.576278,
+              21.557419
+            ],
+            [
+              103.629726,
+              21.582
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "DB-TG",
+        "name_vi": "Tuần Giáo",
+        "name_en": "Tuan Giao",
+        "province_vi": "Điện Biên",
+        "province_en": "Dien Bien",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          103.421,
+          21.582
+        ],
+        "topography": {
+          "mean_elevation_m": 850,
+          "peak_elevation_m": 1920,
+          "mean_slope_degrees": 29.2,
+          "max_slope_degrees": 58.2,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 2969.3,
+          "topographic_wetness_index_mean": 8.1,
+          "annual_rainfall_mm": 2680,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 5.7,
+          "fault_line_proximity_km": 8.4
+        },
+        "hazard_inventory": {
+          "historical_events_count": 33,
+          "last_major_event_year": 2024,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-DB-TG",
+          "station_name": "Trạm Viễn Thám Tuần Giáo",
+          "station_lat": 21.597,
+          "station_lng": 103.433,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "HB-MC",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.223038,
+              20.652
+            ],
+            [
+              105.226869,
+              20.686622
+            ],
+            [
+              105.198297,
+              20.713547
+            ],
+            [
+              105.158701,
+              20.727826
+            ],
+            [
+              105.125727,
+              20.735813
+            ],
+            [
+              105.10021,
+              20.742034
+            ],
+            [
+              105.07827,
+              20.746608
+            ],
+            [
+              105.060542,
+              20.755616
+            ],
+            [
+              105.044553,
+              20.779396
+            ],
+            [
+              105.021,
+              20.813984
+            ],
+            [
+              104.987007,
+              20.835871
+            ],
+            [
+              104.95445,
+              20.82639
+            ],
+            [
+              104.934395,
+              20.795067
+            ],
+            [
+              104.919586,
+              20.767272
+            ],
+            [
+              104.895756,
+              20.752233
+            ],
+            [
+              104.867868,
+              20.736322
+            ],
+            [
+              104.85923,
+              20.708157
+            ],
+            [
+              104.879774,
+              20.67575
+            ],
+            [
+              104.908492,
+              20.652
+            ],
+            [
+              104.917103,
+              20.634527
+            ],
+            [
+              104.902721,
+              20.610941
+            ],
+            [
+              104.886297,
+              20.577826
+            ],
+            [
+              104.884771,
+              20.542977
+            ],
+            [
+              104.898024,
+              20.51222
+            ],
+            [
+              104.920998,
+              20.486801
+            ],
+            [
+              104.952961,
+              20.473708
+            ],
+            [
+              104.989932,
+              20.483954
+            ],
+            [
+              105.021,
+              20.513984
+            ],
+            [
+              105.041627,
+              20.540429
+            ],
+            [
+              105.062031,
+              20.544482
+            ],
+            [
+              105.091668,
+              20.53526
+            ],
+            [
+              105.121771,
+              20.537459
+            ],
+            [
+              105.136711,
+              20.559397
+            ],
+            [
+              105.140272,
+              20.586322
+            ],
+            [
+              105.154806,
+              20.605551
+            ],
+            [
+              105.189541,
+              20.623656
+            ],
+            [
+              105.223038,
+              20.652
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "HB-MC",
+        "name_vi": "Mai Châu",
+        "name_en": "Mai Chau",
+        "province_vi": "Hòa Bình",
+        "province_en": "Hoa Binh",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          105.021,
+          20.652
+        ],
+        "topography": {
+          "mean_elevation_m": 820,
+          "peak_elevation_m": 1820,
+          "mean_slope_degrees": 29.5,
+          "max_slope_degrees": 61.0,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3004.5,
+          "topographic_wetness_index_mean": 8.45,
+          "annual_rainfall_mm": 2790,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 2.5,
+          "fault_line_proximity_km": 1.2
+        },
+        "hazard_inventory": {
+          "historical_events_count": 34,
+          "last_major_event_year": 2020,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-HB-MC",
+          "station_name": "Trạm Viễn Thám Mai Châu",
+          "station_lat": 20.667,
+          "station_lng": 105.033,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "HB-DB",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.326627,
+              20.921
+            ],
+            [
+              105.307781,
+              20.948426
+            ],
+            [
+              105.293115,
+              20.972317
+            ],
+            [
+              105.28239,
+              20.996258
+            ],
+            [
+              105.263276,
+              21.014466
+            ],
+            [
+              105.233896,
+              21.019011
+            ],
+            [
+              105.20837,
+              21.019581
+            ],
+            [
+              105.194745,
+              21.040238
+            ],
+            [
+              105.180606,
+              21.087577
+            ],
+            [
+              105.151,
+              21.133317
+            ],
+            [
+              105.1118,
+              21.141558
+            ],
+            [
+              105.082215,
+              21.108492
+            ],
+            [
+              105.068393,
+              21.062949
+            ],
+            [
+              105.058497,
+              21.030369
+            ],
+            [
+              105.04388,
+              21.010174
+            ],
+            [
+              105.030496,
+              20.990023
+            ],
+            [
+              105.024209,
+              20.966783
+            ],
+            [
+              105.01798,
+              20.94427
+            ],
+            [
+              105.004077,
+              20.921
+            ],
+            [
+              104.990131,
+              20.892859
+            ],
+            [
+              104.990017,
+              20.86287
+            ],
+            [
+              105.003053,
+              20.836258
+            ],
+            [
+              105.016189,
+              20.808774
+            ],
+            [
+              105.026565,
+              20.773877
+            ],
+            [
+              105.047095,
+              20.742453
+            ],
+            [
+              105.084426,
+              20.739537
+            ],
+            [
+              105.124596,
+              20.772438
+            ],
+            [
+              105.151,
+              20.813317
+            ],
+            [
+              105.16781,
+              20.826419
+            ],
+            [
+              105.192533,
+              20.80779
+            ],
+            [
+              105.229668,
+              20.785821
+            ],
+            [
+              105.265828,
+              20.785235
+            ],
+            [
+              105.290967,
+              20.804482
+            ],
+            [
+              105.309833,
+              20.830023
+            ],
+            [
+              105.327307,
+              20.857337
+            ],
+            [
+              105.33563,
+              20.888702
+            ],
+            [
+              105.326627,
+              20.921
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "HB-DB",
+        "name_vi": "Đà Bắc",
+        "name_en": "Da Bac",
+        "province_vi": "Hòa Bình",
+        "province_en": "Hoa Binh",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          105.151,
+          20.921
+        ],
+        "topography": {
+          "mean_elevation_m": 750,
+          "peak_elevation_m": 1680,
+          "mean_slope_degrees": 32.8,
+          "max_slope_degrees": 65.5,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3039.7,
+          "topographic_wetness_index_mean": 8.8,
+          "annual_rainfall_mm": 2900,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 3.3,
+          "fault_line_proximity_km": 2.1
+        },
+        "hazard_inventory": {
+          "historical_events_count": 47,
+          "last_major_event_year": 2021,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-HB-DB",
+          "station_name": "Trạm Viễn Thám Đà Bắc",
+          "station_lat": 20.936,
+          "station_lng": 105.163,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "HB-TL",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.363841,
+              20.621
+            ],
+            [
+              105.352934,
+              20.638934
+            ],
+            [
+              105.36656,
+              20.662967
+            ],
+            [
+              105.378298,
+              20.694332
+            ],
+            [
+              105.367864,
+              20.718842
+            ],
+            [
+              105.342735,
+              20.730082
+            ],
+            [
+              105.320856,
+              20.741724
+            ],
+            [
+              105.304465,
+              20.767568
+            ],
+            [
+              105.282382,
+              20.798581
+            ],
+            [
+              105.251,
+              20.812033
+            ],
+            [
+              105.219486,
+              20.799326
+            ],
+            [
+              105.195697,
+              20.772606
+            ],
+            [
+              105.179183,
+              20.745114
+            ],
+            [
+              105.169113,
+              20.718372
+            ],
+            [
+              105.166401,
+              20.691829
+            ],
+            [
+              105.163156,
+              20.671604
+            ],
+            [
+              105.142761,
+              20.660308
+            ],
+            [
+              105.101601,
+              20.647284
+            ],
+            [
+              105.063173,
+              20.621
+            ],
+            [
+              105.056834,
+              20.586839
+            ],
+            [
+              105.084024,
+              20.560361
+            ],
+            [
+              105.117911,
+              20.544332
+            ],
+            [
+              105.137538,
+              20.526006
+            ],
+            [
+              105.149469,
+              20.500269
+            ],
+            [
+              105.170521,
+              20.481917
+            ],
+            [
+              105.201631,
+              20.48566
+            ],
+            [
+              105.230172,
+              20.503139
+            ],
+            [
+              105.251,
+              20.512033
+            ],
+            [
+              105.271697,
+              20.503884
+            ],
+            [
+              105.298531,
+              20.490699
+            ],
+            [
+              105.329517,
+              20.485307
+            ],
+            [
+              105.362379,
+              20.488558
+            ],
+            [
+              105.396727,
+              20.498993
+            ],
+            [
+              105.423543,
+              20.521604
+            ],
+            [
+              105.425297,
+              20.557702
+            ],
+            [
+              105.397702,
+              20.59519
+            ],
+            [
+              105.363841,
+              20.621
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "HB-TL",
+        "name_vi": "Tân Lạc",
+        "name_en": "Tan Lac",
+        "province_vi": "Hòa Bình",
+        "province_en": "Hoa Binh",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          105.251,
+          20.621
+        ],
+        "topography": {
+          "mean_elevation_m": 680,
+          "peak_elevation_m": 1520,
+          "mean_slope_degrees": 28.1,
+          "max_slope_degrees": 57.2,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3074.9,
+          "topographic_wetness_index_mean": 9.15,
+          "annual_rainfall_mm": 3010,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.1,
+          "fault_line_proximity_km": 3.0
+        },
+        "hazard_inventory": {
+          "historical_events_count": 31,
+          "last_major_event_year": 2022,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-HB-TL",
+          "station_name": "Trạm Viễn Thám Tân Lạc",
+          "station_lat": 20.636,
+          "station_lng": 105.263,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "HB-CP",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.403954,
+              20.721
+            ],
+            [
+              105.41152,
+              20.736456
+            ],
+            [
+              105.431503,
+              20.759947
+            ],
+            [
+              105.442126,
+              20.78872
+            ],
+            [
+              105.437259,
+              20.815467
+            ],
+            [
+              105.423214,
+              20.83896
+            ],
+            [
+              105.403182,
+              20.85884
+            ],
+            [
+              105.376151,
+              20.867732
+            ],
+            [
+              105.346258,
+              20.859711
+            ],
+            [
+              105.321,
+              20.843327
+            ],
+            [
+              105.300361,
+              20.834349
+            ],
+            [
+              105.278278,
+              20.834663
+            ],
+            [
+              105.25635,
+              20.829434
+            ],
+            [
+              105.244585,
+              20.809188
+            ],
+            [
+              105.243049,
+              20.78434
+            ],
+            [
+              105.233634,
+              20.769845
+            ],
+            [
+              105.201331,
+              20.763178
+            ],
+            [
+              105.158492,
+              20.748748
+            ],
+            [
+              105.135461,
+              20.721
+            ],
+            [
+              105.147106,
+              20.691308
+            ],
+            [
+              105.179201,
+              20.671022
+            ],
+            [
+              105.209604,
+              20.65872
+            ],
+            [
+              105.231581,
+              20.648342
+            ],
+            [
+              105.25063,
+              20.639789
+            ],
+            [
+              105.268935,
+              20.633673
+            ],
+            [
+              105.284321,
+              20.623412
+            ],
+            [
+              105.299634,
+              20.603661
+            ],
+            [
+              105.321,
+              20.583327
+            ],
+            [
+              105.346984,
+              20.578299
+            ],
+            [
+              105.370109,
+              20.590343
+            ],
+            [
+              105.390597,
+              20.604268
+            ],
+            [
+              105.417169,
+              20.610016
+            ],
+            [
+              105.448727,
+              20.617215
+            ],
+            [
+              105.466156,
+              20.639845
+            ],
+            [
+              105.453633,
+              20.674253
+            ],
+            [
+              105.422907,
+              20.7036
+            ],
+            [
+              105.403954,
+              20.721
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "HB-CP",
+        "name_vi": "Cao Phong",
+        "name_en": "Cao Phong",
+        "province_vi": "Hòa Bình",
+        "province_en": "Hoa Binh",
+        "susceptibility_tier": "MODERATE",
+        "center_coordinate": [
+          105.321,
+          20.721
+        ],
+        "topography": {
+          "mean_elevation_m": 520,
+          "peak_elevation_m": 1250,
+          "mean_slope_degrees": 22.4,
+          "max_slope_degrees": 48.0,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3110.1,
+          "topographic_wetness_index_mean": 9.5,
+          "annual_rainfall_mm": 1800,
+          "critical_rainfall_threshold_24h_mm": 220.0,
+          "critical_rainfall_threshold_72h_mm": 341.0
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.9,
+          "fault_line_proximity_km": 3.9
+        },
+        "hazard_inventory": {
+          "historical_events_count": 18,
+          "last_major_event_year": 2023,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.65
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 90.0,
+          "watch_orange_mm_24h": 150.0,
+          "warning_red_mm_24h": 220.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-HB-CP",
+          "station_name": "Trạm Viễn Thám Cao Phong",
+          "station_lat": 20.736,
+          "station_lng": 105.333,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "HB-LS",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.587157,
+              20.521
+            ],
+            [
+              105.598135,
+              20.544762
+            ],
+            [
+              105.602072,
+              20.571361
+            ],
+            [
+              105.602253,
+              20.600981
+            ],
+            [
+              105.602184,
+              20.637189
+            ],
+            [
+              105.591664,
+              20.674537
+            ],
+            [
+              105.559095,
+              20.692479
+            ],
+            [
+              105.51259,
+              20.675984
+            ],
+            [
+              105.473899,
+              20.639946
+            ],
+            [
+              105.451,
+              20.618748
+            ],
+            [
+              105.430375,
+              20.628132
+            ],
+            [
+              105.400214,
+              20.648796
+            ],
+            [
+              105.367732,
+              20.653094
+            ],
+            [
+              105.344735,
+              20.636989
+            ],
+            [
+              105.32713,
+              20.616197
+            ],
+            [
+              105.302537,
+              20.599506
+            ],
+            [
+              105.27313,
+              20.580294
+            ],
+            [
+              105.255871,
+              20.552513
+            ],
+            [
+              105.259607,
+              20.521
+            ],
+            [
+              105.275562,
+              20.492667
+            ],
+            [
+              105.294276,
+              20.468755
+            ],
+            [
+              105.318587,
+              20.450981
+            ],
+            [
+              105.351267,
+              20.444352
+            ],
+            [
+              105.381119,
+              20.444723
+            ],
+            [
+              105.39532,
+              20.432672
+            ],
+            [
+              105.400561,
+              20.394076
+            ],
+            [
+              105.417021,
+              20.344504
+            ],
+            [
+              105.451,
+              20.318748
+            ],
+            [
+              105.487253,
+              20.332689
+            ],
+            [
+              105.512243,
+              20.366889
+            ],
+            [
+              105.531507,
+              20.393286
+            ],
+            [
+              105.55528,
+              20.407176
+            ],
+            [
+              105.578047,
+              20.423361
+            ],
+            [
+              105.586204,
+              20.449506
+            ],
+            [
+              105.580926,
+              20.477688
+            ],
+            [
+              105.578444,
+              20.500418
+            ],
+            [
+              105.587157,
+              20.521
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "HB-LS",
+        "name_vi": "Lạc Sơn",
+        "name_en": "Lac Son",
+        "province_vi": "Hòa Bình",
+        "province_en": "Hoa Binh",
+        "susceptibility_tier": "MODERATE",
+        "center_coordinate": [
+          105.451,
+          20.521
+        ],
+        "topography": {
+          "mean_elevation_m": 480,
+          "peak_elevation_m": 1180,
+          "mean_slope_degrees": 21.5,
+          "max_slope_degrees": 46.5,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3145.3,
+          "topographic_wetness_index_mean": 7.4,
+          "annual_rainfall_mm": 1910,
+          "critical_rainfall_threshold_24h_mm": 220.0,
+          "critical_rainfall_threshold_72h_mm": 341.0
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 5.7,
+          "fault_line_proximity_km": 4.8
+        },
+        "hazard_inventory": {
+          "historical_events_count": 16,
+          "last_major_event_year": 2024,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.65
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 90.0,
+          "watch_orange_mm_24h": 150.0,
+          "warning_red_mm_24h": 220.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-HB-LS",
+          "station_name": "Trạm Viễn Thám Lạc Sơn",
+          "station_lat": 20.536,
+          "station_lng": 105.463,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "HB-KB",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.743055,
+              20.682
+            ],
+            [
+              105.732348,
+              20.709442
+            ],
+            [
+              105.709647,
+              20.731554
+            ],
+            [
+              105.698579,
+              20.755122
+            ],
+            [
+              105.696143,
+              20.786519
+            ],
+            [
+              105.680012,
+              20.813948
+            ],
+            [
+              105.642244,
+              20.817628
+            ],
+            [
+              105.59989,
+              20.797276
+            ],
+            [
+              105.570434,
+              20.776586
+            ],
+            [
+              105.551,
+              20.776203
+            ],
+            [
+              105.528349,
+              20.792244
+            ],
+            [
+              105.497896,
+              20.807213
+            ],
+            [
+              105.463334,
+              20.812309
+            ],
+            [
+              105.426617,
+              20.809213
+            ],
+            [
+              105.39134,
+              20.796973
+            ],
+            [
+              105.370921,
+              20.771225
+            ],
+            [
+              105.377587,
+              20.736167
+            ],
+            [
+              105.401737,
+              20.704587
+            ],
+            [
+              105.416788,
+              20.682
+            ],
+            [
+              105.411037,
+              20.66082
+            ],
+            [
+              105.403056,
+              20.635789
+            ],
+            [
+              105.416024,
+              20.615122
+            ],
+            [
+              105.446208,
+              20.606538
+            ],
+            [
+              105.470292,
+              20.599455
+            ],
+            [
+              105.47911,
+              20.575141
+            ],
+            [
+              105.4883,
+              20.534162
+            ],
+            [
+              105.513778,
+              20.50084
+            ],
+            [
+              105.551,
+              20.496203
+            ],
+            [
+              105.585005,
+              20.516498
+            ],
+            [
+              105.609486,
+              20.544099
+            ],
+            [
+              105.626468,
+              20.569822
+            ],
+            [
+              105.636338,
+              20.59472
+            ],
+            [
+              105.641275,
+              20.616992
+            ],
+            [
+              105.653476,
+              20.631225
+            ],
+            [
+              105.684178,
+              20.640401
+            ],
+            [
+              105.723047,
+              20.655965
+            ],
+            [
+              105.743055,
+              20.682
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "HB-KB",
+        "name_vi": "Kim Bôi",
+        "name_en": "Kim Boi",
+        "province_vi": "Hòa Bình",
+        "province_en": "Hoa Binh",
+        "susceptibility_tier": "MODERATE",
+        "center_coordinate": [
+          105.551,
+          20.682
+        ],
+        "topography": {
+          "mean_elevation_m": 420,
+          "peak_elevation_m": 1050,
+          "mean_slope_degrees": 20.1,
+          "max_slope_degrees": 43.0,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3180.5,
+          "topographic_wetness_index_mean": 7.75,
+          "annual_rainfall_mm": 2020,
+          "critical_rainfall_threshold_24h_mm": 220.0,
+          "critical_rainfall_threshold_72h_mm": 341.0
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 2.5,
+          "fault_line_proximity_km": 5.7
+        },
+        "hazard_inventory": {
+          "historical_events_count": 12,
+          "last_major_event_year": 2020,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.65
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 90.0,
+          "watch_orange_mm_24h": 150.0,
+          "warning_red_mm_24h": 220.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-HB-KB",
+          "station_name": "Trạm Viễn Thám Kim Bôi",
+          "station_lat": 20.697,
+          "station_lng": 105.563,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "CB-BL",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.91584,
+              22.952
+            ],
+            [
+              105.882206,
+              22.985013
+            ],
+            [
+              105.843417,
+              23.008712
+            ],
+            [
+              105.817984,
+              23.030069
+            ],
+            [
+              105.79603,
+              23.050545
+            ],
+            [
+              105.766255,
+              23.063226
+            ],
+            [
+              105.733814,
+              23.068152
+            ],
+            [
+              105.706745,
+              23.076024
+            ],
+            [
+              105.681342,
+              23.091345
+            ],
+            [
+              105.651,
+              23.103784
+            ],
+            [
+              105.617763,
+              23.104638
+            ],
+            [
+              105.583654,
+              23.101832
+            ],
+            [
+              105.540957,
+              23.106342
+            ],
+            [
+              105.487334,
+              23.109945
+            ],
+            [
+              105.444965,
+              23.091996
+            ],
+            [
+              105.443991,
+              23.048781
+            ],
+            [
+              105.482457,
+              23.001675
+            ],
+            [
+              105.51983,
+              22.970729
+            ],
+            [
+              105.520667,
+              22.952
+            ],
+            [
+              105.493037,
+              22.929445
+            ],
+            [
+              105.472076,
+              22.899265
+            ],
+            [
+              105.475754,
+              22.870069
+            ],
+            [
+              105.49331,
+              22.844853
+            ],
+            [
+              105.512242,
+              22.818092
+            ],
+            [
+              105.536227,
+              22.791024
+            ],
+            [
+              105.571588,
+              22.775322
+            ],
+            [
+              105.612721,
+              22.776206
+            ],
+            [
+              105.651,
+              22.783784
+            ],
+            [
+              105.686384,
+              22.7895
+            ],
+            [
+              105.718812,
+              22.801131
+            ],
+            [
+              105.738544,
+              22.829214
+            ],
+            [
+              105.741347,
+              22.864811
+            ],
+            [
+              105.747686,
+              22.886304
+            ],
+            [
+              105.786221,
+              22.888781
+            ],
+            [
+              105.853798,
+              22.892229
+            ],
+            [
+              105.909,
+              22.915162
+            ],
+            [
+              105.91584,
+              22.952
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "CB-BL",
+        "name_vi": "Bảo Lạc",
+        "name_en": "Bao Lac",
+        "province_vi": "Cao Bằng",
+        "province_en": "Cao Bang",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          105.651,
+          22.952
+        ],
+        "topography": {
+          "mean_elevation_m": 980,
+          "peak_elevation_m": 2140,
+          "mean_slope_degrees": 33.2,
+          "max_slope_degrees": 66.8,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3215.7,
+          "topographic_wetness_index_mean": 8.1,
+          "annual_rainfall_mm": 2130,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 3.3,
+          "fault_line_proximity_km": 6.6
+        },
+        "hazard_inventory": {
+          "historical_events_count": 43,
+          "last_major_event_year": 2021,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-CB-BL",
+          "station_name": "Trạm Viễn Thám Bảo Lạc",
+          "station_lat": 22.967,
+          "station_lng": 105.663,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "CB-BM",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.687113,
+              22.852
+            ],
+            [
+              105.664142,
+              22.881274
+            ],
+            [
+              105.634054,
+              22.903898
+            ],
+            [
+              105.595578,
+              22.91702
+            ],
+            [
+              105.55592,
+              22.920576
+            ],
+            [
+              105.531763,
+              22.926972
+            ],
+            [
+              105.526009,
+              22.953199
+            ],
+            [
+              105.518672,
+              22.996825
+            ],
+            [
+              105.491515,
+              23.030976
+            ],
+            [
+              105.451,
+              23.033278
+            ],
+            [
+              105.414626,
+              23.012685
+            ],
+            [
+              105.38365,
+              22.996137
+            ],
+            [
+              105.346517,
+              22.992964
+            ],
+            [
+              105.306259,
+              22.986364
+            ],
+            [
+              105.284587,
+              22.960768
+            ],
+            [
+              105.292353,
+              22.923347
+            ],
+            [
+              105.311229,
+              22.891626
+            ],
+            [
+              105.315585,
+              22.870599
+            ],
+            [
+              105.301973,
+              22.852
+            ],
+            [
+              105.284852,
+              22.82918
+            ],
+            [
+              105.27214,
+              22.801292
+            ],
+            [
+              105.262037,
+              22.76702
+            ],
+            [
+              105.260885,
+              22.72774
+            ],
+            [
+              105.284199,
+              22.697159
+            ],
+            [
+              105.333439,
+              22.693391
+            ],
+            [
+              105.386946,
+              22.714917
+            ],
+            [
+              105.424636,
+              22.735534
+            ],
+            [
+              105.451,
+              22.733278
+            ],
+            [
+              105.481505,
+              22.717243
+            ],
+            [
+              105.515376,
+              22.714229
+            ],
+            [
+              105.539087,
+              22.733156
+            ],
+            [
+              105.553822,
+              22.75655
+            ],
+            [
+              105.579622,
+              22.767932
+            ],
+            [
+              105.625894,
+              22.773347
+            ],
+            [
+              105.673143,
+              22.78902
+            ],
+            [
+              105.694874,
+              22.818505
+            ],
+            [
+              105.687113,
+              22.852
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "CB-BM",
+        "name_vi": "Bảo Lâm",
+        "name_en": "Bao Lam",
+        "province_vi": "Cao Bằng",
+        "province_en": "Cao Bang",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          105.451,
+          22.852
+        ],
+        "topography": {
+          "mean_elevation_m": 1020,
+          "peak_elevation_m": 2050,
+          "mean_slope_degrees": 34.0,
+          "max_slope_degrees": 67.5,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3250.9,
+          "topographic_wetness_index_mean": 8.45,
+          "annual_rainfall_mm": 2240,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.1,
+          "fault_line_proximity_km": 7.5
+        },
+        "hazard_inventory": {
+          "historical_events_count": 45,
+          "last_major_event_year": 2022,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-CB-BM",
+          "station_name": "Trạm Viễn Thám Bảo Lâm",
+          "station_lat": 22.867,
+          "station_lng": 105.463,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "CB-NB",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              106.157305,
+              22.652
+            ],
+            [
+              106.161116,
+              22.680501
+            ],
+            [
+              106.140591,
+              22.705084
+            ],
+            [
+              106.09503,
+              22.715969
+            ],
+            [
+              106.055892,
+              22.719707
+            ],
+            [
+              106.046788,
+              22.739817
+            ],
+            [
+              106.052378,
+              22.787078
+            ],
+            [
+              106.039806,
+              22.839697
+            ],
+            [
+              105.999804,
+              22.864922
+            ],
+            [
+              105.951,
+              22.854808
+            ],
+            [
+              105.910476,
+              22.828797
+            ],
+            [
+              105.87871,
+              22.80479
+            ],
+            [
+              105.85303,
+              22.782537
+            ],
+            [
+              105.836316,
+              22.757141
+            ],
+            [
+              105.825078,
+              22.733282
+            ],
+            [
+              105.805245,
+              22.716736
+            ],
+            [
+              105.772433,
+              22.701997
+            ],
+            [
+              105.74499,
+              22.679944
+            ],
+            [
+              105.741328,
+              22.652
+            ],
+            [
+              105.751459,
+              22.624933
+            ],
+            [
+              105.749701,
+              22.595638
+            ],
+            [
+              105.734783,
+              22.555969
+            ],
+            [
+              105.737235,
+              22.514015
+            ],
+            [
+              105.779403,
+              22.494683
+            ],
+            [
+              105.84439,
+              22.50995
+            ],
+            [
+              105.897534,
+              22.538995
+            ],
+            [
+              105.927571,
+              22.549784
+            ],
+            [
+              105.951,
+              22.534808
+            ],
+            [
+              105.98271,
+              22.513658
+            ],
+            [
+              106.020982,
+              22.504089
+            ],
+            [
+              106.061019,
+              22.505409
+            ],
+            [
+              106.1037,
+              22.512007
+            ],
+            [
+              106.143735,
+              22.52759
+            ],
+            [
+              106.165491,
+              22.556736
+            ],
+            [
+              106.163324,
+              22.592551
+            ],
+            [
+              106.154647,
+              22.624377
+            ],
+            [
+              106.157305,
+              22.652
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "CB-NB",
+        "name_vi": "Nguyên Bình",
+        "name_en": "Nguyen Binh",
+        "province_vi": "Cao Bằng",
+        "province_en": "Cao Bang",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          105.951,
+          22.652
+        ],
+        "topography": {
+          "mean_elevation_m": 880,
+          "peak_elevation_m": 1980,
+          "mean_slope_degrees": 30.5,
+          "max_slope_degrees": 62.0,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3286.1,
+          "topographic_wetness_index_mean": 8.8,
+          "annual_rainfall_mm": 2350,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.9,
+          "fault_line_proximity_km": 8.4
+        },
+        "hazard_inventory": {
+          "historical_events_count": 37,
+          "last_major_event_year": 2023,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-CB-NB",
+          "station_name": "Trạm Viễn Thám Nguyên Bình",
+          "station_lat": 22.667,
+          "station_lng": 105.963,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "CB-HQ",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              106.309901,
+              22.921
+            ],
+            [
+              106.329057,
+              22.945541
+            ],
+            [
+              106.322579,
+              22.969814
+            ],
+            [
+              106.300364,
+              22.988406
+            ],
+            [
+              106.28477,
+              23.008738
+            ],
+            [
+              106.277601,
+              23.038933
+            ],
+            [
+              106.262467,
+              23.071911
+            ],
+            [
+              106.231034,
+              23.092878
+            ],
+            [
+              106.190931,
+              23.098012
+            ],
+            [
+              106.151,
+              23.09409
+            ],
+            [
+              106.114643,
+              23.08217
+            ],
+            [
+              106.088163,
+              23.055946
+            ],
+            [
+              106.078337,
+              23.019376
+            ],
+            [
+              106.074855,
+              22.991931
+            ],
+            [
+              106.051012,
+              22.98658
+            ],
+            [
+              105.995833,
+              22.991025
+            ],
+            [
+              105.936262,
+              22.982092
+            ],
+            [
+              105.911092,
+              22.954065
+            ],
+            [
+              105.926097,
+              22.921
+            ],
+            [
+              105.951084,
+              22.893446
+            ],
+            [
+              105.961921,
+              22.867208
+            ],
+            [
+              105.96798,
+              22.838406
+            ],
+            [
+              105.99076,
+              22.815901
+            ],
+            [
+              106.030896,
+              22.809119
+            ],
+            [
+              106.070565,
+              22.812103
+            ],
+            [
+              106.099765,
+              22.81097
+            ],
+            [
+              106.124284,
+              22.80257
+            ],
+            [
+              106.151,
+              22.79409
+            ],
+            [
+              106.18129,
+              22.786728
+            ],
+            [
+              106.219432,
+              22.774038
+            ],
+            [
+              106.270239,
+              22.759568
+            ],
+            [
+              106.32156,
+              22.762118
+            ],
+            [
+              106.345023,
+              22.793744
+            ],
+            [
+              106.328217,
+              22.841025
+            ],
+            [
+              106.29692,
+              22.879486
+            ],
+            [
+              106.289065,
+              22.901971
+            ],
+            [
+              106.309901,
+              22.921
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "CB-HQ",
+        "name_vi": "Hà Quảng",
+        "name_en": "Ha Quang",
+        "province_vi": "Cao Bằng",
+        "province_en": "Cao Bang",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          106.151,
+          22.921
+        ],
+        "topography": {
+          "mean_elevation_m": 750,
+          "peak_elevation_m": 1620,
+          "mean_slope_degrees": 27.8,
+          "max_slope_degrees": 56.4,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3321.3,
+          "topographic_wetness_index_mean": 9.15,
+          "annual_rainfall_mm": 2460,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 5.7,
+          "fault_line_proximity_km": 1.2
+        },
+        "hazard_inventory": {
+          "historical_events_count": 25,
+          "last_major_event_year": 2024,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-CB-HQ",
+          "station_name": "Trạm Viễn Thám Hà Quảng",
+          "station_lat": 22.936,
+          "station_lng": 106.163,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "CB-TK",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              106.667802,
+              22.821
+            ],
+            [
+              106.685093,
+              22.844579
+            ],
+            [
+              106.697439,
+              22.873334
+            ],
+            [
+              106.705732,
+              22.907917
+            ],
+            [
+              106.699732,
+              22.943219
+            ],
+            [
+              106.669179,
+              22.964911
+            ],
+            [
+              106.622876,
+              22.964798
+            ],
+            [
+              106.581116,
+              22.955599
+            ],
+            [
+              106.550519,
+              22.95743
+            ],
+            [
+              106.521,
+              22.969778
+            ],
+            [
+              106.488666,
+              22.970438
+            ],
+            [
+              106.464824,
+              22.946778
+            ],
+            [
+              106.454054,
+              22.915495
+            ],
+            [
+              106.438026,
+              22.901584
+            ],
+            [
+              106.396626,
+              22.906048
+            ],
+            [
+              106.3386,
+              22.906819
+            ],
+            [
+              106.29535,
+              22.88793
+            ],
+            [
+              106.28543,
+              22.85485
+            ],
+            [
+              106.299673,
+              22.821
+            ],
+            [
+              106.322557,
+              22.792485
+            ],
+            [
+              106.351511,
+              22.770728
+            ],
+            [
+              106.386923,
+              22.757917
+            ],
+            [
+              106.417729,
+              22.750382
+            ],
+            [
+              106.43255,
+              22.735098
+            ],
+            [
+              106.438812,
+              22.704991
+            ],
+            [
+              106.455208,
+              22.673691
+            ],
+            [
+              106.486594,
+              22.661988
+            ],
+            [
+              106.521,
+              22.669778
+            ],
+            [
+              106.552591,
+              22.674996
+            ],
+            [
+              106.590732,
+              22.66487
+            ],
+            [
+              106.638118,
+              22.655687
+            ],
+            [
+              106.674655,
+              22.671771
+            ],
+            [
+              106.67863,
+              22.713211
+            ],
+            [
+              106.657409,
+              22.756819
+            ],
+            [
+              106.641278,
+              22.785324
+            ],
+            [
+              106.647966,
+              22.802756
+            ],
+            [
+              106.667802,
+              22.821
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "CB-TK",
+        "name_vi": "Trùng Khánh",
+        "name_en": "Trung Khanh",
+        "province_vi": "Cao Bằng",
+        "province_en": "Cao Bang",
+        "susceptibility_tier": "MODERATE",
+        "center_coordinate": [
+          106.521,
+          22.821
+        ],
+        "topography": {
+          "mean_elevation_m": 620,
+          "peak_elevation_m": 1380,
+          "mean_slope_degrees": 23.5,
+          "max_slope_degrees": 49.0,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3356.5,
+          "topographic_wetness_index_mean": 9.5,
+          "annual_rainfall_mm": 2570,
+          "critical_rainfall_threshold_24h_mm": 220.0,
+          "critical_rainfall_threshold_72h_mm": 341.0
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 2.5,
+          "fault_line_proximity_km": 2.1
+        },
+        "hazard_inventory": {
+          "historical_events_count": 19,
+          "last_major_event_year": 2020,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.65
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 90.0,
+          "watch_orange_mm_24h": 150.0,
+          "warning_red_mm_24h": 220.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-CB-TK",
+          "station_name": "Trạm Viễn Thám Trùng Khánh",
+          "station_lat": 22.836,
+          "station_lng": 106.533,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "CB-QH",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              106.591951,
+              22.621
+            ],
+            [
+              106.602513,
+              22.644111
+            ],
+            [
+              106.626052,
+              22.676117
+            ],
+            [
+              106.641474,
+              22.716132
+            ],
+            [
+              106.623171,
+              22.745976
+            ],
+            [
+              106.573903,
+              22.747707
+            ],
+            [
+              106.522776,
+              22.728546
+            ],
+            [
+              106.490857,
+              22.715732
+            ],
+            [
+              106.472099,
+              22.724514
+            ],
+            [
+              106.451,
+              22.742374
+            ],
+            [
+              106.424797,
+              22.749552
+            ],
+            [
+              106.39917,
+              22.744188
+            ],
+            [
+              106.37303,
+              22.737827
+            ],
+            [
+              106.34147,
+              22.733921
+            ],
+            [
+              106.30927,
+              22.723879
+            ],
+            [
+              106.287604,
+              22.702608
+            ],
+            [
+              106.277689,
+              22.675569
+            ],
+            [
+              106.271008,
+              22.648455
+            ],
+            [
+              106.26828,
+              22.621
+            ],
+            [
+              106.283759,
+              22.59549
+            ],
+            [
+              106.3219,
+              22.580351
+            ],
+            [
+              106.361166,
+              22.576132
+            ],
+            [
+              106.375224,
+              22.565995
+            ],
+            [
+              106.365851,
+              22.533215
+            ],
+            [
+              106.36094,
+              22.486059
+            ],
+            [
+              106.380155,
+              22.452618
+            ],
+            [
+              106.415894,
+              22.448768
+            ],
+            [
+              106.451,
+              22.462374
+            ],
+            [
+              106.481002,
+              22.473806
+            ],
+            [
+              106.509872,
+              22.481074
+            ],
+            [
+              106.534866,
+              22.49534
+            ],
+            [
+              106.549522,
+              22.519428
+            ],
+            [
+              106.557218,
+              22.543899
+            ],
+            [
+              106.567912,
+              22.562608
+            ],
+            [
+              106.581841,
+              22.579803
+            ],
+            [
+              106.589763,
+              22.599834
+            ],
+            [
+              106.591951,
+              22.621
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "CB-QH",
+        "name_vi": "Quảng Hòa",
+        "name_en": "Quang Hoa",
+        "province_vi": "Cao Bằng",
+        "province_en": "Cao Bang",
+        "susceptibility_tier": "MODERATE",
+        "center_coordinate": [
+          106.451,
+          22.621
+        ],
+        "topography": {
+          "mean_elevation_m": 560,
+          "peak_elevation_m": 1250,
+          "mean_slope_degrees": 22.0,
+          "max_slope_degrees": 46.0,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3391.7,
+          "topographic_wetness_index_mean": 7.4,
+          "annual_rainfall_mm": 2680,
+          "critical_rainfall_threshold_24h_mm": 220.0,
+          "critical_rainfall_threshold_72h_mm": 341.0
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 3.3,
+          "fault_line_proximity_km": 3.0
+        },
+        "hazard_inventory": {
+          "historical_events_count": 15,
+          "last_major_event_year": 2021,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.65
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 90.0,
+          "watch_orange_mm_24h": 150.0,
+          "warning_red_mm_24h": 220.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-CB-QH",
+          "station_name": "Trạm Viễn Thám Quảng Hòa",
+          "station_lat": 22.636,
+          "station_lng": 106.463,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "BK-BB",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.884267,
+              22.382
+            ],
+            [
+              105.888784,
+              22.409308
+            ],
+            [
+              105.902237,
+              22.442888
+            ],
+            [
+              105.89824,
+              22.476454
+            ],
+            [
+              105.865221,
+              22.493702
+            ],
+            [
+              105.81995,
+              22.490848
+            ],
+            [
+              105.784118,
+              22.482909
+            ],
+            [
+              105.76131,
+              22.484227
+            ],
+            [
+              105.742369,
+              22.49386
+            ],
+            [
+              105.721,
+              22.505594
+            ],
+            [
+              105.694492,
+              22.520766
+            ],
+            [
+              105.658652,
+              22.540115
+            ],
+            [
+              105.615584,
+              22.550533
+            ],
+            [
+              105.581909,
+              22.535004
+            ],
+            [
+              105.574212,
+              22.49569
+            ],
+            [
+              105.585299,
+              22.454317
+            ],
+            [
+              105.589008,
+              22.426344
+            ],
+            [
+              105.573856,
+              22.405948
+            ],
+            [
+              105.559252,
+              22.382
+            ],
+            [
+              105.568707,
+              22.357213
+            ],
+            [
+              105.596823,
+              22.340282
+            ],
+            [
+              105.616769,
+              22.326454
+            ],
+            [
+              105.616245,
+              22.300866
+            ],
+            [
+              105.611035,
+              22.261035
+            ],
+            [
+              105.62161,
+              22.223102
+            ],
+            [
+              105.650148,
+              22.202319
+            ],
+            [
+              105.68593,
+              22.198418
+            ],
+            [
+              105.721,
+              22.205594
+            ],
+            [
+              105.75093,
+              22.225324
+            ],
+            [
+              105.769814,
+              22.258207
+            ],
+            [
+              105.778091,
+              22.290726
+            ],
+            [
+              105.790825,
+              22.305191
+            ],
+            [
+              105.823188,
+              22.302854
+            ],
+            [
+              105.86677,
+              22.304317
+            ],
+            [
+              105.894422,
+              22.323738
+            ],
+            [
+              105.893934,
+              22.353854
+            ],
+            [
+              105.884267,
+              22.382
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "BK-BB",
+        "name_vi": "Ba Bể",
+        "name_en": "Ba Be",
+        "province_vi": "Bắc Kạn",
+        "province_en": "Bac Kan",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          105.721,
+          22.382
+        ],
+        "topography": {
+          "mean_elevation_m": 680,
+          "peak_elevation_m": 1520,
+          "mean_slope_degrees": 28.5,
+          "max_slope_degrees": 59.2,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3426.9,
+          "topographic_wetness_index_mean": 7.75,
+          "annual_rainfall_mm": 2790,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.1,
+          "fault_line_proximity_km": 3.9
+        },
+        "hazard_inventory": {
+          "historical_events_count": 32,
+          "last_major_event_year": 2022,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-BK-BB",
+          "station_name": "Trạm Viễn Thám Ba Bể",
+          "station_lat": 22.397,
+          "station_lng": 105.733,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "BK-PN",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.813724,
+              22.621
+            ],
+            [
+              105.803662,
+              22.647208
+            ],
+            [
+              105.786873,
+              22.669149
+            ],
+            [
+              105.76298,
+              22.683946
+            ],
+            [
+              105.741922,
+              22.695279
+            ],
+            [
+              105.729006,
+              22.711511
+            ],
+            [
+              105.716599,
+              22.731623
+            ],
+            [
+              105.696852,
+              22.743653
+            ],
+            [
+              105.673209,
+              22.743629
+            ],
+            [
+              105.651,
+              22.746229
+            ],
+            [
+              105.624856,
+              22.765356
+            ],
+            [
+              105.587971,
+              22.7896
+            ],
+            [
+              105.550283,
+              22.790844
+            ],
+            [
+              105.532851,
+              22.758089
+            ],
+            [
+              105.541049,
+              22.710825
+            ],
+            [
+              105.555209,
+              22.674846
+            ],
+            [
+              105.554279,
+              22.655275
+            ],
+            [
+              105.539469,
+              22.640147
+            ],
+            [
+              105.526134,
+              22.621
+            ],
+            [
+              105.520441,
+              22.598587
+            ],
+            [
+              105.516628,
+              22.573383
+            ],
+            [
+              105.51392,
+              22.543946
+            ],
+            [
+              105.521616,
+              22.515299
+            ],
+            [
+              105.544147,
+              22.497018
+            ],
+            [
+              105.572805,
+              22.489136
+            ],
+            [
+              105.598491,
+              22.480539
+            ],
+            [
+              105.62327,
+              22.467883
+            ],
+            [
+              105.651,
+              22.466229
+            ],
+            [
+              105.674796,
+              22.48961
+            ],
+            [
+              105.686333,
+              22.526486
+            ],
+            [
+              105.694077,
+              22.548357
+            ],
+            [
+              105.71771,
+              22.543597
+            ],
+            [
+              105.761356,
+              22.530844
+            ],
+            [
+              105.804269,
+              22.534846
+            ],
+            [
+              105.824525,
+              22.559509
+            ],
+            [
+              105.822689,
+              22.591525
+            ],
+            [
+              105.813724,
+              22.621
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "BK-PN",
+        "name_vi": "Pác Nặm",
+        "name_en": "Pac Nam",
+        "province_vi": "Bắc Kạn",
+        "province_en": "Bac Kan",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          105.651,
+          22.621
+        ],
+        "topography": {
+          "mean_elevation_m": 850,
+          "peak_elevation_m": 1820,
+          "mean_slope_degrees": 31.0,
+          "max_slope_degrees": 63.0,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3462.1,
+          "topographic_wetness_index_mean": 8.1,
+          "annual_rainfall_mm": 2900,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.9,
+          "fault_line_proximity_km": 4.8
+        },
+        "hazard_inventory": {
+          "historical_events_count": 36,
+          "last_major_event_year": 2023,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-BK-PN",
+          "station_name": "Trạm Viễn Thám Pác Nặm",
+          "station_lat": 22.636,
+          "station_lng": 105.663,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "BK-NS",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              106.193916,
+              22.452
+            ],
+            [
+              106.163553,
+              22.477113
+            ],
+            [
+              106.123572,
+              22.489299
+            ],
+            [
+              106.100399,
+              22.497799
+            ],
+            [
+              106.103931,
+              22.521524
+            ],
+            [
+              106.114562,
+              22.5634
+            ],
+            [
+              106.107396,
+              22.601505
+            ],
+            [
+              106.080321,
+              22.614834
+            ],
+            [
+              106.048832,
+              22.609696
+            ],
+            [
+              106.021,
+              22.608658
+            ],
+            [
+              105.991708,
+              22.617971
+            ],
+            [
+              105.959703,
+              22.620258
+            ],
+            [
+              105.935122,
+              22.600609
+            ],
+            [
+              105.925019,
+              22.566281
+            ],
+            [
+              105.922636,
+              22.534462
+            ],
+            [
+              105.918305,
+              22.511237
+            ],
+            [
+              105.912025,
+              22.491627
+            ],
+            [
+              105.906138,
+              22.472235
+            ],
+            [
+              105.893641,
+              22.452
+            ],
+            [
+              105.86784,
+              22.425019
+            ],
+            [
+              105.841406,
+              22.386693
+            ],
+            [
+              105.840353,
+              22.347799
+            ],
+            [
+              105.873907,
+              22.328688
+            ],
+            [
+              105.921549,
+              22.333587
+            ],
+            [
+              105.957258,
+              22.341697
+            ],
+            [
+              105.977621,
+              22.332926
+            ],
+            [
+              105.996689,
+              22.314253
+            ],
+            [
+              106.021,
+              22.308658
+            ],
+            [
+              106.04385,
+              22.322528
+            ],
+            [
+              106.062403,
+              22.33835
+            ],
+            [
+              106.085259,
+              22.340801
+            ],
+            [
+              106.118032,
+              22.336468
+            ],
+            [
+              106.15266,
+              22.341626
+            ],
+            [
+              106.178351,
+              22.361237
+            ],
+            [
+              106.194191,
+              22.389021
+            ],
+            [
+              106.201851,
+              22.42014
+            ],
+            [
+              106.193916,
+              22.452
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "BK-NS",
+        "name_vi": "Ngân Sơn",
+        "name_en": "Ngan Son",
+        "province_vi": "Bắc Kạn",
+        "province_en": "Bac Kan",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          106.021,
+          22.452
+        ],
+        "topography": {
+          "mean_elevation_m": 720,
+          "peak_elevation_m": 1580,
+          "mean_slope_degrees": 27.9,
+          "max_slope_degrees": 58.0,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3497.3,
+          "topographic_wetness_index_mean": 8.45,
+          "annual_rainfall_mm": 3010,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 5.7,
+          "fault_line_proximity_km": 5.7
+        },
+        "hazard_inventory": {
+          "historical_events_count": 28,
+          "last_major_event_year": 2024,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-BK-NS",
+          "station_name": "Trạm Viễn Thám Ngân Sơn",
+          "station_lat": 22.467,
+          "station_lng": 106.033,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "BK-CD",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.728117,
+              22.152
+            ],
+            [
+              105.68993,
+              22.176225
+            ],
+            [
+              105.655371,
+              22.189566
+            ],
+            [
+              105.65151,
+              22.209385
+            ],
+            [
+              105.668989,
+              22.249905
+            ],
+            [
+              105.676924,
+              22.300404
+            ],
+            [
+              105.659405,
+              22.337678
+            ],
+            [
+              105.624996,
+              22.353045
+            ],
+            [
+              105.587071,
+              22.354298
+            ],
+            [
+              105.551,
+              22.345822
+            ],
+            [
+              105.520441,
+              22.323383
+            ],
+            [
+              105.499949,
+              22.290705
+            ],
+            [
+              105.485046,
+              22.264967
+            ],
+            [
+              105.462431,
+              22.25638
+            ],
+            [
+              105.429368,
+              22.252928
+            ],
+            [
+              105.402831,
+              22.236596
+            ],
+            [
+              105.397101,
+              22.207393
+            ],
+            [
+              105.399429,
+              22.178429
+            ],
+            [
+              105.384299,
+              22.152
+            ],
+            [
+              105.351336,
+              22.117185
+            ],
+            [
+              105.332288,
+              22.073279
+            ],
+            [
+              105.353755,
+              22.039385
+            ],
+            [
+              105.405609,
+              22.031357
+            ],
+            [
+              105.455922,
+              22.039948
+            ],
+            [
+              105.487496,
+              22.04323
+            ],
+            [
+              105.507403,
+              22.03355
+            ],
+            [
+              105.527368,
+              22.019463
+            ],
+            [
+              105.551,
+              22.005822
+            ],
+            [
+              105.580145,
+              21.988548
+            ],
+            [
+              105.617541,
+              21.971209
+            ],
+            [
+              105.656955,
+              21.970518
+            ],
+            [
+              105.683433,
+              21.995925
+            ],
+            [
+              105.692748,
+              22.03438
+            ],
+            [
+              105.700586,
+              22.066596
+            ],
+            [
+              105.720184,
+              22.091106
+            ],
+            [
+              105.738023,
+              22.119389
+            ],
+            [
+              105.728117,
+              22.152
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "BK-CD",
+        "name_vi": "Chợ Đồn",
+        "name_en": "Cho Don",
+        "province_vi": "Bắc Kạn",
+        "province_en": "Bac Kan",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          105.551,
+          22.152
+        ],
+        "topography": {
+          "mean_elevation_m": 650,
+          "peak_elevation_m": 1450,
+          "mean_slope_degrees": 26.8,
+          "max_slope_degrees": 55.4,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3532.5,
+          "topographic_wetness_index_mean": 8.8,
+          "annual_rainfall_mm": 1800,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 2.5,
+          "fault_line_proximity_km": 6.6
+        },
+        "hazard_inventory": {
+          "historical_events_count": 27,
+          "last_major_event_year": 2020,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-BK-CD",
+          "station_name": "Trạm Viễn Thám Chợ Đồn",
+          "station_lat": 22.167,
+          "station_lng": 105.563,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "BK-CM",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.982553,
+              21.921
+            ],
+            [
+              105.976086,
+              21.941896
+            ],
+            [
+              105.976374,
+              21.964232
+            ],
+            [
+              105.98047,
+              21.991818
+            ],
+            [
+              105.975951,
+              22.020332
+            ],
+            [
+              105.959402,
+              22.043394
+            ],
+            [
+              105.937314,
+              22.062636
+            ],
+            [
+              105.912419,
+              22.080871
+            ],
+            [
+              105.88217,
+              22.088476
+            ],
+            [
+              105.851,
+              22.070776
+            ],
+            [
+              105.830293,
+              22.032258
+            ],
+            [
+              105.820415,
+              22.000611
+            ],
+            [
+              105.804291,
+              21.997647
+            ],
+            [
+              105.768878,
+              22.013722
+            ],
+            [
+              105.725691,
+              22.020616
+            ],
+            [
+              105.698145,
+              22.004609
+            ],
+            [
+              105.692135,
+              21.975781
+            ],
+            [
+              105.692185,
+              21.94753
+            ],
+            [
+              105.687009,
+              21.921
+            ],
+            [
+              105.685031,
+              21.893274
+            ],
+            [
+              105.698653,
+              21.868467
+            ],
+            [
+              105.724521,
+              21.851818
+            ],
+            [
+              105.749551,
+              21.840351
+            ],
+            [
+              105.76943,
+              21.828901
+            ],
+            [
+              105.789541,
+              21.820149
+            ],
+            [
+              105.811337,
+              21.817757
+            ],
+            [
+              105.830849,
+              21.81273
+            ],
+            [
+              105.851,
+              21.790776
+            ],
+            [
+              105.881614,
+              21.756512
+            ],
+            [
+              105.921497,
+              21.737497
+            ],
+            [
+              105.952063,
+              21.75516
+            ],
+            [
+              105.95885,
+              21.799229
+            ],
+            [
+              105.952092,
+              21.840636
+            ],
+            [
+              105.954094,
+              21.864609
+            ],
+            [
+              105.969856,
+              21.880015
+            ],
+            [
+              105.98324,
+              21.898909
+            ],
+            [
+              105.982553,
+              21.921
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "BK-CM",
+        "name_vi": "Chợ Mới",
+        "name_en": "Cho Moi",
+        "province_vi": "Bắc Kạn",
+        "province_en": "Bac Kan",
+        "susceptibility_tier": "MODERATE",
+        "center_coordinate": [
+          105.851,
+          21.921
+        ],
+        "topography": {
+          "mean_elevation_m": 480,
+          "peak_elevation_m": 1150,
+          "mean_slope_degrees": 22.5,
+          "max_slope_degrees": 47.0,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3567.7,
+          "topographic_wetness_index_mean": 9.15,
+          "annual_rainfall_mm": 1910,
+          "critical_rainfall_threshold_24h_mm": 220.0,
+          "critical_rainfall_threshold_72h_mm": 341.0
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 3.3,
+          "fault_line_proximity_km": 7.5
+        },
+        "hazard_inventory": {
+          "historical_events_count": 16,
+          "last_major_event_year": 2021,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.65
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 90.0,
+          "watch_orange_mm_24h": 150.0,
+          "warning_red_mm_24h": 220.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-BK-CM",
+          "station_name": "Trạm Viễn Thám Chợ Mới",
+          "station_lat": 21.936,
+          "station_lng": 105.863,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "BK-NR",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              106.284046,
+              22.182
+            ],
+            [
+              106.318358,
+              22.21299
+            ],
+            [
+              106.337098,
+              22.252043
+            ],
+            [
+              106.319394,
+              22.284003
+            ],
+            [
+              106.275225,
+              22.297242
+            ],
+            [
+              106.233914,
+              22.301833
+            ],
+            [
+              106.208355,
+              22.316739
+            ],
+            [
+              106.185645,
+              22.340165
+            ],
+            [
+              106.153882,
+              22.348067
+            ],
+            [
+              106.121,
+              22.327283
+            ],
+            [
+              106.098273,
+              22.29678
+            ],
+            [
+              106.078722,
+              22.28544
+            ],
+            [
+              106.046376,
+              22.297102
+            ],
+            [
+              106.000632,
+              22.309745
+            ],
+            [
+              105.957044,
+              22.304514
+            ],
+            [
+              105.926499,
+              22.282002
+            ],
+            [
+              105.90837,
+              22.250918
+            ],
+            [
+              105.904837,
+              22.215943
+            ],
+            [
+              105.924706,
+              22.182
+            ],
+            [
+              105.964477,
+              22.157422
+            ],
+            [
+              105.999429,
+              22.142596
+            ],
+            [
+              106.008196,
+              22.124003
+            ],
+            [
+              105.999954,
+              22.09155
+            ],
+            [
+              106.002934,
+              22.056699
+            ],
+            [
+              106.028685,
+              22.039611
+            ],
+            [
+              106.062743,
+              22.039464
+            ],
+            [
+              106.091483,
+              22.032929
+            ],
+            [
+              106.121,
+              22.007283
+            ],
+            [
+              106.160672,
+              21.981641
+            ],
+            [
+              106.201624,
+              21.984739
+            ],
+            [
+              106.226046,
+              22.019974
+            ],
+            [
+              106.231611,
+              22.06461
+            ],
+            [
+              106.232314,
+              22.098822
+            ],
+            [
+              106.237696,
+              22.122002
+            ],
+            [
+              106.24604,
+              22.141472
+            ],
+            [
+              106.258718,
+              22.160375
+            ],
+            [
+              106.284046,
+              22.182
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "BK-NR",
+        "name_vi": "Na Rì",
+        "name_en": "Na Ri",
+        "province_vi": "Bắc Kạn",
+        "province_en": "Bac Kan",
+        "susceptibility_tier": "MODERATE",
+        "center_coordinate": [
+          106.121,
+          22.182
+        ],
+        "topography": {
+          "mean_elevation_m": 540,
+          "peak_elevation_m": 1280,
+          "mean_slope_degrees": 23.8,
+          "max_slope_degrees": 49.5,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3602.9,
+          "topographic_wetness_index_mean": 9.5,
+          "annual_rainfall_mm": 2020,
+          "critical_rainfall_threshold_24h_mm": 220.0,
+          "critical_rainfall_threshold_72h_mm": 341.0
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.1,
+          "fault_line_proximity_km": 8.4
+        },
+        "hazard_inventory": {
+          "historical_events_count": 18,
+          "last_major_event_year": 2022,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.65
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 90.0,
+          "watch_orange_mm_24h": 150.0,
+          "warning_red_mm_24h": 220.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-BK-NR",
+          "station_name": "Trạm Viễn Thám Na Rì",
+          "station_lat": 22.197,
+          "station_lng": 106.133,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "NA-KS",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.505899,
+              19.452
+            ],
+            [
+              104.568451,
+              19.503183
+            ],
+            [
+              104.570086,
+              19.558148
+            ],
+            [
+              104.504328,
+              19.58866
+            ],
+            [
+              104.419581,
+              19.591207
+            ],
+            [
+              104.360363,
+              19.590754
+            ],
+            [
+              104.326942,
+              19.6053
+            ],
+            [
+              104.296579,
+              19.625478
+            ],
+            [
+              104.259966,
+              19.63662
+            ],
+            [
+              104.221,
+              19.643258
+            ],
+            [
+              104.177799,
+              19.656686
+            ],
+            [
+              104.126051,
+              19.669939
+            ],
+            [
+              104.074138,
+              19.66451
+            ],
+            [
+              104.034013,
+              19.63817
+            ],
+            [
+              103.99967,
+              19.607155
+            ],
+            [
+              103.957029,
+              19.579323
+            ],
+            [
+              103.918255,
+              19.544057
+            ],
+            [
+              103.921186,
+              19.496165
+            ],
+            [
+              103.979226,
+              19.452
+            ],
+            [
+              104.049779,
+              19.426778
+            ],
+            [
+              104.075175,
+              19.407659
+            ],
+            [
+              104.048216,
+              19.36866
+            ],
+            [
+              104.016126,
+              19.308381
+            ],
+            [
+              104.021824,
+              19.253694
+            ],
+            [
+              104.063606,
+              19.224249
+            ],
+            [
+              104.116446,
+              19.212014
+            ],
+            [
+              104.16851,
+              19.203305
+            ],
+            [
+              104.221,
+              19.203258
+            ],
+            [
+              104.269255,
+              19.22337
+            ],
+            [
+              104.306184,
+              19.256474
+            ],
+            [
+              104.337475,
+              19.283459
+            ],
+            [
+              104.372552,
+              19.30111
+            ],
+            [
+              104.403125,
+              19.324328
+            ],
+            [
+              104.413141,
+              19.359323
+            ],
+            [
+              104.413166,
+              19.393568
+            ],
+            [
+              104.439858,
+              19.41976
+            ],
+            [
+              104.505899,
+              19.452
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "NA-KS",
+        "name_vi": "Kỳ Sơn",
+        "name_en": "Ky Son",
+        "province_vi": "Nghệ An",
+        "province_en": "Nghe An",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          104.221,
+          19.452
+        ],
+        "topography": {
+          "mean_elevation_m": 1150,
+          "peak_elevation_m": 2720,
+          "mean_slope_degrees": 35.8,
+          "max_slope_degrees": 70.5,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3638.1,
+          "topographic_wetness_index_mean": 7.4,
+          "annual_rainfall_mm": 2130,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.9,
+          "fault_line_proximity_km": 1.2
+        },
+        "hazard_inventory": {
+          "historical_events_count": 68,
+          "last_major_event_year": 2023,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-NA-KS",
+          "station_name": "Trạm Viễn Thám Kỳ Sơn",
+          "station_lat": 19.467,
+          "station_lng": 104.233,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "NA-TD",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104.91134,
+              19.321
+            ],
+            [
+              104.925209,
+              19.373387
+            ],
+            [
+              104.885703,
+              19.41772
+            ],
+            [
+              104.819035,
+              19.443864
+            ],
+            [
+              104.757845,
+              19.458801
+            ],
+            [
+              104.708068,
+              19.469616
+            ],
+            [
+              104.663049,
+              19.475085
+            ],
+            [
+              104.625013,
+              19.482449
+            ],
+            [
+              104.593609,
+              19.512856
+            ],
+            [
+              104.551,
+              19.571544
+            ],
+            [
+              104.483694,
+              19.62406
+            ],
+            [
+              104.411475,
+              19.625353
+            ],
+            [
+              104.368443,
+              19.572045
+            ],
+            [
+              104.355279,
+              19.506189
+            ],
+            [
+              104.336851,
+              19.463666
+            ],
+            [
+              104.29542,
+              19.438154
+            ],
+            [
+              104.260753,
+              19.404874
+            ],
+            [
+              104.2685,
+              19.360548
+            ],
+            [
+              104.306766,
+              19.321
+            ],
+            [
+              104.32982,
+              19.290036
+            ],
+            [
+              104.31759,
+              19.253551
+            ],
+            [
+              104.295459,
+              19.203864
+            ],
+            [
+              104.294715,
+              19.150262
+            ],
+            [
+              104.319456,
+              19.101915
+            ],
+            [
+              104.360762,
+              19.059393
+            ],
+            [
+              104.418237,
+              19.031397
+            ],
+            [
+              104.488626,
+              19.040148
+            ],
+            [
+              104.551,
+              19.091544
+            ],
+            [
+              104.588677,
+              19.151352
+            ],
+            [
+              104.618252,
+              19.1743
+            ],
+            [
+              104.670729,
+              19.156353
+            ],
+            [
+              104.743891,
+              19.138488
+            ],
+            [
+              104.799981,
+              19.155128
+            ],
+            [
+              104.818996,
+              19.198154
+            ],
+            [
+              104.828866,
+              19.240704
+            ],
+            [
+              104.863889,
+              19.277197
+            ],
+            [
+              104.91134,
+              19.321
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "NA-TD",
+        "name_vi": "Tương Dương",
+        "name_en": "Tuong Duong",
+        "province_vi": "Nghệ An",
+        "province_en": "Nghe An",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          104.551,
+          19.321
+        ],
+        "topography": {
+          "mean_elevation_m": 980,
+          "peak_elevation_m": 2450,
+          "mean_slope_degrees": 33.5,
+          "max_slope_degrees": 67.0,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3673.3,
+          "topographic_wetness_index_mean": 7.75,
+          "annual_rainfall_mm": 2240,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 5.7,
+          "fault_line_proximity_km": 2.1
+        },
+        "hazard_inventory": {
+          "historical_events_count": 56,
+          "last_major_event_year": 2024,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-NA-TD",
+          "station_name": "Trạm Viễn Thám Tương Dương",
+          "station_lat": 19.336,
+          "station_lng": 104.563,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "NA-CC",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.166363,
+              19.052
+            ],
+            [
+              105.128182,
+              19.080204
+            ],
+            [
+              105.103315,
+              19.103231
+            ],
+            [
+              105.098489,
+              19.131114
+            ],
+            [
+              105.090156,
+              19.161584
+            ],
+            [
+              105.059036,
+              19.179006
+            ],
+            [
+              105.016998,
+              19.180371
+            ],
+            [
+              104.985451,
+              19.188713
+            ],
+            [
+              104.960605,
+              19.225409
+            ],
+            [
+              104.921,
+              19.27565
+            ],
+            [
+              104.864633,
+              19.298805
+            ],
+            [
+              104.816267,
+              19.274158
+            ],
+            [
+              104.793927,
+              19.221925
+            ],
+            [
+              104.787135,
+              19.175168
+            ],
+            [
+              104.777196,
+              19.14516
+            ],
+            [
+              104.762369,
+              19.122709
+            ],
+            [
+              104.748954,
+              19.100345
+            ],
+            [
+              104.731071,
+              19.077856
+            ],
+            [
+              104.700071,
+              19.052
+            ],
+            [
+              104.668974,
+              19.017691
+            ],
+            [
+              104.665144,
+              18.980104
+            ],
+            [
+              104.694668,
+              18.951114
+            ],
+            [
+              104.732956,
+              18.93018
+            ],
+            [
+              104.75931,
+              18.90323
+            ],
+            [
+              104.783852,
+              18.868602
+            ],
+            [
+              104.82597,
+              18.850423
+            ],
+            [
+              104.879634,
+              18.870878
+            ],
+            [
+              104.921,
+              18.91565
+            ],
+            [
+              104.945603,
+              18.944275
+            ],
+            [
+              104.975748,
+              18.935869
+            ],
+            [
+              105.027073,
+              18.910156
+            ],
+            [
+              105.086861,
+              18.899392
+            ],
+            [
+              105.134396,
+              18.913757
+            ],
+            [
+              105.16619,
+              18.942709
+            ],
+            [
+              105.187125,
+              18.977218
+            ],
+            [
+              105.190279,
+              19.015342
+            ],
+            [
+              105.166363,
+              19.052
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "NA-CC",
+        "name_vi": "Con Cuông",
+        "name_en": "Con Cuong",
+        "province_vi": "Nghệ An",
+        "province_en": "Nghe An",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          104.921,
+          19.052
+        ],
+        "topography": {
+          "mean_elevation_m": 680,
+          "peak_elevation_m": 1820,
+          "mean_slope_degrees": 28.4,
+          "max_slope_degrees": 59.2,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3708.5,
+          "topographic_wetness_index_mean": 8.1,
+          "annual_rainfall_mm": 2350,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 2.5,
+          "fault_line_proximity_km": 3.0
+        },
+        "hazard_inventory": {
+          "historical_events_count": 35,
+          "last_major_event_year": 2020,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-NA-CC",
+          "station_name": "Trạm Viễn Thám Con Cuông",
+          "station_lat": 19.067,
+          "station_lng": 104.933,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "NA-QP",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.141683,
+              19.782
+            ],
+            [
+              105.100148,
+              19.802301
+            ],
+            [
+              105.111789,
+              19.827177
+            ],
+            [
+              105.145388,
+              19.868636
+            ],
+            [
+              105.152545,
+              19.912549
+            ],
+            [
+              105.122352,
+              19.939639
+            ],
+            [
+              105.079302,
+              19.953548
+            ],
+            [
+              105.040702,
+              19.97225
+            ],
+            [
+              105.000162,
+              19.997227
+            ],
+            [
+              104.951,
+              20.009152
+            ],
+            [
+              104.902191,
+              19.995686
+            ],
+            [
+              104.863654,
+              19.967253
+            ],
+            [
+              104.8336,
+              19.938971
+            ],
+            [
+              104.810487,
+              19.911268
+            ],
+            [
+              104.801047,
+              19.879131
+            ],
+            [
+              104.801156,
+              19.848783
+            ],
+            [
+              104.782811,
+              19.829256
+            ],
+            [
+              104.724114,
+              19.812883
+            ],
+            [
+              104.649424,
+              19.782
+            ],
+            [
+              104.615367,
+              19.736315
+            ],
+            [
+              104.649217,
+              19.697209
+            ],
+            [
+              104.719079,
+              19.678636
+            ],
+            [
+              104.775453,
+              19.66829
+            ],
+            [
+              104.805934,
+              19.648542
+            ],
+            [
+              104.833173,
+              19.624458
+            ],
+            [
+              104.872339,
+              19.615167
+            ],
+            [
+              104.914682,
+              19.623
+            ],
+            [
+              104.951,
+              19.629152
+            ],
+            [
+              104.98767,
+              19.621459
+            ],
+            [
+              105.032017,
+              19.61017
+            ],
+            [
+              105.07973,
+              19.609881
+            ],
+            [
+              105.126905,
+              19.620171
+            ],
+            [
+              105.178139,
+              19.634872
+            ],
+            [
+              105.227465,
+              19.658783
+            ],
+            [
+              105.245383,
+              19.699288
+            ],
+            [
+              105.208894,
+              19.746897
+            ],
+            [
+              105.141683,
+              19.782
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "NA-QP",
+        "name_vi": "Quế Phong",
+        "name_en": "Que Phong",
+        "province_vi": "Nghệ An",
+        "province_en": "Nghe An",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          104.951,
+          19.782
+        ],
+        "topography": {
+          "mean_elevation_m": 820,
+          "peak_elevation_m": 2150,
+          "mean_slope_degrees": 31.2,
+          "max_slope_degrees": 63.8,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3743.7,
+          "topographic_wetness_index_mean": 8.45,
+          "annual_rainfall_mm": 2460,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 3.3,
+          "fault_line_proximity_km": 3.9
+        },
+        "hazard_inventory": {
+          "historical_events_count": 42,
+          "last_major_event_year": 2021,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-NA-QP",
+          "station_name": "Trạm Viễn Thám Quế Phong",
+          "station_lat": 19.797,
+          "station_lng": 104.963,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "NA-QC",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.287235,
+              19.552
+            ],
+            [
+              105.284598,
+              19.570696
+            ],
+            [
+              105.308039,
+              19.597364
+            ],
+            [
+              105.327894,
+              19.633057
+            ],
+            [
+              105.327123,
+              19.669291
+            ],
+            [
+              105.309233,
+              19.701665
+            ],
+            [
+              105.279287,
+              19.728352
+            ],
+            [
+              105.237118,
+              19.739787
+            ],
+            [
+              105.189607,
+              19.725774
+            ],
+            [
+              105.151,
+              19.695107
+            ],
+            [
+              105.123987,
+              19.673589
+            ],
+            [
+              105.094767,
+              19.67462
+            ],
+            [
+              105.056371,
+              19.682083
+            ],
+            [
+              105.023837,
+              19.672277
+            ],
+            [
+              105.011724,
+              19.644753
+            ],
+            [
+              105.00581,
+              19.618529
+            ],
+            [
+              104.977224,
+              19.602199
+            ],
+            [
+              104.924743,
+              19.583663
+            ],
+            [
+              104.884042,
+              19.552
+            ],
+            [
+              104.88753,
+              19.515129
+            ],
+            [
+              104.929162,
+              19.487917
+            ],
+            [
+              104.978719,
+              19.473057
+            ],
+            [
+              105.018259,
+              19.463599
+            ],
+            [
+              105.050066,
+              19.456531
+            ],
+            [
+              105.07769,
+              19.451224
+            ],
+            [
+              105.099218,
+              19.439086
+            ],
+            [
+              105.119593,
+              19.410636
+            ],
+            [
+              105.151,
+              19.375107
+            ],
+            [
+              105.194001,
+              19.358451
+            ],
+            [
+              105.232667,
+              19.373919
+            ],
+            [
+              105.257968,
+              19.404955
+            ],
+            [
+              105.283005,
+              19.427143
+            ],
+            [
+              105.320588,
+              19.439061
+            ],
+            [
+              105.354985,
+              19.458529
+            ],
+            [
+              105.356102,
+              19.492752
+            ],
+            [
+              105.321811,
+              19.528096
+            ],
+            [
+              105.287235,
+              19.552
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "NA-QC",
+        "name_vi": "Quỳ Châu",
+        "name_en": "Quy Chau",
+        "province_vi": "Nghệ An",
+        "province_en": "Nghe An",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          105.151,
+          19.552
+        ],
+        "topography": {
+          "mean_elevation_m": 590,
+          "peak_elevation_m": 1620,
+          "mean_slope_degrees": 26.5,
+          "max_slope_degrees": 55.0,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3778.9,
+          "topographic_wetness_index_mean": 8.8,
+          "annual_rainfall_mm": 2570,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.1,
+          "fault_line_proximity_km": 4.8
+        },
+        "hazard_inventory": {
+          "historical_events_count": 29,
+          "last_major_event_year": 2022,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-NA-QC",
+          "station_name": "Trạm Viễn Thám Quỳ Châu",
+          "station_lat": 19.567,
+          "station_lng": 105.163,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "NA-QH",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.365715,
+              19.321
+            ],
+            [
+              105.380723,
+              19.350406
+            ],
+            [
+              105.37901,
+              19.381178
+            ],
+            [
+              105.365999,
+              19.410185
+            ],
+            [
+              105.355915,
+              19.443553
+            ],
+            [
+              105.34492,
+              19.484118
+            ],
+            [
+              105.314529,
+              19.514116
+            ],
+            [
+              105.262583,
+              19.508161
+            ],
+            [
+              105.212053,
+              19.468051
+            ],
+            [
+              105.181,
+              19.429842
+            ],
+            [
+              105.158806,
+              19.426101
+            ],
+            [
+              105.124644,
+              19.450289
+            ],
+            [
+              105.078478,
+              19.469273
+            ],
+            [
+              105.037713,
+              19.463586
+            ],
+            [
+              105.009269,
+              19.441322
+            ],
+            [
+              104.983874,
+              19.416032
+            ],
+            [
+              104.958821,
+              19.388523
+            ],
+            [
+              104.947545,
+              19.355372
+            ],
+            [
+              104.958527,
+              19.321
+            ],
+            [
+              104.979721,
+              19.291365
+            ],
+            [
+              104.996378,
+              19.264891
+            ],
+            [
+              105.013364,
+              19.240185
+            ],
+            [
+              105.04399,
+              19.225005
+            ],
+            [
+              105.083185,
+              19.223663
+            ],
+            [
+              105.110935,
+              19.219668
+            ],
+            [
+              105.123316,
+              19.188665
+            ],
+            [
+              105.141346,
+              19.133216
+            ],
+            [
+              105.181,
+              19.089842
+            ],
+            [
+              105.229513,
+              19.091267
+            ],
+            [
+              105.26391,
+              19.130793
+            ],
+            [
+              105.282072,
+              19.174825
+            ],
+            [
+              105.299448,
+              19.203131
+            ],
+            [
+              105.321194,
+              19.222774
+            ],
+            [
+              105.336509,
+              19.246032
+            ],
+            [
+              105.341452,
+              19.272236
+            ],
+            [
+              105.348547,
+              19.296332
+            ],
+            [
+              105.365715,
+              19.321
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "NA-QH",
+        "name_vi": "Quỳ Hợp",
+        "name_en": "Quy Hop",
+        "province_vi": "Nghệ An",
+        "province_en": "Nghe An",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          105.181,
+          19.321
+        ],
+        "topography": {
+          "mean_elevation_m": 540,
+          "peak_elevation_m": 1450,
+          "mean_slope_degrees": 25.0,
+          "max_slope_degrees": 52.8,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3814.1,
+          "topographic_wetness_index_mean": 9.15,
+          "annual_rainfall_mm": 2680,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.9,
+          "fault_line_proximity_km": 5.7
+        },
+        "hazard_inventory": {
+          "historical_events_count": 24,
+          "last_major_event_year": 2023,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-NA-QH",
+          "station_name": "Trạm Viễn Thám Quỳ Hợp",
+          "station_lat": 19.336,
+          "station_lng": 105.193,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "HT-HS",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.521397,
+              18.452
+            ],
+            [
+              105.519109,
+              18.489367
+            ],
+            [
+              105.482597,
+              18.517304
+            ],
+            [
+              105.447686,
+              18.537651
+            ],
+            [
+              105.431257,
+              18.564213
+            ],
+            [
+              105.41658,
+              18.595805
+            ],
+            [
+              105.384682,
+              18.611829
+            ],
+            [
+              105.341828,
+              18.600742
+            ],
+            [
+              105.306227,
+              18.579332
+            ],
+            [
+              105.281,
+              18.573035
+            ],
+            [
+              105.254487,
+              18.585822
+            ],
+            [
+              105.219926,
+              18.601342
+            ],
+            [
+              105.180161,
+              18.607446
+            ],
+            [
+              105.136984,
+              18.604753
+            ],
+            [
+              105.092546,
+              18.592738
+            ],
+            [
+              105.062085,
+              18.564488
+            ],
+            [
+              105.066656,
+              18.521434
+            ],
+            [
+              105.103802,
+              18.479808
+            ],
+            [
+              105.139376,
+              18.452
+            ],
+            [
+              105.142892,
+              18.430327
+            ],
+            [
+              105.123616,
+              18.401018
+            ],
+            [
+              105.116846,
+              18.367651
+            ],
+            [
+              105.138613,
+              18.345665
+            ],
+            [
+              105.171022,
+              18.33535
+            ],
+            [
+              105.193671,
+              18.31738
+            ],
+            [
+              105.21117,
+              18.281246
+            ],
+            [
+              105.23989,
+              18.244498
+            ],
+            [
+              105.281,
+              18.233035
+            ],
+            [
+              105.320824,
+              18.250987
+            ],
+            [
+              105.350585,
+              18.281847
+            ],
+            [
+              105.371171,
+              18.312998
+            ],
+            [
+              105.382542,
+              18.344298
+            ],
+            [
+              105.385191,
+              18.37419
+            ],
+            [
+              105.392924,
+              18.394488
+            ],
+            [
+              105.425637,
+              18.405147
+            ],
+            [
+              105.480018,
+              18.420768
+            ],
+            [
+              105.521397,
+              18.452
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "HT-HS",
+        "name_vi": "Hương Sơn",
+        "name_en": "Huong Son",
+        "province_vi": "Hà Tĩnh",
+        "province_en": "Ha Tinh",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          105.281,
+          18.452
+        ],
+        "topography": {
+          "mean_elevation_m": 620,
+          "peak_elevation_m": 1650,
+          "mean_slope_degrees": 28.0,
+          "max_slope_degrees": 58.5,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3849.3,
+          "topographic_wetness_index_mean": 9.5,
+          "annual_rainfall_mm": 2790,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 5.7,
+          "fault_line_proximity_km": 6.6
+        },
+        "hazard_inventory": {
+          "historical_events_count": 36,
+          "last_major_event_year": 2024,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-HT-HS",
+          "station_name": "Trạm Viễn Thám Hương Sơn",
+          "station_lat": 18.467,
+          "station_lng": 105.293,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "HT-HK",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.983981,
+              18.182
+            ],
+            [
+              105.959807,
+              18.221874
+            ],
+            [
+              105.915039,
+              18.248877
+            ],
+            [
+              105.877274,
+              18.267437
+            ],
+            [
+              105.849226,
+              18.283886
+            ],
+            [
+              105.822075,
+              18.296065
+            ],
+            [
+              105.795731,
+              18.304569
+            ],
+            [
+              105.774054,
+              18.32003
+            ],
+            [
+              105.751752,
+              18.347148
+            ],
+            [
+              105.721,
+              18.370772
+            ],
+            [
+              105.685524,
+              18.372519
+            ],
+            [
+              105.653769,
+              18.356916
+            ],
+            [
+              105.621457,
+              18.345265
+            ],
+            [
+              105.578101,
+              18.343264
+            ],
+            [
+              105.533077,
+              18.331319
+            ],
+            [
+              105.516643,
+              18.293726
+            ],
+            [
+              105.543298,
+              18.243247
+            ],
+            [
+              105.586278,
+              18.204495
+            ],
+            [
+              105.60381,
+              18.182
+            ],
+            [
+              105.585412,
+              18.159361
+            ],
+            [
+              105.557795,
+              18.12575
+            ],
+            [
+              105.548036,
+              18.087437
+            ],
+            [
+              105.557998,
+              18.052482
+            ],
+            [
+              105.577705,
+              18.020289
+            ],
+            [
+              105.605645,
+              17.9928
+            ],
+            [
+              105.644027,
+              17.981741
+            ],
+            [
+              105.685736,
+              17.992617
+            ],
+            [
+              105.721,
+              18.010772
+            ],
+            [
+              105.75154,
+              18.017988
+            ],
+            [
+              105.783795,
+              18.018626
+            ],
+            [
+              105.811543,
+              18.033496
+            ],
+            [
+              105.82247,
+              18.067488
+            ],
+            [
+              105.824305,
+              18.099916
+            ],
+            [
+              105.845881,
+              18.113726
+            ],
+            [
+              105.900542,
+              18.120119
+            ],
+            [
+              105.960674,
+              18.141981
+            ],
+            [
+              105.983981,
+              18.182
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "HT-HK",
+        "name_vi": "Hương Khê",
+        "name_en": "Huong Khe",
+        "province_vi": "Hà Tĩnh",
+        "province_en": "Ha Tinh",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          105.721,
+          18.182
+        ],
+        "topography": {
+          "mean_elevation_m": 480,
+          "peak_elevation_m": 1420,
+          "mean_slope_degrees": 25.5,
+          "max_slope_degrees": 54.0,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3884.5,
+          "topographic_wetness_index_mean": 7.4,
+          "annual_rainfall_mm": 2900,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 2.5,
+          "fault_line_proximity_km": 7.5
+        },
+        "hazard_inventory": {
+          "historical_events_count": 31,
+          "last_major_event_year": 2020,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-HT-HK",
+          "station_name": "Trạm Viễn Thám Hương Khê",
+          "station_lat": 18.197,
+          "station_lng": 105.733,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "HT-VQ",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105.641508,
+              18.321
+            ],
+            [
+              105.625946,
+              18.351498
+            ],
+            [
+              105.606305,
+              18.376885
+            ],
+            [
+              105.578772,
+              18.393932
+            ],
+            [
+              105.544435,
+              18.398511
+            ],
+            [
+              105.517651,
+              18.39953
+            ],
+            [
+              105.508211,
+              18.418968
+            ],
+            [
+              105.504201,
+              18.465509
+            ],
+            [
+              105.485645,
+              18.515251
+            ],
+            [
+              105.451,
+              18.533123
+            ],
+            [
+              105.416878,
+              18.512322
+            ],
+            [
+              105.392666,
+              18.479453
+            ],
+            [
+              105.370278,
+              18.459228
+            ],
+            [
+              105.343261,
+              18.447941
+            ],
+            [
+              105.3218,
+              18.428181
+            ],
+            [
+              105.318069,
+              18.396877
+            ],
+            [
+              105.325778,
+              18.36606
+            ],
+            [
+              105.327435,
+              18.342541
+            ],
+            [
+              105.317834,
+              18.321
+            ],
+            [
+              105.307189,
+              18.29593
+            ],
+            [
+              105.302151,
+              18.267438
+            ],
+            [
+              105.298462,
+              18.233932
+            ],
+            [
+              105.296486,
+              18.192819
+            ],
+            [
+              105.309597,
+              18.154396
+            ],
+            [
+              105.346374,
+              18.141839
+            ],
+            [
+              105.393498,
+              18.164807
+            ],
+            [
+              105.42944,
+              18.200112
+            ],
+            [
+              105.451,
+              18.213123
+            ],
+            [
+              105.473083,
+              18.197183
+            ],
+            [
+              105.503369,
+              18.178751
+            ],
+            [
+              105.532115,
+              18.1821
+            ],
+            [
+              105.551314,
+              18.202807
+            ],
+            [
+              105.569749,
+              18.222489
+            ],
+            [
+              105.598379,
+              18.236877
+            ],
+            [
+              105.629932,
+              18.256613
+            ],
+            [
+              105.646192,
+              18.286973
+            ],
+            [
+              105.641508,
+              18.321
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "HT-VQ",
+        "name_vi": "Vũ Quang",
+        "name_en": "Vu Quang",
+        "province_vi": "Hà Tĩnh",
+        "province_en": "Ha Tinh",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          105.451,
+          18.321
+        ],
+        "topography": {
+          "mean_elevation_m": 650,
+          "peak_elevation_m": 1780,
+          "mean_slope_degrees": 29.1,
+          "max_slope_degrees": 60.2,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3919.7,
+          "topographic_wetness_index_mean": 7.75,
+          "annual_rainfall_mm": 3010,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 3.3,
+          "fault_line_proximity_km": 8.4
+        },
+        "hazard_inventory": {
+          "historical_events_count": 33,
+          "last_major_event_year": 2021,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-HT-VQ",
+          "station_name": "Trạm Viễn Thám Vũ Quang",
+          "station_lat": 18.336,
+          "station_lng": 105.463,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QB-MH",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              106.105728,
+              17.821
+            ],
+            [
+              106.11528,
+              17.849942
+            ],
+            [
+              106.117496,
+              17.881548
+            ],
+            [
+              106.093822,
+              17.903389
+            ],
+            [
+              106.058397,
+              17.911041
+            ],
+            [
+              106.037573,
+              17.924086
+            ],
+            [
+              106.03343,
+              17.963653
+            ],
+            [
+              106.023445,
+              18.019874
+            ],
+            [
+              105.992824,
+              18.057998
+            ],
+            [
+              105.951,
+              18.057146
+            ],
+            [
+              105.9143,
+              18.028962
+            ],
+            [
+              105.887444,
+              17.995472
+            ],
+            [
+              105.868391,
+              17.963963
+            ],
+            [
+              105.857582,
+              17.932237
+            ],
+            [
+              105.850925,
+              17.904902
+            ],
+            [
+              105.833781,
+              17.888619
+            ],
+            [
+              105.797661,
+              17.876764
+            ],
+            [
+              105.759073,
+              17.854813
+            ],
+            [
+              105.745424,
+              17.821
+            ],
+            [
+              105.760449,
+              17.787429
+            ],
+            [
+              105.778921,
+              17.758421
+            ],
+            [
+              105.781789,
+              17.723389
+            ],
+            [
+              105.782388,
+              17.679637
+            ],
+            [
+              105.805974,
+              17.64831
+            ],
+            [
+              105.853278,
+              17.651884
+            ],
+            [
+              105.900214,
+              17.681584
+            ],
+            [
+              105.930258,
+              17.703467
+            ],
+            [
+              105.951,
+              17.697146
+            ],
+            [
+              105.976866,
+              17.674431
+            ],
+            [
+              106.010675,
+              17.657182
+            ],
+            [
+              106.048543,
+              17.652194
+            ],
+            [
+              106.089181,
+              17.656461
+            ],
+            [
+              106.126934,
+              17.673499
+            ],
+            [
+              106.145814,
+              17.708619
+            ],
+            [
+              106.136236,
+              17.753636
+            ],
+            [
+              106.113904,
+              17.7923
+            ],
+            [
+              106.105728,
+              17.821
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "QB-MH",
+        "name_vi": "Minh Hóa",
+        "name_en": "Minh Hoa",
+        "province_vi": "Quảng Bình",
+        "province_en": "Quang Binh",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          105.951,
+          17.821
+        ],
+        "topography": {
+          "mean_elevation_m": 750,
+          "peak_elevation_m": 1850,
+          "mean_slope_degrees": 32.4,
+          "max_slope_degrees": 66.2,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3954.9,
+          "topographic_wetness_index_mean": 8.1,
+          "annual_rainfall_mm": 1800,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.1,
+          "fault_line_proximity_km": 1.2
+        },
+        "hazard_inventory": {
+          "historical_events_count": 49,
+          "last_major_event_year": 2022,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-QB-MH",
+          "station_name": "Trạm Viễn Thám Minh Hóa",
+          "station_lat": 17.836,
+          "station_lng": 105.963,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QB-TH",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              106.173941,
+              17.952
+            ],
+            [
+              106.199032,
+              17.977423
+            ],
+            [
+              106.210917,
+              18.00869
+            ],
+            [
+              106.202175,
+              18.037009
+            ],
+            [
+              106.186709,
+              18.062909
+            ],
+            [
+              106.172465,
+              18.092988
+            ],
+            [
+              106.152392,
+              18.123045
+            ],
+            [
+              106.121178,
+              18.139793
+            ],
+            [
+              106.08507,
+              18.140191
+            ],
+            [
+              106.051,
+              18.135003
+            ],
+            [
+              106.018969,
+              18.128931
+            ],
+            [
+              105.991504,
+              18.111209
+            ],
+            [
+              105.977746,
+              18.075577
+            ],
+            [
+              105.976576,
+              18.038387
+            ],
+            [
+              105.965486,
+              18.021887
+            ],
+            [
+              105.92329,
+              18.023814
+            ],
+            [
+              105.862314,
+              18.018888
+            ],
+            [
+              105.821781,
+              17.991365
+            ],
+            [
+              105.824853,
+              17.952
+            ],
+            [
+              105.855248,
+              17.918382
+            ],
+            [
+              105.882883,
+              17.892403
+            ],
+            [
+              105.899857,
+              17.867009
+            ],
+            [
+              105.919292,
+              17.844361
+            ],
+            [
+              105.948076,
+              17.832533
+            ],
+            [
+              105.977849,
+              17.828597
+            ],
+            [
+              106.001783,
+              17.820297
+            ],
+            [
+              106.024452,
+              17.805356
+            ],
+            [
+              106.051,
+              17.795003
+            ],
+            [
+              106.079587,
+              17.794096
+            ],
+            [
+              106.110899,
+              17.791714
+            ],
+            [
+              106.152289,
+              17.781129
+            ],
+            [
+              106.200965,
+              17.777932
+            ],
+            [
+              106.232903,
+              17.803339
+            ],
+            [
+              106.225608,
+              17.853814
+            ],
+            [
+              106.190349,
+              17.902602
+            ],
+            [
+              106.165565,
+              17.932325
+            ],
+            [
+              106.173941,
+              17.952
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "QB-TH",
+        "name_vi": "Tuyên Hóa",
+        "name_en": "Tuyen Hoa",
+        "province_vi": "Quảng Bình",
+        "province_en": "Quang Binh",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          106.051,
+          17.952
+        ],
+        "topography": {
+          "mean_elevation_m": 580,
+          "peak_elevation_m": 1520,
+          "mean_slope_degrees": 27.5,
+          "max_slope_degrees": 57.0,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 3990.1,
+          "topographic_wetness_index_mean": 8.45,
+          "annual_rainfall_mm": 1910,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.9,
+          "fault_line_proximity_km": 2.1
+        },
+        "hazard_inventory": {
+          "historical_events_count": 34,
+          "last_major_event_year": 2023,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-QB-TH",
+          "station_name": "Trạm Viễn Thám Tuyên Hóa",
+          "station_lat": 17.967,
+          "station_lng": 106.063,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QB-BT",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              106.490127,
+              17.552
+            ],
+            [
+              106.50958,
+              17.582709
+            ],
+            [
+              106.525252,
+              17.620657
+            ],
+            [
+              106.538466,
+              17.667954
+            ],
+            [
+              106.537775,
+              17.719988
+            ],
+            [
+              106.506052,
+              17.755674
+            ],
+            [
+              106.447767,
+              17.754778
+            ],
+            [
+              106.390227,
+              17.727657
+            ],
+            [
+              106.351241,
+              17.710393
+            ],
+            [
+              106.321,
+              17.722
+            ],
+            [
+              106.285019,
+              17.740457
+            ],
+            [
+              106.249531,
+              17.733345
+            ],
+            [
+              106.22777,
+              17.701132
+            ],
+            [
+              106.211031,
+              17.673035
+            ],
+            [
+              106.175315,
+              17.664897
+            ],
+            [
+              106.117428,
+              17.660546
+            ],
+            [
+              106.065292,
+              17.637954
+            ],
+            [
+              106.045684,
+              17.596834
+            ],
+            [
+              106.057011,
+              17.552
+            ],
+            [
+              106.083044,
+              17.51325
+            ],
+            [
+              106.118255,
+              17.483849
+            ],
+            [
+              106.163376,
+              17.467954
+            ],
+            [
+              106.205989,
+              17.462873
+            ],
+            [
+              106.22765,
+              17.449256
+            ],
+            [
+              106.231209,
+              17.408368
+            ],
+            [
+              106.242093,
+              17.35178
+            ],
+            [
+              106.276031,
+              17.31647
+            ],
+            [
+              106.321,
+              17.322
+            ],
+            [
+              106.360229,
+              17.346534
+            ],
+            [
+              106.397666,
+              17.357468
+            ],
+            [
+              106.444328,
+              17.354722
+            ],
+            [
+              106.489433,
+              17.366617
+            ],
+            [
+              106.507102,
+              17.407782
+            ],
+            [
+              106.492518,
+              17.460546
+            ],
+            [
+              106.472289,
+              17.501146
+            ],
+            [
+              106.47222,
+              17.527375
+            ],
+            [
+              106.490127,
+              17.552
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "QB-BT",
+        "name_vi": "Bố Trạch",
+        "name_en": "Bo Trach",
+        "province_vi": "Quảng Bình",
+        "province_en": "Quang Binh",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          106.321,
+          17.552
+        ],
+        "topography": {
+          "mean_elevation_m": 450,
+          "peak_elevation_m": 1380,
+          "mean_slope_degrees": 24.8,
+          "max_slope_degrees": 53.5,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4025.3,
+          "topographic_wetness_index_mean": 8.8,
+          "annual_rainfall_mm": 2020,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 5.7,
+          "fault_line_proximity_km": 3.0
+        },
+        "hazard_inventory": {
+          "historical_events_count": 28,
+          "last_major_event_year": 2024,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-QB-BT",
+          "station_name": "Trạm Viễn Thám Bố Trạch",
+          "station_lat": 17.567,
+          "station_lng": 106.333,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QT-HH",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              106.862381,
+              16.682
+            ],
+            [
+              106.85741,
+              16.713503
+            ],
+            [
+              106.870561,
+              16.751171
+            ],
+            [
+              106.890859,
+              16.801866
+            ],
+            [
+              106.881481,
+              16.849398
+            ],
+            [
+              106.827531,
+              16.864099
+            ],
+            [
+              106.756777,
+              16.840581
+            ],
+            [
+              106.70497,
+              16.810347
+            ],
+            [
+              106.676436,
+              16.806862
+            ],
+            [
+              106.651,
+              16.829072
+            ],
+            [
+              106.616584,
+              16.850943
+            ],
+            [
+              106.57724,
+              16.857411
+            ],
+            [
+              106.536034,
+              16.854358
+            ],
+            [
+              106.491046,
+              16.847
+            ],
+            [
+              106.449827,
+              16.828112
+            ],
+            [
+              106.428458,
+              16.793212
+            ],
+            [
+              106.428428,
+              16.752119
+            ],
+            [
+              106.430487,
+              16.715655
+            ],
+            [
+              106.423363,
+              16.682
+            ],
+            [
+              106.425062,
+              16.647517
+            ],
+            [
+              106.458019,
+              16.621203
+            ],
+            [
+              106.510659,
+              16.611866
+            ],
+            [
+              106.545174,
+              16.605139
+            ],
+            [
+              106.545336,
+              16.573003
+            ],
+            [
+              106.537268,
+              16.511491
+            ],
+            [
+              106.554817,
+              16.453264
+            ],
+            [
+              106.600201,
+              16.432635
+            ],
+            [
+              106.651,
+              16.449072
+            ],
+            [
+              106.692819,
+              16.476716
+            ],
+            [
+              106.727393,
+              16.500328
+            ],
+            [
+              106.755543,
+              16.525268
+            ],
+            [
+              106.773241,
+              16.555903
+            ],
+            [
+              106.786134,
+              16.583853
+            ],
+            [
+              106.808658,
+              16.603212
+            ],
+            [
+              106.84097,
+              16.622152
+            ],
+            [
+              106.862835,
+              16.649669
+            ],
+            [
+              106.862381,
+              16.682
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "QT-HH",
+        "name_vi": "Hướng Hóa",
+        "name_en": "Huong Hoa",
+        "province_vi": "Quảng Trị",
+        "province_en": "Quang Tri",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          106.651,
+          16.682
+        ],
+        "topography": {
+          "mean_elevation_m": 820,
+          "peak_elevation_m": 1820,
+          "mean_slope_degrees": 34.6,
+          "max_slope_degrees": 69.4,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4060.5,
+          "topographic_wetness_index_mean": 9.15,
+          "annual_rainfall_mm": 2130,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 2.5,
+          "fault_line_proximity_km": 3.9
+        },
+        "hazard_inventory": {
+          "historical_events_count": 64,
+          "last_major_event_year": 2020,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-QT-HH",
+          "station_name": "Trạm Viễn Thám Hướng Hóa",
+          "station_lat": 16.697,
+          "station_lng": 106.663,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QT-DK",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              107.197106,
+              16.552
+            ],
+            [
+              107.17749,
+              16.58456
+            ],
+            [
+              107.175292,
+              16.618558
+            ],
+            [
+              107.169598,
+              16.654898
+            ],
+            [
+              107.137712,
+              16.679735
+            ],
+            [
+              107.087181,
+              16.68432
+            ],
+            [
+              107.041487,
+              16.679781
+            ],
+            [
+              107.009079,
+              16.682099
+            ],
+            [
+              106.981308,
+              16.692138
+            ],
+            [
+              106.951,
+              16.702216
+            ],
+            [
+              106.915926,
+              16.714177
+            ],
+            [
+              106.86962,
+              16.734295
+            ],
+            [
+              106.809241,
+              16.752186
+            ],
+            [
+              106.754131,
+              16.743287
+            ],
+            [
+              106.735697,
+              16.699294
+            ],
+            [
+              106.758344,
+              16.642687
+            ],
+            [
+              106.786006,
+              16.600962
+            ],
+            [
+              106.782558,
+              16.576215
+            ],
+            [
+              106.755555,
+              16.552
+            ],
+            [
+              106.742648,
+              16.522047
+            ],
+            [
+              106.760371,
+              16.495431
+            ],
+            [
+              106.787204,
+              16.474898
+            ],
+            [
+              106.799465,
+              16.448331
+            ],
+            [
+              106.803358,
+              16.408544
+            ],
+            [
+              106.820712,
+              16.368012
+            ],
+            [
+              106.85806,
+              16.34381
+            ],
+            [
+              106.904633,
+              16.337607
+            ],
+            [
+              106.951,
+              16.342216
+            ],
+            [
+              106.9926,
+              16.359646
+            ],
+            [
+              107.020639,
+              16.396006
+            ],
+            [
+              107.030016,
+              16.440417
+            ],
+            [
+              107.037954,
+              16.467511
+            ],
+            [
+              107.073945,
+              16.46789
+            ],
+            [
+              107.140737,
+              16.462687
+            ],
+            [
+              107.200928,
+              16.477834
+            ],
+            [
+              107.2174,
+              16.513702
+            ],
+            [
+              107.197106,
+              16.552
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "QT-DK",
+        "name_vi": "Đakrông",
+        "name_en": "Dakrong",
+        "province_vi": "Quảng Trị",
+        "province_en": "Quang Tri",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          106.951,
+          16.552
+        ],
+        "topography": {
+          "mean_elevation_m": 780,
+          "peak_elevation_m": 1750,
+          "mean_slope_degrees": 33.8,
+          "max_slope_degrees": 67.5,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4095.7,
+          "topographic_wetness_index_mean": 9.5,
+          "annual_rainfall_mm": 2240,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 3.3,
+          "fault_line_proximity_km": 4.8
+        },
+        "hazard_inventory": {
+          "historical_events_count": 52,
+          "last_major_event_year": 2021,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-QT-DK",
+          "station_name": "Trạm Viễn Thám Đakrông",
+          "station_lat": 16.567,
+          "station_lng": 106.963,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "TTH-AL",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              107.537965,
+              16.252
+            ],
+            [
+              107.510192,
+              16.287733
+            ],
+            [
+              107.472525,
+              16.31504
+            ],
+            [
+              107.426458,
+              16.331202
+            ],
+            [
+              107.389449,
+              16.34283
+            ],
+            [
+              107.373265,
+              16.365924
+            ],
+            [
+              107.363328,
+              16.404116
+            ],
+            [
+              107.337061,
+              16.43687
+            ],
+            [
+              107.294266,
+              16.443848
+            ],
+            [
+              107.251,
+              16.434917
+            ],
+            [
+              107.208943,
+              16.438484
+            ],
+            [
+              107.154216,
+              16.459905
+            ],
+            [
+              107.090272,
+              16.469659
+            ],
+            [
+              107.04859,
+              16.440601
+            ],
+            [
+              107.051665,
+              16.382774
+            ],
+            [
+              107.079989,
+              16.329195
+            ],
+            [
+              107.093598,
+              16.296792
+            ],
+            [
+              107.078229,
+              16.275819
+            ],
+            [
+              107.051941,
+              16.252
+            ],
+            [
+              107.031552,
+              16.221746
+            ],
+            [
+              107.015812,
+              16.185072
+            ],
+            [
+              107.005549,
+              16.141202
+            ],
+            [
+              107.017133,
+              16.098571
+            ],
+            [
+              107.060855,
+              16.074827
+            ],
+            [
+              107.120316,
+              16.075026
+            ],
+            [
+              107.170831,
+              16.079787
+            ],
+            [
+              107.209869,
+              16.069621
+            ],
+            [
+              107.251,
+              16.054917
+            ],
+            [
+              107.293341,
+              16.064257
+            ],
+            [
+              107.320446,
+              16.102822
+            ],
+            [
+              107.333284,
+              16.14057
+            ],
+            [
+              107.361,
+              16.149505
+            ],
+            [
+              107.423981,
+              16.138515
+            ],
+            [
+              107.500898,
+              16.139195
+            ],
+            [
+              107.550311,
+              16.166825
+            ],
+            [
+              107.55687,
+              16.209832
+            ],
+            [
+              107.537965,
+              16.252
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "TTH-AL",
+        "name_vi": "A Lưới",
+        "name_en": "A Luoi",
+        "province_vi": "Thừa Thiên Huế",
+        "province_en": "Thua Thien Hue",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          107.251,
+          16.252
+        ],
+        "topography": {
+          "mean_elevation_m": 920,
+          "peak_elevation_m": 1950,
+          "mean_slope_degrees": 35.0,
+          "max_slope_degrees": 70.0,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4130.9,
+          "topographic_wetness_index_mean": 7.4,
+          "annual_rainfall_mm": 2350,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.1,
+          "fault_line_proximity_km": 5.7
+        },
+        "hazard_inventory": {
+          "historical_events_count": 59,
+          "last_major_event_year": 2022,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-TTH-AL",
+          "station_name": "Trạm Viễn Thám A Lưới",
+          "station_lat": 16.267,
+          "station_lng": 107.263,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "TTH-ND",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              107.889212,
+              16.152
+            ],
+            [
+              107.860432,
+              16.180409
+            ],
+            [
+              107.805961,
+              16.195389
+            ],
+            [
+              107.760477,
+              16.200624
+            ],
+            [
+              107.752586,
+              16.217574
+            ],
+            [
+              107.768964,
+              16.260149
+            ],
+            [
+              107.770995,
+              16.311886
+            ],
+            [
+              107.740812,
+              16.341827
+            ],
+            [
+              107.694249,
+              16.340687
+            ],
+            [
+              107.651,
+              16.327796
+            ],
+            [
+              107.612199,
+              16.321284
+            ],
+            [
+              107.573372,
+              16.316074
+            ],
+            [
+              107.541265,
+              16.298216
+            ],
+            [
+              107.523819,
+              16.2686
+            ],
+            [
+              107.514329,
+              16.240222
+            ],
+            [
+              107.501036,
+              16.218606
+            ],
+            [
+              107.48619,
+              16.198146
+            ],
+            [
+              107.479088,
+              16.175319
+            ],
+            [
+              107.473242,
+              16.152
+            ],
+            [
+              107.450782,
+              16.124841
+            ],
+            [
+              107.415077,
+              16.085942
+            ],
+            [
+              107.400237,
+              16.040624
+            ],
+            [
+              107.433934,
+              16.011882
+            ],
+            [
+              107.501583,
+              16.015015
+            ],
+            [
+              107.56301,
+              16.034758
+            ],
+            [
+              107.598542,
+              16.041125
+            ],
+            [
+              107.622016,
+              16.025549
+            ],
+            [
+              107.651,
+              16.007796
+            ],
+            [
+              107.684431,
+              16.006146
+            ],
+            [
+              107.715642,
+              16.015372
+            ],
+            [
+              107.74925,
+              16.021087
+            ],
+            [
+              107.791199,
+              16.023466
+            ],
+            [
+              107.83298,
+              16.03453
+            ],
+            [
+              107.861276,
+              16.058606
+            ],
+            [
+              107.877074,
+              16.0887
+            ],
+            [
+              107.888738,
+              16.119752
+            ],
+            [
+              107.889212,
+              16.152
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "TTH-ND",
+        "name_vi": "Nam Đông",
+        "name_en": "Nam Dong",
+        "province_vi": "Thừa Thiên Huế",
+        "province_en": "Thua Thien Hue",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          107.651,
+          16.152
+        ],
+        "topography": {
+          "mean_elevation_m": 680,
+          "peak_elevation_m": 1680,
+          "mean_slope_degrees": 33.2,
+          "max_slope_degrees": 66.5,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4166.1,
+          "topographic_wetness_index_mean": 7.75,
+          "annual_rainfall_mm": 2460,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.9,
+          "fault_line_proximity_km": 6.6
+        },
+        "hazard_inventory": {
+          "historical_events_count": 48,
+          "last_major_event_year": 2023,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-TTH-ND",
+          "station_name": "Trạm Viễn Thám Nam Đông",
+          "station_lat": 16.167,
+          "station_lng": 107.663,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "TTH-PL",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108.146876,
+              16.282
+            ],
+            [
+              108.124691,
+              16.30585
+            ],
+            [
+              108.088282,
+              16.320912
+            ],
+            [
+              108.070918,
+              16.335917
+            ],
+            [
+              108.078508,
+              16.365321
+            ],
+            [
+              108.085814,
+              16.407119
+            ],
+            [
+              108.070606,
+              16.44333
+            ],
+            [
+              108.03498,
+              16.461684
+            ],
+            [
+              107.992406,
+              16.464873
+            ],
+            [
+              107.951,
+              16.457105
+            ],
+            [
+              107.916271,
+              16.435383
+            ],
+            [
+              107.895063,
+              16.401684
+            ],
+            [
+              107.883948,
+              16.372443
+            ],
+            [
+              107.863875,
+              16.362859
+            ],
+            [
+              107.82218,
+              16.366178
+            ],
+            [
+              107.775267,
+              16.361012
+            ],
+            [
+              107.752538,
+              16.338253
+            ],
+            [
+              107.757393,
+              16.308585
+            ],
+            [
+              107.761646,
+              16.282
+            ],
+            [
+              107.745314,
+              16.253756
+            ],
+            [
+              107.726284,
+              16.218306
+            ],
+            [
+              107.737299,
+              16.185917
+            ],
+            [
+              107.783405,
+              16.172484
+            ],
+            [
+              107.838193,
+              16.177305
+            ],
+            [
+              107.877991,
+              16.183523
+            ],
+            [
+              107.903223,
+              16.179776
+            ],
+            [
+              107.925512,
+              16.169431
+            ],
+            [
+              107.951,
+              16.157105
+            ],
+            [
+              107.983165,
+              16.139941
+            ],
+            [
+              108.026819,
+              16.119776
+            ],
+            [
+              108.076563,
+              16.112635
+            ],
+            [
+              108.111496,
+              16.133046
+            ],
+            [
+              108.117284,
+              16.173341
+            ],
+            [
+              108.108886,
+              16.211012
+            ],
+            [
+              108.114535,
+              16.235647
+            ],
+            [
+              108.13677,
+              16.256491
+            ],
+            [
+              108.146876,
+              16.282
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "TTH-PL",
+        "name_vi": "Phú Lộc",
+        "name_en": "Phu Loc",
+        "province_vi": "Thừa Thiên Huế",
+        "province_en": "Thua Thien Hue",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          107.951,
+          16.282
+        ],
+        "topography": {
+          "mean_elevation_m": 450,
+          "peak_elevation_m": 1450,
+          "mean_slope_degrees": 27.0,
+          "max_slope_degrees": 58.0,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4201.3,
+          "topographic_wetness_index_mean": 8.1,
+          "annual_rainfall_mm": 2570,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 5.7,
+          "fault_line_proximity_km": 7.5
+        },
+        "hazard_inventory": {
+          "historical_events_count": 35,
+          "last_major_event_year": 2024,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-TTH-PL",
+          "station_name": "Trạm Viễn Thám Phú Lộc",
+          "station_lat": 16.297,
+          "station_lng": 107.963,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "TTH-PD",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              107.454999,
+              16.552
+            ],
+            [
+              107.459277,
+              16.577444
+            ],
+            [
+              107.464308,
+              16.606003
+            ],
+            [
+              107.467955,
+              16.639367
+            ],
+            [
+              107.456087,
+              16.670915
+            ],
+            [
+              107.425469,
+              16.691358
+            ],
+            [
+              107.389122,
+              16.703581
+            ],
+            [
+              107.355894,
+              16.718554
+            ],
+            [
+              107.320534,
+              16.73348
+            ],
+            [
+              107.281,
+              16.728326
+            ],
+            [
+              107.250131,
+              16.6937
+            ],
+            [
+              107.236187,
+              16.651657
+            ],
+            [
+              107.222128,
+              16.634536
+            ],
+            [
+              107.182846,
+              16.646682
+            ],
+            [
+              107.121035,
+              16.660645
+            ],
+            [
+              107.06847,
+              16.651318
+            ],
+            [
+              107.04833,
+              16.620545
+            ],
+            [
+              107.051902,
+              16.584697
+            ],
+            [
+              107.059652,
+              16.552
+            ],
+            [
+              107.069936,
+              16.521877
+            ],
+            [
+              107.092803,
+              16.496557
+            ],
+            [
+              107.125574,
+              16.479367
+            ],
+            [
+              107.153233,
+              16.465223
+            ],
+            [
+              107.171345,
+              16.446224
+            ],
+            [
+              107.191448,
+              16.426453
+            ],
+            [
+              107.220678,
+              16.417852
+            ],
+            [
+              107.251883,
+              16.418341
+            ],
+            [
+              107.281,
+              16.408326
+            ],
+            [
+              107.318783,
+              16.378562
+            ],
+            [
+              107.371404,
+              16.350955
+            ],
+            [
+              107.419802,
+              16.357407
+            ],
+            [
+              107.43697,
+              16.401548
+            ],
+            [
+              107.423888,
+              16.454953
+            ],
+            [
+              107.410851,
+              16.491318
+            ],
+            [
+              107.419835,
+              16.511099
+            ],
+            [
+              107.441243,
+              16.52913
+            ],
+            [
+              107.454999,
+              16.552
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "TTH-PD",
+        "name_vi": "Phong Điền",
+        "name_en": "Phong Dien",
+        "province_vi": "Thừa Thiên Huế",
+        "province_en": "Thua Thien Hue",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          107.281,
+          16.552
+        ],
+        "topography": {
+          "mean_elevation_m": 520,
+          "peak_elevation_m": 1350,
+          "mean_slope_degrees": 26.2,
+          "max_slope_degrees": 54.8,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4236.5,
+          "topographic_wetness_index_mean": 8.45,
+          "annual_rainfall_mm": 2680,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 2.5,
+          "fault_line_proximity_km": 8.4
+        },
+        "hazard_inventory": {
+          "historical_events_count": 28,
+          "last_major_event_year": 2020,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-TTH-PD",
+          "station_name": "Trạm Viễn Thám Phong Điền",
+          "station_lat": 16.567,
+          "station_lng": 107.293,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QN-NTM",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108.233033,
+              15.052
+            ],
+            [
+              108.274364,
+              15.085781
+            ],
+            [
+              108.308422,
+              15.132362
+            ],
+            [
+              108.300206,
+              15.175406
+            ],
+            [
+              108.247105,
+              15.193137
+            ],
+            [
+              108.183941,
+              15.187889
+            ],
+            [
+              108.141471,
+              15.186402
+            ],
+            [
+              108.115687,
+              15.204437
+            ],
+            [
+              108.086552,
+              15.224933
+            ],
+            [
+              108.051,
+              15.222609
+            ],
+            [
+              108.020587,
+              15.19994
+            ],
+            [
+              107.995416,
+              15.182985
+            ],
+            [
+              107.961213,
+              15.185388
+            ],
+            [
+              107.913059,
+              15.193
+            ],
+            [
+              107.864612,
+              15.186144
+            ],
+            [
+              107.82894,
+              15.161964
+            ],
+            [
+              107.805869,
+              15.128525
+            ],
+            [
+              107.796387,
+              15.090507
+            ],
+            [
+              107.81331,
+              15.052
+            ],
+            [
+              107.861017,
+              15.023268
+            ],
+            [
+              107.914011,
+              15.009235
+            ],
+            [
+              107.936715,
+              14.995406
+            ],
+            [
+              107.925578,
+              14.961733
+            ],
+            [
+              107.914148,
+              14.912113
+            ],
+            [
+              107.931609,
+              14.874633
+            ],
+            [
+              107.972133,
+              14.866148
+            ],
+            [
+              108.013667,
+              14.870403
+            ],
+            [
+              108.051,
+              14.862609
+            ],
+            [
+              108.093471,
+              14.845409
+            ],
+            [
+              108.13897,
+              14.844696
+            ],
+            [
+              108.171074,
+              14.873618
+            ],
+            [
+              108.182852,
+              14.917224
+            ],
+            [
+              108.186139,
+              14.95474
+            ],
+            [
+              108.192431,
+              14.981964
+            ],
+            [
+              108.20028,
+              15.005398
+            ],
+            [
+              108.209734,
+              15.027994
+            ],
+            [
+              108.233033,
+              15.052
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "QN-NTM",
+        "name_vi": "Nam Trà My",
+        "name_en": "Nam Tra My",
+        "province_vi": "Quảng Nam",
+        "province_en": "Quang Nam",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          108.051,
+          15.052
+        ],
+        "topography": {
+          "mean_elevation_m": 1150,
+          "peak_elevation_m": 2598,
+          "mean_slope_degrees": 37.2,
+          "max_slope_degrees": 72.8,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4271.7,
+          "topographic_wetness_index_mean": 8.8,
+          "annual_rainfall_mm": 2790,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 3.3,
+          "fault_line_proximity_km": 1.2
+        },
+        "hazard_inventory": {
+          "historical_events_count": 82,
+          "last_major_event_year": 2021,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-QN-NTM",
+          "station_name": "Trạm Viễn Thám Nam Trà My",
+          "station_lat": 15.067,
+          "station_lng": 108.063,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QN-BTM",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108.407432,
+              15.252
+            ],
+            [
+              108.448104,
+              15.288656
+            ],
+            [
+              108.462677,
+              15.33252
+            ],
+            [
+              108.430041,
+              15.362477
+            ],
+            [
+              108.370926,
+              15.367158
+            ],
+            [
+              108.320311,
+              15.360339
+            ],
+            [
+              108.290257,
+              15.361806
+            ],
+            [
+              108.269453,
+              15.373859
+            ],
+            [
+              108.247019,
+              15.387077
+            ],
+            [
+              108.221,
+              15.399975
+            ],
+            [
+              108.189116,
+              15.417522
+            ],
+            [
+              108.148918,
+              15.433284
+            ],
+            [
+              108.108669,
+              15.430099
+            ],
+            [
+              108.082645,
+              15.402932
+            ],
+            [
+              108.070325,
+              15.367733
+            ],
+            [
+              108.054317,
+              15.340091
+            ],
+            [
+              108.028294,
+              15.316204
+            ],
+            [
+              108.014211,
+              15.285377
+            ],
+            [
+              108.036001,
+              15.252
+            ],
+            [
+              108.082316,
+              15.229616
+            ],
+            [
+              108.113646,
+              15.216233
+            ],
+            [
+              108.108372,
+              15.192477
+            ],
+            [
+              108.086394,
+              15.14861
+            ],
+            [
+              108.08156,
+              15.099884
+            ],
+            [
+              108.104542,
+              15.067358
+            ],
+            [
+              108.142416,
+              15.054363
+            ],
+            [
+              108.182521,
+              15.052242
+            ],
+            [
+              108.221,
+              15.059975
+            ],
+            [
+              108.253614,
+              15.082687
+            ],
+            [
+              108.275955,
+              15.113789
+            ],
+            [
+              108.294384,
+              15.135651
+            ],
+            [
+              108.321396,
+              15.142477
+            ],
+            [
+              108.354857,
+              15.149185
+            ],
+            [
+              108.375985,
+              15.170091
+            ],
+            [
+              108.377325,
+              15.199917
+            ],
+            [
+              108.379998,
+              15.226337
+            ],
+            [
+              108.407432,
+              15.252
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "QN-BTM",
+        "name_vi": "Bắc Trà My",
+        "name_en": "Bac Tra My",
+        "province_vi": "Quảng Nam",
+        "province_en": "Quang Nam",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          108.221,
+          15.252
+        ],
+        "topography": {
+          "mean_elevation_m": 750,
+          "peak_elevation_m": 1780,
+          "mean_slope_degrees": 32.5,
+          "max_slope_degrees": 65.0,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4306.9,
+          "topographic_wetness_index_mean": 9.15,
+          "annual_rainfall_mm": 2900,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.1,
+          "fault_line_proximity_km": 2.1
+        },
+        "hazard_inventory": {
+          "historical_events_count": 57,
+          "last_major_event_year": 2022,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-QN-BTM",
+          "station_name": "Trạm Viễn Thám Bắc Trà My",
+          "station_lat": 15.267,
+          "station_lng": 108.233,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QN-PS",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108.054238,
+              15.352
+            ],
+            [
+              108.058138,
+              15.392475
+            ],
+            [
+              108.036202,
+              15.427819
+            ],
+            [
+              107.99837,
+              15.451126
+            ],
+            [
+              107.963247,
+              15.467537
+            ],
+            [
+              107.934104,
+              15.482476
+            ],
+            [
+              107.904092,
+              15.491311
+            ],
+            [
+              107.874207,
+              15.493505
+            ],
+            [
+              107.849177,
+              15.50668
+            ],
+            [
+              107.821,
+              15.54711
+            ],
+            [
+              107.776226,
+              15.597794
+            ],
+            [
+              107.721704,
+              15.616077
+            ],
+            [
+              107.684632,
+              15.580633
+            ],
+            [
+              107.678269,
+              15.516654
+            ],
+            [
+              107.682312,
+              15.464647
+            ],
+            [
+              107.670283,
+              15.43623
+            ],
+            [
+              107.645489,
+              15.413835
+            ],
+            [
+              107.632924,
+              15.384101
+            ],
+            [
+              107.641006,
+              15.352
+            ],
+            [
+              107.651184,
+              15.323016
+            ],
+            [
+              107.647891,
+              15.291011
+            ],
+            [
+              107.640501,
+              15.251126
+            ],
+            [
+              107.646693,
+              15.210422
+            ],
+            [
+              107.668484,
+              15.176059
+            ],
+            [
+              107.697476,
+              15.144901
+            ],
+            [
+              107.732874,
+              15.117628
+            ],
+            [
+              107.77742,
+              15.112757
+            ],
+            [
+              107.821,
+              15.14711
+            ],
+            [
+              107.847983,
+              15.203871
+            ],
+            [
+              107.863038,
+              15.2402
+            ],
+            [
+              107.891248,
+              15.234222
+            ],
+            [
+              107.943889,
+              15.210236
+            ],
+            [
+              107.998866,
+              15.207532
+            ],
+            [
+              108.028152,
+              15.23623
+            ],
+            [
+              108.033801,
+              15.277027
+            ],
+            [
+              108.039878,
+              15.314642
+            ],
+            [
+              108.054238,
+              15.352
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "QN-PS",
+        "name_vi": "Phước Sơn",
+        "name_en": "Phuoc Son",
+        "province_vi": "Quảng Nam",
+        "province_en": "Quang Nam",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          107.821,
+          15.352
+        ],
+        "topography": {
+          "mean_elevation_m": 980,
+          "peak_elevation_m": 2040,
+          "mean_slope_degrees": 34.8,
+          "max_slope_degrees": 68.5,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4342.1,
+          "topographic_wetness_index_mean": 9.5,
+          "annual_rainfall_mm": 3010,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.9,
+          "fault_line_proximity_km": 3.0
+        },
+        "hazard_inventory": {
+          "historical_events_count": 66,
+          "last_major_event_year": 2023,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-QN-PS",
+          "station_name": "Trạm Viễn Thám Phước Sơn",
+          "station_lat": 15.367,
+          "station_lng": 107.833,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QN-TG",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              107.632123,
+              15.921
+            ],
+            [
+              107.595173,
+              15.946362
+            ],
+            [
+              107.568008,
+              15.963488
+            ],
+            [
+              107.565139,
+              15.986744
+            ],
+            [
+              107.571474,
+              16.021854
+            ],
+            [
+              107.562117,
+              16.053115
+            ],
+            [
+              107.533815,
+              16.064104
+            ],
+            [
+              107.503378,
+              16.064571
+            ],
+            [
+              107.479141,
+              16.080222
+            ],
+            [
+              107.451,
+              16.115298
+            ],
+            [
+              107.412037,
+              16.141452
+            ],
+            [
+              107.374433,
+              16.130875
+            ],
+            [
+              107.354056,
+              16.088519
+            ],
+            [
+              107.349338,
+              16.041873
+            ],
+            [
+              107.346763,
+              16.008261
+            ],
+            [
+              107.340265,
+              15.984783
+            ],
+            [
+              107.33198,
+              15.964219
+            ],
+            [
+              107.318156,
+              15.944369
+            ],
+            [
+              107.291326,
+              15.921
+            ],
+            [
+              107.259554,
+              15.887322
+            ],
+            [
+              107.247764,
+              15.847201
+            ],
+            [
+              107.27,
+              15.816744
+            ],
+            [
+              107.310409,
+              15.803306
+            ],
+            [
+              107.343058,
+              15.79266
+            ],
+            [
+              107.363417,
+              15.769656
+            ],
+            [
+              107.386819,
+              15.745076
+            ],
+            [
+              107.419962,
+              15.745388
+            ],
+            [
+              107.451,
+              15.775298
+            ],
+            [
+              107.471216,
+              15.806617
+            ],
+            [
+              107.490992,
+              15.811379
+            ],
+            [
+              107.524455,
+              15.79407
+            ],
+            [
+              107.568398,
+              15.781418
+            ],
+            [
+              107.607829,
+              15.789713
+            ],
+            [
+              107.635404,
+              15.814783
+            ],
+            [
+              107.652224,
+              15.847932
+            ],
+            [
+              107.653776,
+              15.885329
+            ],
+            [
+              107.632123,
+              15.921
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "QN-TG",
+        "name_vi": "Tây Giang",
+        "name_en": "Tay Giang",
+        "province_vi": "Quảng Nam",
+        "province_en": "Quang Nam",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          107.451,
+          15.921
+        ],
+        "topography": {
+          "mean_elevation_m": 1050,
+          "peak_elevation_m": 2005,
+          "mean_slope_degrees": 35.1,
+          "max_slope_degrees": 69.0,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4377.3,
+          "topographic_wetness_index_mean": 7.4,
+          "annual_rainfall_mm": 1800,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 5.7,
+          "fault_line_proximity_km": 3.9
+        },
+        "hazard_inventory": {
+          "historical_events_count": 54,
+          "last_major_event_year": 2024,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-QN-TG",
+          "station_name": "Trạm Viễn Thám Tây Giang",
+          "station_lat": 15.936,
+          "station_lng": 107.463,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QN-NG",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              107.801885,
+              15.652
+            ],
+            [
+              107.750524,
+              15.674663
+            ],
+            [
+              107.74261,
+              15.695922
+            ],
+            [
+              107.770583,
+              15.737697
+            ],
+            [
+              107.791879,
+              15.794281
+            ],
+            [
+              107.779746,
+              15.839729
+            ],
+            [
+              107.743685,
+              15.86286
+            ],
+            [
+              107.703234,
+              15.876196
+            ],
+            [
+              107.663108,
+              15.888967
+            ],
+            [
+              107.621,
+              15.890791
+            ],
+            [
+              107.58201,
+              15.871423
+            ],
+            [
+              107.551611,
+              15.841177
+            ],
+            [
+              107.524987,
+              15.817018
+            ],
+            [
+              107.497613,
+              15.797915
+            ],
+            [
+              107.478459,
+              15.770685
+            ],
+            [
+              107.475489,
+              15.735364
+            ],
+            [
+              107.472006,
+              15.705812
+            ],
+            [
+              107.439202,
+              15.683809
+            ],
+            [
+              107.378627,
+              15.652
+            ],
+            [
+              107.333696,
+              15.60173
+            ],
+            [
+              107.344877,
+              15.552273
+            ],
+            [
+              107.40403,
+              15.527697
+            ],
+            [
+              107.467645,
+              15.52431
+            ],
+            [
+              107.507681,
+              15.517991
+            ],
+            [
+              107.532056,
+              15.49913
+            ],
+            [
+              107.558471,
+              15.481525
+            ],
+            [
+              107.58961,
+              15.475348
+            ],
+            [
+              107.621,
+              15.470791
+            ],
+            [
+              107.655508,
+              15.457804
+            ],
+            [
+              107.696374,
+              15.446506
+            ],
+            [
+              107.736617,
+              15.453288
+            ],
+            [
+              107.769678,
+              15.476177
+            ],
+            [
+              107.802693,
+              15.500715
+            ],
+            [
+              107.842041,
+              15.525364
+            ],
+            [
+              107.869738,
+              15.562164
+            ],
+            [
+              107.85603,
+              15.610877
+            ],
+            [
+              107.801885,
+              15.652
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "QN-NG",
+        "name_vi": "Nam Giang",
+        "name_en": "Nam Giang",
+        "province_vi": "Quảng Nam",
+        "province_en": "Quang Nam",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          107.621,
+          15.652
+        ],
+        "topography": {
+          "mean_elevation_m": 880,
+          "peak_elevation_m": 1950,
+          "mean_slope_degrees": 31.8,
+          "max_slope_degrees": 64.0,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4412.5,
+          "topographic_wetness_index_mean": 7.75,
+          "annual_rainfall_mm": 1910,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 2.5,
+          "fault_line_proximity_km": 4.8
+        },
+        "hazard_inventory": {
+          "historical_events_count": 43,
+          "last_major_event_year": 2020,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-QN-NG",
+          "station_name": "Trạm Viễn Thám Nam Giang",
+          "station_lat": 15.667,
+          "station_lng": 107.633,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QN-DG",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              107.909471,
+              15.882
+            ],
+            [
+              107.900617,
+              15.902126
+            ],
+            [
+              107.91181,
+              15.92743
+            ],
+            [
+              107.925009,
+              15.961336
+            ],
+            [
+              107.924728,
+              15.997079
+            ],
+            [
+              107.911101,
+              16.029948
+            ],
+            [
+              107.888052,
+              16.058927
+            ],
+            [
+              107.85466,
+              16.075111
+            ],
+            [
+              107.814617,
+              16.06392
+            ],
+            [
+              107.781,
+              16.027399
+            ],
+            [
+              107.760525,
+              15.992803
+            ],
+            [
+              107.741404,
+              15.985807
+            ],
+            [
+              107.709522,
+              16.000134
+            ],
+            [
+              107.671614,
+              16.00639
+            ],
+            [
+              107.647636,
+              15.988781
+            ],
+            [
+              107.640627,
+              15.959333
+            ],
+            [
+              107.63032,
+              15.934331
+            ],
+            [
+              107.602967,
+              15.911954
+            ],
+            [
+              107.574111,
+              15.882
+            ],
+            [
+              107.570353,
+              15.846558
+            ],
+            [
+              107.596675,
+              15.817984
+            ],
+            [
+              107.634579,
+              15.801336
+            ],
+            [
+              107.667828,
+              15.791387
+            ],
+            [
+              107.695537,
+              15.784813
+            ],
+            [
+              107.720372,
+              15.781799
+            ],
+            [
+              107.739961,
+              15.774409
+            ],
+            [
+              107.756383,
+              15.748782
+            ],
+            [
+              107.781,
+              15.707399
+            ],
+            [
+              107.818759,
+              15.677665
+            ],
+            [
+              107.856103,
+              15.685105
+            ],
+            [
+              107.877201,
+              15.723006
+            ],
+            [
+              107.887179,
+              15.761256
+            ],
+            [
+              107.904536,
+              15.783089
+            ],
+            [
+              107.931057,
+              15.799333
+            ],
+            [
+              107.945455,
+              15.824885
+            ],
+            [
+              107.933232,
+              15.856387
+            ],
+            [
+              107.909471,
+              15.882
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "QN-DG",
+        "name_vi": "Đông Giang",
+        "name_en": "Dong Giang",
+        "province_vi": "Quảng Nam",
+        "province_en": "Quang Nam",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          107.781,
+          15.882
+        ],
+        "topography": {
+          "mean_elevation_m": 720,
+          "peak_elevation_m": 1720,
+          "mean_slope_degrees": 29.5,
+          "max_slope_degrees": 61.0,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4447.7,
+          "topographic_wetness_index_mean": 8.1,
+          "annual_rainfall_mm": 2020,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 3.3,
+          "fault_line_proximity_km": 5.7
+        },
+        "hazard_inventory": {
+          "historical_events_count": 38,
+          "last_major_event_year": 2021,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-QN-DG",
+          "station_name": "Trạm Viễn Thám Đông Giang",
+          "station_lat": 15.897,
+          "station_lng": 107.793,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QNG-BT",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108.913401,
+              14.782
+            ],
+            [
+              108.936317,
+              14.816105
+            ],
+            [
+              108.934421,
+              14.851779
+            ],
+            [
+              108.909288,
+              14.879653
+            ],
+            [
+              108.883169,
+              14.904237
+            ],
+            [
+              108.866375,
+              14.937632
+            ],
+            [
+              108.844007,
+              14.973386
+            ],
+            [
+              108.802688,
+              14.98361
+            ],
+            [
+              108.754689,
+              14.953628
+            ],
+            [
+              108.721,
+              14.908307
+            ],
+            [
+              108.700109,
+              14.888428
+            ],
+            [
+              108.671197,
+              14.904917
+            ],
+            [
+              108.625449,
+              14.930668
+            ],
+            [
+              108.576832,
+              14.93634
+            ],
+            [
+              108.539772,
+              14.918603
+            ],
+            [
+              108.513233,
+              14.889755
+            ],
+            [
+              108.494361,
+              14.856101
+            ],
+            [
+              108.49207,
+              14.818261
+            ],
+            [
+              108.512645,
+              14.782
+            ],
+            [
+              108.541649,
+              14.753592
+            ],
+            [
+              108.557833,
+              14.728652
+            ],
+            [
+              108.562223,
+              14.699653
+            ],
+            [
+              108.576172,
+              14.672834
+            ],
+            [
+              108.608774,
+              14.661856
+            ],
+            [
+              108.643628,
+              14.661617
+            ],
+            [
+              108.665621,
+              14.645321
+            ],
+            [
+              108.685098,
+              14.599097
+            ],
+            [
+              108.721,
+              14.548307
+            ],
+            [
+              108.7697,
+              14.533897
+            ],
+            [
+              108.808264,
+              14.566627
+            ],
+            [
+              108.825827,
+              14.618899
+            ],
+            [
+              108.834433,
+              14.660564
+            ],
+            [
+              108.846769,
+              14.6872
+            ],
+            [
+              108.860299,
+              14.709755
+            ],
+            [
+              108.870949,
+              14.732973
+            ],
+            [
+              108.886738,
+              14.755748
+            ],
+            [
+              108.913401,
+              14.782
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "QNG-BT",
+        "name_vi": "Ba Tơ",
+        "name_en": "Ba To",
+        "province_vi": "Quảng Ngãi",
+        "province_en": "Quang Ngai",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          108.721,
+          14.782
+        ],
+        "topography": {
+          "mean_elevation_m": 650,
+          "peak_elevation_m": 1620,
+          "mean_slope_degrees": 29.2,
+          "max_slope_degrees": 60.5,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4482.9,
+          "topographic_wetness_index_mean": 8.45,
+          "annual_rainfall_mm": 2130,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.1,
+          "fault_line_proximity_km": 6.6
+        },
+        "hazard_inventory": {
+          "historical_events_count": 37,
+          "last_major_event_year": 2022,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-QNG-BT",
+          "station_name": "Trạm Viễn Thám Ba Tơ",
+          "station_lat": 14.797,
+          "station_lng": 108.733,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QNG-TB",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108.806904,
+              15.182
+            ],
+            [
+              108.823116,
+              15.222408
+            ],
+            [
+              108.7871,
+              15.254369
+            ],
+            [
+              108.733142,
+              15.27056
+            ],
+            [
+              108.696306,
+              15.28468
+            ],
+            [
+              108.67605,
+              15.307505
+            ],
+            [
+              108.651259,
+              15.328243
+            ],
+            [
+              108.615382,
+              15.330967
+            ],
+            [
+              108.579934,
+              15.320193
+            ],
+            [
+              108.551,
+              15.315534
+            ],
+            [
+              108.521172,
+              15.324463
+            ],
+            [
+              108.484884,
+              15.334978
+            ],
+            [
+              108.445565,
+              15.335793
+            ],
+            [
+              108.404526,
+              15.329007
+            ],
+            [
+              108.359149,
+              15.317572
+            ],
+            [
+              108.319994,
+              15.294319
+            ],
+            [
+              108.313475,
+              15.254806
+            ],
+            [
+              108.350906,
+              15.211713
+            ],
+            [
+              108.403177,
+              15.182
+            ],
+            [
+              108.425522,
+              15.163367
+            ],
+            [
+              108.40772,
+              15.138082
+            ],
+            [
+              108.383503,
+              15.10056
+            ],
+            [
+              108.387033,
+              15.066132
+            ],
+            [
+              108.41654,
+              15.04705
+            ],
+            [
+              108.449395,
+              15.033794
+            ],
+            [
+              108.477299,
+              15.011471
+            ],
+            [
+              108.509828,
+              14.985359
+            ],
+            [
+              108.551,
+              14.975534
+            ],
+            [
+              108.591278,
+              14.989628
+            ],
+            [
+              108.622967,
+              15.015482
+            ],
+            [
+              108.647429,
+              15.041344
+            ],
+            [
+              108.664037,
+              15.068552
+            ],
+            [
+              108.668422,
+              15.099024
+            ],
+            [
+              108.669632,
+              15.124319
+            ],
+            [
+              108.692855,
+              15.138519
+            ],
+            [
+              108.748499,
+              15.152672
+            ],
+            [
+              108.806904,
+              15.182
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "QNG-TB",
+        "name_vi": "Trà Bồng",
+        "name_en": "Tra Bong",
+        "province_vi": "Quảng Ngãi",
+        "province_en": "Quang Ngai",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          108.551,
+          15.182
+        ],
+        "topography": {
+          "mean_elevation_m": 720,
+          "peak_elevation_m": 1780,
+          "mean_slope_degrees": 33.0,
+          "max_slope_degrees": 66.0,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4518.1,
+          "topographic_wetness_index_mean": 8.8,
+          "annual_rainfall_mm": 2240,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.9,
+          "fault_line_proximity_km": 7.5
+        },
+        "hazard_inventory": {
+          "historical_events_count": 46,
+          "last_major_event_year": 2023,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-QNG-TB",
+          "station_name": "Trạm Viễn Thám Trà Bồng",
+          "station_lat": 15.197,
+          "station_lng": 108.563,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QNG-ST",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108.692148,
+              14.982
+            ],
+            [
+              108.680043,
+              15.018468
+            ],
+            [
+              108.635425,
+              15.044311
+            ],
+            [
+              108.588668,
+              15.059289
+            ],
+            [
+              108.552081,
+              15.069817
+            ],
+            [
+              108.521104,
+              15.07725
+            ],
+            [
+              108.494238,
+              15.08328
+            ],
+            [
+              108.473934,
+              15.098116
+            ],
+            [
+              108.453388,
+              15.128654
+            ],
+            [
+              108.421,
+              15.161157
+            ],
+            [
+              108.37929,
+              15.170864
+            ],
+            [
+              108.34349,
+              15.152027
+            ],
+            [
+              108.317151,
+              15.125612
+            ],
+            [
+              108.285498,
+              15.110931
+            ],
+            [
+              108.24304,
+              15.101223
+            ],
+            [
+              108.213194,
+              15.077791
+            ],
+            [
+              108.222638,
+              15.039644
+            ],
+            [
+              108.26207,
+              15.004374
+            ],
+            [
+              108.291351,
+              14.982
+            ],
+            [
+              108.285335,
+              14.962901
+            ],
+            [
+              108.258799,
+              14.934865
+            ],
+            [
+              108.241568,
+              14.899289
+            ],
+            [
+              108.245053,
+              14.864125
+            ],
+            [
+              108.263477,
+              14.832116
+            ],
+            [
+              108.29384,
+              14.806152
+            ],
+            [
+              108.336853,
+              14.797415
+            ],
+            [
+              108.383791,
+              14.813516
+            ],
+            [
+              108.421,
+              14.841157
+            ],
+            [
+              108.448887,
+              14.855725
+            ],
+            [
+              108.480571,
+              14.851325
+            ],
+            [
+              108.517549,
+              14.848483
+            ],
+            [
+              108.543125,
+              14.865797
+            ],
+            [
+              108.550068,
+              14.895531
+            ],
+            [
+              108.560294,
+              14.917791
+            ],
+            [
+              108.599263,
+              14.930197
+            ],
+            [
+              108.656777,
+              14.948807
+            ],
+            [
+              108.692148,
+              14.982
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "QNG-ST",
+        "name_vi": "Sơn Tây",
+        "name_en": "Son Tay",
+        "province_vi": "Quảng Ngãi",
+        "province_en": "Quang Ngai",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          108.421,
+          14.982
+        ],
+        "topography": {
+          "mean_elevation_m": 850,
+          "peak_elevation_m": 1890,
+          "mean_slope_degrees": 34.2,
+          "max_slope_degrees": 67.8,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4553.3,
+          "topographic_wetness_index_mean": 9.15,
+          "annual_rainfall_mm": 2350,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 5.7,
+          "fault_line_proximity_km": 8.4
+        },
+        "hazard_inventory": {
+          "historical_events_count": 49,
+          "last_major_event_year": 2024,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-QNG-ST",
+          "station_name": "Trạm Viễn Thám Sơn Tây",
+          "station_lat": 14.997,
+          "station_lng": 108.433,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QNG-SH",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108.862691,
+              14.982
+            ],
+            [
+              108.842473,
+              15.012215
+            ],
+            [
+              108.825027,
+              15.039457
+            ],
+            [
+              108.801509,
+              15.062635
+            ],
+            [
+              108.762078,
+              15.073592
+            ],
+            [
+              108.719807,
+              15.073108
+            ],
+            [
+              108.695995,
+              15.082503
+            ],
+            [
+              108.686989,
+              15.122279
+            ],
+            [
+              108.666122,
+              15.179995
+            ],
+            [
+              108.621,
+              15.215635
+            ],
+            [
+              108.570266,
+              15.204619
+            ],
+            [
+              108.535636,
+              15.163466
+            ],
+            [
+              108.513857,
+              15.125585
+            ],
+            [
+              108.489744,
+              15.10303
+            ],
+            [
+              108.464243,
+              15.083772
+            ],
+            [
+              108.450666,
+              15.05809
+            ],
+            [
+              108.448438,
+              15.030596
+            ],
+            [
+              108.441177,
+              15.006533
+            ],
+            [
+              108.423257,
+              14.982
+            ],
+            [
+              108.409715,
+              14.953175
+            ],
+            [
+              108.412095,
+              14.92317
+            ],
+            [
+              108.420948,
+              14.892635
+            ],
+            [
+              108.425452,
+              14.855044
+            ],
+            [
+              108.437344,
+              14.812653
+            ],
+            [
+              108.476278,
+              14.788054
+            ],
+            [
+              108.536694,
+              14.802783
+            ],
+            [
+              108.589815,
+              14.84516
+            ],
+            [
+              108.621,
+              14.875635
+            ],
+            [
+              108.646573,
+              14.869784
+            ],
+            [
+              108.685931,
+              14.84397
+            ],
+            [
+              108.733574,
+              14.831137
+            ],
+            [
+              108.772206,
+              14.842574
+            ],
+            [
+              108.800869,
+              14.865224
+            ],
+            [
+              108.831226,
+              14.88809
+            ],
+            [
+              108.861371,
+              14.914309
+            ],
+            [
+              108.873935,
+              14.947493
+            ],
+            [
+              108.862691,
+              14.982
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "QNG-SH",
+        "name_vi": "Sơn Hà",
+        "name_en": "Son Ha",
+        "province_vi": "Quảng Ngãi",
+        "province_en": "Quang Ngai",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          108.621,
+          14.982
+        ],
+        "topography": {
+          "mean_elevation_m": 580,
+          "peak_elevation_m": 1450,
+          "mean_slope_degrees": 27.8,
+          "max_slope_degrees": 57.5,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4588.5,
+          "topographic_wetness_index_mean": 9.5,
+          "annual_rainfall_mm": 2460,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 2.5,
+          "fault_line_proximity_km": 1.2
+        },
+        "hazard_inventory": {
+          "historical_events_count": 32,
+          "last_major_event_year": 2020,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-QNG-SH",
+          "station_name": "Trạm Viễn Thám Sơn Hà",
+          "station_lat": 14.997,
+          "station_lng": 108.633,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QNG-ML",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108.877548,
+              14.952
+            ],
+            [
+              108.882171,
+              14.969825
+            ],
+            [
+              108.897861,
+              14.993196
+            ],
+            [
+              108.895236,
+              15.016179
+            ],
+            [
+              108.869942,
+              15.028918
+            ],
+            [
+              108.843073,
+              15.036566
+            ],
+            [
+              108.828205,
+              15.05506
+            ],
+            [
+              108.814877,
+              15.087256
+            ],
+            [
+              108.788308,
+              15.115067
+            ],
+            [
+              108.751,
+              15.120272
+            ],
+            [
+              108.716171,
+              15.104232
+            ],
+            [
+              108.690257,
+              15.08062
+            ],
+            [
+              108.672486,
+              15.056806
+            ],
+            [
+              108.663589,
+              15.032285
+            ],
+            [
+              108.661105,
+              15.010134
+            ],
+            [
+              108.650204,
+              14.99685
+            ],
+            [
+              108.616053,
+              14.989854
+            ],
+            [
+              108.568593,
+              14.976788
+            ],
+            [
+              108.540188,
+              14.952
+            ],
+            [
+              108.549936,
+              14.924677
+            ],
+            [
+              108.580847,
+              14.904271
+            ],
+            [
+              108.603074,
+              14.886179
+            ],
+            [
+              108.61151,
+              14.861794
+            ],
+            [
+              108.626222,
+              14.837395
+            ],
+            [
+              108.659526,
+              14.829893
+            ],
+            [
+              108.699493,
+              14.842936
+            ],
+            [
+              108.729726,
+              14.859017
+            ],
+            [
+              108.751,
+              14.860272
+            ],
+            [
+              108.774753,
+              14.848182
+            ],
+            [
+              108.805641,
+              14.8363
+            ],
+            [
+              108.841166,
+              14.83164
+            ],
+            [
+              108.88044,
+              14.833113
+            ],
+            [
+              108.919538,
+              14.843009
+            ],
+            [
+              108.942366,
+              14.86685
+            ],
+            [
+              108.933067,
+              14.900929
+            ],
+            [
+              108.900828,
+              14.931639
+            ],
+            [
+              108.877548,
+              14.952
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "QNG-ML",
+        "name_vi": "Minh Long",
+        "name_en": "Minh Long",
+        "province_vi": "Quảng Ngãi",
+        "province_en": "Quang Ngai",
+        "susceptibility_tier": "MODERATE",
+        "center_coordinate": [
+          108.751,
+          14.952
+        ],
+        "topography": {
+          "mean_elevation_m": 450,
+          "peak_elevation_m": 1180,
+          "mean_slope_degrees": 24.2,
+          "max_slope_degrees": 51.0,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4623.7,
+          "topographic_wetness_index_mean": 7.4,
+          "annual_rainfall_mm": 2570,
+          "critical_rainfall_threshold_24h_mm": 220.0,
+          "critical_rainfall_threshold_72h_mm": 341.0
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 3.3,
+          "fault_line_proximity_km": 2.1
+        },
+        "hazard_inventory": {
+          "historical_events_count": 20,
+          "last_major_event_year": 2021,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.65
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 90.0,
+          "watch_orange_mm_24h": 150.0,
+          "warning_red_mm_24h": 220.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-QNG-ML",
+          "station_name": "Trạm Viễn Thám Minh Long",
+          "station_lat": 14.967,
+          "station_lng": 108.763,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "KT-TMR",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108.086984,
+              14.921
+            ],
+            [
+              108.114214,
+              14.943723
+            ],
+            [
+              108.142135,
+              14.975929
+            ],
+            [
+              108.146806,
+              15.01026
+            ],
+            [
+              108.133098,
+              15.041646
+            ],
+            [
+              108.111643,
+              15.072162
+            ],
+            [
+              108.080499,
+              15.098101
+            ],
+            [
+              108.037031,
+              15.107631
+            ],
+            [
+              107.990646,
+              15.098532
+            ],
+            [
+              107.951,
+              15.08611
+            ],
+            [
+              107.914859,
+              15.082838
+            ],
+            [
+              107.87816,
+              15.079015
+            ],
+            [
+              107.851361,
+              15.057265
+            ],
+            [
+              107.844277,
+              15.021424
+            ],
+            [
+              107.839701,
+              14.994739
+            ],
+            [
+              107.804656,
+              14.987713
+            ],
+            [
+              107.735024,
+              14.983068
+            ],
+            [
+              107.671213,
+              14.959953
+            ],
+            [
+              107.656373,
+              14.921
+            ],
+            [
+              107.690145,
+              14.884683
+            ],
+            [
+              107.737493,
+              14.859642
+            ],
+            [
+              107.773886,
+              14.84026
+            ],
+            [
+              107.803231,
+              14.823098
+            ],
+            [
+              107.834851,
+              14.811706
+            ],
+            [
+              107.865193,
+              14.803652
+            ],
+            [
+              107.889754,
+              14.788136
+            ],
+            [
+              107.915872,
+              14.763698
+            ],
+            [
+              107.951,
+              14.74611
+            ],
+            [
+              107.989633,
+              14.748003
+            ],
+            [
+              108.025438,
+              14.759519
+            ],
+            [
+              108.066666,
+              14.762817
+            ],
+            [
+              108.121068,
+              14.760969
+            ],
+            [
+              108.169568,
+              14.776192
+            ],
+            [
+              108.177576,
+              14.817713
+            ],
+            [
+              108.139666,
+              14.866781
+            ],
+            [
+              108.095282,
+              14.900913
+            ],
+            [
+              108.086984,
+              14.921
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "KT-TMR",
+        "name_vi": "Tu Mơ Rông",
+        "name_en": "Tu Mo Rong",
+        "province_vi": "Kon Tum",
+        "province_en": "Kon Tum",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          107.951,
+          14.921
+        ],
+        "topography": {
+          "mean_elevation_m": 1280,
+          "peak_elevation_m": 2598,
+          "mean_slope_degrees": 36.5,
+          "max_slope_degrees": 71.0,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4658.9,
+          "topographic_wetness_index_mean": 7.75,
+          "annual_rainfall_mm": 2680,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.1,
+          "fault_line_proximity_km": 3.0
+        },
+        "hazard_inventory": {
+          "historical_events_count": 58,
+          "last_major_event_year": 2022,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-KT-TMR",
+          "station_name": "Trạm Viễn Thám Tu Mơ Rông",
+          "station_lat": 14.936,
+          "station_lng": 107.963,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "KT-DG",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              107.908094,
+              15.221
+            ],
+            [
+              107.923193,
+              15.250539
+            ],
+            [
+              107.932843,
+              15.284884
+            ],
+            [
+              107.942899,
+              15.327147
+            ],
+            [
+              107.946747,
+              15.377946
+            ],
+            [
+              107.922685,
+              15.420147
+            ],
+            [
+              107.864567,
+              15.42703
+            ],
+            [
+              107.797834,
+              15.395905
+            ],
+            [
+              107.750726,
+              15.360677
+            ],
+            [
+              107.721,
+              15.356588
+            ],
+            [
+              107.687297,
+              15.379367
+            ],
+            [
+              107.644939,
+              15.394145
+            ],
+            [
+              107.609474,
+              15.381049
+            ],
+            [
+              107.585722,
+              15.354576
+            ],
+            [
+              107.556142,
+              15.335614
+            ],
+            [
+              107.509284,
+              15.322276
+            ],
+            [
+              107.462428,
+              15.298976
+            ],
+            [
+              107.441443,
+              15.261842
+            ],
+            [
+              107.449457,
+              15.221
+            ],
+            [
+              107.471523,
+              15.184553
+            ],
+            [
+              107.501865,
+              15.154917
+            ],
+            [
+              107.545708,
+              15.137147
+            ],
+            [
+              107.59541,
+              15.133687
+            ],
+            [
+              107.627879,
+              15.129051
+            ],
+            [
+              107.635249,
+              15.09794
+            ],
+            [
+              107.640971,
+              15.038822
+            ],
+            [
+              107.671084,
+              14.98645
+            ],
+            [
+              107.721,
+              14.976588
+            ],
+            [
+              107.766938,
+              15.00514
+            ],
+            [
+              107.801802,
+              15.037062
+            ],
+            [
+              107.838792,
+              15.051959
+            ],
+            [
+              107.880528,
+              15.063479
+            ],
+            [
+              107.907479,
+              15.091355
+            ],
+            [
+              107.906476,
+              15.132276
+            ],
+            [
+              107.893407,
+              15.169008
+            ],
+            [
+              107.893113,
+              15.195855
+            ],
+            [
+              107.908094,
+              15.221
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "KT-DG",
+        "name_vi": "Đăk Glei",
+        "name_en": "Dak Glei",
+        "province_vi": "Kon Tum",
+        "province_en": "Kon Tum",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          107.721,
+          15.221
+        ],
+        "topography": {
+          "mean_elevation_m": 1150,
+          "peak_elevation_m": 2350,
+          "mean_slope_degrees": 35.0,
+          "max_slope_degrees": 69.2,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4694.1,
+          "topographic_wetness_index_mean": 8.1,
+          "annual_rainfall_mm": 2790,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.9,
+          "fault_line_proximity_km": 3.9
+        },
+        "hazard_inventory": {
+          "historical_events_count": 51,
+          "last_major_event_year": 2023,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-KT-DG",
+          "station_name": "Trạm Viễn Thám Đăk Glei",
+          "station_lat": 15.236,
+          "station_lng": 107.733,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "KT-KP",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108.556854,
+              14.652
+            ],
+            [
+              108.538624,
+              14.685855
+            ],
+            [
+              108.52681,
+              14.71809
+            ],
+            [
+              108.533129,
+              14.760054
+            ],
+            [
+              108.531536,
+              14.807862
+            ],
+            [
+              108.494886,
+              14.834832
+            ],
+            [
+              108.432829,
+              14.82289
+            ],
+            [
+              108.378128,
+              14.79048
+            ],
+            [
+              108.345411,
+              14.774141
+            ],
+            [
+              108.321,
+              14.787313
+            ],
+            [
+              108.289059,
+              14.811821
+            ],
+            [
+              108.248707,
+              14.82724
+            ],
+            [
+              108.203825,
+              14.831059
+            ],
+            [
+              108.15532,
+              14.826204
+            ],
+            [
+              108.112179,
+              14.806593
+            ],
+            [
+              108.093716,
+              14.767774
+            ],
+            [
+              108.105852,
+              14.721088
+            ],
+            [
+              108.125489,
+              14.682415
+            ],
+            [
+              108.126147,
+              14.652
+            ],
+            [
+              108.11446,
+              14.619869
+            ],
+            [
+              108.122077,
+              14.588122
+            ],
+            [
+              108.160126,
+              14.570054
+            ],
+            [
+              108.201595,
+              14.563603
+            ],
+            [
+              108.218033,
+              14.543735
+            ],
+            [
+              108.217475,
+              14.4938
+            ],
+            [
+              108.230818,
+              14.433397
+            ],
+            [
+              108.270619,
+              14.399914
+            ],
+            [
+              108.321,
+              14.407313
+            ],
+            [
+              108.36385,
+              14.437594
+            ],
+            [
+              108.396017,
+              14.470157
+            ],
+            [
+              108.419179,
+              14.50197
+            ],
+            [
+              108.432174,
+              14.535107
+            ],
+            [
+              108.44212,
+              14.562334
+            ],
+            [
+              108.466719,
+              14.577774
+            ],
+            [
+              108.510585,
+              14.591121
+            ],
+            [
+              108.549653,
+              14.616429
+            ],
+            [
+              108.556854,
+              14.652
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "KT-KP",
+        "name_vi": "Kon Plông",
+        "name_en": "Kon Plong",
+        "province_vi": "Kon Tum",
+        "province_en": "Kon Tum",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          108.321,
+          14.652
+        ],
+        "topography": {
+          "mean_elevation_m": 1120,
+          "peak_elevation_m": 1980,
+          "mean_slope_degrees": 30.8,
+          "max_slope_degrees": 62.4,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4729.3,
+          "topographic_wetness_index_mean": 8.45,
+          "annual_rainfall_mm": 2900,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 5.7,
+          "fault_line_proximity_km": 4.8
+        },
+        "hazard_inventory": {
+          "historical_events_count": 41,
+          "last_major_event_year": 2024,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-KT-KP",
+          "station_name": "Trạm Viễn Thám Kon Plông",
+          "station_lat": 14.667,
+          "station_lng": 108.333,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "KT-DH",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108.179297,
+              14.552
+            ],
+            [
+              108.153512,
+              14.580589
+            ],
+            [
+              108.135149,
+              14.604731
+            ],
+            [
+              108.123467,
+              14.629306
+            ],
+            [
+              108.104365,
+              14.649289
+            ],
+            [
+              108.075561,
+              14.657915
+            ],
+            [
+              108.047614,
+              14.660439
+            ],
+            [
+              108.025803,
+              14.667692
+            ],
+            [
+              108.004914,
+              14.679468
+            ],
+            [
+              107.981,
+              14.686615
+            ],
+            [
+              107.955334,
+              14.688804
+            ],
+            [
+              107.92512,
+              14.696294
+            ],
+            [
+              107.884252,
+              14.709494
+            ],
+            [
+              107.840124,
+              14.709792
+            ],
+            [
+              107.817068,
+              14.681282
+            ],
+            [
+              107.829969,
+              14.633953
+            ],
+            [
+              107.860607,
+              14.593184
+            ],
+            [
+              107.874444,
+              14.569659
+            ],
+            [
+              107.860099,
+              14.552
+            ],
+            [
+              107.839163,
+              14.528495
+            ],
+            [
+              107.835201,
+              14.502125
+            ],
+            [
+              107.847034,
+              14.479306
+            ],
+            [
+              107.859845,
+              14.456453
+            ],
+            [
+              107.870384,
+              14.428102
+            ],
+            [
+              107.888015,
+              14.400632
+            ],
+            [
+              107.916631,
+              14.385784
+            ],
+            [
+              107.949486,
+              14.384026
+            ],
+            [
+              107.981,
+              14.386615
+            ],
+            [
+              108.010762,
+              14.393362
+            ],
+            [
+              108.034292,
+              14.414386
+            ],
+            [
+              108.043851,
+              14.449686
+            ],
+            [
+              108.0453,
+              14.479979
+            ],
+            [
+              108.061587,
+              14.488446
+            ],
+            [
+              108.106403,
+              14.483953
+            ],
+            [
+              108.160555,
+              14.490578
+            ],
+            [
+              108.188793,
+              14.517564
+            ],
+            [
+              108.179297,
+              14.552
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "KT-DH",
+        "name_vi": "Đăk Hà",
+        "name_en": "Dak Ha",
+        "province_vi": "Kon Tum",
+        "province_en": "Kon Tum",
+        "susceptibility_tier": "MODERATE",
+        "center_coordinate": [
+          107.981,
+          14.552
+        ],
+        "topography": {
+          "mean_elevation_m": 680,
+          "peak_elevation_m": 1450,
+          "mean_slope_degrees": 22.5,
+          "max_slope_degrees": 48.0,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4764.5,
+          "topographic_wetness_index_mean": 8.8,
+          "annual_rainfall_mm": 3010,
+          "critical_rainfall_threshold_24h_mm": 220.0,
+          "critical_rainfall_threshold_72h_mm": 341.0
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 2.5,
+          "fault_line_proximity_km": 5.7
+        },
+        "hazard_inventory": {
+          "historical_events_count": 18,
+          "last_major_event_year": 2020,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.65
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 90.0,
+          "watch_orange_mm_24h": 150.0,
+          "warning_red_mm_24h": 220.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-KT-DH",
+          "station_name": "Trạm Viễn Thám Đăk Hà",
+          "station_lat": 14.567,
+          "station_lng": 107.993,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "KT-NH",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              107.847417,
+              14.721
+            ],
+            [
+              107.827894,
+              14.751712
+            ],
+            [
+              107.800401,
+              14.774542
+            ],
+            [
+              107.7658,
+              14.786261
+            ],
+            [
+              107.736282,
+              14.791461
+            ],
+            [
+              107.724117,
+              14.806798
+            ],
+            [
+              107.722467,
+              14.842882
+            ],
+            [
+              107.711499,
+              14.884666
+            ],
+            [
+              107.683822,
+              14.904283
+            ],
+            [
+              107.651,
+              14.895322
+            ],
+            [
+              107.62238,
+              14.880817
+            ],
+            [
+              107.59178,
+              14.881206
+            ],
+            [
+              107.553819,
+              14.886736
+            ],
+            [
+              107.52167,
+              14.872762
+            ],
+            [
+              107.513914,
+              14.834261
+            ],
+            [
+              107.527994,
+              14.790927
+            ],
+            [
+              107.540994,
+              14.760424
+            ],
+            [
+              107.537246,
+              14.74075
+            ],
+            [
+              107.522424,
+              14.721
+            ],
+            [
+              107.507839,
+              14.696145
+            ],
+            [
+              107.495007,
+              14.665096
+            ],
+            [
+              107.484348,
+              14.626261
+            ],
+            [
+              107.487323,
+              14.585769
+            ],
+            [
+              107.515215,
+              14.561664
+            ],
+            [
+              107.55997,
+              14.565754
+            ],
+            [
+              107.600345,
+              14.583964
+            ],
+            [
+              107.627388,
+              14.589144
+            ],
+            [
+              107.651,
+              14.575322
+            ],
+            [
+              107.678815,
+              14.565678
+            ],
+            [
+              107.702934,
+              14.580504
+            ],
+            [
+              107.716316,
+              14.609608
+            ],
+            [
+              107.730571,
+              14.627627
+            ],
+            [
+              107.762873,
+              14.628569
+            ],
+            [
+              107.809446,
+              14.630927
+            ],
+            [
+              107.846388,
+              14.650977
+            ],
+            [
+              107.857302,
+              14.685182
+            ],
+            [
+              107.847417,
+              14.721
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "KT-NH",
+        "name_vi": "Ngọc Hồi",
+        "name_en": "Ngoc Hoi",
+        "province_vi": "Kon Tum",
+        "province_en": "Kon Tum",
+        "susceptibility_tier": "MODERATE",
+        "center_coordinate": [
+          107.651,
+          14.721
+        ],
+        "topography": {
+          "mean_elevation_m": 750,
+          "peak_elevation_m": 1580,
+          "mean_slope_degrees": 24.0,
+          "max_slope_degrees": 51.5,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4799.7,
+          "topographic_wetness_index_mean": 9.15,
+          "annual_rainfall_mm": 1800,
+          "critical_rainfall_threshold_24h_mm": 220.0,
+          "critical_rainfall_threshold_72h_mm": 341.0
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 3.3,
+          "fault_line_proximity_km": 6.6
+        },
+        "hazard_inventory": {
+          "historical_events_count": 22,
+          "last_major_event_year": 2021,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.65
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 90.0,
+          "watch_orange_mm_24h": 150.0,
+          "warning_red_mm_24h": 220.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-KT-NH",
+          "station_name": "Trạm Viễn Thám Ngọc Hồi",
+          "station_lat": 14.736,
+          "station_lng": 107.663,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LD-DL",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108.623445,
+              11.952
+            ],
+            [
+              108.616173,
+              11.981121
+            ],
+            [
+              108.584485,
+              12.000579
+            ],
+            [
+              108.545354,
+              12.006469
+            ],
+            [
+              108.526867,
+              12.015652
+            ],
+            [
+              108.532919,
+              12.049615
+            ],
+            [
+              108.538632,
+              12.103764
+            ],
+            [
+              108.522047,
+              12.147177
+            ],
+            [
+              108.487157,
+              12.157033
+            ],
+            [
+              108.451,
+              12.141513
+            ],
+            [
+              108.420966,
+              12.122313
+            ],
+            [
+              108.39485,
+              12.106253
+            ],
+            [
+              108.373783,
+              12.085727
+            ],
+            [
+              108.360941,
+              12.059316
+            ],
+            [
+              108.350792,
+              12.036075
+            ],
+            [
+              108.333805,
+              12.019655
+            ],
+            [
+              108.312892,
+              12.002261
+            ],
+            [
+              108.301912,
+              11.978285
+            ],
+            [
+              108.303407,
+              11.952
+            ],
+            [
+              108.300997,
+              11.925554
+            ],
+            [
+              108.283748,
+              11.891132
+            ],
+            [
+              108.268193,
+              11.846469
+            ],
+            [
+              108.281704,
+              11.80996
+            ],
+            [
+              108.327202,
+              11.804481
+            ],
+            [
+              108.378613,
+              11.826636
+            ],
+            [
+              108.412587,
+              11.846475
+            ],
+            [
+              108.431583,
+              11.841895
+            ],
+            [
+              108.451,
+              11.821513
+            ],
+            [
+              108.47654,
+              11.807174
+            ],
+            [
+              108.504309,
+              11.805551
+            ],
+            [
+              108.533803,
+              11.808599
+            ],
+            [
+              108.566657,
+              11.814182
+            ],
+            [
+              108.595955,
+              11.830383
+            ],
+            [
+              108.610966,
+              11.859655
+            ],
+            [
+              108.613629,
+              11.892815
+            ],
+            [
+              108.617088,
+              11.922718
+            ],
+            [
+              108.623445,
+              11.952
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "LD-DL",
+        "name_vi": "Đà Lạt",
+        "name_en": "Da Lat",
+        "province_vi": "Lâm Đồng",
+        "province_en": "Lam Dong",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          108.451,
+          11.952
+        ],
+        "topography": {
+          "mean_elevation_m": 1480,
+          "peak_elevation_m": 2167,
+          "mean_slope_degrees": 28.5,
+          "max_slope_degrees": 59.8,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4834.9,
+          "topographic_wetness_index_mean": 9.5,
+          "annual_rainfall_mm": 1910,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.1,
+          "fault_line_proximity_km": 7.5
+        },
+        "hazard_inventory": {
+          "historical_events_count": 45,
+          "last_major_event_year": 2022,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-LD-DL",
+          "station_name": "Trạm Viễn Thám Đà Lạt",
+          "station_lat": 11.967,
+          "station_lng": 108.463,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LD-LD",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108.732349,
+              12.152
+            ],
+            [
+              108.733858,
+              12.183569
+            ],
+            [
+              108.710792,
+              12.208945
+            ],
+            [
+              108.688644,
+              12.229809
+            ],
+            [
+              108.683721,
+              12.261041
+            ],
+            [
+              108.683332,
+              12.306413
+            ],
+            [
+              108.667352,
+              12.349319
+            ],
+            [
+              108.633375,
+              12.373597
+            ],
+            [
+              108.592089,
+              12.380158
+            ],
+            [
+              108.551,
+              12.374675
+            ],
+            [
+              108.514933,
+              12.352275
+            ],
+            [
+              108.492408,
+              12.309617
+            ],
+            [
+              108.484764,
+              12.264328
+            ],
+            [
+              108.473084,
+              12.242917
+            ],
+            [
+              108.434679,
+              12.247567
+            ],
+            [
+              108.375944,
+              12.250958
+            ],
+            [
+              108.332374,
+              12.229911
+            ],
+            [
+              108.327355,
+              12.190611
+            ],
+            [
+              108.344244,
+              12.152
+            ],
+            [
+              108.351649,
+              12.117583
+            ],
+            [
+              108.346092,
+              12.078977
+            ],
+            [
+              108.352534,
+              12.039809
+            ],
+            [
+              108.386415,
+              12.016781
+            ],
+            [
+              108.433862,
+              12.015316
+            ],
+            [
+              108.4733,
+              12.02023
+            ],
+            [
+              108.500635,
+              12.016514
+            ],
+            [
+              108.524695,
+              12.005931
+            ],
+            [
+              108.551,
+              11.994675
+            ],
+            [
+              108.582327,
+              11.978048
+            ],
+            [
+              108.625148,
+              11.952534
+            ],
+            [
+              108.678817,
+              11.935238
+            ],
+            [
+              108.722554,
+              11.95182
+            ],
+            [
+              108.731985,
+              12.003307
+            ],
+            [
+              108.712053,
+              12.060958
+            ],
+            [
+              108.697074,
+              12.099944
+            ],
+            [
+              108.709564,
+              12.124625
+            ],
+            [
+              108.732349,
+              12.152
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "LD-LD",
+        "name_vi": "Lạc Dương",
+        "name_en": "Lac Duong",
+        "province_vi": "Lâm Đồng",
+        "province_en": "Lam Dong",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          108.551,
+          12.152
+        ],
+        "topography": {
+          "mean_elevation_m": 1520,
+          "peak_elevation_m": 2287,
+          "mean_slope_degrees": 31.4,
+          "max_slope_degrees": 63.5,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4870.1,
+          "topographic_wetness_index_mean": 7.4,
+          "annual_rainfall_mm": 2020,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.9,
+          "fault_line_proximity_km": 8.4
+        },
+        "hazard_inventory": {
+          "historical_events_count": 42,
+          "last_major_event_year": 2023,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-LD-LD",
+          "station_name": "Trạm Viễn Thám Lạc Dương",
+          "station_lat": 12.167,
+          "station_lng": 108.563,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LD-DR",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108.383163,
+              12.052
+            ],
+            [
+              108.397275,
+              12.080939
+            ],
+            [
+              108.409446,
+              12.11586
+            ],
+            [
+              108.416626,
+              12.157158
+            ],
+            [
+              108.404342,
+              12.195236
+            ],
+            [
+              108.367828,
+              12.214919
+            ],
+            [
+              108.322993,
+              12.216478
+            ],
+            [
+              108.286402,
+              12.219302
+            ],
+            [
+              108.255554,
+              12.234456
+            ],
+            [
+              108.221,
+              12.244395
+            ],
+            [
+              108.188226,
+              12.225056
+            ],
+            [
+              108.169864,
+              12.18281
+            ],
+            [
+              108.159139,
+              12.151759
+            ],
+            [
+              108.130922,
+              12.15195
+            ],
+            [
+              108.07553,
+              12.165649
+            ],
+            [
+              108.016407,
+              12.161978
+            ],
+            [
+              107.983935,
+              12.132336
+            ],
+            [
+              107.982677,
+              12.091126
+            ],
+            [
+              107.996507,
+              12.052
+            ],
+            [
+              108.016493,
+              12.018426
+            ],
+            [
+              108.046108,
+              11.992733
+            ],
+            [
+              108.081772,
+              11.977158
+            ],
+            [
+              108.108146,
+              11.963833
+            ],
+            [
+              108.11929,
+              11.939143
+            ],
+            [
+              108.129665,
+              11.904709
+            ],
+            [
+              108.154158,
+              11.881013
+            ],
+            [
+              108.188412,
+              11.879926
+            ],
+            [
+              108.221,
+              11.884395
+            ],
+            [
+              108.255368,
+              11.870525
+            ],
+            [
+              108.302108,
+              11.84452
+            ],
+            [
+              108.352467,
+              11.83999
+            ],
+            [
+              108.379459,
+              11.876174
+            ],
+            [
+              108.371725,
+              11.934245
+            ],
+            [
+              108.351261,
+              11.981978
+            ],
+            [
+              108.347273,
+              12.009209
+            ],
+            [
+              108.363459,
+              12.028612
+            ],
+            [
+              108.383163,
+              12.052
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "LD-DR",
+        "name_vi": "Đam Rông",
+        "name_en": "Dam Rong",
+        "province_vi": "Lâm Đồng",
+        "province_en": "Lam Dong",
+        "susceptibility_tier": "CRITICAL",
+        "center_coordinate": [
+          108.221,
+          12.052
+        ],
+        "topography": {
+          "mean_elevation_m": 1050,
+          "peak_elevation_m": 2050,
+          "mean_slope_degrees": 33.8,
+          "max_slope_degrees": 67.0,
+          "dominant_aspect": "South-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4905.3,
+          "topographic_wetness_index_mean": 7.75,
+          "annual_rainfall_mm": 2130,
+          "critical_rainfall_threshold_24h_mm": 170.0,
+          "critical_rainfall_threshold_72h_mm": 263.5
+        },
+        "geology": {
+          "lithology_unit": "Sandstone / Siltstone (Trầm tích)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 5.7,
+          "fault_line_proximity_km": 1.2
+        },
+        "hazard_inventory": {
+          "historical_events_count": 49,
+          "last_major_event_year": 2024,
+          "dominant_failure_mechanism": "Rock fall (Đá lăn)",
+          "vulnerability_index": 0.95
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 60.0,
+          "watch_orange_mm_24h": 110.0,
+          "warning_red_mm_24h": 170.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-LD-DR",
+          "station_name": "Trạm Viễn Thám Đam Rông",
+          "station_lat": 12.067,
+          "station_lng": 108.233,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LD-BL",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              107.967168,
+              11.552
+            ],
+            [
+              107.992968,
+              11.578474
+            ],
+            [
+              108.024615,
+              11.616705
+            ],
+            [
+              108.030565,
+              11.657637
+            ],
+            [
+              107.994687,
+              11.679245
+            ],
+            [
+              107.937437,
+              11.673153
+            ],
+            [
+              107.891611,
+              11.658781
+            ],
+            [
+              107.866304,
+              11.660675
+            ],
+            [
+              107.846513,
+              11.678331
+            ],
+            [
+              107.821,
+              11.690509
+            ],
+            [
+              107.793935,
+              11.686012
+            ],
+            [
+              107.769358,
+              11.675879
+            ],
+            [
+              107.74108,
+              11.672859
+            ],
+            [
+              107.705201,
+              11.67249
+            ],
+            [
+              107.670435,
+              11.662306
+            ],
+            [
+              107.64638,
+              11.640022
+            ],
+            [
+              107.630759,
+              11.612455
+            ],
+            [
+              107.619788,
+              11.582976
+            ],
+            [
+              107.623561,
+              11.552
+            ],
+            [
+              107.654581,
+              11.52638
+            ],
+            [
+              107.70173,
+              11.514099
+            ],
+            [
+              107.732992,
+              11.507637
+            ],
+            [
+              107.731469,
+              11.486408
+            ],
+            [
+              107.71657,
+              11.44334
+            ],
+            [
+              107.719808,
+              11.398974
+            ],
+            [
+              107.748783,
+              11.378767
+            ],
+            [
+              107.786847,
+              11.382889
+            ],
+            [
+              107.821,
+              11.390509
+            ],
+            [
+              107.853602,
+              11.39057
+            ],
+            [
+              107.886878,
+              11.393971
+            ],
+            [
+              107.912883,
+              11.413051
+            ],
+            [
+              107.926067,
+              11.442677
+            ],
+            [
+              107.933653,
+              11.469469
+            ],
+            [
+              107.943952,
+              11.490022
+            ],
+            [
+              107.953644,
+              11.509849
+            ],
+            [
+              107.958175,
+              11.530882
+            ],
+            [
+              107.967168,
+              11.552
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "LD-BL",
+        "name_vi": "Bảo Lộc",
+        "name_en": "Bao Loc",
+        "province_vi": "Lâm Đồng",
+        "province_en": "Lam Dong",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          107.821,
+          11.552
+        ],
+        "topography": {
+          "mean_elevation_m": 880,
+          "peak_elevation_m": 1650,
+          "mean_slope_degrees": 29.0,
+          "max_slope_degrees": 60.0,
+          "dominant_aspect": "North-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4940.5,
+          "topographic_wetness_index_mean": 8.1,
+          "annual_rainfall_mm": 2240,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Schist / Gneiss (Biến chất)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 2.5,
+          "fault_line_proximity_km": 2.1
+        },
+        "hazard_inventory": {
+          "historical_events_count": 38,
+          "last_major_event_year": 2020,
+          "dominant_failure_mechanism": "Debris flow (Lũ bùn đá)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-LD-BL",
+          "station_name": "Trạm Viễn Thám Bảo Lộc",
+          "station_lat": 11.567,
+          "station_lng": 107.833,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LD-DL2",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108.265932,
+              11.582
+            ],
+            [
+              108.295634,
+              11.617421
+            ],
+            [
+              108.317105,
+              11.661532
+            ],
+            [
+              108.295506,
+              11.697918
+            ],
+            [
+              108.236205,
+              11.709611
+            ],
+            [
+              108.174436,
+              11.702796
+            ],
+            [
+              108.132766,
+              11.698294
+            ],
+            [
+              108.105729,
+              11.705474
+            ],
+            [
+              108.080286,
+              11.718385
+            ],
+            [
+              108.051,
+              11.734033
+            ],
+            [
+              108.01347,
+              11.756775
+            ],
+            [
+              107.962936,
+              11.780679
+            ],
+            [
+              107.908763,
+              11.7843
+            ],
+            [
+              107.874472,
+              11.754752
+            ],
+            [
+              107.869372,
+              11.707147
+            ],
+            [
+              107.871237,
+              11.667224
+            ],
+            [
+              107.854305,
+              11.640787
+            ],
+            [
+              107.828049,
+              11.614281
+            ],
+            [
+              107.827523,
+              11.582
+            ],
+            [
+              107.863885,
+              11.554907
+            ],
+            [
+              107.905135,
+              11.538405
+            ],
+            [
+              107.915832,
+              11.517918
+            ],
+            [
+              107.900364,
+              11.478208
+            ],
+            [
+              107.892632,
+              11.42702
+            ],
+            [
+              107.913562,
+              11.386525
+            ],
+            [
+              107.955784,
+              11.367185
+            ],
+            [
+              108.004157,
+              11.363854
+            ],
+            [
+              108.051,
+              11.374033
+            ],
+            [
+              108.089599,
+              11.402244
+            ],
+            [
+              108.112881,
+              11.44239
+            ],
+            [
+              108.127968,
+              11.472531
+            ],
+            [
+              108.156276,
+              11.478976
+            ],
+            [
+              108.205213,
+              11.475743
+            ],
+            [
+              108.250911,
+              11.487224
+            ],
+            [
+              108.266275,
+              11.51766
+            ],
+            [
+              108.259798,
+              11.551768
+            ],
+            [
+              108.265932,
+              11.582
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "LD-DL2",
+        "name_vi": "Di Linh",
+        "name_en": "Di Linh",
+        "province_vi": "Lâm Đồng",
+        "province_en": "Lam Dong",
+        "susceptibility_tier": "HIGH",
+        "center_coordinate": [
+          108.051,
+          11.582
+        ],
+        "topography": {
+          "mean_elevation_m": 920,
+          "peak_elevation_m": 1720,
+          "mean_slope_degrees": 27.5,
+          "max_slope_degrees": 57.2,
+          "dominant_aspect": "North-West"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 4975.7,
+          "topographic_wetness_index_mean": 8.45,
+          "annual_rainfall_mm": 2350,
+          "critical_rainfall_threshold_24h_mm": 190.0,
+          "critical_rainfall_threshold_72h_mm": 294.5
+        },
+        "geology": {
+          "lithology_unit": "Karstic Limestone (Đá vôi)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 3.3,
+          "fault_line_proximity_km": 3.0
+        },
+        "hazard_inventory": {
+          "historical_events_count": 31,
+          "last_major_event_year": 2021,
+          "dominant_failure_mechanism": "Translational slide (Trượt phẳng)",
+          "vulnerability_index": 0.8
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 75.0,
+          "watch_orange_mm_24h": 130.0,
+          "warning_red_mm_24h": 190.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-LD-DL2",
+          "station_name": "Trạm Viễn Thám Di Linh",
+          "station_lat": 11.597,
+          "station_lng": 108.063,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LD-LH",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108.492696,
+              11.821
+            ],
+            [
+              108.48447,
+              11.853322
+            ],
+            [
+              108.458976,
+              11.880433
+            ],
+            [
+              108.423173,
+              11.899046
+            ],
+            [
+              108.393925,
+              11.915161
+            ],
+            [
+              108.372775,
+              11.934945
+            ],
+            [
+              108.3472,
+              11.951823
+            ],
+            [
+              108.313822,
+              11.956517
+            ],
+            [
+              108.281755,
+              11.957943
+            ],
+            [
+              108.251,
+              11.977251
+            ],
+            [
+              108.207332,
+              12.015446
+            ],
+            [
+              108.148732,
+              12.041609
+            ],
+            [
+              108.100701,
+              12.025393
+            ],
+            [
+              108.08839,
+              11.973154
+            ],
+            [
+              108.101963,
+              11.919188
+            ],
+            [
+              108.107751,
+              11.885935
+            ],
+            [
+              108.090974,
+              11.866731
+            ],
+            [
+              108.068887,
+              11.846212
+            ],
+            [
+              108.059654,
+              11.821
+            ],
+            [
+              108.058007,
+              11.794282
+            ],
+            [
+              108.05205,
+              11.764146
+            ],
+            [
+              108.048148,
+              11.729046
+            ],
+            [
+              108.062196,
+              11.696613
+            ],
+            [
+              108.094422,
+              11.67449
+            ],
+            [
+              108.130679,
+              11.657375
+            ],
+            [
+              108.165713,
+              11.637021
+            ],
+            [
+              108.206558,
+              11.623108
+            ],
+            [
+              108.251,
+              11.637251
+            ],
+            [
+              108.282528,
+              11.680611
+            ],
+            [
+              108.296841,
+              11.722113
+            ],
+            [
+              108.317222,
+              11.730945
+            ],
+            [
+              108.366744,
+              11.712699
+            ],
+            [
+              108.433692,
+              11.70064
+            ],
+            [
+              108.482776,
+              11.715935
+            ],
+            [
+              108.497899,
+              11.750444
+            ],
+            [
+              108.49535,
+              11.787172
+            ],
+            [
+              108.492696,
+              11.821
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_id": "LD-LH",
+        "name_vi": "Lâm Hà",
+        "name_en": "Lam Ha",
+        "province_vi": "Lâm Đồng",
+        "province_en": "Lam Dong",
+        "susceptibility_tier": "MODERATE",
+        "center_coordinate": [
+          108.251,
+          11.821
+        ],
+        "topography": {
+          "mean_elevation_m": 850,
+          "peak_elevation_m": 1550,
+          "mean_slope_degrees": 25.0,
+          "max_slope_degrees": 53.0,
+          "dominant_aspect": "South-East"
+        },
+        "hydrology": {
+          "flow_accumulation_mean": 5010.9,
+          "topographic_wetness_index_mean": 8.8,
+          "annual_rainfall_mm": 2460,
+          "critical_rainfall_threshold_24h_mm": 220.0,
+          "critical_rainfall_threshold_72h_mm": 341.0
+        },
+        "geology": {
+          "lithology_unit": "Granite / Rhyolite (Magma)",
+          "soil_type": "Feralit đỏ vàng trên đá biến chất/magma",
+          "weathering_crust_depth_m": 4.1,
+          "fault_line_proximity_km": 3.9
+        },
+        "hazard_inventory": {
+          "historical_events_count": 25,
+          "last_major_event_year": 2022,
+          "dominant_failure_mechanism": "Rotational slide (Trượt cung)",
+          "vulnerability_index": 0.65
+        },
+        "early_warning_thresholds": {
+          "advisory_yellow_mm_24h": 90.0,
+          "watch_orange_mm_24h": 150.0,
+          "warning_red_mm_24h": 220.0
+        },
+        "monitoring_telemetry": {
+          "station_code": "TW-LD-LH",
+          "station_name": "Trạm Viễn Thám Lâm Hà",
+          "station_lat": 11.836,
+          "station_lng": 108.263,
+          "telemetry_status": "ONLINE"
+        }
+      }
+    }
+  ]
+};
+export default riskZonesData;
