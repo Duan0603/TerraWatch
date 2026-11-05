@@ -4,7 +4,7 @@
  * Cung cấp các phương thức truy vấn theo tỉnh, mức độ nhạy cảm (susceptibility), ngưỡng mưa tới hạn, và trạm quan trắc.
  */
 
-import riskZonesData from './vietnamLandslideRiskZones.json';
+import riskZonesData from './vietnamLandslideRiskZones.js';
 
 /**
  * Toàn bộ tập dữ liệu GeoJSON FeatureCollection của các vùng sạt lở
