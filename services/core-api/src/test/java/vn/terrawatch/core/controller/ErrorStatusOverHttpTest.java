@@ -30,6 +30,7 @@ class ErrorStatusOverHttpTest {
 
     @Autowired TestRestTemplate http;
     @Autowired UserRepository users;
+    @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
 
     @AfterEach
     void cleanUp() {
@@ -59,6 +60,19 @@ class ErrorStatusOverHttpTest {
             Map.of("areaId", 1, "alertChannels", List.of()))).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(send(HttpMethod.DELETE, "/api/v1/alerts/subscriptions/" + UUID.randomUUID(), headers, null))
             .isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void forecastErrorsKeepTheirRealStatusInsteadOfBecoming401() {
+        registerAndAuthorize();
+        jdbc.update("UPDATE core_schema.users SET role = CAST('officer' AS core_schema.user_role) WHERE email = ?", EMAIL);
+        var login = http.postForEntity("/api/v1/auth/login", Map.of("email", EMAIL, "password", "secret123"), Map.class);
+        HttpHeaders officer = new HttpHeaders();
+        officer.setBearerAuth((String) login.getBody().get("token"));
+        officer.setContentType(MediaType.APPLICATION_JSON);
+
+        assertThat(send(HttpMethod.POST, "/api/v1/forecasts", officer, Map.of())).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(send(HttpMethod.GET, "/api/v1/forecasts/review-queue?status=zzz", officer, null)).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
