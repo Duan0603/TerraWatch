@@ -1,0 +1,41 @@
+flowchart TB
+    SI[Sign In] --> DB["System Dashboard<br/>(navigation menu)"]
+
+    subgraph REVIEW[Forecast Review]
+        VQ[Verification Queue] -->|Select item| EV[Evidence Detail Panel]
+        EV --> VD[Verification Decision Dialog]
+        EV --> CR[Community Reports]
+    end
+
+    subgraph BROADCAST[Alert Broadcast]
+        BC[Broadcast Composer] -->|Select scope| RP[Recipient Preview]
+        RP -->|Two-step confirmation| BH[Broadcast History]
+    end
+
+    subgraph GIS[GIS Data and AI Forecasting]
+        RI[Rainfall Ingestion Console] --> RS[Rainfall Summary]
+        TE[Terrain Extraction Console] --> TM[Terrain Metrics]
+        SC[Snapshot Console] --> SD[Snapshot Detail]
+        FR[Forecast Run List] --> FF[Forecast Factor Panel]
+        MV[Model Version Settings]
+    end
+
+    subgraph SYS[Account and System Management]
+        UL[User List] --> AR[Assign Role]
+        MA[Manage Monitoring Area]
+        AT[Audit Trail]
+    end
+
+    subgraph PROFILE[Personal Account]
+        VP[View Profile] --> UP[Update Profile]
+        VP --> UA[Update Avatar]
+        VP --> CP[Change Password]
+    end
+
+    DB --> REVIEW
+    DB --> BROADCAST
+    DB --> GIS
+    DB --> SYS
+    DB -->|User menu| PROFILE
+    VD -->|Approved: post-approval prompt| BC
+    DB -->|Sign Out| OUT([Back to Sign In])

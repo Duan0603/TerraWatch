@@ -1,0 +1,26 @@
+flowchart LR
+    SI[Sign In] --> VQ[Verification Queue]
+    VQ -->|Select a forecast or incident| EV[Evidence Detail Panel]
+    EV -->|Approve or Reject; queue refreshes after save| VD[Verification Decision Dialog]
+
+    subgraph EVIDENCE[Supporting evidence]
+        RS[Rainfall Summary]
+        TM[Terrain Metrics]
+        FF[Forecast Factor Panel]
+        SD[Snapshot Detail]
+        CR[Community Reports]
+    end
+
+    EV --> RS
+    EV --> TM
+    EV --> FF
+    EV --> SD
+    EV --> CR
+
+    VQ -->|Navigation bar| FR[Forecast Run List]
+    FR --> FF
+    VQ -->|User menu| VP[View Profile]
+    VP --> UP[Update Profile]
+    VP --> UA[Update Avatar]
+    VP --> CP[Change Password]
+    VQ -->|Sign Out| OUT([Back to Sign In])
