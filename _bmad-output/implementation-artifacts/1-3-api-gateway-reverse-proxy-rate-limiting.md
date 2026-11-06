@@ -164,3 +164,8 @@ print('CORS regression checks passed')
 
 - 2026-10-15: Corrected Core controller routing, completed gateway-owned CORS suppression and tiles rate limiting, verified live direct/gateway parity and authorization, and marked Story 1.3 ready for review.
 - 2026-10-15: Code review (4-layer + ponytail) found 1 decision-needed and 3 patch items. Resolved: `/api/v1/diagnostic/**` now requires authentication (user decision); re-added `Access-Control-Allow-Credentials` at gateway level; removed 18 lines of dead/redundant `proxy_hide_header` duplication (live-verified inheritance from server level); fixed a stale comment on the auth location. All 4 fixes rebuilt and re-verified live (curl header counts, direct-vs-gateway parity, full `mvn test` 16/16 pass). 6 pre-existing nginx-mechanics items deferred to `deferred-work.md`; 6 findings dismissed as factually incorrect or already resolved on re-verification.
+
+## Follow-up 2026-11-06 (AC3: no public unauthenticated internal mutation routes)
+- Gateway: `/api/v1/ai/` now returns 403 (internal only); `/api/v1/gis/` and `/api/v1/tiles/` accept GET/HEAD only. Verified in Docker: POST ingest/extract/snapshots/tiling and any AI route = 403, reads and core routes still reach their upstreams.
+- docker-compose: core-api (3000), ai-service (8001) and gis-service (8002) are bound to 127.0.0.1; clients use the gateway on 8080. Postgres (5432) and Redis (6379) are still published on all interfaces.
+- Regression check: `gateway/check-routes.sh [base-url]` against a running stack.
