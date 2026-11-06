@@ -1,0 +1,145 @@
+erDiagram
+    User {
+        uuid user_id PK
+        string email
+        string password_hash
+        enum role
+        string auth_provider
+        string fcm_token
+        string province_district_commune
+    }
+    UserAvatar {
+        uuid user_id PK,FK
+        text image_base64
+    }
+    MonitoringArea {
+        int area_id PK
+        string name
+        geometry geom
+        boolean is_active
+    }
+    SpatialAssessmentUnit {
+        string unit_id PK
+        int area_id FK
+        string unit_version
+        geometry geom
+        float slope_avg
+        float slope_max
+        float elevation_avg
+        float relief_m
+    }
+    RainfallObservation {
+        uuid observation_id PK
+        string unit_id FK
+        timestamp interval_end
+        timestamp available_at
+        float rainfall_mm "nullable"
+        string quality_flag
+    }
+    RainfallForecast {
+        uuid forecast_id PK
+        string unit_id FK
+        timestamp issued_at
+        timestamp valid_until
+        float predicted_rain_24h_mm
+        string quality_flag
+    }
+    FeatureSnapshot {
+        uuid snapshot_id PK
+        string unit_id FK
+        timestamp as_of_time
+        jsonb features
+        jsonb source_references
+    }
+    ForecastRun {
+        uuid run_id PK
+        uuid snapshot_id FK
+        string unit_id FK
+        timestamp valid_until
+        string hazard_level
+        float probability_or_score
+        string model_version
+        string review_status
+    }
+    ForecastReview {
+        uuid review_id PK
+        uuid run_id FK
+        uuid reviewer_id FK
+        string decision
+        text reason_notes
+    }
+    LandslideEvent {
+        uuid event_id PK
+        geometry geom
+        enum risk_level
+        enum status
+        uuid verified_by FK
+    }
+    LandslideEventHistory {
+        uuid history_id PK
+        uuid event_id FK
+        enum previous_status
+        enum new_status
+        uuid changed_by FK
+    }
+    AlertSubscription {
+        uuid subscription_id PK
+        uuid user_id FK
+        int area_id FK
+        string unit_id FK
+        string province_district_commune
+        boolean channel_push_sms
+    }
+    AlertBroadcast {
+        uuid broadcast_id PK
+        uuid run_id FK
+        string unit_id FK
+        uuid sender_id FK
+        string target_channel
+        string idempotency_key
+        int delivery_counters
+    }
+    AlertDelivery {
+        uuid delivery_id PK
+        uuid broadcast_id FK
+        uuid user_id FK
+        string status
+        text error_message
+    }
+    CommunityReport {
+        uuid report_id PK
+        uuid user_id FK
+        uuid photo_id FK
+        uuid client_report_id
+        geometry location
+        timestamp observed_at
+    }
+    ReportPhoto {
+        uuid photo_id PK
+        uuid user_id FK
+        text image_base64
+    }
+
+    User ||--o| UserAvatar : has
+    MonitoringArea ||--o{ SpatialAssessmentUnit : contains
+    SpatialAssessmentUnit ||--o{ RainfallObservation : observed
+    SpatialAssessmentUnit ||--o{ RainfallForecast : forecast
+    SpatialAssessmentUnit ||--o{ FeatureSnapshot : snapshotted
+    SpatialAssessmentUnit ||--o{ ForecastRun : assessed
+    FeatureSnapshot |o--o{ ForecastRun : "input of"
+    ForecastRun ||--o{ ForecastReview : "reviewed in"
+    User |o--o{ ForecastReview : reviews
+    ForecastRun |o--o{ AlertBroadcast : triggers
+    SpatialAssessmentUnit |o--o{ AlertBroadcast : targets
+    User |o--o{ AlertBroadcast : sends
+    AlertBroadcast ||--o{ AlertDelivery : "delivered as"
+    User |o--o{ AlertDelivery : receives
+    User ||--o{ AlertSubscription : subscribes
+    MonitoringArea |o--o{ AlertSubscription : "covers"
+    SpatialAssessmentUnit |o--o{ AlertSubscription : "covers"
+    User |o--o{ LandslideEvent : verifies
+    LandslideEvent ||--o{ LandslideEventHistory : logs
+    User |o--o{ LandslideEventHistory : changes
+    User |o--o{ CommunityReport : submits
+    ReportPhoto |o--o| CommunityReport : "attached to"
+    User ||--o{ ReportPhoto : uploads
