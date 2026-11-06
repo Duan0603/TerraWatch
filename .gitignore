@@ -19,6 +19,7 @@ target/
 # IDE and Editor
 .idea/
 .vscode/
+.claude/
 *.iml
 *.bak
 *.suo
