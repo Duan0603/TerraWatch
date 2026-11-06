@@ -71,7 +71,10 @@ export const broadcastApi = {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([entry, ...readHistory()]));
 
     if (res.status === 'FAILED') {
-      throw new Error(`Gửi thất bại tới toàn bộ ${res.recipients_estimated} thiết bị${res.first_error ? ` (${res.first_error})` : ''}.`);
+      // Không thiết bị nào nhận được: backend đã dùng mã chống trùng này, nên gửi lại phải dùng mã mới.
+      throw Object.assign(
+        new Error(`Gửi thất bại tới toàn bộ ${res.recipients_estimated} thiết bị${res.first_error ? ` (${res.first_error})` : ''}.`),
+        { retryWithNewKey: true });
     }
     return { broadcastId: entry.id, data: entry, sent: res.sent, failed: res.failed, total: res.recipients_estimated, status: res.status };
   }

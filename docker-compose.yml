@@ -50,7 +50,7 @@ services:
       AI_SERVICE_URL: http://ai-service:8001
       GIS_SERVICE_URL: http://gis-service:8002
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000" # direct Core access for local dev only; clients go through the gateway (8080)
     depends_on:
       - postgres
       - redis
@@ -74,7 +74,7 @@ services:
       - ./services/ai-service/scenes:/app/scenes:ro
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
     ports:
-      - "8001:8001"
+      - "127.0.0.1:8001:8001"
     depends_on:
       - redis
     networks:
@@ -98,7 +98,7 @@ services:
       - ./services/gis-service/app:/app/app
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8002", "--reload"]
     ports:
-      - "8002:8002"
+      - "127.0.0.1:8002:8002"
     depends_on:
       - postgres
     networks:
