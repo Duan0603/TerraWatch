@@ -129,6 +129,7 @@ export default function BroadcastModal({
         onBroadcastSuccess(result);
       }
     } catch (err) {
+      if (err.retryWithNewKey) requestIdRef.current = null;
       alert(`Lỗi khi phát lệnh cảnh báo: ${err.message}`);
       setStep(2);
     } finally {
