@@ -1,5 +1,5 @@
 import axiosClient from './axiosClient';
-import { registerErrorMessage } from './registerError';
+import { registerErrorMessage, resetErrorMessage } from './registerError';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
@@ -155,6 +155,32 @@ export const authApi = {
       return data?.exists === true;
     } catch {
       return false;
+    }
+  },
+
+  // Story 4.21: quên mật khẩu bằng mã 6 số gửi qua email (không tốn SMS, không cần Firebase Blaze).
+  async requestEmailCode(email) {
+    try {
+      await axiosClient.post('/auth/password-reset/email/request', { email: email.trim() });
+    } catch (err) {
+      throw new Error(resetErrorMessage(err));
+    }
+  },
+
+  async verifyEmailCode(email, code) {
+    try {
+      const data = await axiosClient.post('/auth/password-reset/email/verify', { email: email.trim(), code });
+      return data.resetToken;
+    } catch (err) {
+      throw new Error(resetErrorMessage(err));
+    }
+  },
+
+  async completeEmailReset({ email, resetToken, newPassword }) {
+    try {
+      await axiosClient.post('/auth/password-reset/email/complete', { email: email.trim(), resetToken, newPassword });
+    } catch (err) {
+      throw new Error(resetErrorMessage(err));
     }
   },
 

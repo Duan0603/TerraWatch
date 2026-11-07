@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import vn.terrawatch.core.dto.*;
+import vn.terrawatch.core.service.EmailResetService;
 import vn.terrawatch.core.service.AuthService;
 import vn.terrawatch.core.service.GoogleAuthService;
 
@@ -19,10 +20,12 @@ import java.util.UUID;
 public class AuthController {
     private final AuthService auth;
     private final GoogleAuthService googleAuth;
+    private final EmailResetService emailReset;
 
-    public AuthController(AuthService auth, GoogleAuthService googleAuth) {
+    public AuthController(AuthService auth, GoogleAuthService googleAuth, EmailResetService emailReset) {
         this.auth = auth;
         this.googleAuth = googleAuth;
+        this.emailReset = emailReset;
     }
 
     @PostMapping("/google")
@@ -49,6 +52,26 @@ public class AuthController {
     @Operation(summary = "Is this email already registered? (public, used by the sign-up form before sending an OTP)")
     public Map<String, Boolean> emailExists(@RequestParam String email) {
         return Map.of("exists", auth.emailExists(email));
+    }
+
+    @PostMapping("/password-reset/email/request")
+    @Operation(summary = "E-mail a 6-digit reset code (same answer whether or not the e-mail has an account)")
+    public Map<String, Boolean> emailResetRequest(@Valid @RequestBody EmailResetRequest request) {
+        emailReset.request(request.email());
+        return Map.of("sent", true);
+    }
+
+    @PostMapping("/password-reset/email/verify")
+    @Operation(summary = "Check the e-mailed code; a right code returns a one-time reset token")
+    public Map<String, String> emailResetVerify(@Valid @RequestBody EmailResetVerify request) {
+        return Map.of("resetToken", emailReset.verify(request.email(), request.code()));
+    }
+
+    @PostMapping("/password-reset/email/complete")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Set the new password with the one-time reset token")
+    public void emailResetComplete(@Valid @RequestBody EmailResetComplete request) {
+        emailReset.complete(request.email(), request.resetToken(), request.newPassword());
     }
 
     @PostMapping("/password-reset/check")

@@ -183,3 +183,10 @@ body.page-login { background: #070D1A; }
 /* Quên mật khẩu (Story 4.20) */
 .lg-forgot-row { display: flex; justify-content: flex-end; margin: -6px 0 14px; }
 .lg-forgot-row .lg-textbtn { padding: 4px 6px; font-size: 13.5px; }
+
+/* Chọn cách nhận mã xác nhận (Story 4.21) */
+.lg-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; margin: 0 0 14px; border-radius: 12px; background: rgba(255, 255, 255, .05); border: 1px solid var(--glass-line); }
+.lg-tab { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 0 10px; border: 0; border-radius: 9px; background: transparent; color: var(--ink-2); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: background .15s, color .15s; }
+.lg-tab:hover { color: #fff; }
+.lg-tab.is-on { background: var(--brand); color: #fff; }
+.lg-tab:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }

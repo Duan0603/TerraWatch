@@ -4,11 +4,13 @@ import authApi from '../api/authApi';
 import FormSteps from './FormSteps';
 import OtpBoxes from './OtpBoxes';
 
-// Quên mật khẩu không cần email: chứng minh sở hữu số điện thoại đã đăng ký bằng mã OTP (Story 4.20).
-// Thứ tự: 1 nhập email + SĐT -> 2 nhập OTP (xác minh đúng rồi mới sang bước sau) -> 3 đặt mật khẩu mới -> 4 xong.
+// Quên mật khẩu: chứng minh là chủ tài khoản bằng mã 6 số gửi qua EMAIL (Story 4.21, mặc định, miễn phí)
+// hoặc qua SMS tới số đã đăng ký (Story 4.20, cần Firebase Blaze cho số thật).
+// Thứ tự: 1 tài khoản -> 2 nhập mã (đúng rồi mới sang bước sau) -> 3 đặt mật khẩu mới -> 4 xong.
 export default function ForgotPasswordPanel({ initialEmail, onBack }) {
   const [step, setStep] = useState('form'); // form | otp | newpw | done
-  const [phoneToken, setPhoneToken] = useState(''); // chứng cứ sở hữu SĐT, có sau khi OTP đúng
+  const [method, setMethod] = useState('email'); // email | sms
+  const [proof, setProof] = useState(''); // chứng cứ (token từ máy chủ hoặc token Firebase), có sau khi mã đúng
   const [email, setEmail] = useState(initialEmail || '');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -32,22 +34,27 @@ export default function ForgotPasswordPanel({ initialEmail, onBack }) {
     e?.preventDefault();
     setError('');
     const cleanPhone = phone.replace(/\s+/g, '');
-    if (!email.trim() || !cleanPhone) { setError('Vui lòng nhập email và số điện thoại.'); return; }
-    if (cleanPhone.length < 9) { setError('Số điện thoại không hợp lệ.'); return; }
+    if (!email.trim()) { setError('Vui lòng nhập email tài khoản.'); return; }
+    if (method === 'sms' && cleanPhone.length < 9) { setError('Vui lòng nhập số điện thoại đã đăng ký.'); return; }
     try {
       setLoading(true);
-      // Hỏi trước: sai email/SĐT thì không tốn một tin nhắn OTP.
-      if (!(await authApi.canResetPassword(email, cleanPhone))) {
-        setError('Email và số điện thoại này không khớp với tài khoản nào có thể đặt lại mật khẩu. Hãy nhập đúng số đã dùng khi đăng ký.');
-        return;
+      if (method === 'email') {
+        await authApi.requestEmailCode(email);
+        setSentTo(email.trim());
+      } else {
+        // Hỏi trước: sai email/SĐT thì không tốn một tin nhắn OTP.
+        if (!(await authApi.canResetPassword(email, cleanPhone))) {
+          setError('Email và số điện thoại này không khớp với tài khoản nào có thể đặt lại mật khẩu. Hãy nhập đúng số đã dùng khi đăng ký.');
+          return;
+        }
+        const res = await authApi.sendSmsOtp(cleanPhone, 'recaptcha-container');
+        setSentTo(res.formattedPhone || cleanPhone);
       }
-      const res = await authApi.sendSmsOtp(cleanPhone, 'recaptcha-container');
-      setSentTo(res.formattedPhone || cleanPhone);
       setOtp('');
       setCountdown(60);
       setStep('otp');
     } catch (err) {
-      setError('Không thể gửi mã OTP SMS: ' + (err.message || 'Vui lòng thử lại.'));
+      setError(method === 'email' ? err.message : 'Không thể gửi mã OTP SMS: ' + (err.message || 'Vui lòng thử lại.'));
     } finally {
       setLoading(false);
     }
@@ -58,11 +65,15 @@ export default function ForgotPasswordPanel({ initialEmail, onBack }) {
     try {
       setLoading(true);
       setError('');
-      const res = await authApi.sendSmsOtp(phone.replace(/\s+/g, ''), 'recaptcha-container');
-      setSentTo(res.formattedPhone || phone);
+      if (method === 'email') {
+        await authApi.requestEmailCode(email);
+      } else {
+        const res = await authApi.sendSmsOtp(phone.replace(/\s+/g, ''), 'recaptcha-container');
+        setSentTo(res.formattedPhone || phone);
+      }
       setCountdown(60);
     } catch (err) {
-      setError('Không thể gửi lại mã OTP: ' + (err.message || 'Vui lòng thử lại sau.'));
+      setError(method === 'email' ? err.message : 'Không thể gửi lại mã OTP: ' + (err.message || 'Vui lòng thử lại sau.'));
     } finally {
       setLoading(false);
     }
@@ -73,9 +84,12 @@ export default function ForgotPasswordPanel({ initialEmail, onBack }) {
     setError('');
     try {
       setLoading(true);
-      const cleanPhone = phone.replace(/\s+/g, '');
-      const verified = await authApi.verifySmsOtp(cleanPhone, otp);
-      setPhoneToken(verified.idToken || (await verified.user?.getIdToken?.()));
+      if (method === 'email') {
+        setProof(await authApi.verifyEmailCode(email, otp));
+      } else {
+        const verified = await authApi.verifySmsOtp(phone.replace(/\s+/g, ''), otp);
+        setProof(verified.idToken || (await verified.user?.getIdToken?.()));
+      }
       setError('');
       setStep('newpw'); // OTP đúng rồi mới được đặt mật khẩu mới
     } catch (err) {
@@ -92,14 +106,18 @@ export default function ForgotPasswordPanel({ initialEmail, onBack }) {
     if (password !== confirm) { setError('Hai mật khẩu chưa khớp.'); return; }
     try {
       setLoading(true);
-      await authApi.resetPassword({ email, phoneNumber: phone.replace(/\s+/g, ''), phoneToken, newPassword: password });
+      if (method === 'email') {
+        await authApi.completeEmailReset({ email, resetToken: proof, newPassword: password });
+      } else {
+        await authApi.resetPassword({ email, phoneNumber: phone.replace(/\s+/g, ''), phoneToken: proof, newPassword: password });
+      }
       setPassword('');
       setConfirm('');
       setStep('done');
     } catch (err) {
       setError(err.message || 'Không đặt lại được mật khẩu.');
       // Mã OTP hết hạn / không hợp lệ: quay về bước đầu để lấy mã mới.
-      if (/OTP|hết hạn/i.test(err.message || '')) setStep('form');
+      if (/OTP|mã|hết hạn/i.test(err.message || '')) setStep('form');
     } finally {
       setLoading(false);
     }
@@ -114,7 +132,7 @@ export default function ForgotPasswordPanel({ initialEmail, onBack }) {
         <span className="lg-modal-icon" aria-hidden="true"><KeyRound size={22} /></span>
         <div className="lg-modal-titles">
           <h2 id="lg-forgot-title">Quên mật khẩu</h2>
-          <p>Xác minh bằng mã OTP gửi tới số điện thoại đã đăng ký tài khoản</p>
+          <p>Xác minh bằng mã 6 số gửi tới email hoặc số điện thoại của tài khoản</p>
         </div>
       </div>
       <FormSteps current={current} labels={['Tài khoản', 'Mã OTP', 'Mật khẩu mới', 'Hoàn tất']} ariaLabel="Các bước đặt lại mật khẩu" />
@@ -131,9 +149,17 @@ export default function ForgotPasswordPanel({ initialEmail, onBack }) {
 
         {step === 'form' && (
           <form onSubmit={sendOtp} noValidate>
+            <div className="lg-tabs" role="tablist" aria-label="Cách nhận mã xác nhận">
+              <button type="button" role="tab" aria-selected={method === 'email'} className={`lg-tab${method === 'email' ? ' is-on' : ''}`}
+                onClick={() => { setMethod('email'); setError(''); }}><Mail size={16} aria-hidden="true" /> Nhận mã qua email</button>
+              <button type="button" role="tab" aria-selected={method === 'sms'} className={`lg-tab${method === 'sms' ? ' is-on' : ''}`}
+                onClick={() => { setMethod('sms'); setError(''); }}><Phone size={16} aria-hidden="true" /> Nhận mã qua SMS</button>
+            </div>
             <p className="lg-info">
               <Lock size={16} aria-hidden="true" />
-              <span>Nhập email và số điện thoại bạn đã dùng khi đăng ký. Chúng tôi gửi mã OTP qua SMS; nhập đúng mã rồi bạn mới được đặt mật khẩu mới.</span>
+              <span>{method === 'email'
+                ? 'Nhập email tài khoản. Chúng tôi gửi mã 6 số vào hộp thư của bạn; nhập đúng mã rồi bạn mới được đặt mật khẩu mới.'
+                : 'Nhập email và số điện thoại bạn đã dùng khi đăng ký. Chúng tôi gửi mã OTP qua SMS; nhập đúng mã rồi bạn mới được đặt mật khẩu mới.'}</span>
             </p>
             {error && <div className="lg-error" role="alert">{error}</div>}
             <label className="lg-label" htmlFor="fp-email">Email tài khoản</label>
@@ -142,15 +168,19 @@ export default function ForgotPasswordPanel({ initialEmail, onBack }) {
               <input id="fp-email" className="lg-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                 placeholder="ten@email.com" autoComplete="username" />
             </div>
-            <label className="lg-label" htmlFor="fp-phone">Số điện thoại đã đăng ký</label>
-            <div className="lg-field">
-              <Phone size={18} aria-hidden="true" />
-              <input id="fp-phone" className="lg-input" type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
-                placeholder="0912345678" autoComplete="tel" />
-            </div>
+            {method === 'sms' && (
+              <>
+                <label className="lg-label" htmlFor="fp-phone">Số điện thoại đã đăng ký</label>
+                <div className="lg-field">
+                  <Phone size={18} aria-hidden="true" />
+                  <input id="fp-phone" className="lg-input" type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
+                    placeholder="0912345678" autoComplete="tel" />
+                </div>
+              </>
+            )}
             <div className="lg-actions">
               <button type="submit" className="lg-btn lg-btn-primary" disabled={loading}>
-                {loading ? 'Đang kiểm tra…' : <>Gửi mã OTP <ArrowRight size={18} aria-hidden="true" /></>}
+                {loading ? 'Đang gửi…' : <>{method === 'email' ? 'Gửi mã qua email' : 'Gửi mã OTP'} <ArrowRight size={18} aria-hidden="true" /></>}
               </button>
             </div>
           </form>
@@ -160,7 +190,7 @@ export default function ForgotPasswordPanel({ initialEmail, onBack }) {
           <form onSubmit={saveNewPassword} noValidate>
             <p className="lg-info">
               <CheckCircle2 size={16} aria-hidden="true" />
-              <span>Đã xác minh số điện thoại. Hãy đặt mật khẩu mới cho <strong>{email}</strong>.</span>
+              <span>{method === 'email' ? 'Đã xác minh mã.' : 'Đã xác minh số điện thoại.'} Hãy đặt mật khẩu mới cho <strong>{email}</strong>.</span>
             </p>
             {error && <div className="lg-error" role="alert">{error}</div>}
             <div className="lg-two">
@@ -200,7 +230,9 @@ export default function ForgotPasswordPanel({ initialEmail, onBack }) {
         {step === 'otp' && (
           <form onSubmit={confirmOtp} noValidate>
             <p className="lg-otp-lead">
-              Chúng tôi đã gửi tin nhắn SMS chứa mã 6 chữ số tới <strong>{sentTo}</strong>. Nhập mã đó vào các ô dưới đây.
+              {method === 'email'
+                ? <>Nếu <strong>{sentTo}</strong> có tài khoản, mã 6 chữ số đã được gửi tới hộp thư (xem cả thư mục Spam). Mã có hiệu lực 10 phút. Nhập mã vào các ô dưới đây.</>
+                : <>Chúng tôi đã gửi tin nhắn SMS chứa mã 6 chữ số tới <strong>{sentTo}</strong>. Nhập mã đó vào các ô dưới đây.</>}
             </p>
             {error && <div className="lg-error" role="alert">{error}</div>}
             <OtpBoxes value={otp} onChange={(v) => { setOtp(v); setError(''); }} disabled={loading} />
@@ -209,7 +241,7 @@ export default function ForgotPasswordPanel({ initialEmail, onBack }) {
                 <span>Có thể gửi lại mã sau <strong>{countdown} giây</strong></span>
               ) : (
                 <button type="button" className="lg-textbtn" disabled={loading} onClick={resend}>
-                  <RotateCcw size={14} aria-hidden="true" /> {loading ? 'Đang gửi…' : 'Gửi lại mã qua SMS'}
+                  <RotateCcw size={14} aria-hidden="true" /> {loading ? 'Đang gửi…' : (method === 'email' ? 'Gửi lại mã qua email' : 'Gửi lại mã qua SMS')}
                 </button>
               )}
             </div>

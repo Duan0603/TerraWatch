@@ -54,6 +54,7 @@ development_status:
   4-18-login-transition-animation: review
   4-19-register-email-check: review
   4-20-forgot-password: review
+  4-21-forgot-password-email-code: review
   epic-4-retrospective: optional
 
   epic-5: backlog

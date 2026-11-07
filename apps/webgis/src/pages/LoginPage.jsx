@@ -236,7 +236,7 @@ export default function LoginPage() {
     const onKey = (e) => { if (e.key === 'Escape') (view === 'register' ? closeRegisterModal() : closeForgot()); };
     window.addEventListener('keydown', onKey);
     const t = setTimeout(() => {
-      const id = view === 'register' ? 'rg-name' : (email ? 'fp-phone' : 'fp-email');
+      const id = view === 'register' ? 'rg-name' : 'fp-email';
       document.getElementById(id)?.focus({ preventScroll: true });
     }, 420);
     return () => { window.removeEventListener('keydown', onKey); clearTimeout(t); };

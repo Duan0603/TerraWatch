@@ -108,3 +108,7 @@ A third panel of the same frame (to the right of the sign-up panel), opened by "
 - If Firebase cannot send an SMS because billing is off, the message says so and names the test number.
 - Back link and Esc return to sign-in at any time; the panel is cleared after it has left the frame.
 - Limits stated to the user: old sessions stay valid until they expire; an account with no registered phone cannot use this route and must ask an admin.
+
+### Forgot password by e-mail (Story 4.21)
+
+Step 1 has two tabs: **Nhận mã qua email** (default; only the email field) and **Nhận mã qua SMS** (email + phone, Story 4.20). The e-mail route sends a 6-digit code to the inbox; the OTP step says "Nếu <email> có tài khoản, mã đã được gửi…" so it never confirms whether the account exists, reminds the user to check Spam and that the code lasts 10 minutes, and allows a resend after 60 seconds. When the server has no mail account configured, step 1 shows the server's "chưa cấu hình gửi email" message. After a right code the flow is the same as for SMS: new password, then done.

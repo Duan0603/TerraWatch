@@ -13,6 +13,19 @@ firebase:
 spring:
   application:
     name: terrawatch-core-api
+  # Story 4.21: Gmail SMTP for the password reset code. Needs a Gmail "app password" in MAIL_PASSWORD;
+  # without MAIL_USERNAME the e-mail reset answers 503 "chưa cấu hình".
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 8000
+      mail.smtp.writetimeout: 8000
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/terrawatch?currentSchema=core_schema,gis_schema,public}
     username: ${POSTGRES_USER:postgres}
