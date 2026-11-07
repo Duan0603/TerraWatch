@@ -23,7 +23,28 @@
 | GIS | POST /api/v1/gis/tiling | Geographic grid generation, not rainfall feature engineering. |
 | GIS | GET /api/v1/gis/mvt/{z}/{x}/{y}.pbf | Empty tile prototype. |
 
-Auth and SMS/FCM are not completed. Existing Swagger is served by each service; the target contract below must be implemented and tested before clients depend on it.
+Auth and FCM push are implemented (section 1b); SMS is not connected to a provider. Existing Swagger is served by each service; the target contract below must be implemented and tested before clients depend on it.
+
+
+## 1b. Implemented in Core since 2026-11 (Stories 4.5 to 4.23)
+
+All through the gateway at `/api/v1/...`. "Public" needs no token; roles are checked from the user stored in the database on every request.
+
+| Access | Route | Meaning |
+| --- | --- | --- |
+| Public | POST /auth/register | Citizen sign-up; a phone number needs a Firebase phone token (`phoneToken`); a `role` in the body is ignored. |
+| Public | POST /auth/officer-requests | Officer account request (verified phone + unit); account is `pending` until an admin approves. |
+| Public | GET /auth/email-exists?email= | `{exists}`; lets the sign-up form warn before an OTP is sent. |
+| Public | POST /auth/password-reset/check, POST /auth/password-reset | Forgot password with the phone registered on the account (Firebase OTP token). |
+| Public | POST /auth/password-reset/email/request, /verify, /complete | Forgot password with a 6-digit code e-mailed through Gmail SMTP (`MAIL_USERNAME` / `MAIL_PASSWORD`). |
+| Public | POST /auth/login, POST /auth/google | Locked, pending and rejected accounts get 403. |
+| Admin | GET /admin/users, PATCH /admin/users/{id}/status, PATCH /admin/users/{id}/role, POST /admin/users/{id}/approve, POST /admin/users/{id}/reject | User management; an admin cannot lock or re-role themselves; approve/reject only answer a pending request. |
+| Admin | POST /monitoring-areas, PUT /monitoring-areas/{id} | Monitoring areas (AOI); `GET /monitoring-areas` is public. |
+| Admin | GET /notifications/broadcasts, GET /notifications/broadcast/preview?areaId=, GET /notifications/broadcast/{id}/deliveries | Broadcast history, recipient preview, per-recipient results (no FCM tokens). |
+| Officer/admin | GET /forecasts/review-queue, GET /forecasts/reviews/audit, PATCH /forecasts/{id}/review | Review queue, audit log, decision. |
+| Officer/admin | GET /community-reports, GET /community-reports/photos/{id}, PATCH /community-reports/{id}/status | Field reports with phones and GPS (staff only); status `submitted`/`processed`/`archived`. |
+| Officer/admin | GET /landslides/queue, PATCH /landslides/{id}/verify | Legacy incident review; the reviewer is the signed-in user. |
+| Admin | /diagnostic/** | Circuit-breaker and event-bus demos. |
 
 ## 2. Planned endpoints
 
