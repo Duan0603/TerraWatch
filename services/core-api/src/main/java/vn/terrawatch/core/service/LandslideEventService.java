@@ -8,6 +8,8 @@ import vn.terrawatch.core.repository.LandslideEventJpaRepository;
 import vn.terrawatch.core.repository.SpatialRepository;
 
 import java.util.List;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,19 +35,27 @@ public class LandslideEventService {
     }
 
     @Transactional
-    public Map<String, Object> verifyEvent(String eventIdStr, VerifyEventRequest request) {
-        UUID eventId = UUID.fromString(eventIdStr);
-        UUID officerId = request.officerId() != null 
-            ? UUID.fromString(request.officerId()) 
-            : UUID.fromString("22222222-2222-2222-2222-222222222222");
+    public Map<String, Object> verifyEvent(String eventIdStr, VerifyEventRequest request, UUID officerId) {
+        UUID eventId;
+        try {
+            eventId = UUID.fromString(eventIdStr);
+        } catch (IllegalArgumentException notAnId) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid event id");
+        }
+        // Story 4.23: bad input is a 400/404, not a database error turned into a 500.
+        if (request.status() == null || !java.util.Set.of("pending", "verified", "rejected", "false_alarm").contains(request.status())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "status must be pending, verified, rejected or false_alarm");
+        }
+        if (request.riskLevel() != null && !java.util.Set.of("low", "medium", "high", "extreme").contains(request.riskLevel())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "riskLevel must be low, medium, high or extreme");
+        }
 
-        Map<String, Object> result = spatialRepository.verifyEvent(
-            eventId,
-            officerId,
-            request.status(),
-            request.riskLevel(),
-            request.officerNote()
-        );
+        Map<String, Object> result;
+        try {
+            result = spatialRepository.verifyEvent(eventId, officerId, request.status(), request.riskLevel(), request.officerNote());
+        } catch (org.springframework.dao.EmptyResultDataAccessException missing) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Incident not found: " + eventId);
+        }
 
         // Broadcast event to Redis Event Bus (Message Broker)
         eventPublisher.publishEvent("LANDSLIDE_VERIFIED", Map.of(

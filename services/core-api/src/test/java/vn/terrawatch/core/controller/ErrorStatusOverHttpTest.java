@@ -88,8 +88,15 @@ class ErrorStatusOverHttpTest {
     @Test
     void fieldReportErrorsKeepTheirRealStatusInsteadOfBecoming401() {
         HttpHeaders headers = registerAndAuthorize();
-        // unknown photo is public and must be 404, bad photo 400, an invalid report 400
-        assertThat(send(HttpMethod.GET, "/api/v1/community-reports/photos/" + UUID.randomUUID(), new HttpHeaders(), null))
+        // Story 4.9: photos are staff-only, so a citizen gets 403 and nobody signed out gets 401; an unknown
+        // photo asked by an officer is a real 404. A bad photo and an invalid report are 400.
+        UUID unknown = UUID.randomUUID();
+        assertThat(send(HttpMethod.GET, "/api/v1/community-reports/photos/" + unknown, new HttpHeaders(), null))
+            .isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(send(HttpMethod.GET, "/api/v1/community-reports/photos/" + unknown, headers, null))
+            .isEqualTo(HttpStatus.FORBIDDEN);
+        jdbc.update("UPDATE core_schema.users SET role = CAST('officer' AS core_schema.user_role) WHERE email = ?", EMAIL);
+        assertThat(send(HttpMethod.GET, "/api/v1/community-reports/photos/" + unknown, headers, null))
             .isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(send(HttpMethod.POST, "/api/v1/community-reports/photos", headers, Map.of("imageBase64", "aGVsbG8=")))
             .isEqualTo(HttpStatus.BAD_REQUEST);

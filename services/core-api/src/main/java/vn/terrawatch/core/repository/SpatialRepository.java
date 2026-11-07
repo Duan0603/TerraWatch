@@ -44,7 +44,7 @@ public class SpatialRepository {
             UPDATE core_schema.landslide_events
             SET 
                 status = CAST(? AS core_schema.verification_status),
-                risk_level = CASE WHEN ? IS NOT NULL THEN CAST(? AS core_schema.risk_level) ELSE risk_level END,
+                risk_level = COALESCE(CAST(? AS core_schema.risk_level), risk_level), -- null keeps the old level (was a 500: untyped parameter)
                 officer_note = ?,
                 verified_by = ?,
                 verified_at = CURRENT_TIMESTAMP
@@ -56,7 +56,7 @@ public class SpatialRepository {
                 affected_area_m2,
                 verified_at
             """;
-        return jdbcTemplate.queryForMap(sql, status, riskLevel, riskLevel, officerNote, officerId, eventId);
+        return jdbcTemplate.queryForMap(sql, status, riskLevel, officerNote, officerId, eventId);
     }
 
     // UC05: Bản đồ WebGIS các điểm đã thẩm định

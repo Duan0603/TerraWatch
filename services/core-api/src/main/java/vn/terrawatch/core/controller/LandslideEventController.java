@@ -9,6 +9,8 @@ import vn.terrawatch.core.dto.VerifyEventRequest;
 import vn.terrawatch.core.service.LandslideEventService;
 
 import java.util.List;
+import java.util.UUID;
+import org.springframework.security.core.Authentication;
 import java.util.Map;
 
 @RestController
@@ -32,8 +34,10 @@ public class LandslideEventController {
     @Operation(summary = "FR3.2 / UC04: Cán bộ phê duyệt hoặc bác bỏ điểm cảnh báo")
     public ResponseEntity<Map<String, Object>> verifyEvent(
             @PathVariable("id") String eventId,
-            @RequestBody VerifyEventRequest request) {
-        return ResponseEntity.ok(landslideService.verifyEvent(eventId, request));
+            @RequestBody VerifyEventRequest request,
+            Authentication authentication) {
+        // Story 4.23: the reviewer is the signed-in officer/admin, never a value sent by the client.
+        return ResponseEntity.ok(landslideService.verifyEvent(eventId, request, (UUID) authentication.getPrincipal()));
     }
 
     @GetMapping(value = "/active", produces = MediaType.APPLICATION_JSON_VALUE)
