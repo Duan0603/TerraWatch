@@ -74,11 +74,11 @@ public class CommunityReportController {
     }
 
     @GetMapping("/photos/{photoId}")
-    @Operation(summary = "A report photo by its unguessable id (public so the WebGIS can show it in an img tag)")
+    @Operation(summary = "A report photo (officer/admin only; the WebGIS loads it with its token)")
     public ResponseEntity<byte[]> photo(@PathVariable UUID photoId) {
         var photo = fieldReports.getPhoto(photoId);
         return ResponseEntity.ok().contentType(MediaType.parseMediaType(photo.contentType()))
-            .cacheControl(CacheControl.maxAge(Duration.ofDays(1)).cachePublic()).body(photo.bytes());
+            .cacheControl(CacheControl.maxAge(Duration.ofHours(1)).cachePrivate()).body(photo.bytes());
     }
 
     // JwtAuthenticationFilter always sets a UUID principal.

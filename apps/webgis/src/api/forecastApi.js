@@ -1,4 +1,4 @@
-import axiosClient, { API_BASE_URL } from './axiosClient';
+import axiosClient from './axiosClient';
 
 // Core API forecast contract (Stories 4.2/4.3). Không có dữ liệu giả: lỗi mạng được ném ra để UI hiển thị.
 
@@ -103,8 +103,7 @@ export const forecastApi = {
         description: r.description || '',
         time: r.observed_at || r.report_time,
         status: r.status,
-        // image_url is a server path; on the Vite dev server a relative path would hit Vite, not the API.
-        imageUrl: r.image_url && r.image_url.startsWith('/') ? `${API_BASE_URL}${r.image_url}` : r.image_url,
+        imageUrl: r.image_url, // đường dẫn máy chủ; AuthImage tải kèm token (Story 4.9)
         submitterName: r.submitter_name,
         submitterPhone: r.submitter_phone
       }));
