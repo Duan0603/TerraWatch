@@ -174,13 +174,44 @@ class AuthControllerTest {
 
     @Test
     void existingRoutesAndDocsRemainPublicEvenWithGarbageBearer() throws Exception {
-        for (String path : new String[]{"/landslides/queue", "/landslides/active", "/community-reports", "/monitoring-areas"}) {
+        for (String path : new String[]{"/landslides/queue", "/landslides/active", "/monitoring-areas"}) {
             mvc.perform(get("/api/v1" + path)).andExpect(status().isOk());
             mvc.perform(get("/api/v1" + path).header("Authorization", "Bearer garbage")).andExpect(status().isOk());
         }
         mvc.perform(get("/api-docs")).andExpect(status().isOk());
         mvc.perform(get("/swagger-ui/index.html")).andExpect(status().isOk());
         mvc.perform(get("/swagger-ui.html")).andExpect(status().is3xxRedirection());
+    }
+
+    @Test
+    void fullCommunityReportListNeedsStaffRoleBecauseItCarriesPhonesAndGps() throws Exception {
+        mvc.perform(get("/api/v1/community-reports")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/v1/community-reports").header("Authorization", "Bearer garbage"))
+            .andExpect(status().isUnauthorized());
+        User citizen = users.saveAndFlush(new User("Test", "citizen-reports@auth-test.example",
+            passwords.encode("secret123"), "citizen", null));
+        mvc.perform(get("/api/v1/community-reports").header("Authorization", "Bearer " + tokens.generateToken(citizen)))
+            .andExpect(status().isForbidden());
+        User officer = users.saveAndFlush(new User("Test", "officer-reports@auth-test.example",
+            passwords.encode("secret123"), "officer", null));
+        mvc.perform(get("/api/v1/community-reports").header("Authorization", "Bearer " + tokens.generateToken(officer)))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void oldTokenStopsWorkingWhenTheAccountIsLockedOrDemoted() throws Exception {
+        User admin = users.saveAndFlush(new User("Test", "admin-stale@auth-test.example",
+            passwords.encode("secret123"), "admin", null));
+        String token = tokens.generateToken(admin);
+        mvc.perform(get("/api/v1/admin/users").header("Authorization", "Bearer " + token)).andExpect(status().isOk());
+
+        admin.setRole("citizen");
+        users.saveAndFlush(admin);
+        mvc.perform(get("/api/v1/admin/users").header("Authorization", "Bearer " + token)).andExpect(status().isForbidden());
+
+        admin.setActive(false);
+        users.saveAndFlush(admin);
+        mvc.perform(get("/api/v1/auth/me").header("Authorization", "Bearer " + token)).andExpect(status().isUnauthorized());
     }
 
     @Test

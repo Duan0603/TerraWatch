@@ -11,6 +11,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import vn.terrawatch.core.repository.UserRepository;
 import vn.terrawatch.core.security.JwtAuthenticationFilter;
 import vn.terrawatch.core.security.JwtTokenProvider;
 import org.springframework.web.cors.CorsConfiguration;
@@ -30,7 +31,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtTokenProvider tokens) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtTokenProvider tokens, UserRepository users) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
@@ -46,7 +47,7 @@ public class SecurityConfig {
                             response.setContentType("application/json");
                             response.getWriter().write("{\"message\":\"Forbidden\"}");
                         }))
-                .addFilterBefore(new JwtAuthenticationFilter(tokens), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(tokens, users), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/google")
@@ -59,6 +60,8 @@ public class SecurityConfig {
                                 "/api/v1/community-reports/photos")
                         .authenticated()
                         .requestMatchers("/api/v1/community-reports/mine").authenticated()
+                        // Story 4.7: the full list carries names, phones and exact GPS of citizens.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/community-reports").hasAnyRole("OFFICER", "ADMIN")
                         // Story 1.3 review: this diagnostic/circuit-breaker/event-bus test endpoint
                         // became
                         // internet-reachable for the first time once the gateway added a route for it

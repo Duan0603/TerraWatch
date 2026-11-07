@@ -141,7 +141,8 @@ class BroadcastAdminApiTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(1))
             .andExpect(jsonPath("$[0].recipientName").value("History Test"))
-            .andExpect(jsonPath("$[0].status").value("sent"));
+            .andExpect(jsonPath("$[0].status").value("sent"))
+            .andExpect(jsonPath("$[0].fcmToken").doesNotExist());
     }
 
     @Test

@@ -52,8 +52,10 @@ public class AdminUserController {
     @Operation(summary = "Phân quyền vai trò người dùng (ADMIN, OFFICER, CITIZEN)")
     public ResponseEntity<AdminUserItem> updateUserRole(
             @PathVariable UUID id,
-            @Valid @RequestBody UpdateUserRoleRequest request) {
-        return ResponseEntity.ok(adminUserService.updateUserRole(id, request.role()));
+            @Valid @RequestBody UpdateUserRoleRequest request,
+            Authentication authentication) {
+        UUID adminId = (UUID) authentication.getPrincipal();
+        return ResponseEntity.ok(adminUserService.updateUserRole(id, request.role(), adminId));
     }
 
     @PostMapping("/{id}/approve")

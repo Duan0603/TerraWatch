@@ -66,16 +66,8 @@ public class AuthService {
             verifiedPhone = request.phoneNumber().trim();
         }
 
-        String initialRole = Role.CITIZEN.dbValue();
-        String initialApproval = "approved";
-        if (request.requestedRole() != null && "officer".equalsIgnoreCase(request.requestedRole().trim())) {
-            initialRole = Role.OFFICER.dbValue();
-            initialApproval = "pending";
-        }
-
         User user = new User(request.fullName(), email, passwords.encode(request.password()),
-            initialRole, verifiedPhone);
-        user.setApprovalStatus(initialApproval);
+            Role.CITIZEN.dbValue(), verifiedPhone);
         try {
             user = users.saveAndFlush(user);
         } catch (DataIntegrityViolationException error) {
@@ -114,17 +106,7 @@ public class AuthService {
         if (user.isEmpty() || !matches) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
-        User foundUser = user.get();
-        if (!foundUser.isActive()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản đã bị tạm khóa bởi Quản trị viên");
-        }
-        if ("pending".equalsIgnoreCase(foundUser.getApprovalStatus())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản cán bộ đang chờ Quản trị viên phê duyệt");
-        }
-        if ("rejected".equalsIgnoreCase(foundUser.getApprovalStatus())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản cán bộ đã bị từ chối phê duyệt");
-        }
-        return response(foundUser);
+        return response(user.get());
     }
 
     private static String normalizeEmail(String email) {
@@ -196,12 +178,22 @@ public class AuthService {
         }
     }
 
+    /**
+     * Every sign-in path (password and Google) ends here, so a locked or unapproved account never
+     * gets a token (Story 4.7: Google sign-in used to return 200 with a null token).
+     */
     AuthResponse response(User user) {
         requireKnownRole(user);
-        String token = ("pending".equalsIgnoreCase(user.getApprovalStatus()) || !user.isActive())
-            ? null
-            : tokens.generateToken(user);
-        return new AuthResponse(token, user.getRole(), profile(user));
+        if (!user.isActive()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản đã bị tạm khóa bởi Quản trị viên");
+        }
+        if ("pending".equalsIgnoreCase(user.getApprovalStatus())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản cán bộ đang chờ Quản trị viên phê duyệt");
+        }
+        if ("rejected".equalsIgnoreCase(user.getApprovalStatus())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản cán bộ đã bị từ chối phê duyệt");
+        }
+        return new AuthResponse(tokens.generateToken(user), user.getRole(), profile(user));
     }
 
     private UserProfileResponse profile(User user) {

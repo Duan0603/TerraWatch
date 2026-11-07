@@ -71,7 +71,11 @@ public class AdminUserService {
         return toItem(users.save(user));
     }
 
-    public AdminUserItem updateUserRole(UUID userId, String newRole) {
+    public AdminUserItem updateUserRole(UUID userId, String newRole, UUID adminId) {
+        // Story 4.7: an admin cannot change their own role, so the system can never lose its last admin.
+        if (userId.equals(adminId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quản trị viên không thể tự đổi vai trò của chính mình");
+        }
         if (newRole == null || newRole.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vai trò không được để trống");
         }
@@ -86,16 +90,14 @@ public class AdminUserService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng"));
 
         user.setRole(normalizedRole);
-        if ("officer".equalsIgnoreCase(normalizedRole) && "pending".equalsIgnoreCase(user.getApprovalStatus())) {
-            user.setApprovalStatus("approved");
-        }
+        // An explicit role change by an admin settles any pending/rejected request.
+        user.setApprovalStatus("approved");
         user.setUpdatedAt(OffsetDateTime.now());
         return toItem(users.save(user));
     }
 
     public AdminUserItem approveOfficer(UUID userId) {
-        User user = users.findById(userId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng"));
+        User user = pendingRequest(userId);
 
         user.setRole(Role.OFFICER.dbValue());
         user.setApprovalStatus("approved");
@@ -104,12 +106,21 @@ public class AdminUserService {
     }
 
     public AdminUserItem rejectOfficer(UUID userId) {
-        User user = users.findById(userId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng"));
+        User user = pendingRequest(userId);
 
         user.setApprovalStatus("rejected");
         user.setUpdatedAt(OffsetDateTime.now());
         return toItem(users.save(user));
+    }
+
+    /** Approve/reject only answer a request that is still waiting; they must not re-role any account. */
+    private User pendingRequest(UUID userId) {
+        User user = users.findById(userId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng"));
+        if (!"pending".equalsIgnoreCase(user.getApprovalStatus())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Tài khoản này không có yêu cầu đang chờ duyệt");
+        }
+        return user;
     }
 
     private AdminUserItem toItem(User u) {

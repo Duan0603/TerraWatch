@@ -61,6 +61,17 @@ class GoogleAuthServiceTest {
     }
 
     @Test
+    void refusesALockedCitizenInsteadOfReturningANullToken() {
+        User locked = new User("An", "locked@example.com", "hash", "citizen", null);
+        locked.setUserId(UUID.randomUUID());
+        locked.setActive(false);
+        when(verifier.verify("tok")).thenReturn(new FirebaseIdTokenVerifier.GoogleIdentity("locked@example.com", "An"));
+        when(users.findByEmail("locked@example.com")).thenReturn(Optional.of(locked));
+        assertThatThrownBy(() -> google.login("tok"))
+            .isInstanceOfSatisfying(ResponseStatusException.class, e -> assertThat(e.getStatusCode().value()).isEqualTo(403));
+    }
+
+    @Test
     void refusesToLogStaffAccountsInThroughGoogle() {
         for (String role : new String[]{"officer", "admin"}) {
             User staff = new User("Staff", "staff@example.com", "hash", role, null);
