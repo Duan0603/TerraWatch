@@ -1,6 +1,7 @@
-import React from 'react';
-import { CloudRain, Mountain, Calendar, X, AlertTriangle } from 'lucide-react';
+import React, { useState } from 'react';
+import { CloudRain, Mountain, Calendar, X, AlertTriangle, GitCompare } from 'lucide-react';
 import { fmtVN, fmtUtc, hourVN, relativeToNow } from '../utils/time';
+import ForecastComparisonModal from './ForecastComparisonModal';
 
 const STATE = {
   expired: { label: 'Hết hạn', bg: '#FEF2F2', fg: '#B91C1C', border: '#FECACA' },
@@ -45,6 +46,8 @@ function KeyValues({ title, data }) {
 
 export default function RainfallEvidencePanel({ selectedEvent: ev, onClose }) {
   if (!ev) return null;
+
+  const [isComparisonOpen, setIsComparisonOpen] = useState(false);
 
   const state = STATE[stateOf(ev)];
   const hasEvidence = Array.isArray(ev.observedRain);
@@ -136,7 +139,26 @@ export default function RainfallEvidencePanel({ selectedEvent: ev, onClose }) {
             {/* So sánh các lần chạy dự báo */}
             {(forecasts.length > 0 || prior.length > 0) && (
               <div style={{ marginBottom: 14 }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: '#172524', marginBottom: 4 }}>So sánh các lần chạy</div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: '#172524' }}>So sánh các lần chạy</div>
+                  <button
+                    onClick={() => setIsComparisonOpen(true)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#087B70',
+                      fontSize: 10,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      padding: '2px 4px'
+                    }}
+                  >
+                    <GitCompare size={11} /> Chi tiết tiến trình
+                  </button>
+                </div>
                 <div style={{ background: '#F5F8F7', border: '1px solid #DCE5E2', borderRadius: 8, padding: '6px 10px', fontSize: 10, color: '#475569' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0', color: '#172524' }}>
                     <strong>Lần này · {fmtVN(ev.issuedAt)}</strong>
@@ -190,6 +212,12 @@ export default function RainfallEvidencePanel({ selectedEvent: ev, onClose }) {
           </span>
         </div>
       </div>
+
+      <ForecastComparisonModal
+        isOpen={isComparisonOpen}
+        onClose={() => setIsComparisonOpen(false)}
+        selectedEvent={ev}
+      />
     </div>
   );
 }
