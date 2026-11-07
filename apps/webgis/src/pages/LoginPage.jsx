@@ -28,6 +28,21 @@ import authApi from '../api/authApi';
 import LoginBackdrop from '../components/LoginBackdrop';
 import './login.css';
 
+// Khung tự đổi chiều cao mượt khi nội dung bên trong thay đổi (chuyển bước đăng ký).
+function AutoHeight({ children }) {
+  const inner = useRef(null);
+  const [h, setH] = useState('auto');
+  useEffect(() => {
+    const el = inner.current;
+    if (!el || !window.ResizeObserver) return undefined;
+    const ro = new ResizeObserver(() => setH(el.offsetHeight));
+    ro.observe(el);
+    setH(el.offsetHeight);
+    return () => ro.disconnect();
+  }, []);
+  return <div className="lg-auto" style={{ height: h }}><div ref={inner}>{children}</div></div>;
+}
+
 // Sáu ô nhập mã OTP: tự nhảy ô, Backspace lùi ô, dán cả mã một lần.
 function OtpBoxes({ value, onChange, disabled }) {
   const refs = useRef([]);
@@ -95,6 +110,9 @@ export default function LoginPage() {
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
+  const [modalClosing, setModalClosing] = useState(false);
+  const [modalFrom, setModalFrom] = useState({ x: 0, y: 0 }); // vị trí nút vừa bấm so với tâm màn hình
+  const prevStepRef = useRef(1);
   const [regLoading, setRegLoading] = useState(false);
   const [regError, setRegError] = useState('');
   const [regSuccessResult, setRegSuccessResult] = useState(null);
@@ -172,7 +190,13 @@ export default function LoginPage() {
     setTimeout(() => submitRef.current?.focus(), 0);
   };
 
-  const openRegisterModal = (role) => {
+  const openRegisterModal = (role, event) => {
+    const rect = event?.currentTarget?.getBoundingClientRect?.();
+    setModalFrom(rect
+      ? { x: Math.round(rect.left + rect.width / 2 - window.innerWidth / 2), y: Math.round(rect.top + rect.height / 2 - window.innerHeight / 2) }
+      : { x: 0, y: 0 });
+    prevStepRef.current = 1;
+    setModalClosing(false);
     setActiveModal(role);
     setRegStep('form');
     setRegFullName('');
@@ -192,12 +216,19 @@ export default function LoginPage() {
   };
 
   const closeRegisterModal = () => {
-    setActiveModal(null);
-    setRegStep('form');
-    setRegSuccessResult(null);
-    setRegError('');
-    setOtpCode('');
-    setOtpError('');
+    if (modalClosing) return;
+    const finish = () => {
+      setActiveModal(null);
+      setModalClosing(false);
+      setRegStep('form');
+      setRegSuccessResult(null);
+      setRegError('');
+      setOtpCode('');
+      setOtpError('');
+    };
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { finish(); return; }
+    setModalClosing(true);
+    setTimeout(finish, 260); // khớp thời gian keyframes lg-modal-out
   };
 
   // Bước 1: Kiểm tra form và Gửi mã OTP về Số điện thoại
@@ -330,8 +361,12 @@ export default function LoginPage() {
     }
   };
 
+  const stepNow = regSuccessResult ? 3 : regStep === 'otp' ? 2 : 1;
+  const stepDir = stepNow >= prevStepRef.current ? 'fwd' : 'back';
+  useEffect(() => { prevStepRef.current = stepNow; }, [stepNow]);
+
   return (
-    <div className="lg-stage">
+    <div className={`lg-stage${activeModal && !modalClosing ? ' lg-dimmed' : ''}`}>
       <LoginBackdrop />
       <main className="lg-layout">
         <section className="lg-hero">
@@ -401,7 +436,7 @@ export default function LoginPage() {
           <p className="lg-hint">Điền sẵn tài khoản demo để diễn tập.</p>
 
           <div className="lg-links">
-            <button type="button" className="lg-action" onClick={() => openRegisterModal('citizen')}>
+            <button type="button" className="lg-action" onClick={(e) => openRegisterModal('citizen', e)}>
               <span className="lg-action-icon"><Smartphone size={20} aria-hidden="true" /></span>
               <span className="lg-action-text">
                 <strong>Đăng ký công dân</strong>
@@ -409,7 +444,7 @@ export default function LoginPage() {
               </span>
               <ArrowRight size={18} className="lg-action-go" aria-hidden="true" />
             </button>
-            <button type="button" className="lg-action" onClick={() => openRegisterModal('officer')}>
+            <button type="button" className="lg-action" onClick={(e) => openRegisterModal('officer', e)}>
               <span className="lg-action-icon"><UserPlus size={20} aria-hidden="true" /></span>
               <span className="lg-action-text">
                 <strong>Yêu cầu tài khoản cán bộ</strong>
@@ -425,8 +460,8 @@ export default function LoginPage() {
 
       {/* Hộp đăng ký (công dân / cán bộ): thiết kế theo DESIGN.md mục Registration dialogs */}
       {activeModal && (
-        <div className="lg-overlay" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) closeRegisterModal(); }}>
-          <div className="lg-modal" role="dialog" aria-modal="true" aria-labelledby="lg-modal-title">
+        <div className={`lg-overlay${modalClosing ? ' is-closing' : ''}`} role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) closeRegisterModal(); }}>
+          <div className="lg-modal" style={{ '--from-x': `${modalFrom.x}px`, '--from-y': `${modalFrom.y}px` }} role="dialog" aria-modal="true" aria-labelledby="lg-modal-title">
             <div className="lg-modal-head">
               <span className="lg-modal-icon" aria-hidden="true">
                 {activeModal === 'officer' ? <UserPlus size={22} /> : <Smartphone size={22} />}
@@ -455,6 +490,8 @@ export default function LoginPage() {
               })}
             </ol>
 
+            <AutoHeight>
+            <div key={stepNow} className={`lg-pane lg-pane-${stepDir}`}>
             {regSuccessResult ? (
               <div className="lg-done">
                 <span className="lg-done-icon" aria-hidden="true"><CheckCircle2 size={40} /></span>
@@ -589,6 +626,8 @@ export default function LoginPage() {
                 </div>
               </form>
             )}
+            </div>
+            </AutoHeight>
           </div>
         </div>
       )}

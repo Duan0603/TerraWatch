@@ -146,6 +146,32 @@ body.page-login { background: #070D1A; }
   .lg-actions .lg-back { width: 100%; }
 }
 
+/* ── Chuyển cảnh mượt giữa thẻ đăng nhập và hộp đăng ký (Story 4.18) ── */
+.lg-card, .lg-hero { transition: transform .45s cubic-bezier(.2, .8, .2, 1), opacity .45s ease, filter .45s ease; }
+.lg-dimmed .lg-card { transform: scale(.96) translateY(6px); opacity: .45; filter: blur(2px); }
+.lg-dimmed .lg-hero { opacity: .5; filter: blur(1px); }
+.lg-overlay { animation: lg-fade-in .3s ease-out both; }
+.lg-overlay.is-closing { animation: lg-fade-out .26s ease-in both; }
+.lg-modal { animation: lg-modal-in .42s cubic-bezier(.2, .8, .2, 1) both; transform-origin: center; }
+.lg-overlay.is-closing .lg-modal { animation: lg-modal-out .26s cubic-bezier(.4, 0, 1, 1) both; }
+/* Hộp "mọc ra" từ đúng nút vừa bấm rồi thu về nút đó khi đóng. */
+@keyframes lg-modal-in {
+  from { opacity: 0; transform: translate(var(--from-x, 0), var(--from-y, 24px)) scale(.5); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes lg-modal-out {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translate(var(--from-x, 0), var(--from-y, 24px)) scale(.5); }
+}
+@keyframes lg-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes lg-fade-out { from { opacity: 1; } to { opacity: 0; } }
+/* Đổi bước: nội dung mới trượt vào (tiến từ phải, lùi từ trái), chiều cao khung đổi mượt. */
+.lg-auto { box-sizing: content-box; overflow: hidden; margin: -6px; padding: 6px; transition: height .35s cubic-bezier(.2, .8, .2, 1); }
+.lg-pane { animation: lg-pane-fwd .38s cubic-bezier(.2, .8, .2, 1) both; }
+.lg-pane-back { animation-name: lg-pane-back; }
+@keyframes lg-pane-fwd { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+@keyframes lg-pane-back { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+
 @media (max-width: 900px) {
   .lg-layout { grid-template-columns: 1fr; gap: 28px; padding: 28px 16px 40px; align-items: start; }
   .lg-hero h1 { font-size: 26px; margin: 14px 0 0; }
@@ -154,6 +180,8 @@ body.page-login { background: #070D1A; }
   .lg-card { justify-self: stretch; max-width: none; padding: 24px 20px; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .lg-overlay, .lg-modal, .lg-pane { animation: none !important; }
+  .lg-card, .lg-hero, .lg-auto { transition: none; }
   .lg-cloud { animation: none; }
   .lg-rain { display: none; }
 }

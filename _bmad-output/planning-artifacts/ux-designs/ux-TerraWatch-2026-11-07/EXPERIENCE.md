@@ -86,3 +86,10 @@ Both dialogs follow Form → OTP → Result, with a visible 3-step indicator.
 - **Result**: officer sees the request code and that an admin must approve; citizen sees a short confirmation. "Quay lại đăng nhập" closes the dialog.
 - **Dialog behaviour**: Esc and the close button close it; clicking the dark overlay closes it; the dialog is `aria-modal` and labelled by its title.
 - Removed: the simulated-SMS banner and the "auto-fill OTP" shortcut (Story 4.5 forbids a code shown on screen).
+
+## Transitions (Story 4.18)
+
+- **Open**: the dialog grows out of the card that was pressed (scale .5 to 1, from that button's position) in 0.42 s, the overlay fades in over 0.3 s, and the sign-in card behind it recedes (scale .96, blurred, 45% opacity).
+- **Close** (button, Esc, overlay click, "Quay lại đăng nhập"): the dialog shrinks back to the same button in 0.26 s and the card comes forward again. A second close during the animation is ignored.
+- **Between steps**: new content slides in from the right when moving forward and from the left when going back (0.38 s, 28 px) while the dialog height eases to the new height (0.35 s).
+- **Reduced motion**: all of the above are switched off; dialogs appear and disappear at once.
