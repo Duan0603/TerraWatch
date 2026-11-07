@@ -37,6 +37,13 @@ public class AuthController {
         return auth.register(request);
     }
 
+    @PostMapping("/officer-requests")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Request an officer account: verified phone required, pending until an admin approves")
+    public OfficerRequestResponse officerRequest(@Valid @RequestBody OfficerRequest request) {
+        return auth.requestOfficer(request);
+    }
+
     @PostMapping("/login")
     @Operation(summary = "Log in and receive a role-specific JWT")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {

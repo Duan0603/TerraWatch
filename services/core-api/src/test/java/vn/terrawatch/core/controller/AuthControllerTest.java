@@ -107,6 +107,42 @@ class AuthControllerTest {
     }
 
     @Test
+    void officerRequestNeedsVerifiedPhoneAndStaysPendingUntilApproved() throws Exception {
+        Map<String, String> base = Map.of("fullName", "Cán bộ Mới", "email", "new-officer@auth-test.example",
+            "password", "secret123", "phoneNumber", "0912345678", "departmentUnit", "Chi cục PCTT Yên Bái");
+
+        // Missing OTP token, missing unit or a token for another number are refused.
+        postJson("/auth/officer-requests", base).andExpect(status().isBadRequest());
+        Map<String, String> noUnit = new java.util.HashMap<>(base);
+        noUnit.put("phoneToken", "officer-token");
+        noUnit.remove("departmentUnit");
+        postJson("/auth/officer-requests", noUnit).andExpect(status().isBadRequest());
+        Map<String, String> wrongPhone = new java.util.HashMap<>(base);
+        wrongPhone.put("phoneToken", "valid-token");
+        postJson("/auth/officer-requests", wrongPhone).andExpect(status().isBadRequest());
+
+        Map<String, String> ok = new java.util.HashMap<>(base);
+        ok.put("phoneToken", "officer-token");
+        JsonNode created = body(postJson("/auth/officer-requests", ok).andExpect(status().isCreated())
+            .andExpect(jsonPath("$.approvalStatus").value("pending")).andExpect(jsonPath("$.token").doesNotExist()));
+        assertThat(created.path("requestId").asText()).isNotBlank();
+
+        User saved = users.findByEmail("new-officer@auth-test.example").orElseThrow();
+        assertThat(saved.getRole()).isEqualTo("officer");
+        assertThat(saved.getApprovalStatus()).isEqualTo("pending");
+        assertThat(saved.getDepartmentUnit()).isEqualTo("Chi cục PCTT Yên Bái");
+
+        // No sign-in and no API access until an admin approves.
+        postJson("/auth/login", Map.of("email", "new-officer@auth-test.example", "password", "secret123"))
+            .andExpect(status().isForbidden());
+        mvc.perform(get("/api/v1/forecasts/queue").header("Authorization", "Bearer " + tokens.generateToken(saved)))
+            .andExpect(status().isUnauthorized());
+
+        // The same email cannot be requested twice.
+        postJson("/auth/officer-requests", ok).andExpect(status().isConflict());
+    }
+
+    @Test
     void acceptsCamelCasePhoneAndIgnoresOfficerRole() throws Exception {
         body(postJson("/auth/register", Map.of("fullName", "Test", "email", "phone@auth-test.example",
             "password", "secret123", "phoneNumber", "0912345678", "role", "officer", "phoneToken", "officer-token"))

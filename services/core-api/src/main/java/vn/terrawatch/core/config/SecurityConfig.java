@@ -50,7 +50,8 @@ public class SecurityConfig {
                 .addFilterBefore(new JwtAuthenticationFilter(tokens, users), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/google")
+                        .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/google",
+                                "/api/v1/auth/officer-requests")
                         .permitAll()
                         .requestMatchers("/api/v1/auth/me", "/api/v1/auth/me/**", "/api/v1/auth/password")
                         .authenticated()

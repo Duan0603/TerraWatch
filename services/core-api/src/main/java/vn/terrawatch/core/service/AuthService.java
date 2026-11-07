@@ -48,35 +48,59 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
 
-        // Bắt buộc xác minh số điện thoại qua OTP:
-        // Gọi thẳng API với số điện thoại mà không qua xác minh OTP sẽ bị từ chối 400.
-        String verifiedPhone = null;
-        if (request.phoneNumber() != null && !request.phoneNumber().isBlank()) {
-            if (request.phoneToken() == null || request.phoneToken().isBlank()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Phone number must be verified via OTP before registration");
-            }
-            if (firebaseVerifier != null) {
-                String tokenPhone = firebaseVerifier.verifyPhoneToken(request.phoneToken());
-                if (!phonesMatch(tokenPhone, request.phoneNumber())) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Phone number in verification token does not match registered phone number");
-                }
-            }
-            verifiedPhone = request.phoneNumber().trim();
-        }
+        String verifiedPhone = verifiedPhone(request.phoneNumber(), request.phoneToken());
 
         User user = new User(request.fullName(), email, passwords.encode(request.password()),
             Role.CITIZEN.dbValue(), verifiedPhone);
+        return response(saveNewUser(user, email));
+    }
+
+    /**
+     * Story 4.8: anyone may ask for an officer account, but only with an OTP-verified phone, and the
+     * account cannot sign in or call the API until an admin approves it (approval_status = pending).
+     */
+    public OfficerRequestResponse requestOfficer(OfficerRequest request) {
+        validatePasswordLength(request.password());
+        String email = normalizeEmail(request.email());
+        if (users.existsByEmail(email)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
+        }
+        String verifiedPhone = verifiedPhone(request.phoneNumber(), request.phoneToken());
+        User user = new User(request.fullName(), email, passwords.encode(request.password()),
+            Role.OFFICER.dbValue(), verifiedPhone);
+        user.setApprovalStatus("pending");
+        user.setDepartmentUnit(request.departmentUnit().trim());
+        user = saveNewUser(user, email);
+        return new OfficerRequestResponse(user.getUserId().toString(), "pending",
+            "Hồ sơ đã được gửi. Tài khoản chỉ đăng nhập được sau khi Quản trị viên phê duyệt.");
+    }
+
+    /** Phone numbers are accepted only with a Firebase phone token for the same number (Story 4.6). */
+    private String verifiedPhone(String phone, String phoneToken) {
+        if (phone == null || phone.isBlank()) return null;
+        if (phoneToken == null || phoneToken.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Phone number must be verified via OTP before registration");
+        }
+        if (firebaseVerifier != null) {
+            String tokenPhone = firebaseVerifier.verifyPhoneToken(phoneToken);
+            if (!phonesMatch(tokenPhone, phone)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Phone number in verification token does not match registered phone number");
+            }
+        }
+        return phone.trim();
+    }
+
+    private User saveNewUser(User user, String email) {
         try {
-            user = users.saveAndFlush(user);
+            return users.saveAndFlush(user);
         } catch (DataIntegrityViolationException error) {
             if (users.existsByEmail(email)) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
             }
             throw error;
         }
-        return response(user);
     }
 
     public static boolean phonesMatch(String tokenPhone, String requestPhone) {

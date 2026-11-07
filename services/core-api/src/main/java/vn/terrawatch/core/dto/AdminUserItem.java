@@ -10,6 +10,7 @@ public record AdminUserItem(
     String phoneNumber,
     boolean isActive,
     String approvalStatus,
+    String departmentUnit,
     String createdAt,
     String updatedAt
 ) {}

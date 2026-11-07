@@ -132,6 +132,7 @@ public class AdminUserService {
             u.getPhoneNumber(),
             u.isActive(),
             u.getApprovalStatus(),
+            u.getDepartmentUnit(),
             u.getCreatedAt() != null ? u.getCreatedAt().toString() : null,
             u.getUpdatedAt() != null ? u.getUpdatedAt().toString() : null
         );
