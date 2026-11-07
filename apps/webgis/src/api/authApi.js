@@ -17,15 +17,15 @@ export const formatToE164 = (phone) => {
 
 // Khởi tạo reCAPTCHA ẩn cho Firebase Phone Auth
 export const getOrCreateRecaptcha = async (containerId = 'recaptcha-container') => {
-  let element = document.getElementById(containerId);
-  if (!element) {
-    element = document.createElement('div');
-    element.id = containerId;
-    element.style.position = 'fixed';
-    element.style.bottom = '0';
-    element.style.left = '0';
-    element.style.zIndex = '-1';
-    document.body.appendChild(element);
+  let host = document.getElementById(containerId);
+  if (!host) {
+    host = document.createElement('div');
+    host.id = containerId;
+    host.style.position = 'fixed';
+    host.style.bottom = '0';
+    host.style.left = '0';
+    host.style.zIndex = '-1';
+    document.body.appendChild(host);
   }
 
   if (window.recaptchaVerifier) {
@@ -36,6 +36,12 @@ export const getOrCreateRecaptcha = async (containerId = 'recaptcha-container') 
     }
     window.recaptchaVerifier = null;
   }
+
+  // reCAPTCHA chỉ render được một lần vào mỗi phần tử: mỗi lần gửi (gửi lại) dùng một phần tử mới,
+  // nếu không lần thứ hai báo "reCAPTCHA has already been rendered in this element".
+  host.replaceChildren();
+  const element = document.createElement('div');
+  host.appendChild(element);
 
   window.recaptchaVerifier = new RecaptchaVerifier(auth, element, {
     size: 'invisible',
