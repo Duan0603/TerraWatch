@@ -101,8 +101,10 @@ The sign-in card and the sign-up are two panels of the **same frame**, not a pop
 
 A third panel of the same frame (to the right of the sign-up panel), opened by "Quên mật khẩu?" under the password field; the email typed on the sign-in panel is carried over. There is no e-mail service, so ownership is proved with the phone registered on the account.
 
-- **Step 1 Thông tin**: email, registered phone, new password twice (show/hide, live match line). Pressing "Gửi mã OTP" first asks the server whether this email and phone belong together; if not, the form says so and sends no SMS. Every mismatch (unknown email, other phone, locked or Google-only account) gets the same message.
-- **Step 2 Xác minh SĐT**: the same six-box OTP as sign-up. Confirming verifies the code with Firebase and sends the new password with the phone token.
-- **Step 3 Hoàn tất**: "Đã đặt lại mật khẩu" and a button "Đăng nhập ngay" that returns to the sign-in panel with the email filled in and the password empty.
+- **Step 1 Tài khoản**: email and registered phone only. Pressing "Gửi mã OTP" first asks the server whether this email and phone belong together; if not, the form says so and sends no SMS. Every mismatch (unknown email, other phone, locked or Google-only account) gets the same message.
+- **Step 2 Mã OTP**: the same six-box OTP as sign-up. Only a correct code moves on; the new password cannot be typed before the phone is verified.
+- **Step 3 Mật khẩu mới**: shown only after the code is right: new password twice (show/hide, live match line) and "Đổi mật khẩu". If the verification has expired by then, the panel returns to step 1 with the message.
+- **Step 4 Hoàn tất**: "Đã đặt lại mật khẩu" and a button "Đăng nhập ngay" that returns to the sign-in panel with the email filled in and the password empty.
+- If Firebase cannot send an SMS because billing is off, the message says so and names the test number.
 - Back link and Esc return to sign-in at any time; the panel is cleared after it has left the frame.
 - Limits stated to the user: old sessions stay valid until they expire; an account with no registered phone cannot use this route and must ask an admin.

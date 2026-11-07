@@ -110,6 +110,8 @@ export const authApi = {
         humanMsg = 'Đã đạt hạn mức SMS tối đa trong ngày của Firebase (10 SMS/ngày).';
       } else if (err.code === 'auth/quota-exceeded') {
         humanMsg = 'Dự án đã sử dụng hết hạn mức SMS.';
+      } else if (err.code === 'auth/billing-not-enabled') {
+        humanMsg = 'Dự án Firebase chưa bật thanh toán (gói Blaze) nên chưa gửi được SMS tới số điện thoại thật. Hãy dùng số thử +84 900 000 001 (mã 123456) hoặc nhờ quản trị dự án bật thanh toán.';
       } else if (err.code === 'auth/argument-error') {
         humanMsg = 'Lỗi cấu hình phần tử reCAPTCHA: ' + err.message;
       }

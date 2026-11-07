@@ -22,7 +22,7 @@ so that I can sign in again without asking someone to edit the database.
 2. **AC2 (reset):** `POST /api/v1/auth/password-reset {email, phoneNumber, phoneToken, newPassword}` (public) returns 204 and sets the new password only when the Firebase phone token verifies, belongs to the same phone number and that phone is the one on the account. Min length 8, max 72 bytes.
 3. **AC3 (no leaks):** every failure (unknown email, other phone, locked account, Google-only account, no phone on the account, bad token) is the same 400 "Email hoặc số điện thoại không khớp với tài khoản nào" (a bad token keeps the verifier's own message, which the web shows as an expired-code hint). Nothing says which part was wrong.
 4. **AC3b (effect):** after a reset the old password stops working and the new one signs in; existing JWTs stay valid until they expire (stated in the UI).
-5. **AC4 (web):** "Quên mật khẩu?" under the password field opens a third panel in the sign-in frame: form (email carried over, phone, new password twice) → six-box OTP → done with "Đăng nhập ngay" (email filled in, password empty). Back link and Esc return; panel is inert while hidden.
+5. **AC4 (web):** "Quên mật khẩu?" under the password field opens a third panel in the sign-in frame with four steps: Tài khoản (email carried over, phone) → Mã OTP (six boxes) → Mật khẩu mới (only after a correct code) → Hoàn tất ("Đăng nhập ngay", email filled in, password empty). Back link and Esc return; panel is inert while hidden. An expired verification at step 3 returns to step 1.
 6. **AC5 (honesty):** the screen says an account without a registered phone cannot use this route.
 
 ## Tasks
@@ -34,6 +34,7 @@ so that I can sign in again without asking someone to edit the database.
 
 ## Notes
 
+- Changed after review by Lâm: the new password is asked after the OTP is verified (first version asked for it on the first screen). Firebase `auth/billing-not-enabled` now shows a Vietnamese message naming the test number.
 - Verified live: pre-check right/wrong phone through the gateway, bad token gives 400, the form refuses a wrong phone without sending an SMS.
 - Not verified live: the OTP step and the final reset from the browser. Google showed a reCAPTCHA image challenge to the automated browser, which only a person may solve. A throwaway account `qa.forgot@example.com` (password `Terrawatch@2026`, phone 0900000001, the Firebase test number with code 123456) was left in the dev database for that manual check; delete it afterwards.
 - Real SMS to a real number needs the Firebase Blaze plan (error `auth/billing-not-enabled` seen earlier), so only the Firebase test number works until billing is on.
