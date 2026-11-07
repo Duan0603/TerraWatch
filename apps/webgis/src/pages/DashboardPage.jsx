@@ -15,6 +15,7 @@ import KpiStrip from '../components/KpiStrip';
 import forecastApi, { apiErrorMessage } from '../api/forecastApi';
 import broadcastApi from '../api/broadcastApi';
 import { exportReport, FORECAST_COLUMNS } from '../utils/reportExport';
+import { takePrefetched } from '../preload/warmUp';
 import { useAuth } from '../context/AuthContext';
 import { useResponsive } from '../hooks/useResponsive';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
@@ -64,10 +65,11 @@ export default function DashboardPage() {
 
   const loadEvents = useCallback(async () => {
     // Số liệu phụ của dải KPI: lỗi ở đây không được làm hỏng hàng đợi.
-    forecastApi.getFieldReports().then(setFieldReports).catch(() => {});
+    takePrefetched('fieldReports', () => forecastApi.getFieldReports()).then(setFieldReports).catch(() => {});
     if (isAdmin) broadcastApi.getBroadcastHistory().then(setBroadcasts).catch(() => setBroadcasts(null));
     try {
-      const data = await forecastApi.getReviewQueue('all');
+      // Lần đầu sau đăng nhập: dùng kết quả đã tải sẵn ở trang login (Story 4.22), không có thì gọi thật.
+      const data = await takePrefetched('queue', () => forecastApi.getReviewQueue('all'));
       setEvents(data);
       setLoadError(null);
       setLastLoadedAt(new Date()); // ghi nhận thời điểm tải thành công
@@ -85,7 +87,7 @@ export default function DashboardPage() {
 
   // Lớp bản đồ phụ: lỗi ở đây không chặn hàng đợi duyệt.
   useEffect(() => {
-    forecastApi.getAoiCollection().then(setAoi).catch(() => setAoi(null));
+    takePrefetched('aoi', () => forecastApi.getAoiCollection()).then(setAoi).catch(() => setAoi(null));
   }, []);
 
   const handleReviewRequest = (id, decision) => {
