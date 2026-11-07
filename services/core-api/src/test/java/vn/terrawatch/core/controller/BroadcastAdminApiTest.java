@@ -139,6 +139,22 @@ class BroadcastAdminApiTest {
     }
 
     @Test
+    void onlyAnAdminCreatesAreasAndADuplicateNameIsAConflict() throws Exception {
+        Map<String, Object> square = Map.of("type", "Polygon", "coordinates", List.of(List.of(
+            List.of(104.0, 22.0), List.of(104.1, 22.0), List.of(104.1, 22.1), List.of(104.0, 22.1), List.of(104.0, 22.0))));
+        Map<String, Object> area = Map.of("name", "Vung thu Story 4.5", "description", "test", "geojson", square);
+        call(HttpMethod.POST, "/api/v1/monitoring-areas", null, area).andExpect(status().isUnauthorized());
+        call(HttpMethod.POST, "/api/v1/monitoring-areas", withRole("officer2@history-test.example", "officer"), area)
+            .andExpect(status().isForbidden());
+
+        String admin = withRole("admin3@history-test.example", "admin");
+        call(HttpMethod.POST, "/api/v1/monitoring-areas", admin, area).andExpect(status().isOk());
+        call(HttpMethod.POST, "/api/v1/monitoring-areas", admin, area)
+            .andExpect(status().isConflict()).andExpect(jsonPath("$.message").value("A monitoring area with this name already exists"));
+        // GET stays public: covered by AuthControllerTest (this transaction is aborted by the duplicate insert)
+    }
+
+    @Test
     void monitoringAreaNamesAreUnique() {
         Integer duplicates = jdbc.queryForObject(
             "SELECT COUNT(*) FROM (SELECT name FROM gis_schema.monitoring_areas GROUP BY name HAVING COUNT(*) > 1) d", Integer.class);

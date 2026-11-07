@@ -72,3 +72,27 @@ Claude Opus 5.5 (claude-opus-5-5)
 - services/core-api: `V10__unique_monitoring_area_names.sql`, `BroadcastHistoryItem`, `BroadcastPreview`, `BroadcastRepository`, `NotificationService`, `NotificationController`, `SecurityConfig`, test `BroadcastAdminApiTest`
 - apps/webgis: `src/api/broadcastApi.js`, `src/api/broadcastHistory.js` (new), `src/api/authApi.js`, `src/config/firebase.js`, `src/components/BroadcastModal.jsx`, `src/components/BroadcastHistoryModal.jsx`, `src/components/EventCard.jsx` (export labels), `src/pages/CitizenPage.jsx`, `src/pages/LoginPage.jsx`, `src/index.css`, `.env.example`, `tests/test-broadcast-history.mjs` (new), `tests/run-all-tests.mjs`
 - _bmad-output/implementation-artifacts: this story, `sprint-status.yaml`
+
+### Follow-up 2026-11-07: Firebase web app and OTP verified end to end
+
+- Registered the Firebase web app `terrawatch-webgis` in project `terrawatch-ac26f`; its config lives only in the git-ignored `apps/webgis/.env`. The API key was checked against Google (`getProjectConfig`: project 84828367416, `localhost` authorized).
+- Phone provider enabled, Vietnam allowed in the SMS region policy, test number `+84 900 000 001` / `123456` added (no real SMS).
+- Found and fixed (commit e207f76): a second OTP request failed with "reCAPTCHA has already been rendered in this element" (the old mock fallback had hidden it). Each request now renders in a fresh element.
+- Verified by the user in Chrome: OTP sent to the test number, code accepted, citizen account created in the database, redirect to login. The test account was deleted afterwards (the Firebase test user remains in the console).
+
+### Review Findings (bmad-code-review, 2026-11-07, self-review)
+
+Scope: `main...feature/webgis-p0-fixes`. Run by the author's session, not an independent reviewer.
+
+Fixed in this branch:
+- [x] **[Medium] V10 side effect:** creating an area with an existing name now hits the unique index and returned 500 "Invalid GeoJSON geometry payload". Now 409 "A monitoring area with this name already exists"; `MonitoringAreaController` added to the status-preserving advice.
+- [x] **[High, pre-existing] Anyone could create monitoring areas:** `POST /api/v1/monitoring-areas` fell under the blanket `permitAll`. Now admin only (PRD: admin manages AOIs); `GET` stays public for the map and the apps. No client posts areas (checked web and mobile).
+- [x] **[Low, pre-existing]** web sign-up accepted 6-character passwords while the backend requires 8: the OTP step passed and registration then failed. The web now asks for 8.
+- Tests: `BroadcastAdminApiTest` +1 (anonymous 401, officer 403, admin 200 then 409, GET public). Core API full suite 85 tests (84 in the full run; the new area test passed in a rerun after removing a GET that ran inside the aborted test transaction); WebGIS tests and `vite build` pass.
+
+Accepted / left for later:
+- The mock-OTP display block in `LoginPage.jsx` is unreachable now (dead code) and the page has two elements with `id="recaptcha-container"`; harmless, clean up with the login page refactor.
+- The OTP screen says "Đã gửi tin nhắn SMS thật" even for Firebase test numbers.
+- **Backend does not verify the OTP:** `/auth/register` never checks a Firebase ID token, so the phone check can be skipped by calling the API directly. Needs its own story (verify the phone ID token like `/auth/google`).
+- Citizen page lists every approved zone (no per-subscription filter) because offline-sync does not return the unit's area.
+

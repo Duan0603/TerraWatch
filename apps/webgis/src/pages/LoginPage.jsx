@@ -150,8 +150,8 @@ export default function LoginPage() {
       return;
     }
 
-    if (regPassword.length < 6) {
-      setRegError('Mật khẩu bảo mật phải có tối thiểu 6 ký tự.');
+    if (regPassword.length < 8) {
+      setRegError('Mật khẩu bảo mật phải có tối thiểu 8 ký tự (theo yêu cầu của máy chủ).');
       return;
     }
 
