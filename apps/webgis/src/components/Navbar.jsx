@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, LogOut, BellRing, History, Volume2, VolumeX, FileCheck2, Radio } from 'lucide-react';
+import { ShieldCheck, LogOut, BellRing, History, Volume2, VolumeX, FileCheck2, Radio, Layers } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fmtVN } from '../utils/time';
 import { playAlertBeep } from '../utils/sound';
@@ -12,6 +12,7 @@ export default function Navbar({
   onOpenHistory,
   onOpenAuditLog,
   onOpenFieldReports,
+  onOpenAoi,
   lastLoadedAt,       // Date | null – thời điểm loadEvents() thành công gần nhất
   loadError,          // string | null – lỗi kết nối API
 }) {
@@ -113,6 +114,18 @@ export default function Navbar({
           <Radio size={14} />
           <span className="btn-label">Báo cáo hiện trường</span>
         </button>
+
+        {/* Quản lý vùng giám sát AOI — Admin only */}
+        {isAdmin && (
+          <button
+            className="btn-ghost"
+            onClick={onOpenAoi}
+            title="Quản lý ranh giới & định nghĩa vùng giám sát trọng điểm"
+          >
+            <Layers size={14} />
+            <span className="btn-label">Vùng giám sát</span>
+          </button>
+        )}
 
         {/* Phát cảnh báo — Admin only */}
         <button

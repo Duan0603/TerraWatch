@@ -153,6 +153,31 @@ public class SpatialRepository {
         return jdbcTemplate.queryForMap(sql, name, description, geoJsonGeometry);
     }
 
+    public Map<String, Object> updateMonitoringArea(int areaId, String name, String description, Boolean isActive, String geoJsonGeometry) {
+        if (geoJsonGeometry != null && !geoJsonGeometry.isBlank()) {
+            String sql = """
+                UPDATE gis_schema.monitoring_areas
+                SET name = COALESCE(?, name),
+                    description = COALESCE(?, description),
+                    is_active = COALESCE(?, is_active),
+                    geom = ST_Multi(ST_SetSRID(ST_GeomFromGeoJSON(?), 4326))
+                WHERE area_id = ?
+                RETURNING area_id, name, description, is_active, created_at, ST_AsGeoJSON(geom) AS geometry_geojson
+                """;
+            return jdbcTemplate.queryForMap(sql, name, description, isActive, geoJsonGeometry, areaId);
+        } else {
+            String sql = """
+                UPDATE gis_schema.monitoring_areas
+                SET name = COALESCE(?, name),
+                    description = COALESCE(?, description),
+                    is_active = COALESCE(?, is_active)
+                WHERE area_id = ?
+                RETURNING area_id, name, description, is_active, created_at, ST_AsGeoJSON(geom) AS geometry_geojson
+                """;
+            return jdbcTemplate.queryForMap(sql, name, description, isActive, areaId);
+        }
+    }
+
     // Community Reports (core_schema)
     public List<Map<String, Object>> listCommunityReports() {
         String sql = """

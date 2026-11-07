@@ -68,6 +68,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/notifications/broadcasts", "/api/v1/notifications/broadcast/preview", "/api/v1/notifications/broadcast/*/deliveries").hasRole("ADMIN")
                 // PRD: chỉ admin quản lý vùng giám sát; GET vẫn công khai cho bản đồ và app
                 .requestMatchers(HttpMethod.POST, "/api/v1/monitoring-areas").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/monitoring-areas/*").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/monitoring-areas/*").hasRole("ADMIN")
                 .requestMatchers("/api/v1/**").permitAll()
                 .anyRequest().authenticated()
             );

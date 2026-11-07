@@ -8,6 +8,7 @@ import BroadcastModal from '../components/BroadcastModal';
 import BroadcastHistoryModal from '../components/BroadcastHistoryModal';
 import ReviewAuditModal from '../components/ReviewAuditModal';
 import FieldReportsModal from '../components/FieldReportsModal';
+import AoiManagementModal from '../components/AoiManagementModal';
 import ReviewDialog from '../components/ReviewDialog';
 import forecastApi, { apiErrorMessage } from '../api/forecastApi';
 import { useAuth } from '../context/AuthContext';
@@ -37,6 +38,7 @@ export default function DashboardPage() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isAuditLogOpen, setIsAuditLogOpen] = useState(false);
   const [isFieldReportsOpen, setIsFieldReportsOpen] = useState(false);
+  const [isAoiOpen, setIsAoiOpen] = useState(false);
   const [broadcastTargetEvent, setBroadcastTargetEvent] = useState(null);
 
   // Keyboard navigation shortcuts for emergency operations
@@ -46,6 +48,7 @@ export default function DashboardPage() {
       else if (isHistoryOpen) setIsHistoryOpen(false);
       else if (isAuditLogOpen) setIsAuditLogOpen(false);
       else if (isFieldReportsOpen) setIsFieldReportsOpen(false);
+      else if (isAoiOpen) setIsAoiOpen(false);
       else if (alertPromptEvent) setAlertPromptEvent(null);
     },
     'Alt+m': () => setMobileTab('map'),
@@ -116,6 +119,7 @@ export default function DashboardPage() {
         onOpenHistory={() => setIsHistoryOpen(true)}
         onOpenAuditLog={() => setIsAuditLogOpen(true)}
         onOpenFieldReports={() => setIsFieldReportsOpen(true)}
+        onOpenAoi={() => setIsAoiOpen(true)}
         lastLoadedAt={lastLoadedAt}
         loadError={loadError}
       />
@@ -199,6 +203,12 @@ export default function DashboardPage() {
       <FieldReportsModal
         isOpen={isFieldReportsOpen}
         onClose={() => setIsFieldReportsOpen(false)}
+      />
+
+      <AoiManagementModal
+        isOpen={isAoiOpen}
+        onClose={() => setIsAoiOpen(false)}
+        onAoiUpdated={() => forecastApi.getAoiCollection().then(setAoi).catch(() => setAoi(null))}
       />
     </div>
   );

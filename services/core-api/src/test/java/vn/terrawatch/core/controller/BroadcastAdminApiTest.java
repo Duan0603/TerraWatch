@@ -169,4 +169,22 @@ class BroadcastAdminApiTest {
         assertThrows(DuplicateKeyException.class, () -> jdbc.update(
             "INSERT INTO gis_schema.monitoring_areas (name, geom) SELECT name, geom FROM gis_schema.monitoring_areas WHERE name = ?", existing));
     }
+
+    @Test
+    void adminCanUpdateMonitoringArea() throws Exception {
+        String admin = withRole("admin-update-area@history-test.example", "admin");
+        Map<String, Object> square = Map.of("type", "Polygon", "coordinates", List.of(List.of(
+            List.of(105.0, 21.0), List.of(105.1, 21.0), List.of(105.1, 21.1), List.of(105.0, 21.1), List.of(105.0, 21.0))));
+        String created = call(HttpMethod.POST, "/api/v1/monitoring-areas", admin,
+            Map.of("name", "Vung Ban Dau", "description", "truoc cap nhat", "geojson", square))
+            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        int areaId = json.readTree(created).get("area_id").asInt();
+
+        // Update name and description
+        call(HttpMethod.PUT, "/api/v1/monitoring-areas/" + areaId, admin,
+            Map.of("name", "Vung Sau Cap Nhat", "description", "da cap nhat", "isActive", true))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.name").value("Vung Sau Cap Nhat"))
+            .andExpect(jsonPath("$.description").value("da cap nhat"));
+    }
 }

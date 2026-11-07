@@ -118,6 +118,33 @@ export const forecastApi = {
     }
   },
 
+  // Danh sách toàn bộ vùng giám sát (dành cho quản lý AOI)
+  async getMonitoringAreas() {
+    try {
+      return await axiosClient.get('/monitoring-areas');
+    } catch (err) {
+      throw new Error(apiErrorMessage(err, 'Không tải được danh sách vùng giám sát'));
+    }
+  },
+
+  // Tạo vùng giám sát mới (Admin only)
+  async createMonitoringArea({ name, description, geojson }) {
+    try {
+      return await axiosClient.post('/monitoring-areas', { name, description, geojson });
+    } catch (err) {
+      throw new Error(apiErrorMessage(err, 'Không tạo được vùng giám sát'));
+    }
+  },
+
+  // Sửa thông tin hoặc tọa độ vùng giám sát (Admin only)
+  async updateMonitoringArea(id, { name, description, isActive, geojson }) {
+    try {
+      return await axiosClient.put(`/monitoring-areas/${id}`, { name, description, isActive, geojson });
+    } catch (err) {
+      throw new Error(apiErrorMessage(err, 'Không cập nhật được vùng giám sát'));
+    }
+  },
+
   // Ranh giới vùng giám sát (AOI) dạng GeoJSON FeatureCollection.
   async getAoiCollection() {
     const rows = await axiosClient.get('/monitoring-areas');
