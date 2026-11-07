@@ -20,17 +20,17 @@ const TEMPLATES = [
   {
     id: 'evacuation',
     title: '🚨 Di Dời & Sơ Tán Khẩn Cấp',
-    text: '[KHẨN CẤP] Ban Chỉ huy PCTT thông báo nguy cơ sạt lở đất nghiêm trọng tại {location}. Đề nghị toàn thể nhân dân khẩn trương sơ tán người già, trẻ nhỏ đến nơi an toàn trước 18h00.'
+    text: '[KHẨN CẤP] Nguy cơ sạt lở đất cao tại {location}. Đề nghị người dân sơ tán ngay người già, trẻ nhỏ đến nơi an toàn.'
   },
   {
     id: 'heavy_rain',
     title: '🌧️ Mưa Lũ & Nguy Cơ Lũ Bùn Đá',
-    text: '[CẢNH BÁO MƯA LŨ] Lượng mưa 24h vượt 150mm tại {location}, nguy cơ cao xảy ra lũ quét và sạt trượt ta-luy dương. Người dân tuyệt đối không ở lại lán trại nương rẫy.'
+    text: '[MƯA LŨ] Mưa lớn tại {location}, nguy cơ lũ quét và sạt ta-luy. Không ở lại lán trại, nương rẫy.'
   },
   {
     id: 'traffic',
     title: '⛔ Cảnh Báo Giao Thông Đèo Dốc',
-    text: '[CẢNH BÁO GIAO THÔNG] Tuyến đường qua {location} xuất hiện cung trượt nguy hiểm. Tạm thời phong tỏa phương tiện qua lại cho đến khi có thông báo an toàn.'
+    text: '[GIAO THÔNG] Đường qua {location} có điểm sạt trượt nguy hiểm. Tạm dừng qua lại đến khi có thông báo mới.'
   }
 ];
 
@@ -80,6 +80,19 @@ export default function BroadcastModal({
   const [confirmInput, setConfirmInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [sendResult, setSendResult] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [previewError, setPreviewError] = useState(null);
+
+  useEffect(() => {
+    setPreview(null);
+    setPreviewError(null);
+    if (!areaId) return;
+    let stale = false;
+    broadcastApi.getPreview(areaId)
+      .then((p) => { if (!stale) setPreview(p); })
+      .catch((err) => { if (!stale) setPreviewError(err.message); });
+    return () => { stale = true; };
+  }, [areaId]);
 
   // Cập nhật nội dung khi thay đổi template hoặc sự cố
   const handleSelectTemplate = (tplId) => {
@@ -101,10 +114,10 @@ export default function BroadcastModal({
       .catch(() => setAreasError('Không tải được danh sách khu vực. Không thể phát lệnh lúc này.'));
   }, []);
 
-  // Đếm ký tự SMS (160 ký tự / tin)
+  // Giới hạn 160 ký tự của tin cảnh báo (FR4); SMS chưa kết nối nên không đếm số tin SMS
   const charCount = message.length;
-  const smsSegments = Math.ceil(charCount / 160) || 1;
-  const isOverSingleSms = charCount > 160;
+  const isOverLimit = charCount > 160;
+  const canConfirm = confirmInput.trim().toUpperCase() === 'XAC NHAN' && preview?.devices > 0;
 
   // Thực hiện phát lệnh
   const handleExecuteBroadcast = async () => {
@@ -306,13 +319,12 @@ export default function BroadcastModal({
                   <label style={{ fontSize: 12, fontWeight: 700, color: '#cbd5e1' }}>
                     4. NỘI DUNG PHÁT CẢNH BÁO:
                   </label>
-                  {/* SMS Counter */}
                   <span style={{
                     fontSize: 11,
                     fontWeight: 600,
-                    color: isOverSingleSms ? '#fb923c' : '#38bdf8'
+                    color: isOverLimit ? '#fb923c' : '#38bdf8'
                   }}>
-                    {charCount}/160 ký tự ({smsSegments} SMS {isOverSingleSms && '⚠️'})
+                    {charCount}/160 ký tự {isOverLimit && '⚠️'}
                   </span>
                 </div>
 
@@ -337,10 +349,18 @@ export default function BroadcastModal({
                   placeholder="Nhập nội dung cảnh báo khẩn cấp gửi tới người dân..."
                 />
 
-                {isOverSingleSms && (
-                  <div style={{ fontSize: 10, color: '#fb923c', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                {isOverLimit && (
+                  <div role="alert" style={{ fontSize: 10, color: '#fb923c', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
                     <Info size={12} />
-                    Nội dung vượt 160 ký tự sẽ được gửi dưới dạng tin nhắn ghép (2 SMS). Khuyến nghị rút gọn để tối ưu tốc độ nhận tin.
+                    Nội dung vượt giới hạn 160 ký tự của tin cảnh báo. Hãy rút gọn trước khi phát.
+                  </div>
+                )}
+                {area && (
+                  <div style={{ fontSize: 11, color: previewError ? '#f87171' : '#94a3b8', marginTop: 6 }}>
+                    {previewError
+                      || (preview
+                        ? `Người nhận dự kiến: ${preview.subscribers} người đăng ký Push, ${preview.devices} thiết bị.`
+                        : 'Đang đếm người nhận…')}
                   </div>
                 )}
               </div>
@@ -365,7 +385,7 @@ export default function BroadcastModal({
                 <button
                   type="button"
                   onClick={() => setStep(2)}
-                  disabled={!message.trim() || !area}
+                  disabled={!message.trim() || !area || isOverLimit}
                   style={{
                     background: '#dc2626',
                     color: '#fff',
@@ -421,6 +441,15 @@ export default function BroadcastModal({
                 </strong>{' '}
                 <strong>{area?.name}</strong> qua kênh{' '}
                 <strong>[FCM APP PUSH]</strong>.
+              </p>
+
+              <p role="status" style={{ fontSize: 13, color: preview?.devices > 0 ? '#fbbf24' : '#f87171', margin: '0 auto 16px', fontWeight: 700 }}>
+                {previewError
+                  || (!preview
+                    ? 'Đang đếm người nhận…'
+                    : preview.devices > 0
+                      ? `Sẽ gửi tới ${preview.devices} thiết bị của ${preview.subscribers} người đăng ký.`
+                      : `Khu vực này chưa có thiết bị nào nhận Push (${preview.subscribers} người đăng ký). Không thể phát lệnh.`)}
               </p>
 
               <div style={{
@@ -482,20 +511,20 @@ export default function BroadcastModal({
                 <button
                   type="button"
                   onClick={handleExecuteBroadcast}
-                  disabled={confirmInput.trim().toUpperCase() !== 'XAC NHAN'}
+                  disabled={!canConfirm}
                   style={{
-                    background: confirmInput.trim().toUpperCase() === 'XAC NHAN' ? '#dc2626' : 'rgba(220, 38, 38, 0.3)',
+                    background: canConfirm ? '#dc2626' : 'rgba(220, 38, 38, 0.3)',
                     color: '#fff',
                     border: 'none',
                     padding: '10px 26px',
                     borderRadius: 8,
                     fontSize: 12,
                     fontWeight: 800,
-                    cursor: confirmInput.trim().toUpperCase() === 'XAC NHAN' ? 'pointer' : 'not-allowed',
+                    cursor: canConfirm ? 'pointer' : 'not-allowed',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 8,
-                    boxShadow: confirmInput.trim().toUpperCase() === 'XAC NHAN' ? '0 0 25px rgba(220, 38, 38, 0.7)' : 'none'
+                    boxShadow: canConfirm ? '0 0 25px rgba(220, 38, 38, 0.7)' : 'none'
                   }}
                 >
                   <Send size={15} /> XÁC NHẬN PHÁT LỆNH NGAY

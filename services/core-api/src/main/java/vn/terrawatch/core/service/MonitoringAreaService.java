@@ -27,6 +27,10 @@ public class MonitoringAreaService {
         try {
             String geoJsonStr = objectMapper.writeValueAsString(request.geojson());
             return spatialRepository.createMonitoringArea(request.name(), request.description(), geoJsonStr);
+        } catch (org.springframework.dao.DuplicateKeyException e) {
+            // tên vùng là duy nhất từ migration V10
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT,
+                "A monitoring area with this name already exists");
         } catch (Exception e) {
             throw new RuntimeException("Invalid GeoJSON geometry payload", e);
         }

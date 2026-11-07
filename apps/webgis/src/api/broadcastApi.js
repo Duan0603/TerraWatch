@@ -1,28 +1,36 @@
 import axiosClient from './axiosClient';
-
-// Core API chưa có GET lịch sử cho admin -> chỉ lưu cục bộ các lệnh đã phát THẬT (không có dữ liệu mẫu).
-// shortcut: lịch sử theo từng trình duyệt, nâng cấp khi backend có endpoint đọc alert_broadcasts.
-const STORAGE_KEY = 'terrawatch_broadcast_history';
-
-const readHistory = () => {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-};
+import { toHistoryEntry } from './broadcastHistory.js';
 
 const ERROR_BY_STATUS = {
   400: 'Dữ liệu lệnh phát không hợp lệ.',
   401: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
-  403: 'Chỉ tài khoản Admin mới được phát lệnh cảnh báo khẩn cấp.',
+  403: 'Chỉ tài khoản Admin mới được phát lệnh và xem lịch sử phát lệnh.',
+  404: 'Không tìm thấy khu vực giám sát này.',
   409: 'Lệnh bị từ chối: trùng mã đã xử lý, hoặc dự báo liên quan đã hết hạn / chưa được duyệt. Kiểm tra lịch sử rồi tải lại dự báo.'
 };
 
+const failWith = (err, fallback) => {
+  throw new Error(ERROR_BY_STATUS[err.response?.status] || `${fallback} (${err.message}).`);
+};
+
 export const broadcastApi = {
+  // Lịch sử lưu ở máy chủ (alert_broadcasts): mọi admin, mọi máy đều thấy như nhau.
   async getBroadcastHistory() {
-    return readHistory();
+    try {
+      const rows = await axiosClient.get('/notifications/broadcasts');
+      return rows.map(toHistoryEntry);
+    } catch (err) {
+      return failWith(err, 'Không tải được lịch sử phát lệnh');
+    }
+  },
+
+  // Số thuê bao Push và thiết bị sẽ nhận nếu phát tới khu vực này (cùng quy tắc chọn người nhận của backend).
+  async getPreview(areaId) {
+    try {
+      return await axiosClient.get('/notifications/broadcast/preview', { params: { areaId } });
+    } catch (err) {
+      return failWith(err, 'Không xem trước được người nhận');
+    }
   },
 
   // Khu vực giám sát thật: backend chọn người nhận theo thuê bao của area_id.
@@ -52,23 +60,20 @@ export const broadcastApi = {
       throw new Error('Chưa có thuê bao nào đăng ký nhận cảnh báo ở khu vực này. Không có tin nào được gửi.');
     }
 
-    const entry = {
-      id: `BC-${res.broadcast_id}`,
-      timestamp: res.timestamp.replace('T', ' ').slice(0, 19) + ' UTC',
-      location: areaName,
-      scope: 'area',
+    const entry = toHistoryEntry({
+      broadcastId: res.broadcast_id,
+      sentAt: res.timestamp,
+      areaId,
+      areaName,
       runId,
-      scopeLabel: areaName,
-      channels: ['fcm'],
-      recipientsTotal: res.recipients_estimated,
-      deliveredCount: res.sent,
-      failedCount: res.failed,
-      status: res.status,
+      recipients: res.recipients_estimated,
+      sent: res.sent,
+      failed: res.failed,
+      status: 'active',
       message,
-      issuedBy,
-      urgency
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([entry, ...readHistory()]));
+      senderName: issuedBy,
+      severity: urgency
+    });
 
     if (res.status === 'FAILED') {
       // Không thiết bị nào nhận được: backend đã dùng mã chống trùng này, nên gửi lại phải dùng mã mới.

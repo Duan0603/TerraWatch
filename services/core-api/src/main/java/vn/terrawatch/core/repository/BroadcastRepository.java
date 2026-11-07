@@ -3,6 +3,7 @@ package vn.terrawatch.core.repository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import vn.terrawatch.core.dto.AlertBroadcastResponse;
+import vn.terrawatch.core.dto.BroadcastHistoryItem;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -92,6 +93,40 @@ public class BroadcastRepository {
                     rs.getString("severity"), rs.getString("area_name"), rs.getObject("broadcast_time", OffsetDateTime.class).toInstant(),
                     until == null ? null : until.toInstant(), rs.getString("status"), until != null && !until.toInstant().isAfter(now));
             }, userId);
+    }
+
+    /** Admin history, newest first. */
+    public List<BroadcastHistoryItem> history(int limit) {
+        return jdbc.query("""
+            SELECT b.broadcast_id, b.broadcast_time, b.area_id, a.name AS area_name, b.severity::text AS severity, b.message,
+                   u.full_name AS sender_name, b.run_id, b.total_recipients, b.successful_deliveries, b.failed_deliveries,
+                   b.status, b.valid_until, b.revoked_at
+            FROM core_schema.alert_broadcasts b
+            LEFT JOIN gis_schema.monitoring_areas a ON a.area_id = b.area_id
+            LEFT JOIN core_schema.users u ON u.user_id = b.sender_id
+            ORDER BY b.broadcast_time DESC
+            LIMIT ?
+            """, (rs, i) -> {
+                OffsetDateTime until = rs.getObject("valid_until", OffsetDateTime.class);
+                OffsetDateTime revoked = rs.getObject("revoked_at", OffsetDateTime.class);
+                return new BroadcastHistoryItem(rs.getString("broadcast_id"),
+                    rs.getObject("broadcast_time", OffsetDateTime.class).toInstant(), (Integer) rs.getObject("area_id"),
+                    rs.getString("area_name"), rs.getString("severity"), rs.getString("message"), rs.getString("sender_name"),
+                    rs.getString("run_id"), rs.getInt("total_recipients"), rs.getInt("successful_deliveries"),
+                    rs.getInt("failed_deliveries"), rs.getString("status"), until == null ? null : until.toInstant(),
+                    revoked == null ? null : revoked.toInstant());
+            }, limit);
+    }
+
+    /** Push subscribers of the areas and how many of them have a registered phone. */
+    public int[] audience(List<Integer> areaIds) {
+        String in = String.join(",", areaIds.stream().map(a -> "?").toList());
+        return jdbc.queryForObject("""
+            SELECT COUNT(DISTINCT s.user_id) AS subscribers, COUNT(DISTINCT t.fcm_token) AS devices
+            FROM core_schema.alert_subscriptions s
+            LEFT JOIN core_schema.device_tokens t ON t.user_id = s.user_id
+            WHERE s.is_active AND s.channel_push AND s.area_id IN (%s)
+            """.formatted(in), (rs, i) -> new int[]{rs.getInt("subscribers"), rs.getInt("devices")}, areaIds.toArray());
     }
 
     /** @return false when no active broadcast has that id */

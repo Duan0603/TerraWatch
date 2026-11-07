@@ -19,17 +19,20 @@ export default function BroadcastHistoryModal({ isOpen, onClose, onOpenNewBroadc
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEntry, setSelectedEntry] = useState(null);
+  const [loadError, setLoadError] = useState(null);
 
   const fetchHistory = async () => {
     try {
       setLoading(true);
+      setLoadError(null);
       const data = await broadcastApi.getBroadcastHistory();
       setHistory(data);
       if (data.length > 0 && !selectedEntry) {
         setSelectedEntry(data[0]);
       }
     } catch (err) {
-      console.error('Lỗi khi tải lịch sử phát cảnh báo:', err);
+      setHistory([]);
+      setLoadError(err.message);
     } finally {
       setLoading(false);
     }
@@ -199,8 +202,8 @@ export default function BroadcastHistoryModal({ isOpen, onClose, onOpenNewBroadc
           {/* Cột trái: Danh sách các lệnh */}
           <div style={{ width: '45%', borderRight: '1px solid rgba(255, 255, 255, 0.08)', overflowY: 'auto', padding: 12 }}>
             {filteredHistory.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: 30, color: '#64748b', fontSize: 12 }}>
-                Không tìm thấy đợt phát lệnh nào.
+              <div role={loadError ? 'alert' : undefined} style={{ textAlign: 'center', padding: 30, color: loadError ? '#f87171' : '#64748b', fontSize: 12 }}>
+                {loadError || (loading ? 'Đang tải lịch sử từ máy chủ…' : 'Không tìm thấy đợt phát lệnh nào.')}
               </div>
             ) : (
               filteredHistory.map((item) => {
@@ -265,20 +268,27 @@ export default function BroadcastHistoryModal({ isOpen, onClose, onOpenNewBroadc
                       {selectedEntry.location}
                     </h4>
                   </div>
-                  <span style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: '4px 10px',
-                    borderRadius: 6,
-                    background: 'rgba(34, 197, 94, 0.15)',
-                    color: '#4ade80',
-                    border: '1px solid rgba(34, 197, 94, 0.3)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 5
-                  }}>
-                    <CheckCircle size={13} /> {selectedEntry.status}
-                  </span>
+                  {(() => {
+                    // Màu theo kết quả thật: chỉ "ĐÃ GỬI" mới là xanh
+                    const ok = selectedEntry.status === 'ĐÃ GỬI';
+                    const rgb = ok ? '34, 197, 94' : selectedEntry.status === 'GỬI MỘT PHẦN' ? '251, 146, 60' : '239, 68, 68';
+                    return (
+                      <span style={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        padding: '4px 10px',
+                        borderRadius: 6,
+                        background: `rgba(${rgb}, 0.15)`,
+                        color: `rgb(${rgb})`,
+                        border: `1px solid rgba(${rgb}, 0.3)`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 5
+                      }}>
+                        {ok ? <CheckCircle size={13} /> : <AlertTriangle size={13} />} {selectedEntry.status}
+                      </span>
+                    );
+                  })()}
                 </div>
 
                 {/* Metadata cards */}

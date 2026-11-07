@@ -78,6 +78,44 @@ def run_live_gru(req: LiveGRURequest):
             'experimental_rolling_clock': True,
             'notice': 'Dự báo thử nghiệm bằng Open-Meteo; khác nguồn và mốc giờ dữ liệu train IMERG + GFS.'}
 
+class ForecastRequest(BaseModel):
+    """Core's forecast job request (docs/API_SPECIFICATION.md, rainfall-terrain-24h.v1)."""
+    schema_version: Literal['rainfall-terrain-24h.v1']
+    snapshot_id: str = ''
+    assessment_unit_id: str = Field(..., min_length=1, max_length=100)
+    assessment_unit_version: Optional[str] = None
+    issued_at: datetime
+    horizon_hours: Literal[24]
+    model_version: Optional[str] = None
+
+
+@app.post('/api/v1/forecasts')
+def evaluate_forecast(req: ForecastRequest):
+    # Không bao giờ bịa điểm: chưa có snapshot đầu vào đã kiểm định và chưa có mô hình 24h được phát hành
+    # cho hợp đồng này (GRU hiện chỉ là thử nghiệm trên mưa Open-Meteo trực tiếp), nên trả về "unavailable" có lý do.
+    if req.issued_at.tzinfo is None:
+        raise HTTPException(status_code=422, detail='issued_at requires a timezone')
+    reasons = (['SNAPSHOT_MISSING'] if not req.snapshot_id.strip() else []) + ['MODEL_NOT_RELEASED']
+    return {
+        'assessment_unit_id': req.assessment_unit_id,
+        'assessment_unit_version': req.assessment_unit_version,
+        'issued_at': req.issued_at.isoformat(),
+        'valid_from': req.issued_at.isoformat(),
+        'valid_until': (req.issued_at + timedelta(hours=24)).isoformat(),
+        'horizon_hours': 24,
+        'availability': 'unavailable',
+        'reason_codes': reasons,
+        'unavailability_reason': ', '.join(reasons),
+        'probability': None,
+        'experimental_score': None,
+        'hazard_level': None,
+        'model_version': None,
+        'threshold_version': None,
+        'input_quality': {'status': 'not_evaluated'},
+        'factors': [],
+    }
+
+
 class InferenceRequest(BaseModel):
     satellite_scene_id: str = Field(..., example="S2A_MSIL2A_20261001T033531")
     bbox: List[float] = Field(..., example=[104.08, 21.84, 104.09, 21.85], description="[min_lon, min_lat, max_lon, max_lat]")

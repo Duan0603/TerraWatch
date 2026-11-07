@@ -17,15 +17,15 @@ export const formatToE164 = (phone) => {
 
 // Khởi tạo reCAPTCHA ẩn cho Firebase Phone Auth
 export const getOrCreateRecaptcha = async (containerId = 'recaptcha-container') => {
-  let element = document.getElementById(containerId);
-  if (!element) {
-    element = document.createElement('div');
-    element.id = containerId;
-    element.style.position = 'fixed';
-    element.style.bottom = '0';
-    element.style.left = '0';
-    element.style.zIndex = '-1';
-    document.body.appendChild(element);
+  let host = document.getElementById(containerId);
+  if (!host) {
+    host = document.createElement('div');
+    host.id = containerId;
+    host.style.position = 'fixed';
+    host.style.bottom = '0';
+    host.style.left = '0';
+    host.style.zIndex = '-1';
+    document.body.appendChild(host);
   }
 
   if (window.recaptchaVerifier) {
@@ -36,6 +36,12 @@ export const getOrCreateRecaptcha = async (containerId = 'recaptcha-container') 
     }
     window.recaptchaVerifier = null;
   }
+
+  // reCAPTCHA chỉ render được một lần vào mỗi phần tử: mỗi lần gửi (gửi lại) dùng một phần tử mới,
+  // nếu không lần thứ hai báo "reCAPTCHA has already been rendered in this element".
+  host.replaceChildren();
+  const element = document.createElement('div');
+  host.appendChild(element);
 
   window.recaptchaVerifier = new RecaptchaVerifier(auth, element, {
     size: 'invisible',
@@ -79,6 +85,9 @@ export const authApi = {
   // Gửi mã OTP xác thực số điện thoại THẬT qua Firebase Phone Auth
   async sendSmsOtp(phoneNumber, containerId = 'recaptcha-container') {
     const formatted = formatToE164(phoneNumber);
+    if (!auth) {
+      throw new Error('Xác thực số điện thoại chưa được cấu hình cho web (thiếu VITE_FIREBASE_*). Chưa có mã OTP nào được gửi.');
+    }
     try {
       const verifier = await getOrCreateRecaptcha(containerId);
       const conf = await signInWithPhoneNumber(auth, formatted, verifier);
@@ -104,95 +113,47 @@ export const authApi = {
         humanMsg = 'Lỗi cấu hình phần tử reCAPTCHA: ' + err.message;
       }
 
-      // Nếu gặp lỗi mạng hoặc quota, fallback sang chế độ mock để không gián đoạn
-      const mockOtp = Math.floor(100000 + Math.random() * 900000).toString();
-      return {
-        success: true,
-        isRealSms: false,
-        otp: mockOtp,
-        formattedPhone: formatted,
-        warning: humanMsg,
-        message: `Chế độ dự phòng: Mã OTP mô phỏng là ${mockOtp}`
-      };
+      // Không có mã OTP dự phòng: một mã hiện trên màn hình thì không xác thực được số điện thoại nào.
+      throw new Error(humanMsg);
     }
   },
 
-  // Xác thực mã OTP số điện thoại (Hỗ trợ xác thực tin nhắn thật từ Firebase)
-  async verifySmsOtp(phoneNumber, otpCode, expectedOtp) {
-    if (confirmationResult || window.confirmationResult) {
-      try {
-        const conf = confirmationResult || window.confirmationResult;
-        const res = await conf.confirm(otpCode);
-        return {
-          success: true,
-          user: res.user,
-          isRealSms: true,
-          message: 'Xác thực số điện thoại thật qua SMS Firebase thành công!'
-        };
-      } catch (err) {
-        if (err.code === 'auth/invalid-verification-code') {
-          throw new Error('Mã OTP không đúng với tin nhắn SMS gửi về điện thoại của bạn.');
-        } else if (err.code === 'auth/code-expired') {
-          throw new Error('Mã OTP trong tin nhắn SMS đã hết hạn. Vui lòng bấm gửi lại mã mới.');
-        }
-        if (expectedOtp && otpCode === expectedOtp) {
-          return { success: true, isRealSms: false, message: 'Xác thực thành công qua mã dự phòng.' };
-        }
-        throw new Error(err.message || 'Mã OTP không chính xác.');
-      }
+  // Xác thực mã OTP bằng Firebase; chỉ mã trong tin nhắn SMS thật mới hợp lệ.
+  async verifySmsOtp(phoneNumber, otpCode) {
+    const conf = confirmationResult || window.confirmationResult;
+    if (!conf) {
+      throw new Error('Chưa có mã OTP nào được gửi tới số này. Vui lòng bấm gửi lại mã.');
     }
-
-    if (otpCode === expectedOtp || otpCode === '123456') {
-      return { success: true, isRealSms: false, message: 'Xác thực số điện thoại thành công.' };
-    }
-    throw new Error('Mã OTP không chính xác hoặc đã hết hạn. Vui lòng kiểm tra lại.');
-  },
-
-  // Đăng ký tài khoản Cán bộ (Yêu cầu Admin xét duyệt - UC06)
-  // LƯU Ý: `POST /auth/register-officer-request` KHÔNG tồn tại trên Core API — tạo tài khoản
-  // officer/admin công khai nằm ngoài phạm vi Story 1.1 (xem AC1: "no public way to create
-  // officer/admin account"). Luồng này luôn rơi vào nhánh mô phỏng bên dưới cho mọi môi trường,
-  // không chỉ khi offline. Hồ sơ KHÔNG được lưu ở đâu cả — đây là UI demo, chưa có hàng đợi
-  // phê duyệt thật phía backend.
-  async registerOfficerRequest(data) {
     try {
-      const res = await axiosClient.post('/auth/register-officer-request', data);
-      return res;
-    } catch (err) {
-      await new Promise((r) => setTimeout(r, 600));
+      const res = await conf.confirm(otpCode);
       return {
         success: true,
-        isMock: true,
-        requestId: `REG-OFFICER-${Date.now().toString().slice(-6)}`,
-        message: 'Hồ sơ đã được ghi nhận (chế độ demo — tính năng duyệt cán bộ thật chưa triển khai ở backend).',
-        status: 'pending_approval'
+        user: res.user,
+        isRealSms: true,
+        message: 'Xác thực số điện thoại thật qua SMS Firebase thành công!'
       };
+    } catch (err) {
+      if (err.code === 'auth/invalid-verification-code') {
+        throw new Error('Mã OTP không đúng với tin nhắn SMS gửi về điện thoại của bạn.');
+      } else if (err.code === 'auth/code-expired') {
+        throw new Error('Mã OTP trong tin nhắn SMS đã hết hạn. Vui lòng bấm gửi lại mã mới.');
+      }
+      throw new Error(err.message || 'Mã OTP không chính xác.');
     }
+  },
+
+  // Không có đăng ký cán bộ công khai (Story 1.1 AC1): tài khoản officer/admin do quản trị viên tạo.
+  // Trước đây hàm này giả vờ thành công với mã hồ sơ bịa; giờ báo đúng sự thật.
+  async registerOfficerRequest() {
+    throw new Error('Tài khoản cán bộ do quản trị viên cấp trực tiếp; hệ thống chưa nhận đăng ký cán bộ trực tuyến.');
   },
 
   // Đăng ký tài khoản Công dân (Nhận cảnh báo SMS/Push - UC07)
   // Backend luôn ép role = citizen bất kể truyền gì (xem AC1 Story 1.1) — gửi `role` ở đây
   // chỉ để tương thích payload cũ, backend sẽ bỏ qua trường này.
   async registerCitizen(data) {
-    try {
-      const res = await axiosClient.post('/auth/register', { ...data, role: 'citizen' });
-      return res;
-    } catch (err) {
-      // Lỗi thật từ backend (email đã tồn tại -> 409, mật khẩu < 8 ký tự -> 400, v.v.) phải
-      // được báo cho người dùng, không được giả vờ đăng ký thành công.
-      if (err.response) {
-        throw err;
-      }
-      // Chỉ mô phỏng khi backend không gọi được (offline dev).
-      await new Promise((r) => setTimeout(r, 600));
-      return {
-        success: true,
-        isMock: true,
-        userId: `citizen-${Date.now().toString().slice(-6)}`,
-        message: 'Đăng ký tài khoản công dân thành công (chế độ demo offline).',
-        role: 'citizen'
-      };
-    }
+    // Mọi lỗi (409 email trùng, 400 dữ liệu sai, mất mạng) đều báo cho người dùng: không có tài khoản giả.
+    return axiosClient.post('/auth/register', { ...data, role: 'citizen' });
   },
 
   // Đăng xuất
