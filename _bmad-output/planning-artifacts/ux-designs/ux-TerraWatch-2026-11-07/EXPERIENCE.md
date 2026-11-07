@@ -76,3 +76,13 @@ Keyboard: Tab order is email, password, sign in, model demo, the three chips, th
 **Flow 2 — Lâm, presenting to the thesis committee.** (1) The login is on the projector. (2) He clicks the "Quản trị" chip; the form fills. (3) He presses Enter and the admin console opens. (4) **Climax:** the committee has seen a weather scene, the honesty note and a working sign-in within five seconds, and the "Xem demo mô hình" button is one click away if he wants to show history.
 
 **Flow 3 — Minh, field officer without an account.** (1) He taps "Gửi yêu cầu tài khoản cán bộ" on his phone. (2) He fills in the form, including his unit, and enters the OTP. (3) **Climax:** he sees the request code and the message that he can sign in only after an admin approves. (4) Later, signing in before approval shows the pending message.
+
+## Registration dialogs (Story 4.17)
+
+Both dialogs follow Form → OTP → Result, with a visible 3-step indicator.
+
+- **Form**: fields start empty (no pre-filled unit or area, so a wrong default can never be sent by accident). The phone is a Vietnamese mobile number typed as `09…`; the helper says the OTP goes to it by SMS. Citizen area is optional and says that detailed areas are chosen in the app. Errors show above the fields (`role="alert"`) and the match line below the passwords uses `role="status"`.
+- **OTP**: six digit boxes; typing advances, Backspace on an empty box goes back, pasting six digits fills all boxes; the confirm button is disabled until six digits are present. The resend link is available after 60 seconds. "Sửa thông tin" returns to the form with the values kept.
+- **Result**: officer sees the request code and that an admin must approve; citizen sees a short confirmation. "Quay lại đăng nhập" closes the dialog.
+- **Dialog behaviour**: Esc and the close button close it; clicking the dark overlay closes it; the dialog is `aria-modal` and labelled by its title.
+- Removed: the simulated-SMS banner and the "auto-fill OTP" shortcut (Story 4.5 forbids a code shown on screen).

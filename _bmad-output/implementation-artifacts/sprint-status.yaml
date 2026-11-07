@@ -50,6 +50,7 @@ development_status:
   4-14-review-audit-log: review
   4-15-broadcast-revoke-and-deliveries: review
   4-16-webgis-login-redesign: review
+  4-17-registration-dialogs-redesign: review
   epic-4-retrospective: optional
 
   epic-5: backlog
