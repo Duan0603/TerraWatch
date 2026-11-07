@@ -41,3 +41,5 @@ so that I can prove the account is mine and set a new password without paying fo
 
 - Not verified live: a real e-mail being delivered (needs the app password). The sender is mocked in tests; the real SMTP path is plain `JavaMailSender`.
 - Risks: whoever controls the mailbox can reset the password (including an officer or admin account); old JWTs stay valid up to 24 h; Gmail limits sending to about 500 mails a day; mails may land in Spam.
+
+- Mail design (after Lâm's first real test, the plain text mail looked like spam): multipart mail with a branded HTML part (dark header, large code box, expiry, safety note, no images) plus a plain-text part, sender name "TerraWatch GeoSentry", subject without the code. `SmtpPasswordResetMailerTest` checks the code, the expiry and that the name is HTML-escaped.
