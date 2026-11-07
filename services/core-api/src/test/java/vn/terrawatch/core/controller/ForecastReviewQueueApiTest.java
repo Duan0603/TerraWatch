@@ -138,4 +138,23 @@ class ForecastReviewQueueApiTest {
         review(token, live, "rejected", "  ").andExpect(status().isBadRequest());
         review(token, unavailable, "approved", null).andExpect(status().isConflict());
     }
+
+    @Test
+    void reviewAuditLogReturnsReviewedHistoryWithReviewerInfo() throws Exception {
+        unit("RQ_AUDIT_1");
+        UUID live = run("RQ_AUDIT_1", "-1 hour", "23 hours", "available");
+        String token = token("audit-officer@api-test.example", "officer");
+        review(token, live, "approved", "Approved based on field survey").andExpect(status().isOk());
+
+        String res = mvc.perform(get("/api/v1/forecasts/reviews/audit").header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+        JsonNode audits = json.readTree(res);
+        assertTrue(audits.size() > 0);
+        JsonNode first = audits.get(0);
+        assertEquals("approved", first.get("decision").asText());
+        assertEquals("Review Tester", first.get("reviewerName").asText());
+        assertEquals("RQ_AUDIT_1", first.get("unitId").asText());
+        assertEquals("Approved based on field survey", first.get("reasonNotes").asText());
+    }
 }

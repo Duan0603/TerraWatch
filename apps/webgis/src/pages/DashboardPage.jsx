@@ -6,6 +6,7 @@ import DetailPanel from '../components/DetailPanel';
 import EmergencyAlertPrompt from '../components/EmergencyAlertPrompt';
 import BroadcastModal from '../components/BroadcastModal';
 import BroadcastHistoryModal from '../components/BroadcastHistoryModal';
+import ReviewAuditModal from '../components/ReviewAuditModal';
 import ReviewDialog from '../components/ReviewDialog';
 import forecastApi, { apiErrorMessage } from '../api/forecastApi';
 import { useAuth } from '../context/AuthContext';
@@ -33,6 +34,7 @@ export default function DashboardPage() {
 
   const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isAuditLogOpen, setIsAuditLogOpen] = useState(false);
   const [broadcastTargetEvent, setBroadcastTargetEvent] = useState(null);
 
   // Keyboard navigation shortcuts for emergency operations
@@ -40,6 +42,7 @@ export default function DashboardPage() {
     Escape: () => {
       if (isBroadcastOpen) setIsBroadcastOpen(false);
       else if (isHistoryOpen) setIsHistoryOpen(false);
+      else if (isAuditLogOpen) setIsAuditLogOpen(false);
       else if (alertPromptEvent) setAlertPromptEvent(null);
     },
     'Alt+m': () => setMobileTab('map'),
@@ -108,6 +111,7 @@ export default function DashboardPage() {
         setSoundEnabled={setSoundEnabled}
         onOpenBroadcast={() => handleOpenBroadcast(selectedEvent)}
         onOpenHistory={() => setIsHistoryOpen(true)}
+        onOpenAuditLog={() => setIsAuditLogOpen(true)}
         lastLoadedAt={lastLoadedAt}
         loadError={loadError}
       />
@@ -181,6 +185,11 @@ export default function DashboardPage() {
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
         onOpenNewBroadcast={() => handleOpenBroadcast(selectedEvent)}
+      />
+
+      <ReviewAuditModal
+        isOpen={isAuditLogOpen}
+        onClose={() => setIsAuditLogOpen(false)}
       />
     </div>
   );

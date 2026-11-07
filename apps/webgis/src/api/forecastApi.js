@@ -83,6 +83,15 @@ export const forecastApi = {
     }
   },
 
+  // Nhật ký thẩm định dự báo: ai duyệt, lúc nào, lý do gì (core_schema.forecast_reviews)
+  async getReviewAuditLog(limit = 100) {
+    try {
+      return await axiosClient.get('/forecasts/reviews/audit', { params: { limit } });
+    } catch (err) {
+      throw new Error(apiErrorMessage(err, 'Không tải được nhật ký thẩm định'));
+    }
+  },
+
   // Báo cáo hiện trường của người dân (lớp bản đồ riêng, không phải sự cố đã xác nhận).
   async getFieldReports() {
     const rows = await axiosClient.get('/community-reports');
