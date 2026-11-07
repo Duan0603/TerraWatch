@@ -144,12 +144,13 @@ body.page-login { background: #070D1A; }
 
 /* ── Chuyển cảnh trong cùng một khung (Story 4.18): đăng nhập trượt trái, đăng ký trượt vào từ phải ── */
 .lg-card { min-width: 0; transition: max-width .55s cubic-bezier(.65, 0, .2, 1); }
-.lg-card-register { max-width: 520px; }
+.lg-card-register, .lg-card-reset { max-width: 520px; }
 .lg-viewport { overflow: hidden; margin: -6px; padding: 6px; box-sizing: content-box; transition: height .55s cubic-bezier(.65, 0, .2, 1); }
 .lg-track { display: flex; align-items: flex-start; transition: transform .55s cubic-bezier(.65, 0, .2, 1); }
 .lg-track-register { transform: translateX(-100%); }
+.lg-track-reset { transform: translateX(-200%); }
 .lg-slide { flex: 0 0 100%; min-width: 0; box-sizing: border-box; padding: 0 6px; transition: opacity .35s ease; }
-.lg-track-login .lg-slide:last-child, .lg-track-register .lg-slide:first-child { opacity: 0; }
+.lg-slide[inert] { opacity: 0; }
 .lg-backlink { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 14px -4px; padding: 6px 8px; background: none; border: 0; border-radius: 8px; color: var(--ink-2); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
 .lg-backlink:hover { color: #fff; background: rgba(255, 255, 255, .06); }
 .lg-backlink:focus-visible { outline: 3px solid var(--focus); }
@@ -178,3 +179,7 @@ body.page-login { background: #070D1A; }
 .lg-taken { margin: -6px 0 12px; line-height: 1.4; }
 .lg-taken .lg-textbtn { padding: 2px 4px; font-size: 13px; text-decoration: underline; }
 .lg-input[aria-invalid="true"] { border-color: var(--err); }
+
+/* Quên mật khẩu (Story 4.20) */
+.lg-forgot-row { display: flex; justify-content: flex-end; margin: -6px 0 14px; }
+.lg-forgot-row .lg-textbtn { padding: 4px 6px; font-size: 13.5px; }

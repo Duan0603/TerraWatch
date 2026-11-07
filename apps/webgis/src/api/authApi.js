@@ -156,6 +156,30 @@ export const authApi = {
     }
   },
 
+  // Story 4.20: quên mật khẩu bằng OTP của số điện thoại đã đăng ký.
+  // Hỏi trước xem email + SĐT có khớp một tài khoản không, để sai thì không tốn tin nhắn OTP.
+  async canResetPassword(email, phoneNumber) {
+    try {
+      const data = await axiosClient.post('/auth/password-reset/check', { email: email.trim(), phoneNumber });
+      return data?.eligible === true;
+    } catch {
+      return false;
+    }
+  },
+
+  async resetPassword({ email, phoneNumber, phoneToken, newPassword }) {
+    try {
+      await axiosClient.post('/auth/password-reset', { email: email.trim(), phoneNumber, phoneToken, newPassword });
+    } catch (err) {
+      const status = err.response?.status;
+      const message = err.response?.data?.message || '';
+      if (!err.response) throw new Error('Không kết nối được máy chủ. Thử lại sau.');
+      if (/token/i.test(message)) throw new Error('Mã OTP không hợp lệ hoặc đã hết hạn. Hãy gửi lại mã.');
+      if (status === 400) throw new Error(message || 'Thông tin chưa hợp lệ.');
+      throw new Error(`Không đặt lại được mật khẩu (mã lỗi ${status}).`);
+    }
+  },
+
   // Story 4.8: gửi hồ sơ cán bộ (cần SĐT đã xác minh OTP). Tài khoản ở trạng thái "chờ duyệt"
   // cho tới khi quản trị viên phê duyệt; requestId là mã thật do máy chủ trả về.
   async registerOfficerRequest(data) {

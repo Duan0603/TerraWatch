@@ -108,6 +108,34 @@ public class AuthService {
         return email != null && !email.isBlank() && users.existsByEmail(normalizeEmail(email));
     }
 
+    /** True only for an active password account whose registered phone is this phone. */
+    public boolean canResetPassword(String email, String phone) {
+        return users.findByEmail(normalizeEmail(email)).filter(u -> resettable(u, phone)).isPresent();
+    }
+
+    /**
+     * Story 4.20: forgot password without e-mail. The user proves they hold the phone registered on the
+     * account (Firebase phone OTP); every failure gives the same message so the endpoint does not reveal
+     * which part was wrong. Existing tokens stay valid until they expire (24 h).
+     */
+    public void resetPassword(PasswordResetRequest request) {
+        validatePasswordLength(request.newPassword());
+        ResponseStatusException mismatch = new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Email hoặc số điện thoại không khớp với tài khoản nào");
+        User user = users.findByEmail(normalizeEmail(request.email())).orElseThrow(() -> mismatch);
+        if (!resettable(user, request.phoneNumber())) throw mismatch;
+        String tokenPhone = firebaseVerifier == null ? null : firebaseVerifier.verifyPhoneToken(request.phoneToken());
+        if (!phonesMatch(tokenPhone, request.phoneNumber())) throw mismatch;
+        user.setPasswordHash(passwords.encode(request.newPassword()));
+        user.setUpdatedAt(OffsetDateTime.now());
+        users.save(user);
+    }
+
+    private static boolean resettable(User user, String phone) {
+        return user.isActive() && "email".equals(user.getAuthProvider())
+            && user.getPhoneNumber() != null && phonesMatch(user.getPhoneNumber(), phone);
+    }
+
     public static boolean phonesMatch(String tokenPhone, String requestPhone) {
         if (tokenPhone == null || requestPhone == null) return false;
         String p1 = tokenPhone.replaceAll("[^0-9]", "");

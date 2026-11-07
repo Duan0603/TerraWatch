@@ -26,35 +26,37 @@ import {
 import { useAuth } from '../context/AuthContext';
 import authApi from '../api/authApi';
 import LoginBackdrop from '../components/LoginBackdrop';
+import OtpBoxes from '../components/OtpBoxes';
+import FormSteps from '../components/FormSteps';
+import ForgotPasswordPanel from '../components/ForgotPasswordPanel';
 import './login.css';
 
 // Hai tấm trượt ngang trong cùng một khung: đăng nhập trượt sang trái, form đăng ký trượt vào từ phải.
 // Chiều cao khung đổi mượt theo tấm đang hiện; tấm còn lại bị khóa (inert) để Tab/đọc màn hình không lọt vào.
-function SlidePanels({ view, login, register }) {
-  const loginRef = useRef(null);
-  const registerRef = useRef(null);
+function SlidePanels({ view, login, register, reset }) {
+  const refs = { login: useRef(null), register: useRef(null), reset: useRef(null) };
   const viewRef = useRef(view);
   const [h, setH] = useState('auto');
   viewRef.current = view;
   const measure = () => {
-    const el = viewRef.current === 'login' ? loginRef.current : registerRef.current;
+    const el = refs[viewRef.current]?.current;
     if (el) setH(el.offsetHeight);
   };
   useEffect(() => {
     measure();
     if (!window.ResizeObserver) return undefined;
     const ro = new ResizeObserver(measure);
-    if (loginRef.current) ro.observe(loginRef.current);
-    if (registerRef.current) ro.observe(registerRef.current);
+    Object.values(refs).forEach((r) => { if (r.current) ro.observe(r.current); });
     return () => ro.disconnect();
-  }, []);
-  useEffect(measure, [view]);
-  const lock = (hidden) => (hidden ? { inert: '', 'aria-hidden': true } : {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(measure, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+  const lock = (name) => (view === name ? {} : { inert: '', 'aria-hidden': true });
   return (
     <div className="lg-viewport" style={{ height: h }}>
       <div className={`lg-track lg-track-${view}`}>
-        <div ref={loginRef} className="lg-slide" {...lock(view !== 'login')}>{login}</div>
-        <div ref={registerRef} className="lg-slide" {...lock(view !== 'register')}>{register}</div>
+        <div ref={refs.login} className="lg-slide" {...lock('login')}>{login}</div>
+        <div ref={refs.register} className="lg-slide" {...lock('register')}>{register}</div>
+        <div ref={refs.reset} className="lg-slide" {...lock('reset')}>{reset}</div>
       </div>
     </div>
   );
@@ -73,56 +75,6 @@ function AutoHeight({ children }) {
     return () => ro.disconnect();
   }, []);
   return <div className="lg-auto" style={{ height: h }}><div ref={inner}>{children}</div></div>;
-}
-
-// Sáu ô nhập mã OTP: tự nhảy ô, Backspace lùi ô, dán cả mã một lần.
-function OtpBoxes({ value, onChange, disabled }) {
-  const refs = useRef([]);
-  const digits = Array.from({ length: 6 }, (_, i) => value[i] || '');
-
-  const setAt = (i, ch) => {
-    const next = digits.slice();
-    next[i] = ch;
-    onChange(next.join('').slice(0, 6));
-  };
-  const handleChange = (i, raw) => {
-    const clean = raw.replace(/\D/g, '');
-    if (!clean) { setAt(i, ''); return; }
-    if (clean.length > 1) { // dán nhiều số
-      onChange((value.slice(0, i) + clean).slice(0, 6));
-      refs.current[Math.min(i + clean.length, 5)]?.focus();
-      return;
-    }
-    setAt(i, clean);
-    if (i < 5) refs.current[i + 1]?.focus();
-  };
-  const handleKeyDown = (i, e) => {
-    if (e.key === 'Backspace' && !digits[i] && i > 0) refs.current[i - 1]?.focus();
-    if (e.key === 'ArrowLeft' && i > 0) refs.current[i - 1]?.focus();
-    if (e.key === 'ArrowRight' && i < 5) refs.current[i + 1]?.focus();
-  };
-
-  return (
-    <div className="lg-otp" role="group" aria-label="Mã OTP gồm 6 chữ số">
-      {digits.map((d, i) => (
-        <input
-          key={i}
-          ref={(el) => { refs.current[i] = el; }}
-          className="lg-otp-box"
-          inputMode="numeric"
-          autoComplete={i === 0 ? 'one-time-code' : 'off'}
-          maxLength={6}
-          value={d}
-          disabled={disabled}
-          autoFocus={i === 0}
-          aria-label={`Chữ số ${i + 1}`}
-          onChange={(e) => handleChange(i, e.target.value)}
-          onKeyDown={(e) => handleKeyDown(i, e)}
-          onFocus={(e) => e.target.select()}
-        />
-      ))}
-    </div>
-  );
 }
 
 export default function LoginPage() {
@@ -145,6 +97,8 @@ export default function LoginPage() {
   const [emailTaken, setEmailTaken] = useState(false); // email vừa nhập đã có tài khoản
   const [view, setView] = useState('login'); // 'login' | 'register': tấm đang hiện trong khung
   const closeTimer = useRef(null);
+  const [forgotMounted, setForgotMounted] = useState(false); // tấm quên mật khẩu còn trong khung
+  const forgotTimer = useRef(null);
   const prevStepRef = useRef(1);
   const [regLoading, setRegLoading] = useState(false);
   const [regError, setRegError] = useState('');
@@ -246,6 +200,21 @@ export default function LoginPage() {
     setRegArea('');
   };
 
+  const openForgot = () => {
+    clearTimeout(forgotTimer.current);
+    setForgotMounted(true);
+    setView('reset');
+  };
+
+  // emailToFill (chuỗi) = vừa đổi mật khẩu xong: điền sẵn email, xóa ô mật khẩu cũ.
+  const closeForgot = (emailToFill) => {
+    if (typeof emailToFill === 'string') { setEmail(emailToFill.trim()); setPassword(''); setErrorMsg(''); }
+    setView('login');
+    clearTimeout(forgotTimer.current);
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setForgotMounted(false); return; }
+    forgotTimer.current = setTimeout(() => setForgotMounted(false), 650);
+  };
+
   const closeRegisterModal = () => {
     setView('login');
     const finish = () => {
@@ -261,12 +230,15 @@ export default function LoginPage() {
     closeTimer.current = setTimeout(finish, 650); // sau khi tấm đăng ký đã trượt ra khỏi khung
   };
 
-  // Esc quay lại đăng nhập; mở form thì đưa con trỏ vào ô đầu tiên khi tấm đã trượt vào.
+  // Esc quay lại đăng nhập; mở tấm mới thì đưa con trỏ vào ô đầu tiên khi tấm đã trượt vào.
   useEffect(() => {
-    if (view !== 'register') return undefined;
-    const onKey = (e) => { if (e.key === 'Escape') closeRegisterModal(); };
+    if (view === 'login') return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') (view === 'register' ? closeRegisterModal() : closeForgot()); };
     window.addEventListener('keydown', onKey);
-    const t = setTimeout(() => document.getElementById('rg-name')?.focus({ preventScroll: true }), 420);
+    const t = setTimeout(() => {
+      const id = view === 'register' ? 'rg-name' : (email ? 'fp-phone' : 'fp-email');
+      document.getElementById(id)?.focus({ preventScroll: true });
+    }, 420);
     return () => { window.removeEventListener('keydown', onKey); clearTimeout(t); };
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -464,6 +436,9 @@ export default function LoginPage() {
                 readOnly={isLoading}
               />
             </div>
+            <div className="lg-forgot-row">
+              <button type="button" className="lg-textbtn" onClick={openForgot}>Quên mật khẩu?</button>
+            </div>
             <button ref={submitRef} className="lg-btn lg-btn-primary" type="submit" disabled={isLoading}>
               {isLoading ? 'Đang đăng nhập…' : <>Vào trung tâm chỉ huy <ArrowRight size={18} aria-hidden="true" /></>}
             </button>
@@ -521,18 +496,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <ol className="lg-steps" aria-label="Các bước đăng ký">
-              {['Thông tin', 'Xác minh SĐT', 'Hoàn tất'].map((label, i) => {
-                const current = regSuccessResult ? 3 : regStep === 'otp' ? 2 : 1;
-                const state = i + 1 < current ? 'done' : i + 1 === current ? 'now' : 'todo';
-                return (
-                  <li key={label} className={`lg-step lg-step-${state}`} aria-current={state === 'now' ? 'step' : undefined}>
-                    <span className="lg-step-dot">{state === 'done' ? <CheckCircle2 size={16} aria-hidden="true" /> : i + 1}</span>
-                    <span className="lg-step-label">{label}</span>
-                  </li>
-                );
-              })}
-            </ol>
+            <FormSteps current={regSuccessResult ? 3 : regStep === 'otp' ? 2 : 1} ariaLabel="Các bước đăng ký" />
 
             <AutoHeight>
             <div key={stepNow} className={`lg-pane lg-pane-${stepDir}`}>
@@ -684,6 +648,7 @@ export default function LoginPage() {
             </AutoHeight>
               </>
             ) : null}
+            reset={forgotMounted ? <ForgotPasswordPanel initialEmail={email} onBack={closeForgot} /> : null}
           />
         </section>
 

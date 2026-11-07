@@ -51,6 +51,19 @@ public class AuthController {
         return Map.of("exists", auth.emailExists(email));
     }
 
+    @PostMapping("/password-reset/check")
+    @Operation(summary = "Does this email belong to this phone? (asked before the OTP SMS is sent)")
+    public Map<String, Boolean> passwordResetCheck(@Valid @RequestBody PasswordResetCheck request) {
+        return Map.of("eligible", auth.canResetPassword(request.email(), request.phoneNumber()));
+    }
+
+    @PostMapping("/password-reset")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Set a new password after proving the registered phone with a Firebase OTP token")
+    public void passwordReset(@Valid @RequestBody PasswordResetRequest request) {
+        auth.resetPassword(request);
+    }
+
     @PostMapping("/login")
     @Operation(summary = "Log in and receive a role-specific JWT")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
