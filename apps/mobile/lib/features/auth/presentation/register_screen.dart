@@ -17,7 +17,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _name = TextEditingController();
   final _email = TextEditingController();
-  final _phone = TextEditingController();
   final _password = TextEditingController();
   late final AuthRepository _repo = widget.repository ?? AuthRepository();
   bool _loading = false;
@@ -27,7 +26,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void dispose() {
     _name.dispose();
     _email.dispose();
-    _phone.dispose();
     _password.dispose();
     super.dispose();
   }
@@ -43,7 +41,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         fullName: _name.text,
         email: _email.text,
         password: _password.text,
-        phoneNumber: _phone.text,
       );
       if (mounted) Navigator.pop(context);
     } on ApiException catch (e) {
@@ -79,19 +76,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: _phone,
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: 'Số điện thoại (nhận SMS cảnh báo, không bắt buộc)',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
                 controller: _password,
                 obscureText: true,
                 decoration: const InputDecoration(labelText: 'Mật khẩu (từ 8 ký tự)', border: OutlineInputBorder()),
                 validator: (v) => (v == null || v.length < 8) ? 'Mật khẩu tối thiểu 8 ký tự' : null,
+              ),
+              // Máy chủ chỉ nhận số điện thoại đã xác minh OTP (Story 4.6); app chưa có bước OTP,
+              // nên số điện thoại được thêm ở mục Hồ sơ sau khi đăng nhập.
+              const SizedBox(height: 8),
+              const Text(
+                'Số điện thoại nhận SMS cảnh báo có thể thêm sau trong mục Hồ sơ.',
+                style: TextStyle(fontSize: 12),
               ),
               if (_error != null) ...[
                 const SizedBox(height: 12),
