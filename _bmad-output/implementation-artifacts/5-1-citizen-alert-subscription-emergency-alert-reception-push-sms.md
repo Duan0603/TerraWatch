@@ -13,7 +13,7 @@ so that I am told to evacuate and can review what was sent, when it was issued a
 
 **Epic:** Epic 5: Mobile and end-to-end verification
 **Sprint key:** `5-1-citizen-alert-subscription-emergency-alert-reception-push-sms`
-**Branches:** backend `feature/core-alert-push` (Thuận's part, built here because it does not exist), mobile `feature/mobile-push-alerts`.
+**Branches:** mobile `feature/mobile-push-alerts`. **Backend: Story 4.4 backend on `main`** (`4-4-backend-admin-broadcast-persistence-delivery`, Thuận, commit 92708f9, migration V9). The backend first written for this story on `feature/core-alert-push` is superseded by it and was not merged (see the 2026-11-07 note).
 
 ## What exists and what does not (read from code on `main`, 2026-10-30)
 
@@ -83,3 +83,11 @@ Claude Sonnet 5.5 (claude-sonnet-5-5)
 
 - services/core-api: migration `V8__device_tokens_and_broadcast_validity.sql` (also in `database/migrations`), `FcmSender`, `GoogleFcmSender`, `FcmConfig`, `DeviceController`, `AlertBroadcastController`, `NotificationController`, `NotificationService`, `BroadcastRepository`, `DeviceTokenRepository`, DTOs, `SecurityConfig`, `AuthExceptionHandler`, `application.yml`, tests `PushAlertsApiTest`, `GoogleFcmSenderTest`; `docker-compose.yml` (optional `./secrets` mount), `.gitignore`, `docs/API_SPECIFICATION.md`
 - apps/mobile: `lib/services/push_service.dart`, `notification_service.dart`, `lib/features/alerts/data/{alert_models,alerts_repository}.dart`, `presentation/alerts_screen.dart`, `core/storage/local_storage.dart`, `core/network/api_client.dart`, `core/constants/api_endpoints.dart`, `features/auth/data/auth_repository.dart`, `features/home/presentation/main_shell.dart`, `android/app/src/main/AndroidManifest.xml`, `pubspec.yaml/lock`, `test/push_alerts_test.dart`
+
+### Update 2026-11-07: backend now comes from `main`
+
+- Thuận merged Story 4.4 backend into `main` (commit 92708f9): the same device registration, FCM HTTP v1 sender (including the string `aud` fix), broadcast with recipient matching, resync and revoke as written here, plus `runId` citing a forecast run and `idempotency_key` de-duplication (409). Its migration is `V9__device_tokens_and_broadcast_validity.sql` (V8 on `main` is forecast job orchestration).
+- `main` was merged into `feature/mobile-push-alerts`: all core-api conflicts resolved with `main`'s version; this branch's duplicate `V8__device_tokens_and_broadcast_validity.sql` was deleted (two V8 files would stop Flyway). Kept from this branch: the optional `./secrets` mount for the Firebase key in `docker-compose.yml`, `GoogleFcmSenderTest` (same constructor as `main`'s sender) and `services/core-api/scripts/send-test-broadcast.ps1` (same response keys).
+- `feature/core-alert-push` is obsolete and is not to be merged; this story now owns only the mobile side.
+- After the merge: `flutter test` 102/102, `flutter analyze` 3 issues all in files from `main` (design system work, not this story). Core API tests not re-run (Docker paused at the user's request).
+- Mobile work is paused by the user (web first). Still open: phone run of push reception and of Story 5.3, then move 5.1 and 5.3 to done.
