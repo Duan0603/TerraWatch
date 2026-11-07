@@ -32,45 +32,57 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtTokenProvider tokens) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .exceptionHandling(errors -> errors
-                .authenticationEntryPoint((request, response, exception) -> {
-                    response.setStatus(401);
-                    response.setContentType("application/json");
-                    response.getWriter().write("{\"message\":\"Unauthorized\"}");
-                })
-                .accessDeniedHandler((request, response, exception) -> {
-                    response.setStatus(403);
-                    response.setContentType("application/json");
-                    response.getWriter().write("{\"message\":\"Forbidden\"}");
-                }))
-            .addFilterBefore(new JwtAuthenticationFilter(tokens), UsernamePasswordAuthenticationFilter.class)
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/google").permitAll()
-                .requestMatchers("/api/v1/auth/me", "/api/v1/auth/me/**", "/api/v1/auth/password").authenticated()
-                .requestMatchers("/api/v1/alerts/**").authenticated()
-                .requestMatchers("/api/v1/forecasts/**").authenticated()
-                .requestMatchers(HttpMethod.POST, "/api/v1/community-reports", "/api/v1/community-reports/photos").authenticated()
-                .requestMatchers("/api/v1/community-reports/mine").authenticated()
-                // Story 1.3 review: this diagnostic/circuit-breaker/event-bus test endpoint became
-                // internet-reachable for the first time once the gateway added a route for it
-                // (previously internal-network-only). Require a valid session (any role) rather
-                // than leaving it in the blanket permitAll below.
-                .requestMatchers("/api/v1/diagnostic/**").authenticated()
-                // Only the admin-authored broadcast is currently role-gated; other pre-existing
-                // routes stay permitAll below to avoid regressing Stories 4.2/4.3/4.4 (see story
-                // 1.1's Dev Notes -> Architecture Compliance for why the blanket rule is untouched).
-                .requestMatchers(HttpMethod.POST, "/api/v1/notifications/broadcast").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/v1/notifications/broadcast/*/revoke").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.GET, "/api/v1/notifications/broadcasts", "/api/v1/notifications/broadcast/preview").hasRole("ADMIN")
-                // PRD: chỉ admin quản lý vùng giám sát; GET vẫn công khai cho bản đồ và app
-                .requestMatchers(HttpMethod.POST, "/api/v1/monitoring-areas").hasRole("ADMIN")
-                .requestMatchers("/api/v1/**").permitAll()
-                .anyRequest().authenticated()
-            );
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(errors -> errors
+                        .authenticationEntryPoint((request, response, exception) -> {
+                            response.setStatus(401);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"message\":\"Unauthorized\"}");
+                        })
+                        .accessDeniedHandler((request, response, exception) -> {
+                            response.setStatus(403);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"message\":\"Forbidden\"}");
+                        }))
+                .addFilterBefore(new JwtAuthenticationFilter(tokens), UsernamePasswordAuthenticationFilter.class)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/google")
+                        .permitAll()
+                        .requestMatchers("/api/v1/auth/me", "/api/v1/auth/me/**", "/api/v1/auth/password")
+                        .authenticated()
+                        .requestMatchers("/api/v1/alerts/**").authenticated()
+                        .requestMatchers("/api/v1/forecasts/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/community-reports",
+                                "/api/v1/community-reports/photos")
+                        .authenticated()
+                        .requestMatchers("/api/v1/community-reports/mine").authenticated()
+                        // Story 1.3 review: this diagnostic/circuit-breaker/event-bus test endpoint
+                        // became
+                        // internet-reachable for the first time once the gateway added a route for it
+                        // (previously internal-network-only). Require a valid session (any role) rather
+                        // than leaving it in the blanket permitAll below.
+                        .requestMatchers("/api/v1/diagnostic/**").authenticated()
+                        // Only the admin-authored broadcast is currently role-gated; other pre-existing
+                        // routes stay permitAll below to avoid regressing Stories 4.2/4.3/4.4 (see
+                        // story
+                        // 1.1's Dev Notes -> Architecture Compliance for why the blanket rule is
+                        // untouched).
+                        .requestMatchers(HttpMethod.POST, "/api/v1/notifications/broadcast").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/notifications/broadcast/*/revoke").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/notifications/broadcasts",
+                                "/api/v1/notifications/broadcast/preview",
+                                "/api/v1/notifications/broadcast/*/deliveries")
+                        .hasRole("ADMIN")
+                        // PRD: chỉ admin quản lý vùng giám sát; GET vẫn công khai cho bản đồ và app
+                        .requestMatchers(HttpMethod.POST, "/api/v1/monitoring-areas").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/monitoring-areas/**").hasRole("ADMIN")
+                        // Admin user management: duyệt cán bộ, khóa/mở tài khoản, phân quyền
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/**").permitAll()
+                        .anyRequest().authenticated());
 
         return http.build();
     }

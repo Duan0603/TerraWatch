@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import vn.terrawatch.core.dto.BroadcastAlertRequest;
 import vn.terrawatch.core.dto.BroadcastHistoryItem;
 import vn.terrawatch.core.dto.BroadcastPreview;
+import vn.terrawatch.core.repository.BroadcastRepository.DeliveryItem;
 import vn.terrawatch.core.service.NotificationService;
 
 import java.util.List;
@@ -49,5 +50,11 @@ public class NotificationController {
     @Operation(summary = "Thu hồi một lệnh cảnh báo đã phát; thiết bị thấy trạng thái này ở lần đồng bộ sau")
     public void revoke(@PathVariable UUID id) {
         notificationService.revoke(id);
+    }
+
+    @GetMapping("/broadcast/{id}/deliveries")
+    @Operation(summary = "Chi tiết người nhận và kết quả chuyển phát của một lệnh cảnh báo")
+    public List<DeliveryItem> deliveries(@PathVariable UUID id) {
+        return notificationService.deliveries(id);
     }
 }

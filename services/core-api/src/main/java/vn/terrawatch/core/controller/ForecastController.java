@@ -90,6 +90,13 @@ public class ForecastController {
         return service.reviewQueue(status);
     }
 
+    @GetMapping("/reviews/audit")
+    @PreAuthorize("hasAnyRole('OFFICER', 'ADMIN')")
+    @Operation(summary = "Nhật ký thẩm định dự báo: ai duyệt, lúc nào, lý do gì")
+    public List<ForecastReviewAuditItem> reviewAuditLog(@RequestParam(defaultValue = "100") int limit) {
+        return service.reviewAuditLog(limit);
+    }
+
     @GetMapping("/active")
     @Operation(summary = "Approved, active, unexpired forecasts")
     public List<ForecastJobResponse> active() {

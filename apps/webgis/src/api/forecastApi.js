@@ -83,12 +83,66 @@ export const forecastApi = {
     }
   },
 
+  // Nhật ký thẩm định dự báo: ai duyệt, lúc nào, lý do gì (core_schema.forecast_reviews)
+  async getReviewAuditLog(limit = 100) {
+    try {
+      return await axiosClient.get('/forecasts/reviews/audit', { params: { limit } });
+    } catch (err) {
+      throw new Error(apiErrorMessage(err, 'Không tải được nhật ký thẩm định'));
+    }
+  },
+
   // Báo cáo hiện trường của người dân (lớp bản đồ riêng, không phải sự cố đã xác nhận).
   async getFieldReports() {
     const rows = await axiosClient.get('/community-reports');
     return rows
       .filter(r => r.longitude != null && r.latitude != null)
-      .map(r => ({ id: r.report_id, coords: [r.longitude, r.latitude], description: r.description || '', time: r.observed_at || r.report_time, status: r.status }));
+      .map(r => ({
+        id: r.report_id,
+        coords: [r.longitude, r.latitude],
+        description: r.description || '',
+        time: r.observed_at || r.report_time,
+        status: r.status,
+        imageUrl: r.image_url,
+        submitterName: r.submitter_name,
+        submitterPhone: r.submitter_phone
+      }));
+  },
+
+  // Cập nhật trạng thái báo cáo hiện trường ('submitted' | 'processed' | 'archived')
+  async updateFieldReportStatus(reportId, status) {
+    try {
+      return await axiosClient.patch(`/community-reports/${reportId}/status`, { status });
+    } catch (err) {
+      throw new Error(apiErrorMessage(err, 'Không cập nhật được trạng thái báo cáo'));
+    }
+  },
+
+  // Danh sách toàn bộ vùng giám sát (dành cho quản lý AOI)
+  async getMonitoringAreas() {
+    try {
+      return await axiosClient.get('/monitoring-areas');
+    } catch (err) {
+      throw new Error(apiErrorMessage(err, 'Không tải được danh sách vùng giám sát'));
+    }
+  },
+
+  // Tạo vùng giám sát mới (Admin only)
+  async createMonitoringArea({ name, description, geojson }) {
+    try {
+      return await axiosClient.post('/monitoring-areas', { name, description, geojson });
+    } catch (err) {
+      throw new Error(apiErrorMessage(err, 'Không tạo được vùng giám sát'));
+    }
+  },
+
+  // Sửa thông tin hoặc tọa độ vùng giám sát (Admin only)
+  async updateMonitoringArea(id, { name, description, isActive, geojson }) {
+    try {
+      return await axiosClient.put(`/monitoring-areas/${id}`, { name, description, isActive, geojson });
+    } catch (err) {
+      throw new Error(apiErrorMessage(err, 'Không cập nhật được vùng giám sát'));
+    }
   },
 
   // Ranh giới vùng giám sát (AOI) dạng GeoJSON FeatureCollection.

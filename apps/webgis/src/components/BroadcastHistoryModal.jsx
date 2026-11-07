@@ -10,7 +10,11 @@ import {
   Radio, 
   AlertTriangle,
   RefreshCw,
-  Send
+  Send,
+  RotateCcw,
+  Users,
+  CheckCircle2,
+  XCircle
 } from 'lucide-react';
 import broadcastApi from '../api/broadcastApi';
 
@@ -20,6 +24,12 @@ export default function BroadcastHistoryModal({ isOpen, onClose, onOpenNewBroadc
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [loadError, setLoadError] = useState(null);
+
+  const [deliveries, setDeliveries] = useState([]);
+  const [deliveriesLoading, setDeliveriesLoading] = useState(false);
+  const [revoking, setRevoking] = useState(false);
+  const [revokeError, setRevokeError] = useState(null);
+  const [confirmRevoke, setConfirmRevoke] = useState(false);
 
   const fetchHistory = async () => {
     try {
@@ -43,6 +53,45 @@ export default function BroadcastHistoryModal({ isOpen, onClose, onOpenNewBroadc
       fetchHistory();
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (selectedEntry?.broadcastId) {
+      fetchDeliveries(selectedEntry.broadcastId);
+      setConfirmRevoke(false);
+      setRevokeError(null);
+    } else {
+      setDeliveries([]);
+    }
+  }, [selectedEntry?.broadcastId]);
+
+  const fetchDeliveries = async (broadcastId) => {
+    try {
+      setDeliveriesLoading(true);
+      const data = await broadcastApi.getDeliveries(broadcastId);
+      setDeliveries(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.warn('Could not fetch deliveries:', err);
+      setDeliveries([]);
+    } finally {
+      setDeliveriesLoading(false);
+    }
+  };
+
+  const handleRevoke = async () => {
+    if (!selectedEntry?.broadcastId) return;
+    try {
+      setRevoking(true);
+      setRevokeError(null);
+      await broadcastApi.revokeBroadcast(selectedEntry.broadcastId);
+      setSelectedEntry(prev => prev ? { ...prev, status: 'ĐÃ THU HỒI' } : null);
+      setHistory(prev => prev.map(item => item.id === selectedEntry.id ? { ...item, status: 'ĐÃ THU HỒI' } : item));
+      setConfirmRevoke(false);
+    } catch (err) {
+      setRevokeError(err.message || 'Không thể thu hồi lệnh cảnh báo');
+    } finally {
+      setRevoking(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -268,28 +317,119 @@ export default function BroadcastHistoryModal({ isOpen, onClose, onOpenNewBroadc
                       {selectedEntry.location}
                     </h4>
                   </div>
-                  {(() => {
-                    // Màu theo kết quả thật: chỉ "ĐÃ GỬI" mới là xanh
-                    const ok = selectedEntry.status === 'ĐÃ GỬI';
-                    const rgb = ok ? '34, 197, 94' : selectedEntry.status === 'GỬI MỘT PHẦN' ? '251, 146, 60' : '239, 68, 68';
-                    return (
-                      <span style={{
-                        fontSize: 11,
-                        fontWeight: 700,
-                        padding: '4px 10px',
-                        borderRadius: 6,
-                        background: `rgba(${rgb}, 0.15)`,
-                        color: `rgb(${rgb})`,
-                        border: `1px solid rgba(${rgb}, 0.3)`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 5
-                      }}>
-                        {ok ? <CheckCircle size={13} /> : <AlertTriangle size={13} />} {selectedEntry.status}
-                      </span>
-                    );
-                  })()}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {(() => {
+                      // Màu theo kết quả thật: chỉ "ĐÃ GỬI" mới là xanh
+                      const isRevoked = selectedEntry.status === 'ĐÃ THU HỒI';
+                      const ok = selectedEntry.status === 'ĐÃ GỬI';
+                      const rgb = isRevoked ? '148, 163, 184' : ok ? '34, 197, 94' : selectedEntry.status === 'GỬI MỘT PHẦN' ? '251, 146, 60' : '239, 68, 68';
+                      return (
+                        <span style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          padding: '4px 10px',
+                          borderRadius: 6,
+                          background: `rgba(${rgb}, 0.15)`,
+                          color: `rgb(${rgb})`,
+                          border: `1px solid rgba(${rgb}, 0.3)`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 5
+                        }}>
+                          {isRevoked ? <RotateCcw size={13} /> : ok ? <CheckCircle size={13} /> : <AlertTriangle size={13} />} {selectedEntry.status}
+                        </span>
+                      );
+                    })()}
+
+                    {selectedEntry.status !== 'ĐÃ THU HỒI' && !confirmRevoke && (
+                      <button
+                        onClick={() => setConfirmRevoke(true)}
+                        style={{
+                          background: 'rgba(239, 68, 68, 0.15)',
+                          border: '1px solid rgba(239, 68, 68, 0.4)',
+                          color: '#f87171',
+                          padding: '4px 10px',
+                          borderRadius: 6,
+                          fontSize: 11,
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          transition: 'all 0.2s'
+                        }}
+                        title="Thu hồi lệnh cảnh báo này đối với các thiết bị công dân"
+                      >
+                        <RotateCcw size={12} /> Thu Hồi Lệnh
+                      </button>
+                    )}
+                  </div>
                 </div>
+
+                {confirmRevoke && (
+                  <div style={{
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    borderRadius: 8,
+                    padding: '10px 14px',
+                    marginBottom: 14,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 10
+                  }}>
+                    <div style={{ fontSize: 12, color: '#fca5a5' }}>
+                      <strong>Xác nhận thu hồi?</strong> Thiết bị công dân sẽ hiển thị thông báo đã hủy bỏ ở lần kết nối tới.
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button
+                        onClick={handleRevoke}
+                        disabled={revoking}
+                        style={{
+                          background: '#dc2626',
+                          border: 'none',
+                          color: '#fff',
+                          padding: '4px 10px',
+                          borderRadius: 6,
+                          fontSize: 11,
+                          fontWeight: 700,
+                          cursor: revoking ? 'not-allowed' : 'pointer'
+                        }}
+                      >
+                        {revoking ? 'Đang thu hồi...' : 'Đồng Ý Thu Hồi'}
+                      </button>
+                      <button
+                        onClick={() => setConfirmRevoke(false)}
+                        disabled={revoking}
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.08)',
+                          border: '1px solid rgba(255, 255, 255, 0.15)',
+                          color: '#cbd5e1',
+                          padding: '4px 10px',
+                          borderRadius: 6,
+                          fontSize: 11,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Hủy
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {revokeError && (
+                  <div style={{
+                    background: 'rgba(239, 68, 68, 0.15)',
+                    border: '1px solid rgba(239, 68, 68, 0.4)',
+                    color: '#f87171',
+                    borderRadius: 6,
+                    padding: '8px 12px',
+                    fontSize: 11,
+                    marginBottom: 12
+                  }}>
+                    {revokeError}
+                  </div>
+                )}
 
                 {/* Metadata cards */}
                 <div style={{
@@ -371,7 +511,7 @@ export default function BroadcastHistoryModal({ isOpen, onClose, onOpenNewBroadc
                 </div>
 
                 {/* Nội dung tin nhắn đã phát */}
-                <div>
+                <div style={{ marginBottom: 16 }}>
                   <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 6 }}>
                     Nội dung tin nhắn phát tới người dân:
                   </div>
@@ -387,6 +527,99 @@ export default function BroadcastHistoryModal({ isOpen, onClose, onOpenNewBroadc
                   }}>
                     {selectedEntry.message}
                   </div>
+                </div>
+
+                {/* Danh sách người nhận chi tiết */}
+                <div>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: 8
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>
+                      <Users size={13} color="#38bdf8" />
+                      <span>Danh sách người nhận & trạng thái chuyển phát</span>
+                    </div>
+                    <span style={{ fontSize: 11, color: '#64748b' }}>
+                      {deliveries.length} thiết bị ghi nhận
+                    </span>
+                  </div>
+
+                  {deliveriesLoading ? (
+                    <div style={{ textAlign: 'center', padding: 16, color: '#64748b', fontSize: 12 }}>
+                      <RefreshCw size={14} className="spin" style={{ display: 'inline', marginRight: 6 }} /> Đang tải danh sách người nhận...
+                    </div>
+                  ) : deliveries.length === 0 ? (
+                    <div style={{
+                      padding: 14,
+                      background: 'rgba(255, 255, 255, 0.02)',
+                      border: '1px solid rgba(255, 255, 255, 0.06)',
+                      borderRadius: 8,
+                      textAlign: 'center',
+                      color: '#64748b',
+                      fontSize: 12
+                    }}>
+                      Chưa có dữ liệu chuyển phát chi tiết cho đợt phát này.
+                    </div>
+                  ) : (
+                    <div style={{
+                      maxHeight: 220,
+                      overflowY: 'auto',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: 8,
+                      background: 'rgba(0, 0, 0, 0.3)'
+                    }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
+                        <thead>
+                          <tr style={{ background: 'rgba(255, 255, 255, 0.04)', color: '#94a3b8', textAlign: 'left', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                            <th style={{ padding: '8px 10px' }}>Người nhận</th>
+                            <th style={{ padding: '8px 10px' }}>Số điện thoại</th>
+                            <th style={{ padding: '8px 10px' }}>FCM Token</th>
+                            <th style={{ padding: '8px 10px' }}>Trạng thái</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {deliveries.map((d, idx) => {
+                            const isSent = d.status === 'sent';
+                            return (
+                              <tr key={d.deliveryId || idx} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.03)' }}>
+                                <td style={{ padding: '8px 10px', color: '#f8fafc', fontWeight: 600 }}>
+                                  {d.recipientName || 'Công dân'}
+                                </td>
+                                <td style={{ padding: '8px 10px', color: '#cbd5e1' }}>
+                                  {d.phoneNumber || '—'}
+                                </td>
+                                <td style={{ padding: '8px 10px', color: '#64748b', fontFamily: 'monospace' }}>
+                                  {d.fcmToken ? `...${d.fcmToken.slice(-10)}` : '—'}
+                                </td>
+                                <td style={{ padding: '8px 10px' }}>
+                                  <span style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 4,
+                                    padding: '2px 6px',
+                                    borderRadius: 4,
+                                    fontSize: 10,
+                                    fontWeight: 700,
+                                    background: isSent ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                                    color: isSent ? '#4ade80' : '#f87171',
+                                    border: `1px solid ${isSent ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`
+                                  }}>
+                                    {isSent ? <CheckCircle2 size={11} /> : <XCircle size={11} />}
+                                    {isSent ? 'Thành công' : 'Thất bại'}
+                                  </span>
+                                  {d.errorMessage && (
+                                    <div style={{ color: '#f87171', fontSize: 10, marginTop: 2 }}>{d.errorMessage}</div>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (

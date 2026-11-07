@@ -3,10 +3,12 @@ package vn.terrawatch.core.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.terrawatch.core.dto.ForecastOfflineSyncResponse;
+import vn.terrawatch.core.dto.ForecastReviewAuditItem;
 import vn.terrawatch.core.dto.ForecastReviewItem;
 import vn.terrawatch.core.repository.ForecastRepository;
 
 import java.time.Instant;
+import java.util.List;
 
 @Service
 public class ForecastService {
@@ -17,8 +19,13 @@ public class ForecastService {
     }
 
     @Transactional(readOnly = true)
-    public java.util.List<ForecastReviewItem> reviewQueue(String status) {
+    public List<ForecastReviewItem> reviewQueue(String status) {
         return forecasts.reviewQueue(status);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ForecastReviewAuditItem> reviewAuditLog(int limit) {
+        return forecasts.reviewAuditLog(limit);
     }
 
     @Transactional(readOnly = true)

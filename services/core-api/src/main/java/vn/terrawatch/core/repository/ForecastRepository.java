@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import vn.terrawatch.core.dto.ForecastReviewAuditItem;
 import vn.terrawatch.core.dto.ForecastReviewItem;
 import vn.terrawatch.core.dto.ForecastZoneResponse;
 
@@ -97,6 +98,33 @@ public class ForecastRepository {
             """, (rs, n) -> new ForecastReviewItem.PriorRun(rs.getObject("run_id", UUID.class), instant(rs, "issued_at"),
                 rs.getString("hazard_level"), (Double) rs.getObject("probability"), rs.getString("review_status")),
             run.unit().unitId(), run.runId(), run.issuedAt().atOffset(java.time.ZoneOffset.UTC));
+    }
+
+    /** Audit log of all forecast reviews, newest first. */
+    public List<ForecastReviewAuditItem> reviewAuditLog(int limit) {
+        return jdbc.query("""
+            SELECT r.review_id, r.run_id, f.unit_id, f.hazard_level::text AS hazard_level,
+                   r.reviewer_id, COALESCE(u.full_name, 'Hệ thống') AS reviewer_name,
+                   u.email AS reviewer_email, u.role::text AS reviewer_role,
+                   r.decision::text AS decision, r.reason_notes, r.reviewed_at
+            FROM core_schema.forecast_reviews r
+            LEFT JOIN core_schema.forecast_runs f ON f.run_id = r.run_id
+            LEFT JOIN core_schema.users u ON u.user_id = r.reviewer_id
+            ORDER BY r.reviewed_at DESC
+            LIMIT ?
+            """, (rs, i) -> new ForecastReviewAuditItem(
+                rs.getInt("review_id"),
+                rs.getObject("run_id", UUID.class),
+                rs.getString("unit_id"),
+                rs.getString("hazard_level"),
+                rs.getObject("reviewer_id", UUID.class),
+                rs.getString("reviewer_name"),
+                rs.getString("reviewer_email"),
+                rs.getString("reviewer_role"),
+                rs.getString("decision"),
+                rs.getString("reason_notes"),
+                instant(rs, "reviewed_at")
+            ), Math.max(1, Math.min(limit, 500)));
     }
 
     private static java.time.Instant instant(ResultSet rs, String col) throws SQLException {

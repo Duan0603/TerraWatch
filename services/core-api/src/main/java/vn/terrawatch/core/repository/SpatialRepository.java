@@ -153,6 +153,31 @@ public class SpatialRepository {
         return jdbcTemplate.queryForMap(sql, name, description, geoJsonGeometry);
     }
 
+    public Map<String, Object> updateMonitoringArea(int areaId, String name, String description, Boolean isActive, String geoJsonGeometry) {
+        if (geoJsonGeometry != null && !geoJsonGeometry.isBlank()) {
+            String sql = """
+                UPDATE gis_schema.monitoring_areas
+                SET name = COALESCE(?, name),
+                    description = COALESCE(?, description),
+                    is_active = COALESCE(?, is_active),
+                    geom = ST_Multi(ST_SetSRID(ST_GeomFromGeoJSON(?), 4326))
+                WHERE area_id = ?
+                RETURNING area_id, name, description, is_active, created_at, ST_AsGeoJSON(geom) AS geometry_geojson
+                """;
+            return jdbcTemplate.queryForMap(sql, name, description, isActive, geoJsonGeometry, areaId);
+        } else {
+            String sql = """
+                UPDATE gis_schema.monitoring_areas
+                SET name = COALESCE(?, name),
+                    description = COALESCE(?, description),
+                    is_active = COALESCE(?, is_active)
+                WHERE area_id = ?
+                RETURNING area_id, name, description, is_active, created_at, ST_AsGeoJSON(geom) AS geometry_geojson
+                """;
+            return jdbcTemplate.queryForMap(sql, name, description, isActive, areaId);
+        }
+    }
+
     // Community Reports (core_schema)
     public List<Map<String, Object>> listCommunityReports() {
         String sql = """
@@ -165,11 +190,19 @@ public class SpatialRepository {
                 r.observed_at,
                 ST_X(r.location) AS longitude,
                 ST_Y(r.location) AS latitude,
-                u.full_name AS submitter_name
+                u.full_name AS submitter_name,
+                u.phone_number AS submitter_phone
             FROM core_schema.community_reports r
             LEFT JOIN core_schema.users u ON r.user_id = u.user_id
             ORDER BY r.report_time DESC
             """;
         return jdbcTemplate.queryForList(sql);
+    }
+
+    public int updateReportStatus(Integer reportId, String status) {
+        return jdbcTemplate.update(
+            "UPDATE core_schema.community_reports SET status = CAST(? AS core_schema.report_status) WHERE report_id = ?",
+            status, reportId
+        );
     }
 }

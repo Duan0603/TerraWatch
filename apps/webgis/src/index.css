@@ -196,12 +196,34 @@ body {
   letter-spacing: 0.03em;
 }
 
+.status-chip--error {
+  background: #FEF2F2;
+  border-color: #FECACA;
+  color: #B91C1C;
+}
+
+.status-chip--warning {
+  background: #FEFCE8;
+  border-color: #FEF08A;
+  color: #92400E;
+}
+
 .live-dot {
   width: 7px;
   height: 7px;
   background: #22C55E;
   border-radius: 50%;
   animation: pulse-dot 1.8s infinite;
+}
+
+.live-dot--error {
+  background: #EF4444;
+  animation: none;
+}
+
+.live-dot--warning {
+  background: #F59E0B;
+  animation: none;
 }
 
 @keyframes pulse-dot {

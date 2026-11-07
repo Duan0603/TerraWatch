@@ -126,9 +126,11 @@ export const authApi = {
     }
     try {
       const res = await conf.confirm(otpCode);
+      const idToken = await res.user?.getIdToken?.();
       return {
         success: true,
         user: res.user,
+        idToken,
         isRealSms: true,
         message: 'Xác thực số điện thoại thật qua SMS Firebase thành công!'
       };

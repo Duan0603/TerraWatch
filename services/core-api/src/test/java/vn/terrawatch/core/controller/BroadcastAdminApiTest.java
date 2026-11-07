@@ -136,6 +136,12 @@ class BroadcastAdminApiTest {
             .andExpect(jsonPath("$[1].status").value("revoked"))
             .andExpect(jsonPath("$[1].revokedAt").isNotEmpty());
         call(HttpMethod.GET, "/api/v1/notifications/broadcasts?limit=1", admin, null).andExpect(jsonPath("$.length()").value(1));
+
+        call(HttpMethod.GET, "/api/v1/notifications/broadcast/" + first.get("broadcast_id").asText() + "/deliveries", admin, null)
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(1))
+            .andExpect(jsonPath("$[0].recipientName").value("History Test"))
+            .andExpect(jsonPath("$[0].status").value("sent"));
     }
 
     @Test
@@ -162,5 +168,23 @@ class BroadcastAdminApiTest {
         String existing = jdbc.queryForObject("SELECT name FROM gis_schema.monitoring_areas ORDER BY area_id LIMIT 1", String.class);
         assertThrows(DuplicateKeyException.class, () -> jdbc.update(
             "INSERT INTO gis_schema.monitoring_areas (name, geom) SELECT name, geom FROM gis_schema.monitoring_areas WHERE name = ?", existing));
+    }
+
+    @Test
+    void adminCanUpdateMonitoringArea() throws Exception {
+        String admin = withRole("admin-update-area@history-test.example", "admin");
+        Map<String, Object> square = Map.of("type", "Polygon", "coordinates", List.of(List.of(
+            List.of(105.0, 21.0), List.of(105.1, 21.0), List.of(105.1, 21.1), List.of(105.0, 21.1), List.of(105.0, 21.0))));
+        String created = call(HttpMethod.POST, "/api/v1/monitoring-areas", admin,
+            Map.of("name", "Vung Ban Dau", "description", "truoc cap nhat", "geojson", square))
+            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        int areaId = json.readTree(created).get("area_id").asInt();
+
+        // Update name and description
+        call(HttpMethod.PUT, "/api/v1/monitoring-areas/" + areaId, admin,
+            Map.of("name", "Vung Sau Cap Nhat", "description", "da cap nhat", "isActive", true))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.name").value("Vung Sau Cap Nhat"))
+            .andExpect(jsonPath("$.description").value("da cap nhat"));
     }
 }

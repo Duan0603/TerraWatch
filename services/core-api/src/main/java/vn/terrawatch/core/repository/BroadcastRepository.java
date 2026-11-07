@@ -20,6 +20,9 @@ public class BroadcastRepository {
 
     public record RunRef(UUID runId, String unitId, OffsetDateTime validUntil) {}
 
+    public record DeliveryItem(UUID deliveryId, UUID userId, String recipientName, String phoneNumber,
+                               String fcmToken, String status, String errorMessage, Instant sentAt) {}
+
     private final JdbcTemplate jdbc;
 
     public BroadcastRepository(JdbcTemplate jdbc) {
@@ -132,6 +135,31 @@ public class BroadcastRepository {
     /** @return false when no active broadcast has that id */
     public boolean revoke(UUID broadcastId) {
         return jdbc.update("UPDATE core_schema.alert_broadcasts SET status = 'revoked', revoked_at = CURRENT_TIMESTAMP WHERE broadcast_id = ? AND status = 'active'", broadcastId) == 1;
+    }
+
+    /** Detailed list of recipients and outcomes for a single broadcast. */
+    public List<DeliveryItem> deliveries(UUID broadcastId) {
+        return jdbc.query("""
+            SELECT d.delivery_id, d.user_id, COALESCE(u.full_name, 'Công dân') AS recipient_name,
+                   COALESCE(d.phone_number, u.phone_number) AS phone_number,
+                   d.fcm_token, d.status::text AS status, d.error_message, d.sent_at
+            FROM core_schema.alert_deliveries d
+            LEFT JOIN core_schema.users u ON u.user_id = d.user_id
+            WHERE d.broadcast_id = ?
+            ORDER BY d.sent_at DESC
+            """, (rs, i) -> {
+                OffsetDateTime sent = rs.getObject("sent_at", OffsetDateTime.class);
+                return new DeliveryItem(
+                    rs.getObject("delivery_id", UUID.class),
+                    rs.getObject("user_id", UUID.class),
+                    rs.getString("recipient_name"),
+                    rs.getString("phone_number"),
+                    rs.getString("fcm_token"),
+                    rs.getString("status"),
+                    rs.getString("error_message"),
+                    sent == null ? null : sent.toInstant()
+                );
+            }, broadcastId);
     }
 }
 

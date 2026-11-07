@@ -29,6 +29,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import org.springframework.boot.test.mock.mockito.MockBean;
+import vn.terrawatch.core.security.FirebaseIdTokenVerifier;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
 @SpringBootTest
 @AutoConfigureMockMvc(print = MockMvcPrint.NONE)
 @Transactional
@@ -38,14 +43,27 @@ class AuthControllerTest {
     @Autowired UserRepository users;
     @Autowired BCryptPasswordEncoder passwords;
     @Autowired JwtTokenProvider tokens;
+    @MockBean FirebaseIdTokenVerifier verifier;
     private static final String SECRET = "test-only-secret-at-least-thirty-two-bytes-long";
+
+    @org.junit.jupiter.api.BeforeEach
+    void setUpMock() {
+        when(verifier.verifyPhoneToken(anyString())).thenAnswer(inv -> {
+            String tok = inv.getArgument(0);
+            if ("valid-token".equals(tok)) return "+84901234567";
+            if ("officer-token".equals(tok)) return "+84912345678";
+            if ("mismatch-token".equals(tok)) return "+84999999999";
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.BAD_REQUEST, "Invalid phone token");
+        });
+    }
 
     @Test
     void registerLoginMeRoundTripForcesCitizenAndRejectsDuplicate() throws Exception {
         long before = users.count();
         JsonNode registered = body(postJson("/auth/register", Map.of("fullName", "Test Citizen",
             "email", "citizen@auth-test.example", "password", "secret123", "role", "admin",
-            "phone_number", "0901234567"))
+            "phone_number", "0901234567", "phoneToken", "valid-token"))
             .andExpect(status().isCreated()).andExpect(jsonPath("$.role").value("citizen"))
             .andExpect(jsonPath("$.user.phoneNumber").value("0901234567")));
         UUID id = UUID.fromString(registered.path("user").path("userId").asText());
@@ -53,7 +71,8 @@ class AuthControllerTest {
         assertThat(saved.getRole()).isEqualTo("citizen");
         assertThat(passwords.matches("secret123", saved.getPasswordHash())).isTrue();
         assertThat(saved.getPasswordHash()).isNotEqualTo("secret123");
-        postJson("/auth/register", Map.of("fullName", "Duplicate", "email", saved.getEmail(), "password", "secret123"))
+        postJson("/auth/register", Map.of("fullName", "Duplicate", "email", saved.getEmail(), "password", "secret123",
+            "phoneToken", "valid-token", "phone_number", "0901234567"))
             .andExpect(status().isConflict());
         assertThat(users.count()).isEqualTo(before + 1);
         JsonNode login = body(postJson("/auth/login", Map.of("email", saved.getEmail(), "password", "secret123"))
@@ -65,9 +84,32 @@ class AuthControllerTest {
     }
 
     @Test
+    void registerRequiresOtpForPhoneNumberAndRejectsMismatchOrMissingToken() throws Exception {
+        // Có số điện thoại nhưng không gửi phoneToken (gọi API trực tiếp để bypass) -> 400
+        postJson("/auth/register", Map.of("fullName", "Test", "email", "no-otp@auth-test.example",
+            "password", "secret123", "phone_number", "0901234567"))
+            .andExpect(status().isBadRequest());
+
+        // Gửi token giả hoặc token hết hạn -> 400
+        postJson("/auth/register", Map.of("fullName", "Test", "email", "bad-otp@auth-test.example",
+            "password", "secret123", "phone_number", "0901234567", "phoneToken", "fake-token"))
+            .andExpect(status().isBadRequest());
+
+        // Token hợp lệ nhưng thuộc về số điện thoại khác -> 400
+        postJson("/auth/register", Map.of("fullName", "Test", "email", "mismatch@auth-test.example",
+            "password", "secret123", "phone_number", "0901234567", "phoneToken", "mismatch-token"))
+            .andExpect(status().isBadRequest());
+
+        // Token hợp lệ và khớp số điện thoại (+84901234567 khớp 0901234567) -> 201
+        postJson("/auth/register", Map.of("fullName", "Test", "email", "success-otp@auth-test.example",
+            "password", "secret123", "phone_number", "0901234567", "phoneToken", "valid-token"))
+            .andExpect(status().isCreated());
+    }
+
+    @Test
     void acceptsCamelCasePhoneAndIgnoresOfficerRole() throws Exception {
         body(postJson("/auth/register", Map.of("fullName", "Test", "email", "phone@auth-test.example",
-            "password", "secret123", "phoneNumber", "0912345678", "role", "officer"))
+            "password", "secret123", "phoneNumber", "0912345678", "role", "officer", "phoneToken", "officer-token"))
             .andExpect(status().isCreated()).andExpect(jsonPath("$.role").value("citizen"))
             .andExpect(jsonPath("$.user.phoneNumber").value("0912345678")));
     }
@@ -168,7 +210,7 @@ class AuthControllerTest {
     void passwordFieldsAreNeverSerializedOrIncludedInRequestToString() throws Exception {
         User user = users.findByEmail("admin@terrawatch.vn").orElseThrow();
         assertThat(json.writeValueAsString(user)).doesNotContain("passwordHash", "password_hash", user.getPasswordHash());
-        var register = new RegisterRequest("Test", "test@example.com", "secret123", null);
+        var register = new RegisterRequest("Test", "test@example.com", "secret123", null, null);
         var login = new LoginRequest("test@example.com", "secret123");
         assertThat(json.writeValueAsString(register)).doesNotContain("password", "secret123");
         assertThat(json.writeValueAsString(login)).doesNotContain("password", "secret123");
