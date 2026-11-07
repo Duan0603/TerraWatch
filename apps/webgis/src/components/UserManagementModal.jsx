@@ -16,9 +16,11 @@ import {
   Check
 } from 'lucide-react';
 import adminApi from '../api/adminApi';
+import { useAuth } from '../context/AuthContext';
 import { fmtVN } from '../utils/time';
 
 export default function UserManagementModal({ isOpen, onClose }) {
+  const { user: me } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -434,6 +436,7 @@ export default function UserManagementModal({ isOpen, onClose }) {
                     const isOfficerPending = (u.approvalStatus || '').toLowerCase() === 'pending';
                     const isOfficerRejected = (u.approvalStatus || '').toLowerCase() === 'rejected';
                     const isActioning = actionLoadingId === u.userId;
+                    const isSelf = me?.userId === u.userId; // server refuses these two actions on yourself (Story 4.7)
 
                     return (
                       <tr
@@ -469,7 +472,8 @@ export default function UserManagementModal({ isOpen, onClose }) {
                         <td style={{ padding: '12px' }}>
                           <select
                             value={(u.role || 'citizen').toLowerCase()}
-                            disabled={isActioning}
+                            disabled={isActioning || isSelf}
+                            title={isSelf ? 'Bạn không thể tự đổi vai trò của chính mình' : undefined}
                             onChange={(e) => handleChangeRole(u, e.target.value)}
                             style={{
                               backgroundColor: '#1E293B',
@@ -618,8 +622,8 @@ export default function UserManagementModal({ isOpen, onClose }) {
                             {/* Lock / Unlock toggle */}
                             <button
                               onClick={() => handleToggleStatus(u)}
-                              disabled={isActioning}
-                              title={u.isActive ? 'Khóa tài khoản này' : 'Mở khóa tài khoản này'}
+                              disabled={isActioning || isSelf}
+                              title={isSelf ? 'Bạn không thể tự khóa tài khoản của chính mình' : (u.isActive ? 'Khóa tài khoản này' : 'Mở khóa tài khoản này')}
                               style={{
                                 backgroundColor: u.isActive ? 'transparent' : 'rgba(16, 185, 129, 0.2)',
                                 color: u.isActive ? '#94A3B8' : '#34D399',
@@ -627,7 +631,8 @@ export default function UserManagementModal({ isOpen, onClose }) {
                                 borderRadius: '6px',
                                 padding: '5px 10px',
                                 fontSize: '12px',
-                                cursor: isActioning ? 'not-allowed' : 'pointer',
+                                cursor: (isActioning || isSelf) ? 'not-allowed' : 'pointer',
+                                opacity: isSelf ? 0.45 : 1,
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '4px'

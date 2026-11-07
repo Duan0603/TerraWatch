@@ -6,18 +6,13 @@ import {
   Mail, 
   ArrowRight, 
   ArrowLeft,
-  UserCheck, 
-  ShieldCheck, 
   UserPlus, 
   Smartphone, 
-  X, 
   Building2, 
-  MapPin, 
   Phone, 
   User, 
   CheckCircle2, 
   Info,
-  MessageSquare,
   RotateCcw,
   KeyRound,
   Eye,
@@ -30,6 +25,7 @@ import OtpBoxes from '../components/OtpBoxes';
 import FormSteps from '../components/FormSteps';
 import ForgotPasswordPanel from '../components/ForgotPasswordPanel';
 import { warmUpHome } from '../preload/warmUp';
+import { DEMO_ACCOUNTS } from '../config/demoLogin';
 import './login.css';
 
 // Hai tấm trượt ngang trong cùng một khung: đăng nhập trượt sang trái, form đăng ký trượt vào từ phải.
@@ -91,7 +87,6 @@ export default function LoginPage() {
   const [regEmail, setRegEmail] = useState('');
   const [regPhone, setRegPhone] = useState('');
   const [regUnit, setRegUnit] = useState('');
-  const [regArea, setRegArea] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
@@ -107,10 +102,7 @@ export default function LoginPage() {
 
   // State quản lý mã OTP qua Số điện thoại
   const [otpCode, setOtpCode] = useState('');
-  const [generatedOtp, setGeneratedOtp] = useState('');
-  const [isRealSms, setIsRealSms] = useState(false);
   const [formattedPhone, setFormattedPhone] = useState('');
-  const [smsWarning, setSmsWarning] = useState('');
   const [otpCountdown, setOtpCountdown] = useState(60);
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpError, setOtpError] = useState('');
@@ -189,14 +181,9 @@ export default function LoginPage() {
   };
 
   const handleQuickLogin = (role) => {
-    if (role === 'officer') {
-      setEmail('officer.yenbai@terrawatch.vn');
-    } else if (role === 'citizen') {
-      setEmail('citizen.limmong@terrawatch.vn');
-    } else {
-      setEmail('admin@terrawatch.vn');
-    }
-    setPassword('Terrawatch@2026');
+    if (!DEMO_ACCOUNTS) return;
+    setEmail(DEMO_ACCOUNTS[role] || DEMO_ACCOUNTS.admin);
+    setPassword(DEMO_ACCOUNTS.password);
     setErrorMsg('');
     setTimeout(() => submitRef.current?.focus(), 0);
   };
@@ -217,11 +204,9 @@ export default function LoginPage() {
     setRegError('');
     setRegSuccessResult(null);
     setOtpCode('');
-    setGeneratedOtp('');
     setOtpCountdown(60);
     setOtpError('');
     setRegUnit('');
-    setRegArea('');
   };
 
   const openForgot = () => {
@@ -307,10 +292,7 @@ export default function LoginPage() {
       }
       // Gửi mã OTP SMS qua Firebase Phone Auth
       const res = await authApi.sendSmsOtp(cleanPhone, 'recaptcha-container');
-      setIsRealSms(!!res.isRealSms);
       setFormattedPhone(res.formattedPhone || cleanPhone);
-      setGeneratedOtp(res.otp || '');
-      setSmsWarning(res.warning || '');
       setOtpCode('');
       setOtpCountdown(60);
       setOtpError('');
@@ -330,10 +312,7 @@ export default function LoginPage() {
       setOtpError('');
       const cleanPhone = regPhone.replace(/\s+/g, '');
       const res = await authApi.sendSmsOtp(cleanPhone, 'recaptcha-container');
-      setIsRealSms(!!res.isRealSms);
       setFormattedPhone(res.formattedPhone || cleanPhone);
-      setGeneratedOtp(res.otp || '');
-      setSmsWarning(res.warning || '');
       setOtpCountdown(60);
     } catch (err) {
       setOtpError('Không thể gửi lại mã OTP: ' + (err.message || 'Vui lòng thử lại sau.'));
@@ -358,7 +337,7 @@ export default function LoginPage() {
       const cleanPhone = regPhone.replace(/\s+/g, '');
 
       // 1. Kiểm tra xác thực mã OTP
-      const verifyRes = await authApi.verifySmsOtp(cleanPhone, cleanOtp, generatedOtp);
+      const verifyRes = await authApi.verifySmsOtp(cleanPhone, cleanOtp);
       const phoneToken = verifyRes.idToken || (await verifyRes.user?.getIdToken?.());
 
       // 2. Hoàn tất đăng ký sau khi OTP hợp lệ (gửi kèm phoneToken để server kiểm tra)
@@ -384,7 +363,6 @@ export default function LoginPage() {
           email: regEmail,
           phoneNumber: cleanPhone,
           phoneToken,
-          areaOfInterest: regArea,
           password: regPassword
         });
         setRegSuccessResult({
@@ -469,6 +447,7 @@ export default function LoginPage() {
             <Link className="lg-btn lg-btn-ghost" to="/model-demo">Xem demo mô hình trên dữ liệu lịch sử</Link>
           </form>
 
+          {DEMO_ACCOUNTS && (<>
           <div className="lg-sep">Diễn tập nhanh</div>
           <div className="lg-chips">
             <button type="button" className="lg-chip" onClick={() => handleQuickLogin('citizen')}>
@@ -482,6 +461,7 @@ export default function LoginPage() {
             </button>
           </div>
           <p className="lg-hint">Điền sẵn tài khoản demo để diễn tập.</p>
+          </>)}
 
           <div className="lg-links">
             <button type="button" className="lg-action" onClick={() => openRegisterModal('citizen')}>
@@ -601,7 +581,7 @@ export default function LoginPage() {
                 </fieldset>
 
                 <fieldset className="lg-group">
-                  <legend>{activeModal === 'officer' ? 'Số điện thoại và đơn vị' : 'Số điện thoại và khu vực'}</legend>
+                  <legend>{activeModal === 'officer' ? 'Số điện thoại và đơn vị' : 'Số điện thoại'}</legend>
                   <label className="lg-label" htmlFor="rg-phone">Số điện thoại nhận mã OTP</label>
                   <div className="lg-field">
                     <Phone size={18} aria-hidden="true" />
@@ -609,22 +589,13 @@ export default function LoginPage() {
                       placeholder="0912345678" autoComplete="tel" aria-describedby="rg-phone-hint" />
                   </div>
                   <p id="rg-phone-hint" className="lg-helper">Số di động Việt Nam, ví dụ 0912345678. Mã OTP gửi qua SMS tới số này.</p>
-                  {activeModal === 'officer' ? (
+                  {activeModal === 'officer' && (
                     <>
                       <label className="lg-label" htmlFor="rg-unit">Đơn vị công tác</label>
                       <div className="lg-field">
                         <Building2 size={18} aria-hidden="true" />
                         <input id="rg-unit" className="lg-input" type="text" value={regUnit} onChange={(e) => setRegUnit(e.target.value)}
                           placeholder="Chi cục Thủy lợi & PCTT Tỉnh Yên Bái" autoComplete="organization" />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <label className="lg-label" htmlFor="rg-area">Khu vực muốn nhận cảnh báo (tùy chọn)</label>
-                      <div className="lg-field">
-                        <MapPin size={18} aria-hidden="true" />
-                        <input id="rg-area" className="lg-input" type="text" value={regArea} onChange={(e) => setRegArea(e.target.value)}
-                          placeholder="Bản Lìm Mông, xã Cao Phạ, huyện Mù Cang Chải" />
                       </div>
                     </>
                   )}

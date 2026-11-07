@@ -81,7 +81,7 @@ Keyboard: Tab order is email, password, sign in, model demo, the three chips, th
 
 Both dialogs follow Form → OTP → Result, with a visible 3-step indicator.
 
-- **Form**: fields start empty (no pre-filled unit or area, so a wrong default can never be sent by accident). The phone is a Vietnamese mobile number typed as `09…`; the helper says the OTP goes to it by SMS. Citizen area is optional and says that detailed areas are chosen in the app. Errors show above the fields (`role="alert"`) and the match line below the passwords uses `role="status"`.
+- **Form**: fields start empty (no pre-filled unit or area, so a wrong default can never be sent by accident). The phone is a Vietnamese mobile number typed as `09…`; the helper says the OTP goes to it by SMS. The citizen form has no area field (the server never stored it; alert areas are chosen in the app after sign-up). Errors show above the fields (`role="alert"`) and the match line below the passwords uses `role="status"`.
 - **OTP**: six digit boxes; typing advances, Backspace on an empty box goes back, pasting six digits fills all boxes; the confirm button is disabled until six digits are present. The resend link is available after 60 seconds. "Sửa thông tin" returns to the form with the values kept.
 - **Result**: officer sees the request code and that an admin must approve; citizen sees a short confirmation. "Quay lại đăng nhập" closes the dialog.
 - **Dialog behaviour**: Esc and the close button close it; clicking the dark overlay closes it; the dialog is `aria-modal` and labelled by its title.
