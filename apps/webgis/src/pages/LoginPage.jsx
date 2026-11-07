@@ -475,14 +475,18 @@ export default function LoginPage() {
             Chưa có tài khoản trên hệ thống?
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div
-              role="note"
+            <button
+              type="button"
+              onClick={() => openRegisterModal('officer')}
               style={{
+                background: 'rgba(14, 165, 233, 0.06)',
                 border: '1px dashed rgba(56, 189, 248, 0.35)',
                 padding: '9px 12px',
                 borderRadius: 8,
                 color: '#7dd3fc',
                 fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -491,8 +495,8 @@ export default function LoginPage() {
               }}
             >
               <UserPlus size={14} />
-              <span>Tài khoản cán bộ do quản trị viên cấp. Liên hệ Ban quản trị hệ thống để được tạo tài khoản.</span>
-            </div>
+              <span>Gửi yêu cầu tài khoản cán bộ (chờ Quản trị viên phê duyệt)</span>
+            </button>
 
             <button
               type="button"
