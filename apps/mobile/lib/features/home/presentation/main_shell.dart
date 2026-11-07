@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../alerts/presentation/alerts_screen.dart';
 import '../../geofence/data/forecast_repository.dart';
+import '../../../services/push_service.dart';
 import '../../map/presentation/map_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../../report/data/report_repository.dart';
@@ -24,6 +25,8 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _syncReports();
     _syncForecasts();
+    // Sau khung hình đầu để HomeScreen đã lắng nghe cảnh báo trước khi push mở app được xử lý
+    WidgetsBinding.instance.addPostFrameCallback((_) => PushService.start());
   }
 
   @override
@@ -37,6 +40,7 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       _syncReports();
       _syncForecasts();
+      PushService.resync();
     }
   }
 

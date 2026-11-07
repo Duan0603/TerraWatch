@@ -5,6 +5,7 @@ import '../../../core/constants/api_endpoints.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exceptions.dart';
 import '../../../core/storage/session.dart';
+import '../../../services/push_service.dart';
 import 'auth_models.dart';
 import 'google_auth_service.dart';
 
@@ -166,6 +167,8 @@ class AuthRepository {
 
   /// Xóa phiên trước để đăng xuất luôn thành công; đăng xuất Google/Firebase chỉ là bước phụ, có giới hạn thời gian
   Future<void> logout() async {
+    // Gỡ token push khi còn phiên đăng nhập, để tài khoản cũ không nhận cảnh báo trên máy này nữa; không chờ quá 3 giây
+    await PushService.stop().timeout(const Duration(seconds: 3), onTimeout: () {});
     await Session.clear();
     await GoogleAuthService.signOut().timeout(const Duration(seconds: 3), onTimeout: () {});
   }

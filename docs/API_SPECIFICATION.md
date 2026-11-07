@@ -11,6 +11,11 @@
 | Core | GET /api/v1/landslides/active | Incident GeoJSON. |
 | Core | GET /api/v1/landslides/geofence | Server-side spatial query; not the target continuous citizen tracking flow. |
 | Core | GET /api/v1/landslides/offline-sync | Legacy incident export without the new forecast contract. |
+| Core signed-in | POST /api/v1/alerts/devices/register | **Implemented (Story 5.1).** Body `{fcmToken, deviceType}`; 204. A token held by another account moves to the caller. |
+| Core signed-in | DELETE /api/v1/alerts/devices | **Implemented (Story 5.1).** Body `{fcmToken}`; removes the caller's own token (logout). |
+| Core signed-in | GET /api/v1/alerts/broadcasts | **Implemented (Story 5.1).** Resync: broadcasts delivered to the caller in the last 7 days with `issuedAt`, `validUntil`, `status` (active/revoked), `expired`. |
+| Core admin | POST /api/v1/notifications/broadcast | **Implemented (Story 5.1).** Sends FCM push to push-subscribers of the area (`areaId`, else `targetArea` name match); response `status` DISPATCHED / PARTIAL / FAILED / NO_RECIPIENTS with real counts. SMS is not sent (no provider). Needs `FIREBASE_SERVICE_ACCOUNT_FILE`, otherwise deliveries are stored as failed. |
+| Core admin | POST /api/v1/notifications/broadcast/{id}/revoke | **Implemented (Story 5.1).** Marks a broadcast revoked; phones see it on the next resync. |
 | AI :8001 | POST /api/v1/inference | Legacy bbox call. A bbox carries no imagery, so it returns `status: no_imagery` and no polygon (the old simulation was removed). |
 | AI | POST /api/v1/inference/scene | Landslide candidates (GeoJSON schema 2.0) from post/pre GeoTIFFs inside `SCENE_DIR`, model v1.0 ONNX. Candidates need human verification; not 24h forecasting. |
 | AI | GET /api/v1/models/info | Reads `model_card.json` (modes, std floor, metrics) and checks the ONNX sha256. `ready: false` until the model files are installed. |
