@@ -450,6 +450,9 @@ export default function UserManagementModal({ isOpen, onClose }) {
                             {u.fullName || 'Chưa đặt tên'}
                           </div>
                           <div style={{ fontSize: '12px', color: '#94A3B8' }}>{u.email}</div>
+                          {u.departmentUnit && (
+                            <div style={{ fontSize: '12px', color: '#38BDF8', marginTop: '2px' }}>Đơn vị: {u.departmentUnit}</div>
+                          )}
                           {u.createdAt && (
                             <div style={{ fontSize: '11px', color: '#64748B', marginTop: '2px' }}>
                               Tạo ngày: {fmtVN(u.createdAt)}

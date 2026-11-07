@@ -7,6 +7,9 @@ export const axiosClient = axios.create({
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
+    // Trình duyệt từng nhớ bản HTML của /admin/users (khi gateway chưa có route) và trả lại mãi;
+    // no-cache buộc hỏi lại máy chủ cho mọi lần gọi API.
+    'Cache-Control': 'no-cache',
   },
 });
 

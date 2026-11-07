@@ -1,4 +1,5 @@
 import axiosClient from './axiosClient';
+import { registerErrorMessage } from './registerError';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
@@ -144,10 +145,14 @@ export const authApi = {
     }
   },
 
-  // Không có đăng ký cán bộ công khai (Story 1.1 AC1): tài khoản officer/admin do quản trị viên tạo.
-  // Trước đây hàm này giả vờ thành công với mã hồ sơ bịa; giờ báo đúng sự thật.
-  async registerOfficerRequest() {
-    throw new Error('Tài khoản cán bộ do quản trị viên cấp trực tiếp; hệ thống chưa nhận đăng ký cán bộ trực tuyến.');
+  // Story 4.8: gửi hồ sơ cán bộ (cần SĐT đã xác minh OTP). Tài khoản ở trạng thái "chờ duyệt"
+  // cho tới khi quản trị viên phê duyệt; requestId là mã thật do máy chủ trả về.
+  async registerOfficerRequest(data) {
+    try {
+      return await axiosClient.post('/auth/officer-requests', data);
+    } catch (err) {
+      throw new Error(registerErrorMessage(err));
+    }
   },
 
   // Đăng ký tài khoản Công dân (Nhận cảnh báo SMS/Push - UC07)
@@ -157,15 +162,7 @@ export const authApi = {
     try {
       return await axiosClient.post('/auth/register', data);
     } catch (err) {
-      const status = err.response?.status;
-      const serverMessage = err.response?.data?.message;
-      if (status === 409) throw new Error('Email này đã được đăng ký. Hãy đăng nhập hoặc dùng email khác.');
-      if (status === 400 && /phone number must be verified|verification token/i.test(serverMessage || '')) {
-        throw new Error('Số điện thoại chưa được xác minh bằng mã OTP. Vui lòng gửi lại mã và nhập đúng.');
-      }
-      if (status === 400) throw new Error(serverMessage || 'Thông tin đăng ký chưa hợp lệ.');
-      if (!err.response) throw new Error('Không kết nối được máy chủ. Vui lòng thử lại sau.');
-      throw new Error(`Đăng ký không thành công (mã lỗi ${status}).`);
+      throw new Error(registerErrorMessage(err));
     }
   },
 

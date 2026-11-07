@@ -143,9 +143,8 @@ export default function LoginPage() {
       return;
     }
 
-    // Không có đăng ký cán bộ công khai: báo ngay, đừng bắt người dùng nhận OTP rồi mới báo lỗi.
-    if (activeModal === 'officer') {
-      setRegError('Tài khoản cán bộ do quản trị viên cấp trực tiếp; hệ thống chưa nhận đăng ký cán bộ trực tuyến.');
+    if (activeModal === 'officer' && !regUnit.trim()) {
+      setRegError('Vui lòng nhập đơn vị công tác để Quản trị viên xét duyệt.');
       return;
     }
 
@@ -224,21 +223,39 @@ export default function LoginPage() {
       const phoneToken = verifyRes.idToken || (await verifyRes.user?.getIdToken?.());
 
       // 2. Hoàn tất đăng ký sau khi OTP hợp lệ (gửi kèm phoneToken để server kiểm tra)
-      const result = await authApi.registerCitizen({
-        fullName: regFullName,
-        email: regEmail,
-        phoneNumber: cleanPhone,
-        phoneToken,
-        areaOfInterest: regArea,
-        password: regPassword
-      });
-      setRegSuccessResult({
-        type: 'citizen',
-        title: 'Đăng Ký & Xác Thực Số Điện Thoại Thành Công!',
-        userId: result?.user?.userId,
-        phone: cleanPhone,
-        message: 'Số điện thoại của bạn đã được xác thực và lưu vào hệ thống cảnh báo sớm. Bạn sẽ nhận được tin nhắn SMS khẩn cấp (Story 4.4) khi có nguy cơ sạt lở tại khu vực.'
-      });
+      if (activeModal === 'officer') {
+        const result = await authApi.registerOfficerRequest({
+          fullName: regFullName,
+          email: regEmail,
+          phoneNumber: cleanPhone,
+          phoneToken,
+          departmentUnit: regUnit.trim(),
+          password: regPassword
+        });
+        setRegSuccessResult({
+          type: 'officer',
+          title: 'Đã Gửi Hồ Sơ Cán Bộ!',
+          requestId: result?.requestId,
+          phone: cleanPhone,
+          message: 'Số điện thoại đã được xác thực OTP. Hồ sơ đang chờ Quản trị viên phê duyệt; bạn chỉ đăng nhập được sau khi được duyệt.'
+        });
+      } else {
+        const result = await authApi.registerCitizen({
+          fullName: regFullName,
+          email: regEmail,
+          phoneNumber: cleanPhone,
+          phoneToken,
+          areaOfInterest: regArea,
+          password: regPassword
+        });
+        setRegSuccessResult({
+          type: 'citizen',
+          title: 'Đăng Ký & Xác Thực Số Điện Thoại Thành Công!',
+          userId: result?.user?.userId,
+          phone: cleanPhone,
+          message: 'Số điện thoại của bạn đã được xác thực và lưu vào hệ thống cảnh báo sớm. Bạn sẽ nhận được tin nhắn SMS khẩn cấp (Story 4.4) khi có nguy cơ sạt lở tại khu vực.'
+        });
+      }
     } catch (err) {
       setOtpError(err.message || 'Mã OTP không chính xác hoặc đã hết hạn.');
     } finally {
