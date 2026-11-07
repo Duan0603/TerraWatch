@@ -134,6 +134,10 @@ public class NotificationService {
         if (!broadcasts.revoke(broadcastId)) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No active broadcast with that id");
     }
 
+    public List<BroadcastRepository.DeliveryItem> deliveries(UUID broadcastId) {
+        return broadcasts.deliveries(broadcastId);
+    }
+
     /** areaId wins; otherwise exact name match wins; fallback to substring contains match. */
     private List<Area> matchAreas(BroadcastAlertRequest req) {
         List<Area> all = broadcasts.activeAreas();

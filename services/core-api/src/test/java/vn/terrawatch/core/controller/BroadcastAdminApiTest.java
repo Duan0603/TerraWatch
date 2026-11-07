@@ -136,6 +136,12 @@ class BroadcastAdminApiTest {
             .andExpect(jsonPath("$[1].status").value("revoked"))
             .andExpect(jsonPath("$[1].revokedAt").isNotEmpty());
         call(HttpMethod.GET, "/api/v1/notifications/broadcasts?limit=1", admin, null).andExpect(jsonPath("$.length()").value(1));
+
+        call(HttpMethod.GET, "/api/v1/notifications/broadcast/" + first.get("broadcast_id").asText() + "/deliveries", admin, null)
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(1))
+            .andExpect(jsonPath("$[0].recipientName").value("History Test"))
+            .andExpect(jsonPath("$[0].status").value("sent"));
     }
 
     @Test

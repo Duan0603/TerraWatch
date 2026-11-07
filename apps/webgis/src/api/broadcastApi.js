@@ -82,6 +82,24 @@ export const broadcastApi = {
         { retryWithNewKey: true });
     }
     return { broadcastId: entry.id, data: entry, sent: res.sent, failed: res.failed, total: res.recipients_estimated, status: res.status };
+  },
+
+  // GET /notifications/broadcast/{id}/deliveries - Chi tiết từng người nhận và trạng thái chuyển phát
+  async getDeliveries(broadcastId) {
+    try {
+      return await axiosClient.get(`/notifications/broadcast/${broadcastId}/deliveries`);
+    } catch (err) {
+      return failWith(err, 'Không tải được danh sách người nhận');
+    }
+  },
+
+  // POST /notifications/broadcast/{id}/revoke - Thu hồi lệnh khẩn cấp đã phát
+  async revokeBroadcast(broadcastId) {
+    try {
+      await axiosClient.post(`/notifications/broadcast/${broadcastId}/revoke`);
+    } catch (err) {
+      return failWith(err, 'Không thể thu hồi lệnh cảnh báo');
+    }
   }
 };
 
