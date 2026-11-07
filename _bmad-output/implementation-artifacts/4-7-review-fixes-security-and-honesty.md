@@ -28,6 +28,7 @@ so that user management works through the gateway, citizens' data is not public 
 8. **AC8 (P1, mobile register):** the mobile sign-up form no longer sends a phone number it cannot verify (the server requires a Firebase phone token); a phone can be added in the profile screen.
 9. **AC9 (P2, web):** registration errors show a clear Vietnamese message (409 = "Email đã được đăng ký"); the success card shows the real user id, never a made-up one; photos load on the dev server; the comparison modal never invents a `high` level.
 10. **AC10 (P2, docs/data):** `database/migrations` holds copies of V8-V11; `sprint-status.yaml` lists 4-6 and 4-7.
+11. **AC11 (found while fixing):** `AdminUserController` was missing from `AuthExceptionHandler`, so every 400/404/409 from `/admin/users` became 401 on a real server (the web then logged the admin out). It now returns the JSON message with the right status.
 
 ## Out of scope (reported, not changed)
 
@@ -44,4 +45,4 @@ so that user management works through the gateway, citizens' data is not public 
 - [x] Task 5: mobile register (AC8)
 - [x] Task 6: web fixes (AC9)
 - [x] Task 7: migration copies, sprint-status (AC10)
-- [x] Task 8: re-test (core-api once, web tests and build, flutter)
+- [x] Task 8: re-test (core-api full suite + affected subset, web tests and build, flutter; live curl through the gateway)
