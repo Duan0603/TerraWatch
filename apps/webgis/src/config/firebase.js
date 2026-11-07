@@ -1,18 +1,21 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
+// Cấu hình web app của dự án Firebase hiện tại (terrawatch-ac26f) lấy từ biến môi trường VITE_FIREBASE_*
+// (Firebase console > Project settings > Your apps > Web app). Thiếu cấu hình thì không khởi tạo:
+// xác thực số điện thoại báo "chưa cấu hình" thay vì dùng nhầm dự án cũ.
+const env = import.meta.env;
 const firebaseConfig = {
-  apiKey: "AIzaSyALDwmbV7q5o4VQaej-7yxgAgChvr5xQcs",
-  authDomain: "terrawatch-defense.firebaseapp.com",
-  projectId: "terrawatch-defense",
-  storageBucket: "terrawatch-defense.firebasestorage.app",
-  messagingSenderId: "484674000797",
-  appId: "1:484674000797:web:2074a82d82447af6e60174",
-  measurementId: "G-ZY5KVM3HDF"
+  apiKey: env.VITE_FIREBASE_API_KEY,
+  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: env.VITE_FIREBASE_APP_ID
 };
 
-// Khởi tạo ứng dụng Firebase
-export const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+export const firebaseConfigured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId);
+export const app = firebaseConfigured ? initializeApp(firebaseConfig) : null;
+export const auth = app ? getAuth(app) : null;
 
 export default auth;

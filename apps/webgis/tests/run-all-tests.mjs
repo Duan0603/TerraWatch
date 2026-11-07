@@ -3,6 +3,7 @@ import { testMapConfigAndLayers } from './test-map-config-and-layers.mjs';
 import { testComponentContracts } from './test-component-contracts.mjs';
 import { testAuthAndRoleContracts } from './test-auth-and-role-contracts.mjs';
 import { testResponsiveUtilities } from './test-responsive-utilities.mjs';
+import { testBroadcastHistory } from './test-broadcast-history.mjs';
 
 async function runAllWebGisTests() {
   console.log('===============================================================');
@@ -16,6 +17,7 @@ async function runAllWebGisTests() {
     await testComponentContracts();
     await testAuthAndRoleContracts();
     await testResponsiveUtilities();
+    await testBroadcastHistory();
 
     const elapsed = Date.now() - startTime;
     console.log('===============================================================');
@@ -25,6 +27,7 @@ async function runAllWebGisTests() {
     console.log('   - Emergency Broadcast & Verification Contracts Verified');
     console.log('   - RBAC Security & Authentication Contracts Verified');
     console.log('   - Responsive Breakpoints & Viewport Contracts Verified');
+    console.log('   - Server-side Broadcast History Mapping Verified');
     console.log('===============================================================\n');
     process.exit(0);
   } catch (error) {

@@ -65,6 +65,7 @@ public class SecurityConfig {
                 // 1.1's Dev Notes -> Architecture Compliance for why the blanket rule is untouched).
                 .requestMatchers(HttpMethod.POST, "/api/v1/notifications/broadcast").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/v1/notifications/broadcast/*/revoke").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/v1/notifications/broadcasts", "/api/v1/notifications/broadcast/preview").hasRole("ADMIN")
                 .requestMatchers("/api/v1/**").permitAll()
                 .anyRequest().authenticated()
             );

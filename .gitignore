@@ -63,3 +63,7 @@ services/ai-service/scenes/
 !/gpu-training-kit/experiments/vietnam_1km_two_branch_gru/
 !/gpu-training-kit/experiments/vietnam_1km_two_branch_gru/outputs/
 !/gpu-training-kit/experiments/vietnam_1km_two_branch_gru/outputs/two_branch_gru_1km.pt
+
+# Firebase service account keys and other secrets (never commit)
+secrets/
+*service-account*.json

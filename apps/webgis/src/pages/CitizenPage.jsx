@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, LogOut, MapPin } from 'lucide-react';
 import DetailPanel from '../components/DetailPanel';
+import { RISK_LABELS } from '../components/EventCard';
+import { fmtVN } from '../utils/time';
 import forecastApi, { apiErrorMessage } from '../api/forecastApi';
 import { useAuth } from '../context/AuthContext';
 
@@ -42,8 +44,7 @@ export default function CitizenPage() {
 
         <div className="nav-right">
           <div className="status-chip">
-            <span className="live-dot" />
-            Đang theo dõi khu vực của bạn
+            Vùng cảnh báo đã duyệt, còn hiệu lực
           </div>
 
           <div className="nav-user">
@@ -63,10 +64,11 @@ export default function CitizenPage() {
       </header>
 
       <div className="main-layout">
-        {/* Danh sách chỉ đọc các điểm đã được cán bộ phê duyệt — không có nút thẩm định */}
-        <aside className="sidebar" style={{ width: 300, overflowY: 'auto' }}>
+        {/* Danh sách chỉ đọc các vùng đã được cán bộ phê duyệt và còn hiệu lực — không có nút thẩm định.
+            Đây là mọi vùng đang hiệu lực, chưa lọc theo khu vực người dân đăng ký (backend chưa trả khu vực của ô). */}
+        <aside className="sidebar citizen-list">
           <div style={{ padding: '14px 16px', fontWeight: 700, fontSize: 14 }}>
-            Cảnh báo đã xác nhận ({events.length})
+            Cảnh báo đang hiệu lực ({events.length})
           </div>
           {events.map((ev) => (
             <div
@@ -81,14 +83,15 @@ export default function CitizenPage() {
             >
               <div style={{ fontWeight: 600, fontSize: 13 }}>{ev.location}</div>
               <div style={{ fontSize: 11, color: '#64748b', display: 'flex', alignItems: 'center', gap: 4 }}>
-                <MapPin size={11} /> Mức độ: {ev.risk}
+                <MapPin size={11} /> Mức nguy cơ: {RISK_LABELS[ev.risk] || ev.risk}
               </div>
+              <div style={{ fontSize: 11, color: '#64748b' }}>Hiệu lực đến {fmtVN(ev.validUntil)}</div>
             </div>
           ))}
           {loadError && <div role="alert" style={{ padding: 16, fontSize: 12, color: '#B91C1C' }}>{loadError}</div>}
           {events.length === 0 && !loadError && (
             <div style={{ padding: 16, fontSize: 12, color: '#64748b' }}>
-              Hiện chưa có cảnh báo nào đã được xác nhận tại khu vực bạn đăng ký.
+              Hiện chưa có vùng cảnh báo nào đã được cán bộ duyệt và còn hiệu lực. Đây không phải xác nhận an toàn.
             </div>
           )}
         </aside>

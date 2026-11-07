@@ -8,6 +8,8 @@ import org.springframework.web.server.ResponseStatusException;
 import vn.terrawatch.core.client.FcmSender;
 import vn.terrawatch.core.dto.AlertBroadcastResponse;
 import vn.terrawatch.core.dto.BroadcastAlertRequest;
+import vn.terrawatch.core.dto.BroadcastHistoryItem;
+import vn.terrawatch.core.dto.BroadcastPreview;
 import vn.terrawatch.core.repository.BroadcastRepository;
 import vn.terrawatch.core.repository.BroadcastRepository.Area;
 import vn.terrawatch.core.repository.BroadcastRepository.Recipient;
@@ -114,6 +116,18 @@ public class NotificationService {
 
     public List<AlertBroadcastResponse> broadcastsFor(UUID userId) {
         return broadcasts.forUser(userId);
+    }
+
+    public List<BroadcastHistoryItem> history(int limit) {
+        return broadcasts.history(Math.max(1, Math.min(limit, 500)));
+    }
+
+    /** Who a broadcast to this area would reach now; uses the same recipient rule as {@link #broadcastAlert}. */
+    public BroadcastPreview preview(int areaId) {
+        Area area = broadcasts.activeAreas().stream().filter(a -> a.id() == areaId).findFirst()
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No active monitoring area with that id"));
+        int[] audience = broadcasts.audience(List.of(areaId));
+        return new BroadcastPreview(area.id(), area.name(), audience[0], audience[1]);
     }
 
     public void revoke(UUID broadcastId) {

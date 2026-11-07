@@ -471,31 +471,24 @@ export default function LoginPage() {
             Chưa có tài khoản trên hệ thống?
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <button
-              type="button"
-              onClick={() => openRegisterModal('officer')}
+            <div
+              role="note"
               style={{
-                background: 'rgba(56, 189, 248, 0.06)',
                 border: '1px dashed rgba(56, 189, 248, 0.35)',
                 padding: '9px 12px',
                 borderRadius: 8,
-                color: '#38bdf8',
+                color: '#7dd3fc',
                 fontSize: 12,
-                fontWeight: 600,
-                cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 6,
-                transition: 'all 0.2s ease',
                 textAlign: 'center'
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(56, 189, 248, 0.14)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(56, 189, 248, 0.06)'; }}
             >
               <UserPlus size={14} />
-              <span>Đăng ký tài khoản cán bộ mới <span style={{ opacity: 0.8, fontSize: 11, fontWeight: 400 }}>(Admin phê duyệt)</span></span>
-            </button>
+              <span>Tài khoản cán bộ do quản trị viên cấp. Liên hệ Ban quản trị hệ thống để được tạo tài khoản.</span>
+            </div>
 
             <button
               type="button"

@@ -2,7 +2,7 @@ import React from 'react';
 import { MapPin, CheckCircle, XCircle, AlertTriangle, Clock } from 'lucide-react';
 import { fmtVN, relativeToNow } from '../utils/time';
 
-const RISK_LABELS = {
+export const RISK_LABELS = {
   extreme: 'Cực nguy hiểm',
   high: 'Cao',
   medium: 'Trung bình',
