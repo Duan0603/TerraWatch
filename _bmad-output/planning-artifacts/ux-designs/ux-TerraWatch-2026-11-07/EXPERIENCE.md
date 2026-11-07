@@ -89,7 +89,10 @@ Both dialogs follow Form → OTP → Result, with a visible 3-step indicator.
 
 ## Transitions (Story 4.18)
 
-- **Open**: the dialog grows out of the card that was pressed (scale .5 to 1, from that button's position) in 0.42 s, the overlay fades in over 0.3 s, and the sign-in card behind it recedes (scale .96, blurred, 45% opacity).
-- **Close** (button, Esc, overlay click, "Quay lại đăng nhập"): the dialog shrinks back to the same button in 0.26 s and the card comes forward again. A second close during the animation is ignored.
-- **Between steps**: new content slides in from the right when moving forward and from the left when going back (0.38 s, 28 px) while the dialog height eases to the new height (0.35 s).
-- **Reduced motion**: all of the above are switched off; dialogs appear and disappear at once.
+The sign-in card and the sign-up are two panels of the **same frame**, not a pop-up.
+
+- **Open**: pressing "Đăng ký công dân" or "Yêu cầu tài khoản cán bộ" slides the sign-in panel out to the left while the sign-up panel slides in from the right (0.55 s). The frame height eases to the new panel height and the frame widens from 440 to 520px on desktop. Focus moves to the first field when the panel arrives.
+- **Back** ("Quay lại đăng nhập" link, Esc, or the button on the result step): the reverse; the sign-up form is cleared after it has left the frame.
+- **Between steps** (Thông tin → OTP → Hoàn tất): new content slides in from the right going forward and from the left going back (0.38 s) while the height eases.
+- The hidden panel is `inert` and `aria-hidden`, so Tab and screen readers only see the visible one.
+- **Reduced motion**: no animation; the panels swap at once.

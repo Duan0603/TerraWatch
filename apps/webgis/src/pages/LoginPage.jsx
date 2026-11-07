@@ -28,6 +28,38 @@ import authApi from '../api/authApi';
 import LoginBackdrop from '../components/LoginBackdrop';
 import './login.css';
 
+// Hai tấm trượt ngang trong cùng một khung: đăng nhập trượt sang trái, form đăng ký trượt vào từ phải.
+// Chiều cao khung đổi mượt theo tấm đang hiện; tấm còn lại bị khóa (inert) để Tab/đọc màn hình không lọt vào.
+function SlidePanels({ view, login, register }) {
+  const loginRef = useRef(null);
+  const registerRef = useRef(null);
+  const viewRef = useRef(view);
+  const [h, setH] = useState('auto');
+  viewRef.current = view;
+  const measure = () => {
+    const el = viewRef.current === 'login' ? loginRef.current : registerRef.current;
+    if (el) setH(el.offsetHeight);
+  };
+  useEffect(() => {
+    measure();
+    if (!window.ResizeObserver) return undefined;
+    const ro = new ResizeObserver(measure);
+    if (loginRef.current) ro.observe(loginRef.current);
+    if (registerRef.current) ro.observe(registerRef.current);
+    return () => ro.disconnect();
+  }, []);
+  useEffect(measure, [view]);
+  const lock = (hidden) => (hidden ? { inert: '', 'aria-hidden': true } : {});
+  return (
+    <div className="lg-viewport" style={{ height: h }}>
+      <div className={`lg-track lg-track-${view}`}>
+        <div ref={loginRef} className="lg-slide" {...lock(view !== 'login')}>{login}</div>
+        <div ref={registerRef} className="lg-slide" {...lock(view !== 'register')}>{register}</div>
+      </div>
+    </div>
+  );
+}
+
 // Khung tự đổi chiều cao mượt khi nội dung bên trong thay đổi (chuyển bước đăng ký).
 function AutoHeight({ children }) {
   const inner = useRef(null);
@@ -110,8 +142,8 @@ export default function LoginPage() {
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
-  const [modalClosing, setModalClosing] = useState(false);
-  const [modalFrom, setModalFrom] = useState({ x: 0, y: 0 }); // vị trí nút vừa bấm so với tâm màn hình
+  const [view, setView] = useState('login'); // 'login' | 'register': tấm đang hiện trong khung
+  const closeTimer = useRef(null);
   const prevStepRef = useRef(1);
   const [regLoading, setRegLoading] = useState(false);
   const [regError, setRegError] = useState('');
@@ -190,13 +222,10 @@ export default function LoginPage() {
     setTimeout(() => submitRef.current?.focus(), 0);
   };
 
-  const openRegisterModal = (role, event) => {
-    const rect = event?.currentTarget?.getBoundingClientRect?.();
-    setModalFrom(rect
-      ? { x: Math.round(rect.left + rect.width / 2 - window.innerWidth / 2), y: Math.round(rect.top + rect.height / 2 - window.innerHeight / 2) }
-      : { x: 0, y: 0 });
+  const openRegisterModal = (role) => {
+    clearTimeout(closeTimer.current);
     prevStepRef.current = 1;
-    setModalClosing(false);
+    setView('register');
     setActiveModal(role);
     setRegStep('form');
     setRegFullName('');
@@ -216,20 +245,28 @@ export default function LoginPage() {
   };
 
   const closeRegisterModal = () => {
-    if (modalClosing) return;
+    setView('login');
     const finish = () => {
       setActiveModal(null);
-      setModalClosing(false);
       setRegStep('form');
       setRegSuccessResult(null);
       setRegError('');
       setOtpCode('');
       setOtpError('');
     };
+    clearTimeout(closeTimer.current);
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { finish(); return; }
-    setModalClosing(true);
-    setTimeout(finish, 260); // khớp thời gian keyframes lg-modal-out
+    closeTimer.current = setTimeout(finish, 650); // sau khi tấm đăng ký đã trượt ra khỏi khung
   };
+
+  // Esc quay lại đăng nhập; mở form thì đưa con trỏ vào ô đầu tiên khi tấm đã trượt vào.
+  useEffect(() => {
+    if (view !== 'register') return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') closeRegisterModal(); };
+    window.addEventListener('keydown', onKey);
+    const t = setTimeout(() => document.getElementById('rg-name')?.focus({ preventScroll: true }), 420);
+    return () => { window.removeEventListener('keydown', onKey); clearTimeout(t); };
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Bước 1: Kiểm tra form và Gửi mã OTP về Số điện thoại
   const handleInitiateRegister = async (e) => {
@@ -366,7 +403,7 @@ export default function LoginPage() {
   useEffect(() => { prevStepRef.current = stepNow; }, [stepNow]);
 
   return (
-    <div className={`lg-stage${activeModal && !modalClosing ? ' lg-dimmed' : ''}`}>
+    <div className="lg-stage">
       <LoginBackdrop />
       <main className="lg-layout">
         <section className="lg-hero">
@@ -379,7 +416,11 @@ export default function LoginPage() {
           <p className="lg-note">Hệ thống đang ở giai đoạn thử nghiệm. Điểm nguy cơ là điểm thử nghiệm, chưa phải xác suất đã hiệu chuẩn và chưa thay thế cảnh báo chính thức.</p>
         </section>
 
-        <section className="lg-card" aria-labelledby="lg-title">
+        <section className={`lg-card lg-card-${view}`}>
+          <SlidePanels
+            view={view}
+            login={(
+              <>
           <h2 id="lg-title">Đăng nhập</h2>
           <p className="lg-sub">Dành cho công dân, cán bộ và quản trị viên</p>
 
@@ -436,7 +477,7 @@ export default function LoginPage() {
           <p className="lg-hint">Điền sẵn tài khoản demo để diễn tập.</p>
 
           <div className="lg-links">
-            <button type="button" className="lg-action" onClick={(e) => openRegisterModal('citizen', e)}>
+            <button type="button" className="lg-action" onClick={() => openRegisterModal('citizen')}>
               <span className="lg-action-icon"><Smartphone size={20} aria-hidden="true" /></span>
               <span className="lg-action-text">
                 <strong>Đăng ký công dân</strong>
@@ -444,7 +485,7 @@ export default function LoginPage() {
               </span>
               <ArrowRight size={18} className="lg-action-go" aria-hidden="true" />
             </button>
-            <button type="button" className="lg-action" onClick={(e) => openRegisterModal('officer', e)}>
+            <button type="button" className="lg-action" onClick={() => openRegisterModal('officer')}>
               <span className="lg-action-icon"><UserPlus size={20} aria-hidden="true" /></span>
               <span className="lg-action-text">
                 <strong>Yêu cầu tài khoản cán bộ</strong>
@@ -453,28 +494,23 @@ export default function LoginPage() {
               <ArrowRight size={18} className="lg-action-go" aria-hidden="true" />
             </button>
           </div>
-        </section>
-
-        <p className="lg-note lg-note-m">Hệ thống đang ở giai đoạn thử nghiệm. Điểm nguy cơ là điểm thử nghiệm, chưa phải xác suất đã hiệu chuẩn và chưa thay thế cảnh báo chính thức.</p>
-      </main>
-
-      {/* Hộp đăng ký (công dân / cán bộ): thiết kế theo DESIGN.md mục Registration dialogs */}
-      {activeModal && (
-        <div className={`lg-overlay${modalClosing ? ' is-closing' : ''}`} role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) closeRegisterModal(); }}>
-          <div className="lg-modal" style={{ '--from-x': `${modalFrom.x}px`, '--from-y': `${modalFrom.y}px` }} role="dialog" aria-modal="true" aria-labelledby="lg-modal-title">
+              </>
+            )}
+            register={activeModal ? (
+              <>
+            <button type="button" className="lg-backlink" onClick={closeRegisterModal}>
+              <ArrowLeft size={16} aria-hidden="true" /> Quay lại đăng nhập
+            </button>
             <div className="lg-modal-head">
               <span className="lg-modal-icon" aria-hidden="true">
                 {activeModal === 'officer' ? <UserPlus size={22} /> : <Smartphone size={22} />}
               </span>
               <div className="lg-modal-titles">
-                <h2 id="lg-modal-title">{activeModal === 'officer' ? 'Yêu cầu tài khoản cán bộ' : 'Đăng ký tài khoản công dân'}</h2>
+                <h2 id="lg-register-title">{activeModal === 'officer' ? 'Yêu cầu tài khoản cán bộ' : 'Đăng ký tài khoản công dân'}</h2>
                 <p>{activeModal === 'officer'
                   ? 'Dành cho cán bộ Ban Chỉ huy PCTT & TKCN các địa phương'
                   : 'Nhận cảnh báo sạt lở sớm qua SMS và ứng dụng TerraWatch'}</p>
               </div>
-              <button type="button" className="lg-modal-close" onClick={closeRegisterModal} aria-label="Đóng">
-                <X size={20} aria-hidden="true" />
-              </button>
             </div>
 
             <ol className="lg-steps" aria-label="Các bước đăng ký">
@@ -581,9 +617,8 @@ export default function LoginPage() {
                       <div className="lg-field">
                         <MapPin size={18} aria-hidden="true" />
                         <input id="rg-area" className="lg-input" type="text" value={regArea} onChange={(e) => setRegArea(e.target.value)}
-                          placeholder="Bản Lìm Mông, xã Cao Phạ, huyện Mù Cang Chải" aria-describedby="rg-area-hint" />
+                          placeholder="Bản Lìm Mông, xã Cao Phạ, huyện Mù Cang Chải" />
                       </div>
-                      <p id="rg-area-hint" className="lg-helper">Bạn chọn vùng nhận cảnh báo chi tiết trong ứng dụng sau khi đăng ký.</p>
                     </>
                   )}
                 </fieldset>
@@ -628,9 +663,13 @@ export default function LoginPage() {
             )}
             </div>
             </AutoHeight>
-          </div>
-        </div>
-      )}
+              </>
+            ) : null}
+          />
+        </section>
+
+        <p className="lg-note lg-note-m">Hệ thống đang ở giai đoạn thử nghiệm. Điểm nguy cơ là điểm thử nghiệm, chưa phải xác suất đã hiệu chuẩn và chưa thay thế cảnh báo chính thức.</p>
+      </main>
 
       {/* Phần tử container gắn reCAPTCHA ẩn cho Firebase */}
       <div id="recaptcha-container"></div>

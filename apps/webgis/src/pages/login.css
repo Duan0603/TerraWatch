@@ -73,18 +73,13 @@ body.page-login { background: #070D1A; }
 }
 
 /* ── Hộp đăng ký (Story 4.17) ── */
-.lg-overlay { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; overflow-y: auto; background: rgba(4, 9, 18, .66); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
-.lg-modal { width: 100%; max-width: 540px; margin: auto; box-sizing: border-box; background: rgba(10, 18, 32, .94); border: 1px solid var(--glass-line); border-radius: 18px; padding: 28px; box-shadow: 0 30px 80px rgba(0, 0, 0, .6); color: var(--ink-1); }
 .lg-modal-head { display: flex; align-items: flex-start; gap: 14px; }
 .lg-modal-icon { flex: none; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; color: var(--brand-text); background: rgba(95, 208, 192, .12); border: 1px solid rgba(95, 208, 192, .35); }
 .lg-modal-titles { flex: 1; min-width: 0; }
 .lg-modal-titles h2 { margin: 0; font-size: 20px; font-weight: 700; color: var(--ink-1); }
 .lg-modal-titles p { margin: 4px 0 0; font-size: 13.5px; color: var(--ink-3); line-height: 1.4; }
-.lg-modal-close { flex: none; width: 40px; height: 40px; display: grid; place-items: center; background: transparent; border: 0; border-radius: 10px; color: var(--ink-3); cursor: pointer; }
-.lg-modal-close:hover { background: rgba(255, 255, 255, .08); color: #fff; }
-.lg-modal-close:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
-.lg-steps { list-style: none; display: flex; align-items: center; margin: 22px 0 20px; padding: 0; }
+.lg-steps { list-style: none; display: flex; align-items: center; margin: 16px 0 14px; padding: 0; }
 .lg-step { display: flex; align-items: center; gap: 8px; color: var(--ink-3); font-size: 13px; font-weight: 600; white-space: nowrap; }
 .lg-step + .lg-step { flex: 1; }
 .lg-step + .lg-step::before { content: ""; flex: 1; height: 2px; margin: 0 10px; border-radius: 2px; background: var(--glass-line); min-width: 12px; }
@@ -96,12 +91,14 @@ body.page-login { background: #070D1A; }
 .lg-step-done + .lg-step::before, .lg-step-now + .lg-step::before { background: var(--glass-line); }
 .lg-step-done + .lg-step-now::before, .lg-step-done + .lg-step-done::before { background: var(--brand-text); }
 
-.lg-info { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 18px; padding: 12px 14px; border-radius: 12px; font-size: 13.5px; line-height: 1.5; color: var(--ink-2); background: rgba(95, 208, 192, .07); border: 1px solid rgba(95, 208, 192, .22); }
+.lg-info { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 14px; padding: 12px 14px; border-radius: 12px; font-size: 13.5px; line-height: 1.5; color: var(--ink-2); background: rgba(95, 208, 192, .07); border: 1px solid rgba(95, 208, 192, .22); }
 .lg-info svg { flex: none; margin-top: 2px; color: var(--brand-text); }
-.lg-group { border: 0; margin: 0 0 18px; padding: 0; min-width: 0; }
-.lg-group legend { padding: 0; margin: 0 0 10px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--brand-text); }
+.lg-group { border: 0; margin: 0 0 4px; padding: 0; min-width: 0; }
+.lg-group .lg-field { margin-bottom: 12px; }
+.lg-group .lg-label { margin-bottom: 5px; }
+.lg-group legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .lg-two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.lg-helper { margin: -8px 0 16px; font-size: 12.5px; color: var(--ink-3); line-height: 1.4; }
+.lg-helper { margin: -6px 0 12px; font-size: 12.5px; color: var(--ink-3); line-height: 1.4; }
 .lg-has-eye { padding-right: 44px; }
 .lg-eye { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; display: grid; place-items: center; background: none; border: 0; border-radius: 8px; color: var(--ink-3); cursor: pointer; }
 .lg-field .lg-eye svg { position: static; transform: none; }
@@ -136,7 +133,6 @@ body.page-login { background: #070D1A; }
 .lg-code strong { font-size: 14px; word-break: break-all; color: var(--brand-text); font-variant-numeric: tabular-nums; }
 
 @media (max-width: 560px) {
-  .lg-modal { padding: 20px 16px; border-radius: 16px; }
   .lg-two { grid-template-columns: 1fr; gap: 0; }
   .lg-step-label { display: none; }
   .lg-step-now .lg-step-label { display: inline; }
@@ -146,25 +142,17 @@ body.page-login { background: #070D1A; }
   .lg-actions .lg-back { width: 100%; }
 }
 
-/* ── Chuyển cảnh mượt giữa thẻ đăng nhập và hộp đăng ký (Story 4.18) ── */
-.lg-card, .lg-hero { transition: transform .45s cubic-bezier(.2, .8, .2, 1), opacity .45s ease, filter .45s ease; }
-.lg-dimmed .lg-card { transform: scale(.96) translateY(6px); opacity: .45; filter: blur(2px); }
-.lg-dimmed .lg-hero { opacity: .5; filter: blur(1px); }
-.lg-overlay { animation: lg-fade-in .3s ease-out both; }
-.lg-overlay.is-closing { animation: lg-fade-out .26s ease-in both; }
-.lg-modal { animation: lg-modal-in .42s cubic-bezier(.2, .8, .2, 1) both; transform-origin: center; }
-.lg-overlay.is-closing .lg-modal { animation: lg-modal-out .26s cubic-bezier(.4, 0, 1, 1) both; }
-/* Hộp "mọc ra" từ đúng nút vừa bấm rồi thu về nút đó khi đóng. */
-@keyframes lg-modal-in {
-  from { opacity: 0; transform: translate(var(--from-x, 0), var(--from-y, 24px)) scale(.5); }
-  to { opacity: 1; transform: none; }
-}
-@keyframes lg-modal-out {
-  from { opacity: 1; transform: none; }
-  to { opacity: 0; transform: translate(var(--from-x, 0), var(--from-y, 24px)) scale(.5); }
-}
-@keyframes lg-fade-in { from { opacity: 0; } to { opacity: 1; } }
-@keyframes lg-fade-out { from { opacity: 1; } to { opacity: 0; } }
+/* ── Chuyển cảnh trong cùng một khung (Story 4.18): đăng nhập trượt trái, đăng ký trượt vào từ phải ── */
+.lg-card { min-width: 0; transition: max-width .55s cubic-bezier(.65, 0, .2, 1); }
+.lg-card-register { max-width: 520px; }
+.lg-viewport { overflow: hidden; margin: -6px; padding: 6px; box-sizing: content-box; transition: height .55s cubic-bezier(.65, 0, .2, 1); }
+.lg-track { display: flex; align-items: flex-start; transition: transform .55s cubic-bezier(.65, 0, .2, 1); }
+.lg-track-register { transform: translateX(-100%); }
+.lg-slide { flex: 0 0 100%; min-width: 0; box-sizing: border-box; padding: 0 6px; transition: opacity .35s ease; }
+.lg-track-login .lg-slide:last-child, .lg-track-register .lg-slide:first-child { opacity: 0; }
+.lg-backlink { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 14px -4px; padding: 6px 8px; background: none; border: 0; border-radius: 8px; color: var(--ink-2); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.lg-backlink:hover { color: #fff; background: rgba(255, 255, 255, .06); }
+.lg-backlink:focus-visible { outline: 3px solid var(--focus); }
 /* Đổi bước: nội dung mới trượt vào (tiến từ phải, lùi từ trái), chiều cao khung đổi mượt. */
 .lg-auto { box-sizing: content-box; overflow: hidden; margin: -6px; padding: 6px; transition: height .35s cubic-bezier(.2, .8, .2, 1); }
 .lg-pane { animation: lg-pane-fwd .38s cubic-bezier(.2, .8, .2, 1) both; }
@@ -173,15 +161,15 @@ body.page-login { background: #070D1A; }
 @keyframes lg-pane-back { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
 
 @media (max-width: 900px) {
-  .lg-layout { grid-template-columns: 1fr; gap: 28px; padding: 28px 16px 40px; align-items: start; }
+  .lg-layout { grid-template-columns: minmax(0, 1fr); gap: 28px; padding: 28px 16px 40px; align-items: start; }
   .lg-hero h1 { font-size: 26px; margin: 14px 0 0; }
   .lg-hero p, .lg-hero .lg-note { display: none; }
   .lg-note-m { display: block; }
   .lg-card { justify-self: stretch; max-width: none; padding: 24px 20px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .lg-overlay, .lg-modal, .lg-pane { animation: none !important; }
-  .lg-card, .lg-hero, .lg-auto { transition: none; }
+  .lg-pane { animation: none !important; }
+  .lg-card, .lg-viewport, .lg-track, .lg-slide, .lg-auto { transition: none; }
   .lg-cloud { animation: none; }
   .lg-rain { display: none; }
 }
