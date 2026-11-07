@@ -69,7 +69,8 @@ class FieldReportApiTest {
         call(HttpMethod.POST, BASE, null, report(UUID.randomUUID())).andExpect(status().isUnauthorized());
         call(HttpMethod.POST, BASE + "/photos", null, Map.of("imageBase64", PNG)).andExpect(status().isUnauthorized());
         call(HttpMethod.GET, BASE + "/mine", null, null).andExpect(status().isUnauthorized());
-        call(HttpMethod.GET, BASE, null, null).andExpect(status().isOk()); // the public list is unchanged
+        // Story 4.7: the full list carries names, phones and GPS, so it is no longer public.
+        call(HttpMethod.GET, BASE, null, null).andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -161,8 +162,8 @@ class FieldReportApiTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("processed"));
 
-        // Verify public list reflects updated status
-        call(HttpMethod.GET, BASE, null, null)
+        // Verify the staff list reflects the updated status
+        call(HttpMethod.GET, BASE, officer, null)
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[?(@.report_id == " + reportId + ")].status").value("processed"));
 
