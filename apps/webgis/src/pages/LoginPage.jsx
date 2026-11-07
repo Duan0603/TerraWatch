@@ -143,6 +143,12 @@ export default function LoginPage() {
       return;
     }
 
+    // Không có đăng ký cán bộ công khai: báo ngay, đừng bắt người dùng nhận OTP rồi mới báo lỗi.
+    if (activeModal === 'officer') {
+      setRegError('Tài khoản cán bộ do quản trị viên cấp trực tiếp; hệ thống chưa nhận đăng ký cán bộ trực tuyến.');
+      return;
+    }
+
     const cleanPhone = regPhone.replace(/\s+/g, '');
     if (cleanPhone.length < 9) {
       setRegError('Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại để nhận mã OTP SMS.');
@@ -218,40 +224,21 @@ export default function LoginPage() {
       const phoneToken = verifyRes.idToken || (await verifyRes.user?.getIdToken?.());
 
       // 2. Hoàn tất đăng ký sau khi OTP hợp lệ (gửi kèm phoneToken để server kiểm tra)
-      if (activeModal === 'officer') {
-        const result = await authApi.registerOfficerRequest({
-          fullName: regFullName,
-          email: regEmail,
-          phoneNumber: cleanPhone,
-          phoneToken,
-          departmentUnit: regUnit,
-          password: regPassword,
-          role: 'officer'
-        });
-        setRegSuccessResult({
-          type: 'officer',
-          title: 'Xác Thực SĐT & Gửi Hồ Sơ Cán Bộ Thành Công!',
-          requestId: result.requestId || `REG-OFFICER-${Date.now().toString().slice(-6)}`,
-          phone: cleanPhone,
-          message: 'Số điện thoại đã được xác thực OTP chính chủ. Hồ sơ đăng ký đã được chuyển vào hàng đợi phê duyệt của Ban Quản Trị (Admin) theo quy chuẩn UC06.'
-        });
-      } else {
-        const result = await authApi.registerCitizen({
-          fullName: regFullName,
-          email: regEmail,
-          phoneNumber: cleanPhone,
-          phoneToken,
-          areaOfInterest: regArea,
-          password: regPassword
-        });
-        setRegSuccessResult({
-          type: 'citizen',
-          title: 'Đăng Ký & Xác Thực Số Điện Thoại Thành Công!',
-          userId: result.userId || `citizen-${Date.now().toString().slice(-6)}`,
-          phone: cleanPhone,
-          message: 'Số điện thoại của bạn đã được xác thực và lưu vào hệ thống cảnh báo sớm. Bạn sẽ nhận được tin nhắn SMS khẩn cấp (Story 4.4) khi có nguy cơ sạt lở tại khu vực.'
-        });
-      }
+      const result = await authApi.registerCitizen({
+        fullName: regFullName,
+        email: regEmail,
+        phoneNumber: cleanPhone,
+        phoneToken,
+        areaOfInterest: regArea,
+        password: regPassword
+      });
+      setRegSuccessResult({
+        type: 'citizen',
+        title: 'Đăng Ký & Xác Thực Số Điện Thoại Thành Công!',
+        userId: result?.user?.userId,
+        phone: cleanPhone,
+        message: 'Số điện thoại của bạn đã được xác thực và lưu vào hệ thống cảnh báo sớm. Bạn sẽ nhận được tin nhắn SMS khẩn cấp (Story 4.4) khi có nguy cơ sạt lở tại khu vực.'
+      });
     } catch (err) {
       setOtpError(err.message || 'Mã OTP không chính xác hoặc đã hết hạn.');
     } finally {

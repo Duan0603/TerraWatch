@@ -151,11 +151,22 @@ export const authApi = {
   },
 
   // Đăng ký tài khoản Công dân (Nhận cảnh báo SMS/Push - UC07)
-  // Backend luôn ép role = citizen bất kể truyền gì (xem AC1 Story 1.1) — gửi `role` ở đây
-  // chỉ để tương thích payload cũ, backend sẽ bỏ qua trường này.
+  // Backend luôn tạo role = citizen (Story 1.1 AC1) nên web không gửi `role`.
   async registerCitizen(data) {
-    // Mọi lỗi (409 email trùng, 400 dữ liệu sai, mất mạng) đều báo cho người dùng: không có tài khoản giả.
-    return axiosClient.post('/auth/register', { ...data, role: 'citizen' });
+    // Mọi lỗi (409 email trùng, 400 dữ liệu sai, mất mạng) đều báo rõ cho người dùng: không có tài khoản giả.
+    try {
+      return await axiosClient.post('/auth/register', data);
+    } catch (err) {
+      const status = err.response?.status;
+      const serverMessage = err.response?.data?.message;
+      if (status === 409) throw new Error('Email này đã được đăng ký. Hãy đăng nhập hoặc dùng email khác.');
+      if (status === 400 && /phone number must be verified|verification token/i.test(serverMessage || '')) {
+        throw new Error('Số điện thoại chưa được xác minh bằng mã OTP. Vui lòng gửi lại mã và nhập đúng.');
+      }
+      if (status === 400) throw new Error(serverMessage || 'Thông tin đăng ký chưa hợp lệ.');
+      if (!err.response) throw new Error('Không kết nối được máy chủ. Vui lòng thử lại sau.');
+      throw new Error(`Đăng ký không thành công (mã lỗi ${status}).`);
+    }
   },
 
   // Đăng xuất
