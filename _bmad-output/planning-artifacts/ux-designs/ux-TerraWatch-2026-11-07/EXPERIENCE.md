@@ -34,7 +34,7 @@ Vietnamese, plain and calm, second person without pronoun ("Nhập email", "Vào
 - **Sign-in form**: email then password, submit with Enter. The fields start empty (Story 4.6 AC4). Password manager attributes `autocomplete="username"` and `current-password`.
 - **Quick demo chips**: one click fills the demo email and the demo password for that role and moves focus to the submit button; it does not sign in by itself. A short hint says they are demo accounts. (The chips are a rehearsal aid; hiding them in production is a later decision, not part of this story.)
 - **Ghost button** "Xem demo mô hình…": navigates, never submits the form.
-- **Link rows**: open the matching dialog; the dialog's first field gets focus; Esc and the close button return focus to the row that opened it.
+- **Action cards** (sign-up entries): open the matching dialog; the dialog's first field gets focus; Esc and the close button return focus to the row that opened it.
 - **Background scene**: purely decorative (`aria-hidden`), never receives focus or pointer events.
 
 ## State Patterns
@@ -53,7 +53,7 @@ Vietnamese, plain and calm, second person without pronoun ("Nhập email", "Vào
 
 ## Interaction Primitives
 
-Keyboard: Tab order is email, password, sign in, model demo, the three chips, the two link rows. Enter in either field submits. Esc closes a dialog. Pointer targets are at least 44px high. Chips and links show the `{colors.focus}` outline on keyboard focus.
+Keyboard: Tab order is email, password, sign in, model demo, the three chips, the two action cards. Enter in either field submits. Esc closes a dialog. Pointer targets are at least 44px high. Chips and links show the `{colors.focus}` outline on keyboard focus.
 
 ## Accessibility Floor
 
@@ -66,7 +66,7 @@ Keyboard: Tab order is email, password, sign in, model demo, the three chips, th
 ## Responsive & Platform
 
 - **>900px**: two columns as in DESIGN.md.
-- **≤900px**: one column, form first; hero = brand + headline only; description and note below the card; link-row descriptors stack under their labels.
+- **≤900px**: one column, form first; hero = brand + headline only; description and note below the card; action cards keep the same layout.
 - Landscape phones: the page scrolls; the card is never clipped.
 
 ## Key Flows

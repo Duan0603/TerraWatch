@@ -54,10 +54,16 @@ body.page-login { background: #070D1A; }
 .lg-chip:hover { background: rgba(255, 255, 255, .09); }
 .lg-dot { width: 8px; height: 8px; border-radius: 50%; }
 .lg-hint { margin: 8px 0 0; color: var(--ink-3); font-size: 12.5px; }
-.lg-links { display: flex; flex-direction: column; gap: 2px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--glass-line); }
-.lg-link { background: none; border: 0; color: var(--ink-2); font: inherit; font-size: 14px; text-align: left; padding: 9px 4px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 12px; border-radius: 8px; }
-.lg-link:hover { color: #fff; background: rgba(255, 255, 255, .05); }
-.lg-link small { color: var(--ink-3); font-size: 12.5px; text-align: right; }
+.lg-links { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--glass-line); }
+.lg-action { width: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 14px; padding: 12px 14px; min-height: 64px; text-align: left; font: inherit; color: var(--ink-1); cursor: pointer; background: rgba(255, 255, 255, .04); border: 1px solid var(--glass-line); border-radius: 12px; transition: background .15s, border-color .15s, transform .15s; }
+.lg-action:hover { background: rgba(95, 208, 192, .08); border-color: rgba(95, 208, 192, .45); }
+.lg-action:hover .lg-action-go { transform: translateX(3px); color: var(--brand-text); }
+.lg-action:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.lg-action-icon { flex: none; width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; color: var(--brand-text); background: rgba(95, 208, 192, .12); border: 1px solid rgba(95, 208, 192, .3); }
+.lg-action-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.lg-action-text strong { font-size: 14.5px; font-weight: 700; color: var(--ink-1); }
+.lg-action-text small { font-size: 12.5px; color: var(--ink-3); line-height: 1.35; }
+.lg-action-go { flex: none; color: var(--ink-3); transition: transform .15s, color .15s; }
 
 @media (max-width: 900px) {
   .lg-layout { grid-template-columns: 1fr; gap: 28px; padding: 28px 16px 40px; align-items: start; }
@@ -65,8 +71,6 @@ body.page-login { background: #070D1A; }
   .lg-hero p, .lg-hero .lg-note { display: none; }
   .lg-note-m { display: block; }
   .lg-card { justify-self: stretch; max-width: none; padding: 24px 20px; }
-  .lg-link { flex-direction: column; align-items: flex-start; gap: 2px; }
-  .lg-link small { text-align: left; }
 }
 @media (prefers-reduced-motion: reduce) {
   .lg-cloud { animation: none; }

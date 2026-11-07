@@ -350,11 +350,21 @@ export default function LoginPage() {
           <p className="lg-hint">Điền sẵn tài khoản demo để diễn tập.</p>
 
           <div className="lg-links">
-            <button type="button" className="lg-link" onClick={() => openRegisterModal('citizen')}>
-              Đăng ký công dân <small>nhận cảnh báo qua SMS/App</small>
+            <button type="button" className="lg-action" onClick={() => openRegisterModal('citizen')}>
+              <span className="lg-action-icon"><Smartphone size={20} aria-hidden="true" /></span>
+              <span className="lg-action-text">
+                <strong>Đăng ký công dân</strong>
+                <small>Nhận cảnh báo qua SMS và ứng dụng</small>
+              </span>
+              <ArrowRight size={18} className="lg-action-go" aria-hidden="true" />
             </button>
-            <button type="button" className="lg-link" onClick={() => openRegisterModal('officer')}>
-              Gửi yêu cầu tài khoản cán bộ <small>chờ quản trị viên duyệt</small>
+            <button type="button" className="lg-action" onClick={() => openRegisterModal('officer')}>
+              <span className="lg-action-icon"><UserPlus size={20} aria-hidden="true" /></span>
+              <span className="lg-action-text">
+                <strong>Yêu cầu tài khoản cán bộ</strong>
+                <small>Quản trị viên sẽ xét duyệt hồ sơ</small>
+              </span>
+              <ArrowRight size={18} className="lg-action-go" aria-hidden="true" />
             </button>
           </div>
         </section>

@@ -131,7 +131,7 @@ Depth comes from layers, not shadows: sky, clouds (behind), rain (canvas, in fro
 - **Primary button**: full width, 48px, label "Vào trung tâm chỉ huy →". Hover `{colors.brand-hover}`. Loading and disabled states are in EXPERIENCE.md.
 - **Ghost button**: "Xem demo mô hình trên dữ liệu lịch sử", outlined teal, 44px.
 - **Role chip**: three equal columns, 44px, a 8px dot plus the role name (Công dân, Cán bộ, Quản trị).
-- **Link row**: transparent, label left and a small `{colors.ink-3}` descriptor right (stacked under the label on phones).
+- **Action card** (the two sign-up entries): full-width 64px card with `{colors.glass-line}` border and a faint white fill, a 40px rounded icon tile in teal on the left (Smartphone for citizen, UserPlus for officer), a bold 14.5px title with a 12.5px `{colors.ink-3}` description under it, and an arrow on the right. Hover: teal border and tint, arrow moves 3px. Same layout on phones.
 - **Rain**: 70 to 220 slanted strokes, alpha 0.12 to 0.42, line width 0.6 to 1.4px, wind tilt about 12 degrees. **Clouds**: three blurred layers drifting 85 to 150 seconds per cycle.
 - **Registration dialogs** (citizen and officer): keep their current content and logic; they take the same glass surface, field and button styles so the flow looks like one product.
 
