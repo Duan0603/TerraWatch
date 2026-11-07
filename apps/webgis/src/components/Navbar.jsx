@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, LogOut, BellRing, History, Volume2, VolumeX, FileCheck2, Radio, Layers } from 'lucide-react';
+import { ShieldCheck, LogOut, BellRing, History, Volume2, VolumeX, FileCheck2, Radio, Layers, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fmtVN } from '../utils/time';
 import { playAlertBeep } from '../utils/sound';
@@ -13,6 +13,7 @@ export default function Navbar({
   onOpenAuditLog,
   onOpenFieldReports,
   onOpenAoi,
+  onOpenUsers,
   lastLoadedAt,       // Date | null – thời điểm loadEvents() thành công gần nhất
   loadError,          // string | null – lỗi kết nối API
 }) {
@@ -124,6 +125,18 @@ export default function Navbar({
           >
             <Layers size={14} />
             <span className="btn-label">Vùng giám sát</span>
+          </button>
+        )}
+
+        {/* Quản lý người dùng & Duyệt cán bộ — Admin only */}
+        {isAdmin && (
+          <button
+            className="btn-ghost"
+            onClick={onOpenUsers}
+            title="Quản lý người dùng, phân quyền và phê duyệt cán bộ trực ban"
+          >
+            <Users size={14} />
+            <span className="btn-label">Quản trị người dùng</span>
           </button>
         )}
 

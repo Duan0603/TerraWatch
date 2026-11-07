@@ -9,6 +9,7 @@ import BroadcastHistoryModal from '../components/BroadcastHistoryModal';
 import ReviewAuditModal from '../components/ReviewAuditModal';
 import FieldReportsModal from '../components/FieldReportsModal';
 import AoiManagementModal from '../components/AoiManagementModal';
+import UserManagementModal from '../components/UserManagementModal';
 import ReviewDialog from '../components/ReviewDialog';
 import forecastApi, { apiErrorMessage } from '../api/forecastApi';
 import { useAuth } from '../context/AuthContext';
@@ -39,6 +40,7 @@ export default function DashboardPage() {
   const [isAuditLogOpen, setIsAuditLogOpen] = useState(false);
   const [isFieldReportsOpen, setIsFieldReportsOpen] = useState(false);
   const [isAoiOpen, setIsAoiOpen] = useState(false);
+  const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
   const [broadcastTargetEvent, setBroadcastTargetEvent] = useState(null);
 
   // Keyboard navigation shortcuts for emergency operations
@@ -49,6 +51,7 @@ export default function DashboardPage() {
       else if (isAuditLogOpen) setIsAuditLogOpen(false);
       else if (isFieldReportsOpen) setIsFieldReportsOpen(false);
       else if (isAoiOpen) setIsAoiOpen(false);
+      else if (isUserManagementOpen) setIsUserManagementOpen(false);
       else if (alertPromptEvent) setAlertPromptEvent(null);
     },
     'Alt+m': () => setMobileTab('map'),
@@ -120,6 +123,7 @@ export default function DashboardPage() {
         onOpenAuditLog={() => setIsAuditLogOpen(true)}
         onOpenFieldReports={() => setIsFieldReportsOpen(true)}
         onOpenAoi={() => setIsAoiOpen(true)}
+        onOpenUsers={() => setIsUserManagementOpen(true)}
         lastLoadedAt={lastLoadedAt}
         loadError={loadError}
       />
@@ -209,6 +213,11 @@ export default function DashboardPage() {
         isOpen={isAoiOpen}
         onClose={() => setIsAoiOpen(false)}
         onAoiUpdated={() => forecastApi.getAoiCollection().then(setAoi).catch(() => setAoi(null))}
+      />
+
+      <UserManagementModal
+        isOpen={isUserManagementOpen}
+        onClose={() => setIsUserManagementOpen(false)}
       />
     </div>
   );

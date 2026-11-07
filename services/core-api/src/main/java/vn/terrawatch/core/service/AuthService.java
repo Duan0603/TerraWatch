@@ -66,8 +66,16 @@ public class AuthService {
             verifiedPhone = request.phoneNumber().trim();
         }
 
+        String initialRole = Role.CITIZEN.dbValue();
+        String initialApproval = "approved";
+        if (request.requestedRole() != null && "officer".equalsIgnoreCase(request.requestedRole().trim())) {
+            initialRole = Role.OFFICER.dbValue();
+            initialApproval = "pending";
+        }
+
         User user = new User(request.fullName(), email, passwords.encode(request.password()),
-            Role.CITIZEN.dbValue(), verifiedPhone);
+            initialRole, verifiedPhone);
+        user.setApprovalStatus(initialApproval);
         try {
             user = users.saveAndFlush(user);
         } catch (DataIntegrityViolationException error) {
@@ -106,7 +114,17 @@ public class AuthService {
         if (user.isEmpty() || !matches) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
-        return response(user.get());
+        User foundUser = user.get();
+        if (!foundUser.isActive()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản đã bị tạm khóa bởi Quản trị viên");
+        }
+        if ("pending".equalsIgnoreCase(foundUser.getApprovalStatus())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản cán bộ đang chờ Quản trị viên phê duyệt");
+        }
+        if ("rejected".equalsIgnoreCase(foundUser.getApprovalStatus())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản cán bộ đã bị từ chối phê duyệt");
+        }
+        return response(foundUser);
     }
 
     private static String normalizeEmail(String email) {
@@ -180,7 +198,10 @@ public class AuthService {
 
     AuthResponse response(User user) {
         requireKnownRole(user);
-        return new AuthResponse(tokens.generateToken(user), user.getRole(), profile(user));
+        String token = ("pending".equalsIgnoreCase(user.getApprovalStatus()) || !user.isActive())
+            ? null
+            : tokens.generateToken(user);
+        return new AuthResponse(token, user.getRole(), profile(user));
     }
 
     private UserProfileResponse profile(User user) {

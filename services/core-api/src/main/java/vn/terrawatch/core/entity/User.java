@@ -69,6 +69,12 @@ public class User {
     @Column(name = "has_avatar", nullable = false)
     private boolean hasAvatar;
 
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+
+    @Column(name = "approval_status", nullable = false, length = 20)
+    private String approvalStatus = "approved"; // pending | approved | rejected
+
     @Column(name = "created_at")
     private OffsetDateTime createdAt;
 
@@ -141,6 +147,12 @@ public class User {
 
     public boolean isHasAvatar() { return hasAvatar; }
     public void setHasAvatar(boolean hasAvatar) { this.hasAvatar = hasAvatar; }
+
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean active) { this.isActive = active; }
+
+    public String getApprovalStatus() { return approvalStatus; }
+    public void setApprovalStatus(String approvalStatus) { this.approvalStatus = approvalStatus; }
 
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
