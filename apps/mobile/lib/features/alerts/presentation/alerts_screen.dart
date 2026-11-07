@@ -367,7 +367,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
     );
   }
 }
-
+
 /// dd/MM HH:mm theo giờ địa phương; null nếu thiếu hoặc sai dạng
 String? formatAlertTime(String? iso) {
   final t = iso == null ? null : DateTime.tryParse(iso)?.toLocal();
