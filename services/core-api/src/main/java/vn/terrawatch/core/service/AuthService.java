@@ -103,6 +103,11 @@ public class AuthService {
         }
     }
 
+    /** Story 4.19: lets the sign-up form warn about a used email before an SMS is spent on an OTP. */
+    public boolean emailExists(String email) {
+        return email != null && !email.isBlank() && users.existsByEmail(normalizeEmail(email));
+    }
+
     public static boolean phonesMatch(String tokenPhone, String requestPhone) {
         if (tokenPhone == null || requestPhone == null) return false;
         String p1 = tokenPhone.replaceAll("[^0-9]", "");

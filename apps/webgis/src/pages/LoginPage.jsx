@@ -142,6 +142,7 @@ export default function LoginPage() {
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
+  const [emailTaken, setEmailTaken] = useState(false); // email vừa nhập đã có tài khoản
   const [view, setView] = useState('login'); // 'login' | 'register': tấm đang hiện trong khung
   const closeTimer = useRef(null);
   const prevStepRef = useRef(1);
@@ -230,6 +231,7 @@ export default function LoginPage() {
     setRegStep('form');
     setRegFullName('');
     setRegEmail('');
+    setEmailTaken(false);
     setRegPhone('');
     setRegPassword('');
     setRegConfirmPassword('');
@@ -301,6 +303,12 @@ export default function LoginPage() {
 
     try {
       setRegLoading(true);
+      // Email đã có tài khoản thì báo ngay, không gửi OTP (mỗi tin nhắn tốn hạn mức SMS).
+      if (await authApi.emailExists(regEmail)) {
+        setEmailTaken(true);
+        document.getElementById('rg-email')?.focus();
+        return;
+      }
       // Gửi mã OTP SMS qua Firebase Phone Auth
       const res = await authApi.sendSmsOtp(cleanPhone, 'recaptcha-container');
       setIsRealSms(!!res.isRealSms);
@@ -588,9 +596,20 @@ export default function LoginPage() {
                   <label className="lg-label" htmlFor="rg-email">Email</label>
                   <div className="lg-field">
                     <Mail size={18} aria-hidden="true" />
-                    <input id="rg-email" className="lg-input" type="email" value={regEmail} onChange={(e) => setRegEmail(e.target.value)}
-                      placeholder="ten@email.com" autoComplete="email" />
+                    <input id="rg-email" className="lg-input" type="email" value={regEmail}
+                      onChange={(e) => { setRegEmail(e.target.value); setEmailTaken(false); }}
+                      onBlur={async () => { if (/^\S+@\S+\.\S+$/.test(regEmail) && await authApi.emailExists(regEmail)) setEmailTaken(true); }}
+                      placeholder="ten@email.com" autoComplete="email" aria-invalid={emailTaken || undefined}
+                      aria-describedby={emailTaken ? 'rg-email-taken' : undefined} />
                   </div>
+                  {emailTaken && (
+                    <p id="rg-email-taken" className="lg-match lg-match-bad lg-taken" role="alert">
+                      Email này đã được đăng ký.{' '}
+                      <button type="button" className="lg-textbtn" onClick={() => { setEmail(regEmail.trim()); closeRegisterModal(); }}>
+                        Đăng nhập bằng email này
+                      </button>
+                    </p>
+                  )}
                 </fieldset>
 
                 <fieldset className="lg-group">

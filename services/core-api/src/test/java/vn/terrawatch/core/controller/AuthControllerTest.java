@@ -107,6 +107,16 @@ class AuthControllerTest {
     }
 
     @Test
+    void emailExistsIsPublicAndNormalisesTheEmail() throws Exception {
+        mvc.perform(get("/api/v1/auth/email-exists").param("email", "Nobody-Here@Auth-Test.Example"))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.exists").value(false));
+        users.saveAndFlush(new User("Test", "taken@auth-test.example", passwords.encode("secret123"), "citizen", null));
+        mvc.perform(get("/api/v1/auth/email-exists").param("email", " Taken@Auth-Test.Example "))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.exists").value(true));
+        mvc.perform(get("/api/v1/auth/email-exists").param("email", " ")).andExpect(jsonPath("$.exists").value(false));
+    }
+
+    @Test
     void officerRequestNeedsVerifiedPhoneAndStaysPendingUntilApproved() throws Exception {
         Map<String, String> base = Map.of("fullName", "Cán bộ Mới", "email", "new-officer@auth-test.example",
             "password", "secret123", "phoneNumber", "0912345678", "departmentUnit", "Chi cục PCTT Yên Bái");

@@ -173,3 +173,8 @@ body.page-login { background: #070D1A; }
   .lg-cloud { animation: none; }
   .lg-rain { display: none; }
 }
+
+/* Báo email đã đăng ký ngay dưới ô email (Story 4.19) */
+.lg-taken { margin: -6px 0 12px; line-height: 1.4; }
+.lg-taken .lg-textbtn { padding: 2px 4px; font-size: 13px; text-decoration: underline; }
+.lg-input[aria-invalid="true"] { border-color: var(--err); }

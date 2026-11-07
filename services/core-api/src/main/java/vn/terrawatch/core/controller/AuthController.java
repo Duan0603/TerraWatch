@@ -10,6 +10,7 @@ import vn.terrawatch.core.dto.*;
 import vn.terrawatch.core.service.AuthService;
 import vn.terrawatch.core.service.GoogleAuthService;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -42,6 +43,12 @@ public class AuthController {
     @Operation(summary = "Request an officer account: verified phone required, pending until an admin approves")
     public OfficerRequestResponse officerRequest(@Valid @RequestBody OfficerRequest request) {
         return auth.requestOfficer(request);
+    }
+
+    @GetMapping("/email-exists")
+    @Operation(summary = "Is this email already registered? (public, used by the sign-up form before sending an OTP)")
+    public Map<String, Boolean> emailExists(@RequestParam String email) {
+        return Map.of("exists", auth.emailExists(email));
     }
 
     @PostMapping("/login")

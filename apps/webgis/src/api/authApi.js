@@ -145,6 +145,17 @@ export const authApi = {
     }
   },
 
+  // Story 4.19: báo trùng email ngay ở bước nhập thông tin, trước khi tốn một tin nhắn OTP.
+  // Lỗi mạng thì coi như "chưa biết" (false): lúc đăng ký máy chủ vẫn chặn email trùng bằng 409.
+  async emailExists(email) {
+    try {
+      const data = await axiosClient.get('/auth/email-exists', { params: { email: email.trim() } });
+      return data?.exists === true;
+    } catch {
+      return false;
+    }
+  },
+
   // Story 4.8: gửi hồ sơ cán bộ (cần SĐT đã xác minh OTP). Tài khoản ở trạng thái "chờ duyệt"
   // cho tới khi quản trị viên phê duyệt; requestId là mã thật do máy chủ trả về.
   async registerOfficerRequest(data) {
