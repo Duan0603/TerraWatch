@@ -1,0 +1,22 @@
+flowchart LR
+    SI[Sign In] --> TAB{{Bottom tab bar}}
+    TAB --> HM[Home Monitor]
+    TAB --> MAP[Hazard Map]
+    TAB --> AH[Alert History]
+    TAB --> VP[View Profile]
+
+    HM --> CS[Cache Status]
+    HM --> SFR[Submit Field Report]
+    SFR -->|Sent or queued offline| MR[My Reports]
+    HM --> AS[Add Subscription]
+
+    AH -->|Select an alert| EA[Emergency Alert Screen]
+    PUSH([FCM push or geofence warning<br/>while on any screen]) --> EA
+
+    VP --> UP[Update Profile]
+    VP --> UA[Update Avatar]
+    VP -->|Email accounts only| CP[Change Password]
+    VP --> MR
+    VP --> SL[Subscription List]
+    SL -->|Add area| AS
+    VP -->|Sign Out| OUT([Back to Sign In])

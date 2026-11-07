@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   AlertOctagon, 
   Send, 
@@ -34,6 +34,20 @@ const TEMPLATES = [
   }
 ];
 
+/**
+ * @typedef {Object} BroadcastModalProps
+ * @property {boolean} isOpen - Trạng thái hiển thị modal phát tán
+ * @property {function} onClose - Callback đóng modal
+ * @property {Object|null} [event] - Sự cố trọng tâm cần phát thông báo
+ * @property {Object[]} [allEvents] - Danh sách tất cả sự cố hiện hành
+ * @property {Object|null} [currentUser] - Người dùng đăng nhập có quyền chỉ huy
+ * @property {function} [onBroadcastSuccess] - Callback khi phát lệnh thành công
+ */
+
+/**
+ * Component BroadcastModal - Cửa sổ điều hành phát lệnh khẩn cấp qua đa kênh (SMS, FCM, Loa còi)
+ * @param {BroadcastModalProps} props
+ */
 export default function BroadcastModal({ 
   isOpen, 
   onClose, 
@@ -49,8 +63,13 @@ export default function BroadcastModal({
   const locationName = activeEvent ? activeEvent.location : 'Vùng Tây Bắc (Yên Bái - Lào Cai)';
 
   // Form states
-  const [scope, setScope] = useState('buffer_1000m');
-  const [channels, setChannels] = useState(['sms', 'fcm']);
+  // Khu vực phát lệnh lấy từ backend (người nhận = thuê bao đăng ký khu vực đó). Kênh duy nhất đang chạy: FCM.
+  const [areas, setAreas] = useState([]);
+  const [areaId, setAreaId] = useState('');
+  const [areasError, setAreasError] = useState(null);
+  const requestIdRef = useRef(null);
+  const area = areas.find(a => String(a.id) === String(areaId));
+  const channels = ['fcm'];
   const [selectedTemplate, setSelectedTemplate] = useState('evacuation');
   const [message, setMessage] = useState(() => {
     return TEMPLATES[0].text.replace('{location}', locationName);
@@ -71,37 +90,21 @@ export default function BroadcastModal({
     }
   };
 
-  // Toggle kênh phát sóng (phải giữ ít nhất 1 kênh)
-  const toggleChannel = (channelId) => {
-    if (channels.includes(channelId)) {
-      if (channels.length === 1) {
-        alert('Phải chọn ít nhất 1 kênh phát sóng (SMS hoặc App Push)!');
-        return;
-      }
-      setChannels(channels.filter(c => c !== channelId));
-    } else {
-      setChannels([...channels, channelId]);
-    }
-  };
+  useEffect(() => {
+    broadcastApi.getAreas()
+      .then((list) => {
+        setAreas(list);
+        // Điền sẵn khu vực của dự báo đang chọn (nếu có); admin vẫn đổi được.
+        const preset = event?.unit?.areaId;
+        if (preset != null && list.some(a => a.id === preset)) setAreaId(String(preset));
+      })
+      .catch(() => setAreasError('Không tải được danh sách khu vực. Không thể phát lệnh lúc này.'));
+  }, []);
 
   // Đếm ký tự SMS (160 ký tự / tin)
   const charCount = message.length;
   const smsSegments = Math.ceil(charCount / 160) || 1;
   const isOverSingleSms = charCount > 160;
-
-  // Tính toán người nhận ước tính
-  const recipientPreview = useMemo(() => {
-    return broadcastApi.getRecipientPreview(scope);
-  }, [scope]);
-
-  // Nhãn phạm vi
-  const scopeLabels = {
-    buffer_500m: 'Vùng đệm bán kính 500m (Khẩn cấp)',
-    buffer_1000m: 'Vùng đệm bán kính 1.000m (Khu dân cư)',
-    buffer_2000m: 'Vùng đệm bán kính 2.000m (Toàn xã/bản)',
-    aoi: 'Toàn bộ vùng giám sát trọng điểm AOI',
-    all: 'Toàn bộ thuê bao đã đăng ký trong huyện'
-  };
 
   // Thực hiện phát lệnh
   const handleExecuteBroadcast = async () => {
@@ -109,19 +112,16 @@ export default function BroadcastModal({
       setIsSending(true);
       setStep(3);
 
-      const payload = {
-        landslideId: activeEvent?.id,
-        location: locationName,
-        scope,
-        scopeLabel: scopeLabels[scope],
-        channels,
+      requestIdRef.current ??= crypto.randomUUID();
+      const result = await broadcastApi.sendBroadcast({
+        requestId: requestIdRef.current,
+        areaId: area.id,
+        areaName: area.name,
+        runId: event?.status === 'approved' && !event.expired ? event.id : null,
         message,
-        templateId: selectedTemplate,
-        issuedBy: currentUser?.fullName || 'Admin Tổng Chỉ Huy',
+        issuedBy: currentUser?.fullName || 'Admin',
         urgency: activeEvent?.risk === 'extreme' ? 'EXTREME' : 'HIGH'
-      };
-
-      const result = await broadcastApi.sendBroadcast(payload);
+      });
       setSendResult(result);
       setStep(4);
 
@@ -129,6 +129,7 @@ export default function BroadcastModal({
         onBroadcastSuccess(result);
       }
     } catch (err) {
+      if (err.retryWithNewKey) requestIdRef.current = null;
       alert(`Lỗi khi phát lệnh cảnh báo: ${err.message}`);
       setStep(2);
     } finally {
@@ -140,6 +141,7 @@ export default function BroadcastModal({
     setStep(1);
     setConfirmInput('');
     setSendResult(null);
+    requestIdRef.current = null;
     onClose();
   };
 
@@ -158,7 +160,11 @@ export default function BroadcastModal({
       zIndex: 1000,
       padding: 20
     }}>
-      <div style={{
+      <div 
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="broadcast-modal-heading"
+        style={{
         maxWidth: 720,
         width: '100%',
         background: 'rgba(13, 19, 34, 0.98)',
@@ -232,98 +238,34 @@ export default function BroadcastModal({
           {/* STEP 1: SOẠN THẢO VÀ CẤU HÌNH PHÁT SÓNG */}
           {step === 1 && (
             <div>
-              {/* 1. Chọn Phạm Vi Phát Sóng (Scope) */}
+              {/* 1. Khu vực phát lệnh (người nhận = thuê bao đăng ký khu vực này) */}
               <div style={{ marginBottom: 18 }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 }}>
-                  <Radio size={14} color="#38bdf8" /> 1. PHẠM VI PHÁT CẢNH BÁO (GEOFENCING & AOI):
+                  <Radio size={14} color="#38bdf8" /> 1. KHU VỰC PHÁT CẢNH BÁO:
                 </label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-                  {[
-                    { id: 'buffer_500m', title: 'Vòng đệm 500m', desc: 'Bán kính khẩn cấp ta-luy' },
-                    { id: 'buffer_1000m', title: 'Vòng đệm 1.000m', desc: 'Khu dân cư xung quanh' },
-                    { id: 'buffer_2000m', title: 'Vòng đệm 2.000m', desc: 'Toàn bộ địa bàn xã/bản' },
-                    { id: 'aoi', title: 'Vùng AOI Trọng Điểm', desc: 'Mù Cang Chải / Bắc Hà' },
-                    { id: 'all', title: 'Toàn Bộ Thuê Bao', desc: 'Tất cả người dân đăng ký' }
-                  ].map(s => (
-                    <button
-                      key={s.id}
-                      type="button"
-                      onClick={() => setScope(s.id)}
-                      style={{
-                        background: scope === s.id ? 'rgba(2, 132, 199, 0.25)' : 'rgba(255, 255, 255, 0.03)',
-                        border: `1px solid ${scope === s.id ? '#38bdf8' : 'rgba(255, 255, 255, 0.08)'}`,
-                        borderRadius: 8,
-                        padding: '10px 12px',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        color: scope === s.id ? '#fff' : '#94a3b8',
-                        transition: 'all 0.15s ease'
-                      }}
-                    >
-                      <div style={{ fontSize: 12, fontWeight: 700, color: scope === s.id ? '#38bdf8' : '#f8fafc' }}>
-                        {s.title}
-                      </div>
-                      <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>
-                        {s.desc}
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                <select
+                  value={areaId}
+                  onChange={(e) => setAreaId(e.target.value)}
+                  style={{ width: '100%', background: 'rgba(6, 9, 17, 0.95)', color: '#fff', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: 8, padding: '10px 12px', fontSize: 13 }}
+                >
+                  <option value="">-- Chọn khu vực giám sát --</option>
+                  {areas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                </select>
+                {areasError && <div style={{ fontSize: 11, color: '#f87171', marginTop: 6 }}>{areasError}</div>}
               </div>
 
-              {/* 2. Chọn Kênh Phát Tin & Xem Trước Người Nhận */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: 16,
-                background: 'rgba(0, 0, 0, 0.35)',
-                border: '1px solid rgba(255, 255, 255, 0.06)',
-                borderRadius: 10,
-                padding: 14,
-                marginBottom: 18
-              }}>
-                {/* Checkbox Kênh truyền */}
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 8 }}>
-                    2. Kênh phát sóng viễn thông:
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12, color: '#cbd5e1' }}>
-                      <input
-                        type="checkbox"
-                        checked={channels.includes('sms')}
-                        onChange={() => toggleChannel('sms')}
-                        style={{ width: 16, height: 16, accentColor: '#0284c7' }}
-                      />
-                      <MessageSquare size={15} color="#38bdf8" />
-                      <span>Tin nhắn <strong>SMS Khẩn Cấp</strong> (Telco Gateway)</span>
-                    </label>
-
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12, color: '#cbd5e1' }}>
-                      <input
-                        type="checkbox"
-                        checked={channels.includes('fcm')}
-                        onChange={() => toggleChannel('fcm')}
-                        style={{ width: 16, height: 16, accentColor: '#ea580c' }}
-                      />
-                      <Smartphone size={15} color="#fb923c" />
-                      <span>Thông báo đẩy <strong>FCM App Push</strong> (Mobile)</span>
-                    </label>
-                  </div>
+              {/* 2. Kênh phát: chỉ FCM đang hoạt động */}
+              <div style={{ marginBottom: 18 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 8 }}>
+                  2. Kênh phát sóng:
                 </div>
-
-                {/* Recipient Preview */}
-                <div style={{ borderLeft: '1px solid rgba(255, 255, 255, 0.08)', paddingLeft: 16 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <Users size={13} color="#22c55e" /> Ước tính người nhận:
-                  </div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: '#4ade80' }}>
-                    ~{recipientPreview.total.toLocaleString()} <span style={{ fontSize: 12, fontWeight: 500, color: '#94a3b8' }}>người dân</span>
-                  </div>
-                  <div style={{ fontSize: 10, color: '#64748b', marginTop: 4, lineHeight: 1.5 }}>
-                    • Dân cư thường trú: <strong>{recipientPreview.residents}</strong> | Cứu nạn tại chỗ: <strong>{recipientPreview.responders}</strong><br />
-                    • Độ trễ truyền phát dự kiến: <strong>&lt; {recipientPreview.estimatedLatencySec}s</strong>
-                  </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#cbd5e1' }}>
+                  <Smartphone size={15} color="#fb923c" />
+                  <span>Thông báo đẩy <strong>FCM App Push</strong> tới người dân đã đăng ký khu vực</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#64748b', marginTop: 6 }}>
+                  <MessageSquare size={14} />
+                  <span>SMS chưa khả dụng (chưa kết nối nhà cung cấp SMS) — sẽ không có tin SMS nào được gửi.</span>
                 </div>
               </div>
 
@@ -423,7 +365,7 @@ export default function BroadcastModal({
                 <button
                   type="button"
                   onClick={() => setStep(2)}
-                  disabled={!message.trim()}
+                  disabled={!message.trim() || !area}
                   style={{
                     background: '#dc2626',
                     color: '#fff',
@@ -473,12 +415,12 @@ export default function BroadcastModal({
               </h3>
 
               <p style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.6, maxWidth: 540, margin: '0 auto 16px' }}>
-                Đồng chí đang chuẩn bị phát lệnh di dời/cảnh báo khẩn cấp tới{' '}
+                Đồng chí đang chuẩn bị phát lệnh cảnh báo khẩn cấp tới{' '}
                 <strong style={{ color: '#fff', textDecoration: 'underline' }}>
-                  ~{recipientPreview.total.toLocaleString()} người dân
+                  toàn bộ người dân đã đăng ký khu vực
                 </strong>{' '}
-                tại khu vực <strong>{locationName}</strong> qua các kênh{' '}
-                <strong>[{channels.join(', ').toUpperCase()}]</strong>.
+                <strong>{area?.name}</strong> qua kênh{' '}
+                <strong>[FCM APP PUSH]</strong>.
               </p>
 
               <div style={{
@@ -569,10 +511,10 @@ export default function BroadcastModal({
                 <RefreshCw size={36} color="#38bdf8" />
               </div>
               <h4 style={{ fontSize: 16, fontWeight: 700, color: '#fff', margin: '0 0 6px 0' }}>
-                Đang truyền tải lệnh cảnh báo đến Gateway...
+                Đang gửi lệnh cảnh báo...
               </h4>
               <p style={{ fontSize: 12, color: '#94a3b8', margin: 0 }}>
-                Đang kích hoạt hạ tầng Viettel/VNPT SMS Gateway và Firebase Cloud Messaging
+                Đang gửi qua Firebase Cloud Messaging
               </p>
             </div>
           )}
@@ -595,7 +537,7 @@ export default function BroadcastModal({
               </div>
 
               <h4 style={{ fontSize: 18, fontWeight: 800, color: '#4ade80', margin: '0 0 8px 0' }}>
-                PHÁT LỆNH BÁO ĐỘNG THÀNH CÔNG!
+                ĐÃ GỬI LỆNH CẢNH BÁO
               </h4>
 
               <p style={{ fontSize: 13, color: '#cbd5e1', margin: '0 0 16px 0' }}>
@@ -612,7 +554,8 @@ export default function BroadcastModal({
                 color: '#94a3b8',
                 marginBottom: 20
               }}>
-                {sendResult.summary}
+                Đã gửi tới {sendResult.sent}/{sendResult.total} thiết bị
+                {sendResult.failed > 0 && ` — ${sendResult.failed} thiết bị lỗi`}. SMS: không gửi.
               </div>
 
               <div>

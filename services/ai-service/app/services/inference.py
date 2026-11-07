@@ -54,9 +54,11 @@ def predict_onnx(sess, img, valid, floor_mult, batch=16):
     acc = np.zeros((H, W), "float32")
     cnt = np.zeros((H, W), "float32")
     rs = list(range(0, H - TILE + 1, STRIDE))
-    rs += [H - TILE] if rs[-1] != H - TILE else []
+    if rs and rs[-1] != H - TILE:
+        rs.append(H - TILE)
     cs = list(range(0, W - TILE + 1, STRIDE))
-    cs += [W - TILE] if cs[-1] != W - TILE else []
+    if cs and cs[-1] != W - TILE:
+        cs.append(W - TILE)
     tiles, pos = [], []
     for i in rs:
         for j in cs:

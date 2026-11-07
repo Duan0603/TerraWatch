@@ -36,3 +36,4 @@ public class FcmConfig {
         return (token, message) -> FcmSender.Result.failed("FCM not configured");
     }
 }
+

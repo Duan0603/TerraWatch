@@ -1,0 +1,11 @@
+flowchart LR
+    START([Open mobile app / WebGIS]) -->|No valid session| SI[Sign In]
+    START -->|Stored session still valid| ROLE
+    SI -->|No account yet| SU[Sign Up]
+    SU -->|Citizen account created| SI
+    SI -->|Mobile only| GS[Google Sign In]
+    SI -->|Valid email and password| ROLE{Role in JWT}
+    GS -->|Firebase ID token verified| ROLE
+    ROLE -->|Citizen| C([Citizen Mobile flow<br/>Figure 12])
+    ROLE -->|Officer| O([Monitoring Officer WebGIS flow<br/>Figure 13])
+    ROLE -->|Admin| A([Administrator WebGIS flow<br/>Figure 14])

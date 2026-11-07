@@ -27,17 +27,14 @@ public class DeviceController {
     @Operation(summary = "Register the caller's FCM token (a token held by another account moves to the caller)")
     public void register(Authentication authentication, @Valid @RequestBody DeviceTokenRequest request) {
         String type = request.deviceType() == null ? "android" : request.deviceType().toLowerCase(Locale.ROOT);
-        devices.register(userId(authentication), request.fcmToken(), type);
+        devices.register((UUID) authentication.getPrincipal(), request.fcmToken(), type);
     }
 
     @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Unregister the caller's FCM token (logout)")
     public void unregister(Authentication authentication, @Valid @RequestBody DeviceTokenRequest request) {
-        devices.remove(userId(authentication), request.fcmToken());
-    }
-
-    private static UUID userId(Authentication authentication) {
-        return (UUID) authentication.getPrincipal();
+        devices.remove((UUID) authentication.getPrincipal(), request.fcmToken());
     }
 }
+

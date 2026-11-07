@@ -22,6 +22,7 @@ target/
 # IDE and Editor
 .idea/
 .vscode/
+.claude/
 *.iml
 *.bak
 *.suo
@@ -57,3 +58,11 @@ scratch/
 # AI service: model weights and scene rasters are not committed
 services/ai-service/models/*.onnx
 services/ai-service/scenes/
+
+# Local research archives and training workspace (keep the published checkpoint).
+*.zip
+/gpu-training-kit/**
+!/gpu-training-kit/experiments/
+!/gpu-training-kit/experiments/vietnam_1km_two_branch_gru/
+!/gpu-training-kit/experiments/vietnam_1km_two_branch_gru/outputs/
+!/gpu-training-kit/experiments/vietnam_1km_two_branch_gru/outputs/two_branch_gru_1km.pt

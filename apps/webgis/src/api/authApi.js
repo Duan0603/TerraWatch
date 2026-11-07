@@ -55,41 +55,8 @@ export const authApi = {
       const data = await axiosClient.post('/auth/login', { email, password });
       return data;
     } catch (err) {
-      // Backend Core API đã trả lời (sai mật khẩu, tài khoản không tồn tại, v.v.) — đây là lỗi
-      // THẬT, không được nuốt và giả vờ đăng nhập thành công. Trước đây code che hết lỗi 401
-      // bằng một JWT giả đoán role qua chuỗi email, khiến phân quyền admin/officer vô nghĩa.
-      if (err.response) {
-        throw err;
-      }
-      // Chỉ rơi vào chế độ Demo khi THỰC SỰ không gọi được Backend (mất mạng / server chưa chạy),
-      // phục vụ dev offline. Gắn rõ cờ `isMock` để UI có thể cảnh báo đây không phải phiên thật.
-      console.warn('Không kết nối được Core API, chuyển sang chế độ Demo Auth (offline):', err.message);
-      const lowerEmail = email.toLowerCase();
-      let role = 'admin';
-      let fullName = 'Admin Tổng Chỉ Huy TerraWatch';
-      let id = 'user-admin-01';
-
-      if (lowerEmail.includes('citizen')) {
-        role = 'citizen';
-        fullName = 'Anh Giàng A Páo (Người dân Bản Lìm Mông)';
-        id = 'user-citizen-01';
-      } else if (lowerEmail.includes('officer')) {
-        role = 'officer';
-        fullName = 'Đ/c Nguyễn Văn Huy (Cán bộ Phòng chống Thiên tai)';
-        id = 'user-officer-01';
-      }
-
-      return {
-        token: `mock_jwt_token_${role}_${Date.now()}`,
-        role,
-        isMock: true,
-        user: {
-          id,
-          fullName,
-          email,
-          role,
-        }
-      };
+      // Mọi lỗi (sai mật khẩu, mất kết nối...) là lỗi thật: không giả lập phiên đăng nhập.
+      throw err;
     }
   },
 

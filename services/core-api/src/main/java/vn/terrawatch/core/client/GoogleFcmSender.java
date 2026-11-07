@@ -81,8 +81,12 @@ public class GoogleFcmSender implements FcmSender {
                 .build();
             HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() / 100 == 2) return Result.sent();
+            if (response.statusCode() == 401) {
+                synchronized (this) {
+                    accessToken = null;
+                }
+            }
             String detail = "FCM " + response.statusCode() + ": " + abbreviate(response.body());
-            // UNREGISTERED (404) and a token FCM calls invalid (400 INVALID_ARGUMENT on the token field) mean the phone is gone
             if (response.statusCode() == 404 || response.body().contains("UNREGISTERED")) return Result.unregisteredToken(detail);
             return Result.failed(detail);
         } catch (InterruptedException e) {
@@ -97,13 +101,12 @@ public class GoogleFcmSender implements FcmSender {
         if (accessToken != null && Instant.now().isBefore(accessTokenExpiry.minusSeconds(60))) return accessToken;
         Instant now = Instant.now();
         String assertion = Jwts.builder().issuer(clientEmail).subject(clientEmail)
-            // single(): Google's token endpoint rejects an `aud` that is a JSON array (found against the real endpoint)
             .audience().single(tokenUri.toString())
             .claim("scope", SCOPE)
             .issuedAt(Date.from(now)).expiration(Date.from(now.plusSeconds(3600)))
             .signWith(privateKey, Jwts.SIG.RS256).compact();
-        String form = "grant_type=" + URLEncoder.encode("urn:ietf:params:oauth:grant-type:jwt-bearer", StandardCharsets.UTF_8)
-            + "&assertion=" + URLEncoder.encode(assertion, StandardCharsets.UTF_8);
+        String form = "grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion="
+            + URLEncoder.encode(assertion, StandardCharsets.UTF_8);
         HttpResponse<String> response = http.send(HttpRequest.newBuilder(tokenUri).timeout(TIMEOUT)
             .header("Content-Type", "application/x-www-form-urlencoded")
             .POST(HttpRequest.BodyPublishers.ofString(form)).build(), HttpResponse.BodyHandlers.ofString());
@@ -118,3 +121,4 @@ public class GoogleFcmSender implements FcmSender {
         return text.length() <= 300 ? text : text.substring(0, 300) + "...";
     }
 }
+

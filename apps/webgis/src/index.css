@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
+.nav-model-demo-link { text-decoration: none; white-space: nowrap; }
+.model-demo-login-link { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 18px; padding: 12px 10px; border: 1px solid #3c7066; border-radius: 8px; color: #7ee2c3; font-size: 12px; text-decoration: none; text-align: center; }
+.model-demo-login-link:hover { background: #16483f; color: white; }
+.model-demo-login-link:focus-visible { outline: 3px solid #7ee2c3; outline-offset: 3px; }
+
 :root {
   /* Brand */
   --primary: #087B70;
@@ -455,7 +460,9 @@ body {
   font-weight: 600;
 }
 .event-status.pending { color: var(--risk-high); }
-.event-status.verified { color: var(--risk-low); }
+.event-status.approved { color: var(--risk-low); }
+.event-status.superseded { color: var(--text-3); }
+.risk-tag.unavailable { background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; }
 .event-status.rejected { color: var(--text-3); }
 
 .event-location {
@@ -695,5 +702,166 @@ body {
   background: #FFFFFF !important;
 }
 
+/* ── RESPONSIVE GRID HELPERS ── */
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.broadcast-scope-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.broadcast-channels-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 18px;
+}
+
+/* ── LOGIN PAGE BODY OVERRIDE ── */
+body.page-login {
+  overflow: auto;
+  height: auto;
+  min-height: 100vh;
+}
+
+/* ── MOBILE TAB BAR ── */
+.mobile-tab-bar {
+  display: none;
+}
+
+/* ── TABLET (769px – 1024px) ── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .nav-brand-sub { display: none; }
+  .status-chip { display: none; }
+  .nav-user-info { display: none; }
+  .nav-right { gap: 8px; }
+
+  .sidebar { width: 250px; }
+}
+
+/* ── MOBILE (≤ 768px) ── */
+@media (max-width: 768px) {
+  .top-nav {
+    height: 56px;
+    padding: 0 12px;
+  }
+
+  .nav-brand-sub { display: none; }
+  .nav-links { display: none; }
+  .status-chip { display: none; }
+  .nav-user-info { display: none; }
+  .nav-right { gap: 4px; }
+
+  /* Hide text labels inside buttons, keep icons */
+  .btn-label { display: none; }
+
+  /* Compact buttons on mobile */
+  .btn-ghost { padding: 6px 8px; }
+  .btn-danger { padding: 7px 10px; }
+
+  /* Stack layout vertically */
+  .main-layout { flex-direction: column; overflow: hidden; }
+
+  /* Sidebar becomes full height / width */
+  .sidebar {
+    width: 100%;
+    height: 100%;
+    border-right: none;
+    flex: 1;
+  }
+
+  .sidebar.mobile-hidden { display: none; }
+  .map-canvas-area.mobile-hidden { display: none; }
+
+  /* HUD overlay compact */
+  .map-hud-overlay {
+    top: 8px;
+    left: 8px;
+    padding: 6px 10px;
+    gap: 8px;
+  }
+  .hud-divider { display: none; }
+  .hud-label { font-size: 9px; }
+  .hud-value { font-size: 10px; }
+
+  /* Alert prompt above tab bar */
+  .alert-prompt-wrapper {
+    bottom: 68px;
+    width: calc(100% - 24px);
+  }
+
+  /* Mobile tab bar */
+  .mobile-tab-bar {
+    display: flex;
+    height: 56px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+    z-index: 20;
+  }
+
+  .mobile-tab-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border: none;
+    background: transparent;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+
+  .mobile-tab-btn.active { color: var(--primary); }
+
+  /* Sidebar overview grid 2-col → 4-col on mobile for space */
+  .sidebar-overview { grid-template-columns: repeat(4, 1fr); }
+
+  /* Form grids: stack to 1 column on mobile */
+  .form-grid-2,
+  .broadcast-channels-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid-3,
+  .broadcast-scope-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Remove left border separator when channels grid stacks */
+  .broadcast-channels-grid > div + div {
+    border-left: none !important;
+    padding-left: 0 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 12px;
+    margin-top: 4px;
+  }
+}
 
 
+
+
+/* Bảng bằng chứng xếp chồng ở góc dưới phải bản đồ */
+.map-evidence-stack { position: absolute; bottom: 20px; right: 20px; width: min(380px, calc(100% - 32px)); max-height: calc(100% - 100px); overflow-y: auto; z-index: 10; display: flex; flex-direction: column; gap: 12px; }
+.map-evidence-stack .live-rain-panel { position: static; width: 100%; max-height: none; flex-shrink: 0; }
+.map-evidence-stack .evidence-panel { flex-shrink: 0; }
+@media (max-width: 600px) { .map-evidence-stack { bottom: 12px; right: 12px; width: calc(100% - 24px); max-height: 60%; } }

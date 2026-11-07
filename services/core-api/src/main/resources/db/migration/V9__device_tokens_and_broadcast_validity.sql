@@ -15,3 +15,4 @@ ALTER TABLE core_schema.alert_broadcasts
     ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'revoked')),
     ADD COLUMN IF NOT EXISTS revoked_at TIMESTAMP WITH TIME ZONE;
 CREATE INDEX IF NOT EXISTS idx_deliveries_user ON core_schema.alert_deliveries (user_id);
+

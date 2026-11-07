@@ -45,7 +45,8 @@ services:
       DATABASE_URL: jdbc:postgresql://postgres:5432/terrawatch
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgrespassword
-      REDIS_URL: redis://redis:6379
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       AI_SERVICE_URL: http://ai-service:8001
       GIS_SERVICE_URL: http://gis-service:8002
       # Firebase service account key for sending push (Story 5.1); the file is optional, without it pushes are not sent
@@ -53,7 +54,7 @@ services:
     volumes:
       - ./secrets:/secrets:ro
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000" # direct Core access for local dev only; clients go through the gateway (8080)
     depends_on:
       - postgres
       - redis
@@ -77,7 +78,7 @@ services:
       - ./services/ai-service/scenes:/app/scenes:ro
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
     ports:
-      - "8001:8001"
+      - "127.0.0.1:8001:8001"
     depends_on:
       - redis
     networks:
@@ -92,11 +93,16 @@ services:
     restart: always
     environment:
       DATABASE_URL: postgresql://postgres:postgrespassword@postgres:5432/terrawatch
+      RAINFALL_AUTO_ENABLED: ${RAINFALL_AUTO_ENABLED:-true}
+      RAINFALL_REFRESH_SECONDS: ${RAINFALL_REFRESH_SECONDS:-3600}
+      OPEN_METEO_API_KEY: ${OPEN_METEO_API_KEY:-}
+      LIVE_GRU_ENABLED: ${LIVE_GRU_ENABLED:-true}
+      AI_SERVICE_URL: http://ai-service:8001
     volumes:
       - ./services/gis-service/app:/app/app
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8002", "--reload"]
     ports:
-      - "8002:8002"
+      - "127.0.0.1:8002:8002"
     depends_on:
       - postgres
     networks:

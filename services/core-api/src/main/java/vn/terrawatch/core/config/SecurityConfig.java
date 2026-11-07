@@ -3,6 +3,7 @@ package vn.terrawatch.core.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -20,6 +21,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
@@ -61,7 +63,8 @@ public class SecurityConfig {
                 // Only the admin-authored broadcast is currently role-gated; other pre-existing
                 // routes stay permitAll below to avoid regressing Stories 4.2/4.3/4.4 (see story
                 // 1.1's Dev Notes -> Architecture Compliance for why the blanket rule is untouched).
-                .requestMatchers(HttpMethod.POST, "/api/v1/notifications/broadcast", "/api/v1/notifications/broadcast/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/v1/notifications/broadcast").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/v1/notifications/broadcast/*/revoke").hasRole("ADMIN")
                 .requestMatchers("/api/v1/**").permitAll()
                 .anyRequest().authenticated()
             );

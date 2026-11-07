@@ -43,6 +43,17 @@ public class NotificationService {
     public Map<String, Object> broadcastAlert(BroadcastAlertRequest req, UUID senderId) {
         String level = req.riskLevel() == null ? "" : req.riskLevel().toLowerCase(Locale.ROOT);
         if (!RISK_LEVELS.contains(level)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid riskLevel");
+        BroadcastRepository.RunRef run = null;
+        if (req.runId() != null && !req.runId().isBlank()) {
+            UUID runId;
+            try {
+                runId = UUID.fromString(req.runId().trim());
+            } catch (IllegalArgumentException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid runId");
+            }
+            run = broadcasts.citableRun(runId).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.CONFLICT, "Forecast is not approved, available and unexpired"));
+        }
         logger.info("[ALERT DISPATCH] Event: {}, Risk: {}, Area: {}", req.eventId(), level, req.targetArea());
 
         List<Area> areas = matchAreas(req);
@@ -62,8 +73,14 @@ public class NotificationService {
         String title = "CẢNH BÁO SẠT LỞ ĐẤT KHẨN CẤP (" + level.toUpperCase(Locale.ROOT) + ")";
         String body = req.message() != null && !req.message().isBlank() ? req.message() : DEFAULT_MESSAGE;
         Area area = areas.get(0);
-        OffsetDateTime validUntil = OffsetDateTime.now().plusHours(VALID_HOURS);
-        var stored = broadcasts.insert(senderId, title, body, level, area.id(), validUntil, recipients.size());
+        OffsetDateTime validUntil = run != null ? run.validUntil() : OffsetDateTime.now().plusHours(VALID_HOURS);
+        String idempotencyKey = req.eventId() != null && !req.eventId().isBlank() ? req.eventId().trim() : null;
+        BroadcastRepository.Stored stored;
+        try {
+            stored = broadcasts.insert(senderId, title, body, level, area.id(), validUntil, recipients.size(), idempotencyKey, run);
+        } catch (org.springframework.dao.DuplicateKeyException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Duplicate alert broadcast: event_id already processed");
+        }
         Map<String, String> data = new LinkedHashMap<>();
         data.put("type", "EMERGENCY_ALERT");
         data.put("broadcastId", stored.broadcastId().toString());
@@ -103,12 +120,14 @@ public class NotificationService {
         if (!broadcasts.revoke(broadcastId)) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No active broadcast with that id");
     }
 
-    /** areaId wins; otherwise every active area whose name contains the target text (or the other way round). */
+    /** areaId wins; otherwise exact name match wins; fallback to substring contains match. */
     private List<Area> matchAreas(BroadcastAlertRequest req) {
         List<Area> all = broadcasts.activeAreas();
         if (req.areaId() != null) return all.stream().filter(a -> a.id() == req.areaId()).toList();
         String target = req.targetArea() == null ? "" : req.targetArea().trim().toLowerCase(Locale.ROOT);
         if (target.isEmpty()) return List.of();
+        List<Area> exact = all.stream().filter(a -> a.name().equalsIgnoreCase(target)).toList();
+        if (!exact.isEmpty()) return exact;
         return all.stream().filter(a -> {
             String name = a.name().toLowerCase(Locale.ROOT);
             return name.contains(target) || target.contains(name);

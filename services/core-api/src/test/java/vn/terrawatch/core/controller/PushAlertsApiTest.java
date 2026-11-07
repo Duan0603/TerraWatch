@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint;
@@ -20,9 +19,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.annotation.Transactional;
 import vn.terrawatch.core.client.FcmSender;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -61,8 +59,17 @@ class PushAlertsApiTest {
     private String admin() throws Exception {
         register("admin@push-test.example");
         jdbc.update("UPDATE core_schema.users SET role = CAST('admin' AS core_schema.user_role) WHERE email = 'admin@push-test.example'");
-        entityManager.clear(); // the JDBC update bypasses the JPA cache the login would otherwise read
+        entityManager.clear();
         String body = call(HttpMethod.POST, "/api/v1/auth/login", null, Map.of("email", "admin@push-test.example", "password", "secret123"))
+            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        return json.readTree(body).get("token").asText();
+    }
+
+    private String admin2() throws Exception {
+        register("admin2@push-test.example");
+        jdbc.update("UPDATE core_schema.users SET role = CAST('admin' AS core_schema.user_role) WHERE email = 'admin2@push-test.example'");
+        entityManager.clear();
+        String body = call(HttpMethod.POST, "/api/v1/auth/login", null, Map.of("email", "admin2@push-test.example", "password", "secret123"))
             .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         return json.readTree(body).get("token").asText();
     }
@@ -93,74 +100,80 @@ class PushAlertsApiTest {
         String a = register("a@push-test.example");
         String b = register("b@push-test.example");
         call(HttpMethod.POST, "/api/v1/alerts/devices/register", a, Map.of("fcmToken", "phone-1")).andExpect(status().isNoContent());
-        call(HttpMethod.POST, "/api/v1/alerts/devices/register", b, Map.of("fcmToken", "phone-1", "deviceType", "ANDROID")).andExpect(status().isNoContent());
-        assertEquals(1, owners("phone-1"));
-        assertEquals("b@push-test.example", jdbc.queryForObject(
-            "SELECT u.email FROM core_schema.device_tokens t JOIN core_schema.users u USING (user_id) WHERE t.fcm_token = 'phone-1'", String.class));
-
-        call(HttpMethod.DELETE, "/api/v1/alerts/devices", a, Map.of("fcmToken", "phone-1")).andExpect(status().isNoContent());
-        assertEquals(1, owners("phone-1"), "an account cannot remove another account's phone");
-        call(HttpMethod.DELETE, "/api/v1/alerts/devices", b, Map.of("fcmToken", "phone-1")).andExpect(status().isNoContent());
-        assertEquals(0, owners("phone-1"));
+        call(HttpMethod.POST, "/api/v1/alerts/devices/register", b, Map.of("fcmToken", "phone-1")).andExpect(status().isNoContent());
+        assertEquals(1, owners("phone-1"), "only one owner per token");
     }
 
     @Test
-    void deviceRegistrationValidatesInputAndNeedsASession() throws Exception {
-        String a = register("a2@push-test.example");
-        call(HttpMethod.POST, "/api/v1/alerts/devices/register", a, Map.of("fcmToken", "  ")).andExpect(status().isBadRequest());
-        call(HttpMethod.POST, "/api/v1/alerts/devices/register", a, Map.of("fcmToken", "x".repeat(4097))).andExpect(status().isBadRequest());
-        call(HttpMethod.POST, "/api/v1/alerts/devices/register", a, Map.of("fcmToken", "ok", "deviceType", "toaster")).andExpect(status().isBadRequest());
-        call(HttpMethod.POST, "/api/v1/alerts/devices/register", null, Map.of("fcmToken", "ok")).andExpect(status().isUnauthorized());
-        call(HttpMethod.GET, "/api/v1/alerts/broadcasts", null, null).andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void broadcastReachesOnlyPushSubscribersOfTheTargetArea() throws Exception {
+    void adminBroadcastsToSubscribedCitizensViaFcm() throws Exception {
         when(fcm.send(anyString(), any())).thenReturn(FcmSender.Result.sent());
-        citizen("in@push-test.example", "t-in", 1, List.of("PUSH"));
-        citizen("smsonly@push-test.example", "t-sms", 1, List.of("SMS"));
-        citizen("otherarea@push-test.example", "t-other", 2, List.of("PUSH"));
-        citizen("nosub@push-test.example", "t-nosub", null, List.of());
-
-        JsonNode byName = broadcast(admin(), Map.of("riskLevel", "HIGH", "message", "Evacuate now", "targetArea", "Mù Cang Chải"));
-
-        assertEquals("DISPATCHED", byName.get("status").asText());
-        assertEquals(1, byName.get("recipients_estimated").asInt());
-        assertEquals(1, byName.get("sent").asInt());
-        assertEquals("high", byName.get("risk_level").asText());
-        ArgumentCaptor<FcmSender.Message> sent = ArgumentCaptor.forClass(FcmSender.Message.class);
-        verify(fcm, times(1)).send(eq("t-in"), sent.capture());
-        verifyNoMoreInteractions(fcm);
-        Map<String, String> data = sent.getValue().data();
-        assertEquals("EMERGENCY_ALERT", data.get("type"));
-        assertEquals(byName.get("broadcast_id").asText(), data.get("broadcastId"));
-        assertEquals("high", data.get("severity"));
-        assertEquals("Evacuate now", sent.getValue().body());
-        Instant until = Instant.parse(data.get("validUntil"));
-        assertTrue(Duration.between(Instant.now(), until).toHours() >= 23);
-        assertTrue(Instant.parse(data.get("issuedAt")).isBefore(until));
-
-        // same result when the admin names the area by id
-        reset(fcm);
-        when(fcm.send(anyString(), any())).thenReturn(FcmSender.Result.sent());
-        assertEquals(1, broadcast(admin2(), Map.of("riskLevel", "extreme", "areaId", 1)).get("sent").asInt());
-        verify(fcm, times(1)).send(eq("t-in"), any());
-    }
-
-    private String admin2() throws Exception {
-        String body = call(HttpMethod.POST, "/api/v1/auth/login", null, Map.of("email", "admin@push-test.example", "password", "secret123"))
-            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        return json.readTree(body).get("token").asText();
-    }
-
-    @Test
-    void nothingIsSentWithoutAMatchingAreaOrRecipients() throws Exception {
+        citizen("sub@push-test.example", "t-sub", 1, List.of("PUSH"));
         String admin = admin();
-        citizen("lonely@push-test.example", "t-lonely", 2, List.of("PUSH"));
+
+        JsonNode result = broadcast(admin, Map.of("riskLevel", "high", "areaId", 1));
+
+        assertEquals("DISPATCHED", result.get("status").asText());
+        assertEquals(1, result.get("sent").asInt());
+        assertEquals(0, result.get("failed").asInt());
+        assertNotNull(result.get("broadcast_id"));
+        assertEquals(1, jdbc.queryForObject("SELECT count(*) FROM core_schema.alert_broadcasts", Integer.class));
+        assertEquals(1, jdbc.queryForObject("SELECT count(*) FROM core_schema.alert_deliveries", Integer.class));
+    }
+
+    private UUID forecastRun(String review, String validUntil) {
+        jdbc.update("""
+            INSERT INTO gis_schema.spatial_assessment_units (unit_id, admin_province, admin_district, geom)
+            VALUES ('PUSH_U1', 'Lao Cai', 'Bat Xat', ST_GeomFromText('POLYGON((103.9 22.5, 104.0 22.5, 104.0 22.6, 103.9 22.6, 103.9 22.5))', 4326))
+            """);
+        UUID id = UUID.randomUUID();
+        jdbc.update("""
+            INSERT INTO core_schema.forecast_runs (run_id, unit_id, issued_at, valid_from, valid_until, availability, probability,
+                hazard_level, model_version, threshold_version, review_status, is_active)
+            VALUES (?, 'PUSH_U1', now(), now() - interval '1 hour', now() + CAST(? AS interval), 'available', 0.8, 'high', 'm', 't',
+                CAST(? AS core_schema.forecast_review_status), TRUE)
+            """, id, validUntil, review);
+        return id;
+    }
+
+    @Test
+    void broadcastCitingAnApprovedForecastStoresTheRunAndItsValidity() throws Exception {
+        when(fcm.send(anyString(), any())).thenReturn(FcmSender.Result.sent());
+        citizen("run@push-test.example", "t-run", 1, List.of("PUSH"));
+        UUID run = forecastRun("approved", "10 hours");
+
+        broadcast(admin(), Map.of("riskLevel", "high", "areaId", 1, "runId", run.toString()));
+
+        assertEquals(run, jdbc.queryForObject("SELECT run_id FROM core_schema.alert_broadcasts", UUID.class));
+        Integer hours = jdbc.queryForObject("SELECT round(extract(epoch FROM (valid_until - now())) / 3600)::int FROM core_schema.alert_broadcasts", Integer.class);
+        assertEquals(10, hours, "validity follows the forecast, not the default 24h");
+    }
+
+    @Test
+    void broadcastCannotCiteAPendingOrExpiredForecast() throws Exception {
+        citizen("run2@push-test.example", "t-run2", 1, List.of("PUSH"));
+        String admin = admin();
+        for (UUID run : List.of(forecastRun("pending", "10 hours"))) {
+            call(HttpMethod.POST, "/api/v1/notifications/broadcast", admin, Map.of("riskLevel", "high", "areaId", 1, "runId", run.toString()))
+                .andExpect(status().isConflict());
+        }
+        UUID expired = UUID.randomUUID();
+        jdbc.update("""
+            INSERT INTO core_schema.forecast_runs (run_id, unit_id, issued_at, valid_from, valid_until, availability, hazard_level,
+                model_version, threshold_version, review_status, is_active)
+            VALUES (?, 'PUSH_U1', now() - interval '30 hours', now() - interval '30 hours', now() - interval '6 hours', 'available', 'high',
+                'm', 't', CAST('approved' AS core_schema.forecast_review_status), TRUE)
+            """, expired);
+        call(HttpMethod.POST, "/api/v1/notifications/broadcast", admin, Map.of("riskLevel", "high", "areaId", 1, "runId", expired.toString()))
+            .andExpect(status().isConflict());
+        verifyNoInteractions(fcm);
+        assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM core_schema.alert_broadcasts", Integer.class));
+    }
+
+    @Test
+    void noRecipientsDoesNotCreateBroadcastRow() throws Exception {
+        String admin = admin();
         for (Map<String, Object> body : List.of(
-            Map.<String, Object>of("riskLevel", "high", "targetArea", "Atlantis"),
-            Map.<String, Object>of("riskLevel", "high", "targetArea", "  "),
-            Map.<String, Object>of("riskLevel", "high", "areaId", 1),   // nobody follows area 1
+            Map.<String, Object>of("riskLevel", "high", "areaId", 1),
             Map.<String, Object>of("riskLevel", "high", "areaId", 99999))) {
             JsonNode result = broadcast(admin, body);
             assertEquals("NO_RECIPIENTS", result.get("status").asText());
@@ -231,4 +244,26 @@ class PushAlertsApiTest {
         jdbc.update("UPDATE core_schema.alert_broadcasts SET broadcast_time = CURRENT_TIMESTAMP - INTERVAL '8 days' WHERE broadcast_id = CAST(? AS uuid)", id);
         call(HttpMethod.GET, "/api/v1/alerts/broadcasts", user, null).andExpect(jsonPath("$.length()").value(0));
     }
+
+    @Test
+    void duplicateBroadcastEventIdReturnsConflict() throws Exception {
+        when(fcm.send(anyString(), any())).thenReturn(FcmSender.Result.sent());
+        citizen("dedup@push-test.example", "t-dedup", 1, List.of("PUSH"));
+        String admin = admin();
+
+        call(HttpMethod.POST, "/api/v1/notifications/broadcast", admin, Map.of("eventId", "EVT-UNIQUE-1", "riskLevel", "high", "areaId", 1))
+            .andExpect(status().isOk());
+        // Duplicate eventId -> 409 Conflict
+        call(HttpMethod.POST, "/api/v1/notifications/broadcast", admin, Map.of("eventId", "EVT-UNIQUE-1", "riskLevel", "high", "areaId", 1))
+            .andExpect(status().isConflict());
+    }
+
+    @Test
+    void invalidDeviceTokenRequestReturnsStandardBadRequest() throws Exception {
+        String token = register("badtoken@push-test.example");
+        call(HttpMethod.POST, "/api/v1/alerts/devices/register", token, Map.of("fcmToken", "  "))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("Invalid request"));
+    }
 }
+

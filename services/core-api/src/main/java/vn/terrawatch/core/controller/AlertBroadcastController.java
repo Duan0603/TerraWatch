@@ -28,3 +28,4 @@ public class AlertBroadcastController {
         return service.broadcastsFor((UUID) authentication.getPrincipal());
     }
 }
+

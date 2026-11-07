@@ -17,6 +17,8 @@ public class BroadcastRepository {
 
     public record Stored(UUID broadcastId, Instant issuedAt) {}
 
+    public record RunRef(UUID runId, String unitId, OffsetDateTime validUntil) {}
+
     private final JdbcTemplate jdbc;
 
     public BroadcastRepository(JdbcTemplate jdbc) {
@@ -40,15 +42,25 @@ public class BroadcastRepository {
             areaIds.toArray());
     }
 
+    /** The forecast a broadcast may cite: approved, active, available and not expired. */
+    public java.util.Optional<RunRef> citableRun(UUID runId) {
+        return jdbc.query("""
+            SELECT run_id, unit_id, valid_until FROM core_schema.forecast_runs
+            WHERE run_id = ? AND review_status = 'approved' AND is_active AND availability = 'available' AND valid_until > now()
+            """, (rs, i) -> new RunRef(rs.getObject("run_id", UUID.class), rs.getString("unit_id"),
+                rs.getObject("valid_until", OffsetDateTime.class)), runId).stream().findFirst();
+    }
+
     public Stored insert(UUID senderId, String title, String message, String severity, int areaId,
-                         OffsetDateTime validUntil, int recipients) {
+                         OffsetDateTime validUntil, int recipients, String idempotencyKey, RunRef run) {
         return jdbc.queryForObject("""
-            INSERT INTO core_schema.alert_broadcasts (sender_id, title, message, severity, target_channel, area_id, valid_until, total_recipients)
-            VALUES (?, ?, ?, CAST(? AS core_schema.risk_level), 'app_push', ?, ?, ?)
+            INSERT INTO core_schema.alert_broadcasts (sender_id, title, message, severity, target_channel, area_id, valid_until, total_recipients, idempotency_key, run_id, unit_id)
+            VALUES (?, ?, ?, CAST(? AS core_schema.risk_level), 'app_push', ?, ?, ?, ?, ?, ?)
             RETURNING broadcast_id, broadcast_time
             """, (rs, i) -> new Stored(rs.getObject("broadcast_id", UUID.class),
                 rs.getObject("broadcast_time", OffsetDateTime.class).toInstant()),
-            senderId, title, message, severity, areaId, validUntil, recipients);
+            senderId, title, message, severity, areaId, validUntil, recipients, idempotencyKey,
+            run == null ? null : run.runId(), run == null ? null : run.unitId());
     }
 
     public void insertDelivery(UUID broadcastId, Recipient to, boolean sent, String error) {
@@ -87,3 +99,4 @@ public class BroadcastRepository {
         return jdbc.update("UPDATE core_schema.alert_broadcasts SET status = 'revoked', revoked_at = CURRENT_TIMESTAMP WHERE broadcast_id = ? AND status = 'active'", broadcastId) == 1;
     }
 }
+

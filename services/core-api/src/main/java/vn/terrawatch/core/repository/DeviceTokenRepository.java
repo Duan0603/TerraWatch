@@ -32,3 +32,4 @@ public class DeviceTokenRepository {
         jdbc.update("DELETE FROM core_schema.device_tokens WHERE fcm_token = ?", fcmToken);
     }
 }
+

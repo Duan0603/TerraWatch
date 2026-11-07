@@ -1,23 +1,9 @@
 import React from 'react';
-import { ShieldCheck, Bell, LogOut, FileText, Activity, BellRing, History } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ShieldCheck, LogOut, Activity, BellRing, History } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const NAV_ITEMS_OFFICER = [
-  { label: 'Giám sát nguy cơ', key: 'monitor' },
-  { label: 'Cảnh báo', key: 'alerts', badge: 1 },
-  { label: 'Người nhận', key: 'recipients' },
-];
-
-const NAV_ITEMS_ADMIN = [
-  { label: 'Phê duyệt', key: 'review', badge: 3 },
-  { label: 'Lịch sử cảnh báo', key: 'history' },
-  { label: 'Quản lý người nhận', key: 'recipients' },
-  { label: 'Báo cáo', key: 'reports' },
-];
-
 export default function Navbar({
-  activeNav,
-  onNavChange,
   soundEnabled,
   setSoundEnabled,
   onOpenBroadcast,
@@ -26,7 +12,6 @@ export default function Navbar({
   const { user, role, logout } = useAuth();
   const isAdmin = role === 'admin';
 
-  const navItems = isAdmin ? NAV_ITEMS_ADMIN : NAV_ITEMS_OFFICER;
   const initials = user?.fullName
     ? user.fullName.split(' ').slice(-2).map(w => w[0]).join('').toUpperCase()
     : (isAdmin ? 'TL' : 'NA');
@@ -46,23 +31,11 @@ export default function Navbar({
           </div>
         </div>
 
-        {/* Nav links */}
-        <nav className="nav-links">
-          {navItems.map(item => (
-            <button
-              key={item.key}
-              className={`nav-link ${activeNav === item.key ? 'active' : ''}`}
-              onClick={() => onNavChange?.(item.key)}
-            >
-              {item.label}
-              {item.badge ? <span className="nav-badge">{item.badge}</span> : null}
-            </button>
-          ))}
-        </nav>
       </div>
 
       {/* Right controls */}
       <div className="nav-right">
+        <Link to="/model-demo" className="btn-ghost nav-model-demo-link">Demo mô hình</Link>
         <div className="status-chip">
           <span className="live-dot" />
           Hệ thống trực tuyến
@@ -85,7 +58,7 @@ export default function Navbar({
           title="Xem nhật ký phát lệnh cảnh báo SMS / FCM"
         >
           <History size={14} />
-          Lịch sử lệnh
+          <span className="btn-label">Lịch sử lệnh</span>
         </button>
 
         {/* Phát cảnh báo — Admin only */}
@@ -102,27 +75,7 @@ export default function Navbar({
           title={isAdmin ? 'Phát cảnh báo (SMS / App Push)' : 'Cần quyền Admin'}
         >
           <BellRing size={14} />
-          Phát cảnh báo
-        </button>
-
-        {/* Xuất báo cáo */}
-        <button
-          className="btn-ghost"
-          onClick={() => alert('Đang xuất Báo cáo Thẩm định (PDF/GeoJSON)...')}
-          title="Xuất báo cáo"
-        >
-          <FileText size={14} />
-          Xuất báo cáo
-        </button>
-
-        {/* Notification bell */}
-        <button className="btn-ghost" style={{ padding: '6px 8px', position: 'relative' }} title="Thông báo">
-          <Bell size={16} />
-          <span style={{
-            position: 'absolute', top: 4, right: 4,
-            width: 7, height: 7, background: '#EF4444',
-            borderRadius: '50%', border: '1.5px solid #fff'
-          }} />
+          <span className="btn-label">Phát cảnh báo</span>
         </button>
 
         {/* User info */}

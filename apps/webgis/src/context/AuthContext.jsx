@@ -18,13 +18,8 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     const data = await authApi.login({ email, password });
     const jwtToken = data.token || data.accessToken;
-    const userData = data.user || {
-      email,
-      role: data.role || (email.toLowerCase().includes('citizen') ? 'citizen' : (email.toLowerCase().includes('officer') ? 'officer' : 'admin')),
-      fullName: email.toLowerCase().includes('citizen')
-        ? 'Anh Giàng A Páo (Người dân)'
-        : (email.toLowerCase().includes('admin') ? 'Quản Trị Viên (Admin)' : 'Cán Bộ Thẩm Định')
-    };
+    // Role luôn lấy từ backend; không đoán từ email.
+    const userData = { ...data.user, role: data.role ?? data.user?.role };
 
     localStorage.setItem('terrawatch_token', jwtToken);
     localStorage.setItem('terrawatch_user', JSON.stringify(userData));

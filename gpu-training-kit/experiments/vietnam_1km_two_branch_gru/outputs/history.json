@@ -1,0 +1,32 @@
+[
+  {
+    "epoch": 1,
+    "mil_bag_loss": 0.6269,
+    "train_bag_roc_auc": 0.51,
+    "train_bag_f1_at_050": 0.9
+  },
+  {
+    "epoch": 20,
+    "mil_bag_loss": 0.2546,
+    "train_bag_roc_auc": 0.9552,
+    "train_bag_f1_at_050": 0.9068
+  },
+  {
+    "epoch": 40,
+    "mil_bag_loss": 0.1031,
+    "train_bag_roc_auc": 0.9931,
+    "train_bag_f1_at_050": 0.9758
+  },
+  {
+    "epoch": 60,
+    "mil_bag_loss": 0.0032,
+    "train_bag_roc_auc": 1.0,
+    "train_bag_f1_at_050": 1.0
+  },
+  {
+    "epoch": 80,
+    "mil_bag_loss": 0.0004,
+    "train_bag_roc_auc": 1.0,
+    "train_bag_f1_at_050": 1.0
+  }
+]
