@@ -42,6 +42,13 @@ development_status:
   4-6-webgis-honesty-fixes: review
   4-7-review-fixes-security-and-honesty: review
   4-8-officer-registration-request-flow: review
+  4-9-field-report-photos-need-login: review
+  4-10-admin-user-management: review
+  4-11-aoi-management: review
+  4-12-field-report-status: review
+  4-13-forecast-run-comparison: review
+  4-14-review-audit-log: review
+  4-15-broadcast-revoke-and-deliveries: review
   epic-4-retrospective: optional
 
   epic-5: backlog
