@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   ShieldAlert, 
@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import authApi from '../api/authApi';
+import LoginBackdrop from '../components/LoginBackdrop';
+import './login.css';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -54,6 +56,8 @@ export default function LoginPage() {
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpError, setOtpError] = useState('');
 
+  const passwordRef = useRef(null);
+  const submitRef = useRef(null);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -86,7 +90,17 @@ export default function LoginPage() {
       await login(email, password);
       navigate('/');
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || 'Đăng nhập không thành công. Vui lòng kiểm tra lại.');
+      const status = err.response?.status;
+      if (status === 401) {
+        setErrorMsg('Email hoặc mật khẩu không đúng.');
+        setPassword('');
+        setTimeout(() => passwordRef.current?.focus(), 0);
+      } else if (!err.response) {
+        setErrorMsg('Không kết nối được máy chủ. Thử lại sau.');
+      } else {
+        // 403 (khóa / chờ duyệt): máy chủ đã viết sẵn câu tiếng Việt.
+        setErrorMsg(err.response?.data?.message || 'Đăng nhập không thành công. Vui lòng kiểm tra lại.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -101,6 +115,8 @@ export default function LoginPage() {
       setEmail('admin@terrawatch.vn');
     }
     setPassword('Terrawatch@2026');
+    setErrorMsg('');
+    setTimeout(() => submitRef.current?.focus(), 0);
   };
 
   const openRegisterModal = (role) => {
@@ -264,268 +280,87 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '100vh',
-      backgroundColor: 'var(--bg-primary)',
-      backgroundImage: 'radial-gradient(circle at 50% 30%, rgba(14, 165, 233, 0.12) 0%, transparent 70%)',
-      padding: 20
-    }}>
-      <div style={{
-        width: '100%',
-        maxWidth: 440,
-        background: 'rgba(19, 27, 46, 0.88)',
-        border: '1px solid var(--border-color)',
-        borderRadius: 16,
-        padding: 32,
-        boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)',
-        backdropFilter: 'blur(16px)'
-      }}>
-        {/* Logo & Header */}
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{
-            display: 'inline-flex',
-            background: 'rgba(14, 165, 233, 0.15)',
-            border: '1px solid rgba(14, 165, 233, 0.3)',
-            padding: 12,
-            borderRadius: 14,
-            marginBottom: 12
-          }}>
-            <ShieldAlert size={36} color="#38bdf8" />
+    <div className="lg-stage">
+      <LoginBackdrop />
+      <main className="lg-layout">
+        <section className="lg-hero">
+          <div className="lg-brand">
+            <span className="lg-mark" aria-hidden="true"><ShieldAlert size={22} color="#5FD0C0" /></span>
+            TERRAWATCH GEOSENTRY
           </div>
-          <h1 style={{ fontSize: 20, fontWeight: 800, color: '#f8fafc', letterSpacing: '0.03em', marginBottom: 4 }}>
-            TERRAWATCH <span style={{ color: '#38bdf8' }}>GEOSENTRY</span>
-          </h1>
-          <p style={{ fontSize: 12, color: '#94a3b8' }}>
-            Hệ thống Viễn thám & AI Giám sát Cảnh báo Sớm Sạt lở Đất
-          </p>
-        </div>
+          <h1>Theo dõi mưa và địa hình, <em>cảnh báo sạt lở 24 giờ tới</em></h1>
+          <p>Trung tâm chỉ huy dành cho cán bộ và quản trị viên: xem dự báo từng khu vực, thẩm định và phát lệnh cảnh báo.</p>
+          <p className="lg-note">Hệ thống đang ở giai đoạn thử nghiệm. Điểm nguy cơ là điểm thử nghiệm, chưa phải xác suất đã hiệu chuẩn và chưa thay thế cảnh báo chính thức.</p>
+        </section>
 
-        {errorMsg && (
-          <div style={{
-            background: 'rgba(239, 68, 68, 0.12)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            color: '#f87171',
-            padding: '10px 14px',
-            borderRadius: 8,
-            fontSize: 12,
-            marginBottom: 16
-          }}>
-            {errorMsg}
-          </div>
-        )}
+        <section className="lg-card" aria-labelledby="lg-title">
+          <h2 id="lg-title">Đăng nhập</h2>
+          <p className="lg-sub">Dành cho công dân, cán bộ và quản trị viên</p>
 
-        {/* Login Form */}
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#cbd5e1', marginBottom: 6 }}>
-              Email đăng nhập (Công dân / Cán bộ / Admin)
-            </label>
-            <div style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', left: 12, top: 11, color: '#64748b' }}>
-                <Mail size={16} />
-              </div>
+          {errorMsg && <div className="lg-error" role="alert">{errorMsg}</div>}
+
+          <form onSubmit={handleSubmit} noValidate>
+            <label className="lg-label" htmlFor="lg-email">Email</label>
+            <div className="lg-field">
+              <Mail size={18} aria-hidden="true" />
               <input
+                id="lg-email"
+                className="lg-input"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@terrawatch.vn"
-                style={{
-                  width: '100%',
-                  background: 'rgba(13, 19, 34, 0.9)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 8,
-                  padding: '10px 12px 10px 38px',
-                  color: '#fff',
-                  fontSize: 13,
-                  outline: 'none'
-                }}
+                placeholder="ten@terrawatch.vn"
+                autoComplete="username"
+                readOnly={isLoading}
               />
             </div>
-          </div>
-
-          <div style={{ marginBottom: 20 }}>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#cbd5e1', marginBottom: 6 }}>
-              Mật khẩu bảo mật
-            </label>
-            <div style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', left: 12, top: 11, color: '#64748b' }}>
-                <Lock size={16} />
-              </div>
+            <label className="lg-label" htmlFor="lg-password">Mật khẩu</label>
+            <div className="lg-field">
+              <Lock size={18} aria-hidden="true" />
               <input
+                id="lg-password"
+                ref={passwordRef}
+                className="lg-input"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                style={{
-                  width: '100%',
-                  background: 'rgba(13, 19, 34, 0.9)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 8,
-                  padding: '10px 12px 10px 38px',
-                  color: '#fff',
-                  fontSize: 13,
-                  outline: 'none'
-                }}
+                placeholder="Ít nhất 8 ký tự"
+                autoComplete="current-password"
+                readOnly={isLoading}
               />
             </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            style={{
-              width: '100%',
-              background: '#0284c7',
-              color: '#fff',
-              border: 'none',
-              padding: '12px',
-              borderRadius: 8,
-              fontSize: 14,
-              fontWeight: 700,
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              transition: 'background 0.2s ease'
-            }}
-          >
-            {isLoading ? 'Đang xác thực JWT...' : (
-              <>
-                Vào Trung Tâm Chỉ Huy <ArrowRight size={16} />
-              </>
-            )}
-          </button>
-        </form>
-
-        <Link to="/model-demo" className="model-demo-login-link">Xem demo mô hình trên dữ liệu lịch sử <ArrowRight size={16} /></Link>
-
-        {/* Quick Demo Helper (Hữu ích khi demo cho Hội đồng chấm thi) */}
-        <div style={{ marginTop: 22, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 8, textAlign: 'center' }}>
-            Nút chọn nhanh tài khoản diễn tập:
-          </div>
-          <div className="form-grid-3">
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('citizen')}
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                padding: '8px',
-                borderRadius: 6,
-                color: '#34d399',
-                fontSize: 11,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 4
-              }}
-            >
-              <Smartphone size={13} /> Công Dân
+            <button ref={submitRef} className="lg-btn lg-btn-primary" type="submit" disabled={isLoading}>
+              {isLoading ? 'Đang đăng nhập…' : <>Vào trung tâm chỉ huy <ArrowRight size={18} aria-hidden="true" /></>}
             </button>
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('officer')}
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                padding: '8px',
-                borderRadius: 6,
-                color: '#38bdf8',
-                fontSize: 11,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 4
-              }}
-            >
-              <UserCheck size={13} /> Cán Bộ (Officer)
+            <Link className="lg-btn lg-btn-ghost" to="/model-demo">Xem demo mô hình trên dữ liệu lịch sử</Link>
+          </form>
+
+          <div className="lg-sep">Diễn tập nhanh</div>
+          <div className="lg-chips">
+            <button type="button" className="lg-chip" onClick={() => handleQuickLogin('citizen')}>
+              <span className="lg-dot" style={{ background: '#4ADE80' }} />Công dân
             </button>
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('admin')}
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                padding: '8px',
-                borderRadius: 6,
-                color: '#f87171',
-                fontSize: 11,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 4
-              }}
-            >
-              <ShieldCheck size={13} /> Quản Trị (Admin)
+            <button type="button" className="lg-chip" onClick={() => handleQuickLogin('officer')}>
+              <span className="lg-dot" style={{ background: '#FB923C' }} />Cán bộ
+            </button>
+            <button type="button" className="lg-chip" onClick={() => handleQuickLogin('admin')}>
+              <span className="lg-dot" style={{ background: '#F87171' }} />Quản trị
             </button>
           </div>
-        </div>
+          <p className="lg-hint">Điền sẵn tài khoản demo để diễn tập.</p>
 
-        {/* Liên kết phụ: Đăng ký Cán bộ (Yêu cầu Admin phê duyệt) hoặc Công dân */}
-        <div style={{ marginTop: 18, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 10, textAlign: 'center' }}>
-            Chưa có tài khoản trên hệ thống?
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <button
-              type="button"
-              onClick={() => openRegisterModal('officer')}
-              style={{
-                background: 'rgba(14, 165, 233, 0.06)',
-                border: '1px dashed rgba(56, 189, 248, 0.35)',
-                padding: '9px 12px',
-                borderRadius: 8,
-                color: '#7dd3fc',
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-                textAlign: 'center'
-              }}
-            >
-              <UserPlus size={14} />
-              <span>Gửi yêu cầu tài khoản cán bộ (chờ Quản trị viên phê duyệt)</span>
+          <div className="lg-links">
+            <button type="button" className="lg-link" onClick={() => openRegisterModal('citizen')}>
+              Đăng ký công dân <small>nhận cảnh báo qua SMS/App</small>
             </button>
-
-            <button
-              type="button"
-              onClick={() => openRegisterModal('citizen')}
-              style={{
-                background: 'rgba(16, 185, 129, 0.06)',
-                border: '1px dashed rgba(16, 185, 129, 0.35)',
-                padding: '9px 12px',
-                borderRadius: 8,
-                color: '#34d399',
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-                transition: 'all 0.2s ease',
-                textAlign: 'center'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(16, 185, 129, 0.14)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(16, 185, 129, 0.06)'; }}
-            >
-              <Smartphone size={14} />
-              <span>Đăng ký tài khoản công dân <span style={{ opacity: 0.8, fontSize: 11, fontWeight: 400 }}>(Nhận cảnh báo)</span></span>
+            <button type="button" className="lg-link" onClick={() => openRegisterModal('officer')}>
+              Gửi yêu cầu tài khoản cán bộ <small>chờ quản trị viên duyệt</small>
             </button>
           </div>
-        </div>
-      </div>
+        </section>
+
+        <p className="lg-note lg-note-m">Hệ thống đang ở giai đoạn thử nghiệm. Điểm nguy cơ là điểm thử nghiệm, chưa phải xác suất đã hiệu chuẩn và chưa thay thế cảnh báo chính thức.</p>
+      </main>
 
       {/* Modal Đăng Ký Chuyên Nghiệp (Cán Bộ / Công Dân) */}
       {activeModal && (
