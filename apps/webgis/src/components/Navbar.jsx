@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, LogOut, BellRing, History, Volume2, VolumeX, FileCheck2 } from 'lucide-react';
+import { ShieldCheck, LogOut, BellRing, History, Volume2, VolumeX, FileCheck2, Radio } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fmtVN } from '../utils/time';
 import { playAlertBeep } from '../utils/sound';
@@ -11,6 +11,7 @@ export default function Navbar({
   onOpenBroadcast,
   onOpenHistory,
   onOpenAuditLog,
+  onOpenFieldReports,
   lastLoadedAt,       // Date | null – thời điểm loadEvents() thành công gần nhất
   loadError,          // string | null – lỗi kết nối API
 }) {
@@ -101,6 +102,16 @@ export default function Navbar({
         >
           <FileCheck2 size={14} />
           <span className="btn-label">Nhật ký thẩm định</span>
+        </button>
+
+        {/* Báo cáo hiện trường từ cộng đồng */}
+        <button
+          className="btn-ghost"
+          onClick={onOpenFieldReports}
+          title="Xem danh sách báo cáo hiện trường & hình ảnh từ người dân"
+        >
+          <Radio size={14} />
+          <span className="btn-label">Báo cáo hiện trường</span>
         </button>
 
         {/* Phát cảnh báo — Admin only */}

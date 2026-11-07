@@ -7,6 +7,7 @@ import EmergencyAlertPrompt from '../components/EmergencyAlertPrompt';
 import BroadcastModal from '../components/BroadcastModal';
 import BroadcastHistoryModal from '../components/BroadcastHistoryModal';
 import ReviewAuditModal from '../components/ReviewAuditModal';
+import FieldReportsModal from '../components/FieldReportsModal';
 import ReviewDialog from '../components/ReviewDialog';
 import forecastApi, { apiErrorMessage } from '../api/forecastApi';
 import { useAuth } from '../context/AuthContext';
@@ -35,6 +36,7 @@ export default function DashboardPage() {
   const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isAuditLogOpen, setIsAuditLogOpen] = useState(false);
+  const [isFieldReportsOpen, setIsFieldReportsOpen] = useState(false);
   const [broadcastTargetEvent, setBroadcastTargetEvent] = useState(null);
 
   // Keyboard navigation shortcuts for emergency operations
@@ -43,6 +45,7 @@ export default function DashboardPage() {
       if (isBroadcastOpen) setIsBroadcastOpen(false);
       else if (isHistoryOpen) setIsHistoryOpen(false);
       else if (isAuditLogOpen) setIsAuditLogOpen(false);
+      else if (isFieldReportsOpen) setIsFieldReportsOpen(false);
       else if (alertPromptEvent) setAlertPromptEvent(null);
     },
     'Alt+m': () => setMobileTab('map'),
@@ -112,6 +115,7 @@ export default function DashboardPage() {
         onOpenBroadcast={() => handleOpenBroadcast(selectedEvent)}
         onOpenHistory={() => setIsHistoryOpen(true)}
         onOpenAuditLog={() => setIsAuditLogOpen(true)}
+        onOpenFieldReports={() => setIsFieldReportsOpen(true)}
         lastLoadedAt={lastLoadedAt}
         loadError={loadError}
       />
@@ -190,6 +194,11 @@ export default function DashboardPage() {
       <ReviewAuditModal
         isOpen={isAuditLogOpen}
         onClose={() => setIsAuditLogOpen(false)}
+      />
+
+      <FieldReportsModal
+        isOpen={isFieldReportsOpen}
+        onClose={() => setIsFieldReportsOpen(false)}
       />
     </div>
   );

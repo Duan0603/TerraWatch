@@ -7,8 +7,10 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import vn.terrawatch.core.dto.CommunityReportRequest;
 import vn.terrawatch.core.dto.FieldReportResponse;
 import vn.terrawatch.core.dto.ReportPhotoRequest;
@@ -38,6 +40,17 @@ public class CommunityReportController {
     @Operation(summary = "UC09: Danh sách báo cáo hiện trường từ cộng đồng")
     public ResponseEntity<List<Map<String, Object>>> listReports() {
         return ResponseEntity.ok(reportService.listReports());
+    }
+
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('OFFICER', 'ADMIN')")
+    @Operation(summary = "Cập nhật trạng thái báo cáo hiện trường ('submitted', 'processed', 'archived')")
+    public ResponseEntity<?> updateStatus(@PathVariable Integer id, @RequestBody Map<String, String> body) {
+        String status = body != null ? body.get("status") : null;
+        if (status == null || !List.of("submitted", "processed", "archived").contains(status.trim().toLowerCase())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status: must be submitted, processed, or archived");
+        }
+        return ResponseEntity.ok(reportService.updateStatus(id, status.trim().toLowerCase()));
     }
 
     @PostMapping

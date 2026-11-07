@@ -165,11 +165,19 @@ public class SpatialRepository {
                 r.observed_at,
                 ST_X(r.location) AS longitude,
                 ST_Y(r.location) AS latitude,
-                u.full_name AS submitter_name
+                u.full_name AS submitter_name,
+                u.phone_number AS submitter_phone
             FROM core_schema.community_reports r
             LEFT JOIN core_schema.users u ON r.user_id = u.user_id
             ORDER BY r.report_time DESC
             """;
         return jdbcTemplate.queryForList(sql);
+    }
+
+    public int updateReportStatus(Integer reportId, String status) {
+        return jdbcTemplate.update(
+            "UPDATE core_schema.community_reports SET status = CAST(? AS core_schema.report_status) WHERE report_id = ?",
+            status, reportId
+        );
     }
 }

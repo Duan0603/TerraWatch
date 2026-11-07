@@ -36,6 +36,7 @@ class FieldReportApiTest {
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
     @Autowired JdbcTemplate jdbc;
+    @jakarta.persistence.PersistenceContext jakarta.persistence.EntityManager entityManager;
 
     private ResultActions call(HttpMethod method, String path, String token, Object body) throws Exception {
         MockHttpServletRequestBuilder builder = request(method, path);
@@ -136,5 +137,37 @@ class FieldReportApiTest {
         noClientId.remove("clientReportId");
         call(HttpMethod.POST, BASE, token, noClientId).andExpect(status().isBadRequest());
         call(HttpMethod.POST, BASE + "/photos", token, Map.of("imageBase64", "aGVsbG8=")).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void officerCanUpdateReportStatusToProcessed() throws Exception {
+        String citizen = register("citizen-report@field-test.example");
+        register("officer-report@field-test.example");
+        jdbc.update("UPDATE core_schema.users SET role = CAST('officer' AS core_schema.user_role) WHERE email = 'officer-report@field-test.example'");
+        entityManager.clear();
+        String officer = json.readTree(call(HttpMethod.POST, "/api/v1/auth/login", null,
+                Map.of("email", "officer-report@field-test.example", "password", "secret123"))
+            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString()).get("token").asText();
+
+        UUID clientId = UUID.randomUUID();
+        call(HttpMethod.POST, BASE, citizen, report(clientId)).andExpect(status().isCreated());
+
+        Integer reportId = jdbc.queryForObject("SELECT report_id FROM core_schema.community_reports WHERE client_report_id = ?",
+            Integer.class, clientId);
+        assertThat(reportId).isNotNull();
+
+        // Officer updates to processed
+        call(HttpMethod.PATCH, BASE + "/" + reportId + "/status", officer, Map.of("status", "processed"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("processed"));
+
+        // Verify public list reflects updated status
+        call(HttpMethod.GET, BASE, null, null)
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[?(@.report_id == " + reportId + ")].status").value("processed"));
+
+        // Reject invalid status
+        call(HttpMethod.PATCH, BASE + "/" + reportId + "/status", officer, Map.of("status", "unknown_status"))
+            .andExpect(status().isBadRequest());
     }
 }

@@ -97,7 +97,25 @@ export const forecastApi = {
     const rows = await axiosClient.get('/community-reports');
     return rows
       .filter(r => r.longitude != null && r.latitude != null)
-      .map(r => ({ id: r.report_id, coords: [r.longitude, r.latitude], description: r.description || '', time: r.observed_at || r.report_time, status: r.status }));
+      .map(r => ({
+        id: r.report_id,
+        coords: [r.longitude, r.latitude],
+        description: r.description || '',
+        time: r.observed_at || r.report_time,
+        status: r.status,
+        imageUrl: r.image_url,
+        submitterName: r.submitter_name,
+        submitterPhone: r.submitter_phone
+      }));
+  },
+
+  // Cập nhật trạng thái báo cáo hiện trường ('submitted' | 'processed' | 'archived')
+  async updateFieldReportStatus(reportId, status) {
+    try {
+      return await axiosClient.patch(`/community-reports/${reportId}/status`, { status });
+    } catch (err) {
+      throw new Error(apiErrorMessage(err, 'Không cập nhật được trạng thái báo cáo'));
+    }
   },
 
   // Ranh giới vùng giám sát (AOI) dạng GeoJSON FeatureCollection.
