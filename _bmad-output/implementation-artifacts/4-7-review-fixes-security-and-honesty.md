@@ -32,7 +32,7 @@ so that user management works through the gateway, citizens' data is not public 
 
 ## Out of scope (reported, not changed)
 
-- `maven-wrapper.jar` / `mvnw.cmd` stay tracked (removing them may break other members' scripts).
+- `maven-wrapper.jar` is no longer tracked (git-ignored; `mvnw.cmd` downloads it from `wrapperUrl`); `mvnw.cmd` stays.
 - Story files for the six features merged in PR #60 (user management, AOI, field-report status, forecast comparison, review audit, broadcast revoke/deliveries) are still missing.
 - Photo URLs under `/community-reports/photos/{uuid}` stay public (unguessable ids, needed by `<img>`).
 
