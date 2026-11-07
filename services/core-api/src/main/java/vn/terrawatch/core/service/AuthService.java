@@ -48,43 +48,92 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
 
-        // Bắt buộc xác minh số điện thoại qua OTP:
-        // Gọi thẳng API với số điện thoại mà không qua xác minh OTP sẽ bị từ chối 400.
-        String verifiedPhone = null;
-        if (request.phoneNumber() != null && !request.phoneNumber().isBlank()) {
-            if (request.phoneToken() == null || request.phoneToken().isBlank()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Phone number must be verified via OTP before registration");
-            }
-            if (firebaseVerifier != null) {
-                String tokenPhone = firebaseVerifier.verifyPhoneToken(request.phoneToken());
-                if (!phonesMatch(tokenPhone, request.phoneNumber())) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Phone number in verification token does not match registered phone number");
-                }
-            }
-            verifiedPhone = request.phoneNumber().trim();
-        }
-
-        String initialRole = Role.CITIZEN.dbValue();
-        String initialApproval = "approved";
-        if (request.requestedRole() != null && "officer".equalsIgnoreCase(request.requestedRole().trim())) {
-            initialRole = Role.OFFICER.dbValue();
-            initialApproval = "pending";
-        }
+        String verifiedPhone = verifiedPhone(request.phoneNumber(), request.phoneToken());
 
         User user = new User(request.fullName(), email, passwords.encode(request.password()),
-            initialRole, verifiedPhone);
-        user.setApprovalStatus(initialApproval);
+            Role.CITIZEN.dbValue(), verifiedPhone);
+        return response(saveNewUser(user, email));
+    }
+
+    /**
+     * Story 4.8: anyone may ask for an officer account, but only with an OTP-verified phone, and the
+     * account cannot sign in or call the API until an admin approves it (approval_status = pending).
+     */
+    public OfficerRequestResponse requestOfficer(OfficerRequest request) {
+        validatePasswordLength(request.password());
+        String email = normalizeEmail(request.email());
+        if (users.existsByEmail(email)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
+        }
+        String verifiedPhone = verifiedPhone(request.phoneNumber(), request.phoneToken());
+        User user = new User(request.fullName(), email, passwords.encode(request.password()),
+            Role.OFFICER.dbValue(), verifiedPhone);
+        user.setApprovalStatus("pending");
+        user.setDepartmentUnit(request.departmentUnit().trim());
+        user = saveNewUser(user, email);
+        return new OfficerRequestResponse(user.getUserId().toString(), "pending",
+            "Hồ sơ đã được gửi. Tài khoản chỉ đăng nhập được sau khi Quản trị viên phê duyệt.");
+    }
+
+    /** Phone numbers are accepted only with a Firebase phone token for the same number (Story 4.6). */
+    private String verifiedPhone(String phone, String phoneToken) {
+        if (phone == null || phone.isBlank()) return null;
+        if (phoneToken == null || phoneToken.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Phone number must be verified via OTP before registration");
+        }
+        if (firebaseVerifier != null) {
+            String tokenPhone = firebaseVerifier.verifyPhoneToken(phoneToken);
+            if (!phonesMatch(tokenPhone, phone)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Phone number in verification token does not match registered phone number");
+            }
+        }
+        return phone.trim();
+    }
+
+    private User saveNewUser(User user, String email) {
         try {
-            user = users.saveAndFlush(user);
+            return users.saveAndFlush(user);
         } catch (DataIntegrityViolationException error) {
             if (users.existsByEmail(email)) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
             }
             throw error;
         }
-        return response(user);
+    }
+
+    /** Story 4.19: lets the sign-up form warn about a used email before an SMS is spent on an OTP. */
+    public boolean emailExists(String email) {
+        return email != null && !email.isBlank() && users.existsByEmail(normalizeEmail(email));
+    }
+
+    /** True only for an active password account whose registered phone is this phone. */
+    public boolean canResetPassword(String email, String phone) {
+        return users.findByEmail(normalizeEmail(email)).filter(u -> resettable(u, phone)).isPresent();
+    }
+
+    /**
+     * Story 4.20: forgot password without e-mail. The user proves they hold the phone registered on the
+     * account (Firebase phone OTP); every failure gives the same message so the endpoint does not reveal
+     * which part was wrong. Existing tokens stay valid until they expire (24 h).
+     */
+    public void resetPassword(PasswordResetRequest request) {
+        validatePasswordLength(request.newPassword());
+        ResponseStatusException mismatch = new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Email hoặc số điện thoại không khớp với tài khoản nào");
+        User user = users.findByEmail(normalizeEmail(request.email())).orElseThrow(() -> mismatch);
+        if (!resettable(user, request.phoneNumber())) throw mismatch;
+        String tokenPhone = firebaseVerifier == null ? null : firebaseVerifier.verifyPhoneToken(request.phoneToken());
+        if (!phonesMatch(tokenPhone, request.phoneNumber())) throw mismatch;
+        user.setPasswordHash(passwords.encode(request.newPassword()));
+        user.setUpdatedAt(OffsetDateTime.now());
+        users.save(user);
+    }
+
+    private static boolean resettable(User user, String phone) {
+        return user.isActive() && "email".equals(user.getAuthProvider())
+            && user.getPhoneNumber() != null && phonesMatch(user.getPhoneNumber(), phone);
     }
 
     public static boolean phonesMatch(String tokenPhone, String requestPhone) {
@@ -114,17 +163,7 @@ public class AuthService {
         if (user.isEmpty() || !matches) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
-        User foundUser = user.get();
-        if (!foundUser.isActive()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản đã bị tạm khóa bởi Quản trị viên");
-        }
-        if ("pending".equalsIgnoreCase(foundUser.getApprovalStatus())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản cán bộ đang chờ Quản trị viên phê duyệt");
-        }
-        if ("rejected".equalsIgnoreCase(foundUser.getApprovalStatus())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản cán bộ đã bị từ chối phê duyệt");
-        }
-        return response(foundUser);
+        return response(user.get());
     }
 
     private static String normalizeEmail(String email) {
@@ -196,12 +235,22 @@ public class AuthService {
         }
     }
 
+    /**
+     * Every sign-in path (password and Google) ends here, so a locked or unapproved account never
+     * gets a token (Story 4.7: Google sign-in used to return 200 with a null token).
+     */
     AuthResponse response(User user) {
         requireKnownRole(user);
-        String token = ("pending".equalsIgnoreCase(user.getApprovalStatus()) || !user.isActive())
-            ? null
-            : tokens.generateToken(user);
-        return new AuthResponse(token, user.getRole(), profile(user));
+        if (!user.isActive()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản đã bị tạm khóa bởi Quản trị viên");
+        }
+        if ("pending".equalsIgnoreCase(user.getApprovalStatus())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản cán bộ đang chờ Quản trị viên phê duyệt");
+        }
+        if ("rejected".equalsIgnoreCase(user.getApprovalStatus())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản cán bộ đã bị từ chối phê duyệt");
+        }
+        return new AuthResponse(tokens.generateToken(user), user.getRole(), profile(user));
     }
 
     private UserProfileResponse profile(User user) {

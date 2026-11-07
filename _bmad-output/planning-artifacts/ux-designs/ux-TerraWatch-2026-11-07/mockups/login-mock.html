@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TerraWatch - Dang nhap (mock)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky-top:#070D1A; --sky-mid:#0F1E33; --sky-low:#17324A;
+  --ink-1:#F1F6F8; --ink-2:#B4C4CC; --ink-3:#8196A1;
+  --glass:rgba(10,18,32,.74); --glass-line:rgba(255,255,255,.14);
+  --field:#0C1626; --field-line:#2B4054; --focus:#5FD0C0;
+  --brand:#087B70; --brand-hover:#0A9185; --brand-text:#5FD0C0;
+  --risk-extreme:#F87171; --risk-high:#FB923C; --risk-low:#4ADE80;
+  --err:#FCA5A5;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:Inter,system-ui,sans-serif;color:var(--ink-1);background:var(--sky-top);-webkit-font-smoothing:antialiased}
+.stage{position:relative;min-height:100vh;overflow:hidden;
+  background:linear-gradient(180deg,var(--sky-top) 0%,var(--sky-mid) 55%,var(--sky-low) 100%)}
+/* clouds: three drifting layers */
+.cloud{position:absolute;left:-30%;width:160%;border-radius:50%;filter:blur(46px);opacity:.55;will-change:transform}
+.c1{top:-8%;height:34%;background:radial-gradient(ellipse at 30% 50%,#27415C 0%,transparent 62%),radial-gradient(ellipse at 72% 40%,#1D3350 0%,transparent 60%);animation:drift 120s linear infinite}
+.c2{top:6%;height:30%;background:radial-gradient(ellipse at 45% 50%,#33506C 0%,transparent 60%),radial-gradient(ellipse at 85% 55%,#223B57 0%,transparent 58%);opacity:.4;animation:drift 85s linear infinite reverse}
+.c3{top:16%;height:26%;background:radial-gradient(ellipse at 20% 50%,#2C4963 0%,transparent 58%),radial-gradient(ellipse at 60% 45%,#1A2F49 0%,transparent 60%);opacity:.35;animation:drift 150s linear infinite}
+@keyframes drift{from{transform:translateX(0)}to{transform:translateX(18%)}}
+canvas#rain{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.ridge{position:absolute;left:0;right:0;bottom:0;width:100%;height:34%;pointer-events:none}
+.layout{position:relative;z-index:2;min-height:100vh;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:48px;align-items:center;max-width:1180px;margin:0 auto;padding:48px 32px}
+.hero h1{font-size:clamp(34px,4.4vw,52px);line-height:1.08;font-weight:800;letter-spacing:-.02em;margin:18px 0 14px}
+.hero h1 em{font-style:normal;color:var(--brand-text)}
+.hero p{font-size:17px;line-height:1.55;color:var(--ink-2);max-width:30em;margin:0}
+.brand{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:.06em;font-size:14px;color:var(--ink-2)}
+.brand .mark{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:rgba(95,208,192,.12);border:1px solid rgba(95,208,192,.35)}
+.note{margin-top:28px;display:inline-flex;gap:10px;align-items:flex-start;max-width:34em;font-size:13.5px;line-height:1.5;color:var(--ink-3);border-left:2px solid rgba(95,208,192,.5);padding-left:12px}
+.note-m{display:none;margin-top:16px;font-size:13px;line-height:1.5;color:var(--ink-3);border-left:2px solid rgba(95,208,192,.5);padding-left:12px}
+.card{background:var(--glass);border:1px solid var(--glass-line);border-radius:18px;padding:32px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 24px 60px rgba(0,0,0,.45);width:100%;max-width:440px;justify-self:end}
+.card h2{margin:0 0 4px;font-size:22px;font-weight:700}
+.card .sub{margin:0 0 22px;color:var(--ink-3);font-size:14px}
+label{display:block;font-size:13.5px;font-weight:600;color:var(--ink-2);margin:0 0 6px}
+.field{position:relative;margin-bottom:16px}
+.field svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--ink-3)}
+input{width:100%;height:46px;border-radius:10px;border:1px solid var(--field-line);background:var(--field);color:var(--ink-1);font:inherit;font-size:15px;padding:0 14px 0 42px;outline:none;transition:border-color .15s, box-shadow .15s}
+input::placeholder{color:#5F7584}
+input:focus-visible{border-color:var(--focus);box-shadow:0 0 0 3px rgba(95,208,192,.25)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:48px;border-radius:10px;font:inherit;font-weight:700;font-size:15px;cursor:pointer;border:1px solid transparent;transition:background .15s,border-color .15s}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--brand-hover)}
+.btn-ghost{background:transparent;color:var(--brand-text);border-color:rgba(95,208,192,.4);height:44px;font-weight:600;margin-top:10px}
+.btn-ghost:hover{background:rgba(95,208,192,.08)}
+.btn:focus-visible,.chip:focus-visible,.link:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.sep{display:flex;align-items:center;gap:12px;margin:22px 0 12px;color:var(--ink-3);font-size:12.5px;letter-spacing:.04em;text-transform:uppercase}
+.sep::before,.sep::after{content:"";height:1px;background:var(--glass-line);flex:1}
+.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.chip{height:44px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--glass-line);color:var(--ink-1);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px}
+.chip:hover{background:rgba(255,255,255,.09)}
+.dot{width:8px;height:8px;border-radius:50%}
+.hint{margin:8px 0 0;color:var(--ink-3);font-size:12.5px}
+.links{display:flex;flex-direction:column;gap:2px;margin-top:20px;padding-top:16px;border-top:1px solid var(--glass-line)}
+.link{background:none;border:0;color:var(--ink-2);font:inherit;font-size:14px;text-align:left;padding:9px 4px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-radius:8px}
+.link:hover{color:#fff;background:rgba(255,255,255,.05)}
+.link small{color:var(--ink-3);font-size:12.5px}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;gap:28px;padding:28px 16px 40px;align-items:start}
+  .hero h1{font-size:26px;margin:14px 0 0}.hero p,.hero .note{display:none}.note-m{display:flex}
+  .card{justify-self:stretch;max-width:none;padding:24px 20px}
+}
+@media (prefers-reduced-motion:reduce){.cloud{animation:none}canvas#rain{display:none}}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
+  <canvas id="rain" aria-hidden="true"></canvas>
+  <svg class="ridge" viewBox="0 0 1440 300" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 210 L120 150 L230 190 L360 110 L470 170 L610 90 L740 160 L860 120 L990 180 L1120 100 L1250 160 L1360 130 L1440 170 L1440 300 L0 300Z" fill="#0A1626" opacity=".85"/>
+    <path d="M0 250 L140 205 L300 240 L470 195 L640 245 L800 210 L980 250 L1150 205 L1300 240 L1440 215 L1440 300 L0 300Z" fill="#060C18"/>
+  </svg>
+  <main class="layout">
+    <section class="hero">
+      <div class="brand"><span class="mark" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5FD0C0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg></span>TERRAWATCH GEOSENTRY</div>
+      <h1>Theo dõi mưa và địa hình, <em>cảnh báo sạt lở 24 giờ tới</em></h1>
+      <p>Trung tâm chỉ huy dành cho cán bộ và quản trị viên: xem dự báo từng khu vực, thẩm định và phát lệnh cảnh báo.</p>
+      <div class="note"><span>Hệ thống đang ở giai đoạn thử nghiệm. Điểm nguy cơ là điểm thử nghiệm, chưa phải xác suất đã hiệu chuẩn và chưa thay thế cảnh báo chính thức.</span></div>
+    </section>
+    <section class="card" aria-labelledby="t">
+      <h2 id="t">Đăng nhập</h2>
+      <p class="sub">Dành cho công dân, cán bộ và quản trị viên</p>
+      <form onsubmit="return false">
+        <label for="e">Email</label>
+        <div class="field"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+          <input id="e" type="email" placeholder="ten@terrawatch.vn" autocomplete="username"></div>
+        <label for="p">Mật khẩu</label>
+        <div class="field"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>
+          <input id="p" type="password" placeholder="Ít nhất 8 ký tự" autocomplete="current-password"></div>
+        <button class="btn btn-primary" type="submit">Vào trung tâm chỉ huy →</button>
+        <button class="btn btn-ghost" type="button">Xem demo mô hình trên dữ liệu lịch sử</button>
+      </form>
+      <div class="sep">Diễn tập nhanh</div>
+      <div class="chips">
+        <button class="chip" type="button"><span class="dot" style="background:var(--risk-low)"></span>Công dân</button>
+        <button class="chip" type="button"><span class="dot" style="background:var(--risk-high)"></span>Cán bộ</button>
+        <button class="chip" type="button"><span class="dot" style="background:var(--risk-extreme)"></span>Quản trị</button>
+      </div>
+      <p class="hint">Điền sẵn tài khoản demo để diễn tập.</p>
+      <div class="links">
+        <button class="link" type="button">Đăng ký công dân <small>nhận cảnh báo qua SMS/App</small></button>
+        <button class="link" type="button">Gửi yêu cầu tài khoản cán bộ <small>chờ quản trị viên duyệt</small></button>
+      </div>
+    </section>
+    <p class="note-m">Hệ thống đang ở giai đoạn thử nghiệm. Điểm nguy cơ là điểm thử nghiệm, chưa phải xác suất đã hiệu chuẩn và chưa thay thế cảnh báo chính thức.</p>
+  </main>
+</div>
+<script>
+(function(){
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const c = document.getElementById('rain'), ctx = c.getContext('2d');
+  let w, h, drops = [], raf, dpr = Math.min(devicePixelRatio || 1, 2);
+  function size(){ w = c.clientWidth; h = c.clientHeight; c.width = w*dpr; c.height = h*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+    const n = Math.round(Math.min(220, Math.max(70, w*h/9000))); drops = Array.from({length:n}, make); }
+  function make(){ const z = Math.random(); return {x:Math.random()*(w+200)-100, y:Math.random()*h, len:10+z*18, v:380+z*520, a:.12+z*.3, wd:.6+z*.8}; }
+  const wind = .22; let last = performance.now();
+  function tick(t){ const dt = Math.min(.05,(t-last)/1000); last = t; ctx.clearRect(0,0,w,h); ctx.lineCap='round';
+    for (const d of drops){ d.y += d.v*dt; d.x += d.v*wind*dt; if (d.y>h+30||d.x>w+60){ d.y=-30; d.x=Math.random()*(w+200)-140; }
+      ctx.strokeStyle='rgba(190,215,235,'+d.a+')'; ctx.lineWidth=d.wd; ctx.beginPath(); ctx.moveTo(d.x,d.y); ctx.lineTo(d.x-d.len*wind,d.y-d.len); ctx.stroke(); }
+    raf = requestAnimationFrame(tick); }
+  addEventListener('resize', size); size(); raf = requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

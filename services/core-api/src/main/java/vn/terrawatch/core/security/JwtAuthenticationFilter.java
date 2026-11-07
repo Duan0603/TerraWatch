@@ -5,6 +5,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import vn.terrawatch.core.repository.UserRepository;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,9 +17,11 @@ import java.util.UUID;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider tokens;
+    private final UserRepository users;
 
-    public JwtAuthenticationFilter(JwtTokenProvider tokens) {
+    public JwtAuthenticationFilter(JwtTokenProvider tokens, UserRepository users) {
         this.tokens = tokens;
+        this.users = users;
     }
 
     @Override
@@ -34,9 +37,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     || role == null) {
                     throw new JwtException("Missing or invalid identity claims");
                 }
+                // Story 4.7: a token is only as good as the account behind it. Re-read the user so a
+                // locked, pending, rejected, deleted or demoted account loses access at once, and
+                // authorize with the role stored in the database, not the one frozen in the token.
+                UUID userId = UUID.fromString(claims.getSubject());
+                var user = users.findById(userId).orElse(null);
+                Role currentRole = user == null ? null : Role.fromDbValue(user.getRole()).orElse(null);
+                if (user == null || currentRole == null || !user.isActive()
+                    || !"approved".equalsIgnoreCase(user.getApprovalStatus())) {
+                    throw new JwtException("Account is not allowed to sign in");
+                }
                 var authentication = UsernamePasswordAuthenticationToken.authenticated(
-                    UUID.fromString(claims.getSubject()), null,
-                    List.of(new SimpleGrantedAuthority("ROLE_" + role.name())));
+                    userId, null, List.of(new SimpleGrantedAuthority("ROLE_" + currentRole.name())));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } catch (JwtException | IllegalArgumentException error) {
                 SecurityContextHolder.clearContext();

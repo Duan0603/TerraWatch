@@ -41,7 +41,6 @@ class AuthRepository {
     required String fullName,
     required String email,
     required String password,
-    String? phoneNumber,
   }) =>
       _authenticate(
         ApiEndpoints.register,
@@ -49,7 +48,6 @@ class AuthRepository {
           'fullName': fullName.trim(),
           'email': email.trim(),
           'password': password,
-          if (phoneNumber != null && phoneNumber.trim().isNotEmpty) 'phoneNumber': phoneNumber.trim(),
         },
         {409: 'Email đã được đăng ký'},
       );

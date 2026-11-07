@@ -1,12 +1,15 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 export const axiosClient = axios.create({
   baseURL: `${API_BASE_URL}/api/v1`,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
+    // Trình duyệt từng nhớ bản HTML của /admin/users (khi gateway chưa có route) và trả lại mãi;
+    // no-cache buộc hỏi lại máy chủ cho mọi lần gọi API.
+    'Cache-Control': 'no-cache',
   },
 });
 

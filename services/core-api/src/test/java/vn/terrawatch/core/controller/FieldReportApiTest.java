@@ -65,11 +65,12 @@ class FieldReportApiTest {
     }
 
     @Test
-    void writingRequiresASignedInUserButPhotosCanBeViewedPublicly() throws Exception {
+    void writingAndReadingRequireASignedInUser() throws Exception {
         call(HttpMethod.POST, BASE, null, report(UUID.randomUUID())).andExpect(status().isUnauthorized());
         call(HttpMethod.POST, BASE + "/photos", null, Map.of("imageBase64", PNG)).andExpect(status().isUnauthorized());
         call(HttpMethod.GET, BASE + "/mine", null, null).andExpect(status().isUnauthorized());
-        call(HttpMethod.GET, BASE, null, null).andExpect(status().isOk()); // the public list is unchanged
+        // Story 4.7: the full list carries names, phones and GPS, so it is no longer public.
+        call(HttpMethod.GET, BASE, null, null).andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -78,10 +79,19 @@ class FieldReportApiTest {
         String body = call(HttpMethod.POST, BASE + "/photos", token, Map.of("imageBase64", PNG))
             .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         String url = json.readTree(body).get("imageUrl").asText();
-        byte[] bytes = call(HttpMethod.GET, url, null, null)
+        // Story 4.9: photos are staff-only (anonymous 401, citizen 403, even the uploader).
+        call(HttpMethod.GET, url, null, null).andExpect(status().isUnauthorized());
+        call(HttpMethod.GET, url, token, null).andExpect(status().isForbidden());
+        register("officer-photo@field-test.example");
+        jdbc.update("UPDATE core_schema.users SET role = CAST('officer' AS core_schema.user_role) WHERE email = 'officer-photo@field-test.example'");
+        entityManager.clear();
+        String officer = json.readTree(call(HttpMethod.POST, "/api/v1/auth/login", null,
+                Map.of("email", "officer-photo@field-test.example", "password", "secret123"))
+            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString()).get("token").asText();
+        byte[] bytes = call(HttpMethod.GET, url, officer, null)
             .andExpect(status().isOk()).andExpect(content().contentType("image/png")).andReturn().getResponse().getContentAsByteArray();
         assertThat(bytes).isEqualTo(java.util.Base64.getDecoder().decode(PNG));
-        call(HttpMethod.GET, BASE + "/photos/" + UUID.randomUUID(), null, null).andExpect(status().isNotFound());
+        call(HttpMethod.GET, BASE + "/photos/" + UUID.randomUUID(), officer, null).andExpect(status().isNotFound());
     }
 
     @Test
@@ -161,8 +171,8 @@ class FieldReportApiTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("processed"));
 
-        // Verify public list reflects updated status
-        call(HttpMethod.GET, BASE, null, null)
+        // Verify the staff list reflects the updated status
+        call(HttpMethod.GET, BASE, officer, null)
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[?(@.report_id == " + reportId + ")].status").value("processed"));
 

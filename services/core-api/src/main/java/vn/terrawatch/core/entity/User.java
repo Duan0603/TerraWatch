@@ -72,6 +72,9 @@ public class User {
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
+    @Column(name = "department_unit", length = 150)
+    private String departmentUnit;
+
     @Column(name = "approval_status", nullable = false, length = 20)
     private String approvalStatus = "approved"; // pending | approved | rejected
 
@@ -150,6 +153,9 @@ public class User {
 
     public boolean isActive() { return isActive; }
     public void setActive(boolean active) { this.isActive = active; }
+
+    public String getDepartmentUnit() { return departmentUnit; }
+    public void setDepartmentUnit(String departmentUnit) { this.departmentUnit = departmentUnit; }
 
     public String getApprovalStatus() { return approvalStatus; }
     public void setApprovalStatus(String approvalStatus) { this.approvalStatus = approvalStatus; }

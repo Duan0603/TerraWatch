@@ -1,5 +1,5 @@
 # generated: 2026-10-02
-# last_updated: 2026-11-04
+# last_updated: 2026-11-07
 # project: SECapstone
 # project_key: TERRA
 # tracking_system: file-system
@@ -39,6 +39,22 @@ development_status:
   4-4-admin-emergency-alert-broadcast-sms-app-push-notification: review
   4-4-backend-admin-broadcast-persistence-delivery: done
   4-5-webgis-p0-fixes-after-live-review: review
+  4-6-webgis-honesty-fixes: review
+  4-7-review-fixes-security-and-honesty: review
+  4-8-officer-registration-request-flow: review
+  4-9-field-report-photos-need-login: review
+  4-10-admin-user-management: review
+  4-11-aoi-management: review
+  4-12-field-report-status: review
+  4-13-forecast-run-comparison: review
+  4-14-review-audit-log: review
+  4-15-broadcast-revoke-and-deliveries: review
+  4-16-webgis-login-redesign: review
+  4-17-registration-dialogs-redesign: review
+  4-18-login-transition-animation: review
+  4-19-register-email-check: review
+  4-20-forgot-password: review
+  4-21-forgot-password-email-code: review
   epic-4-retrospective: optional
 
   epic-5: backlog

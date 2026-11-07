@@ -20,8 +20,9 @@ public class BroadcastRepository {
 
     public record RunRef(UUID runId, String unitId, OffsetDateTime validUntil) {}
 
+    /** Story 4.7: no FCM token here; a device token is a credential for pushing to that phone. */
     public record DeliveryItem(UUID deliveryId, UUID userId, String recipientName, String phoneNumber,
-                               String fcmToken, String status, String errorMessage, Instant sentAt) {}
+                               String status, String errorMessage, Instant sentAt) {}
 
     private final JdbcTemplate jdbc;
 
@@ -142,7 +143,7 @@ public class BroadcastRepository {
         return jdbc.query("""
             SELECT d.delivery_id, d.user_id, COALESCE(u.full_name, 'Công dân') AS recipient_name,
                    COALESCE(d.phone_number, u.phone_number) AS phone_number,
-                   d.fcm_token, d.status::text AS status, d.error_message, d.sent_at
+                   d.status::text AS status, d.error_message, d.sent_at
             FROM core_schema.alert_deliveries d
             LEFT JOIN core_schema.users u ON u.user_id = d.user_id
             WHERE d.broadcast_id = ?
@@ -154,7 +155,6 @@ public class BroadcastRepository {
                     rs.getObject("user_id", UUID.class),
                     rs.getString("recipient_name"),
                     rs.getString("phone_number"),
-                    rs.getString("fcm_token"),
                     rs.getString("status"),
                     rs.getString("error_message"),
                     sent == null ? null : sent.toInstant()

@@ -42,6 +42,9 @@ services:
       SERVER_PORT: 3000
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set (see .env.example) - refusing to start with an empty JWT signing key}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      # Gmail account that sends the password reset code (Story 4.21); put both in the git-ignored .env
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       DATABASE_URL: jdbc:postgresql://postgres:5432/terrawatch
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgrespassword

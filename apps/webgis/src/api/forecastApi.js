@@ -103,7 +103,7 @@ export const forecastApi = {
         description: r.description || '',
         time: r.observed_at || r.report_time,
         status: r.status,
-        imageUrl: r.image_url,
+        imageUrl: r.image_url, // đường dẫn máy chủ; AuthImage tải kèm token (Story 4.9)
         submitterName: r.submitter_name,
         submitterPhone: r.submitter_phone
       }));

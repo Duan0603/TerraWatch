@@ -70,3 +70,6 @@ services/ai-service/scenes/
 # Firebase service account keys and other secrets (never commit)
 secrets/
 *service-account*.json
+
+# Maven wrapper downloads this jar itself (wrapperUrl in maven-wrapper.properties)
+services/core-api/.mvn/wrapper/maven-wrapper.jar

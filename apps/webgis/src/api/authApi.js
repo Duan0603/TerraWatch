@@ -1,4 +1,5 @@
 import axiosClient from './axiosClient';
+import { registerErrorMessage, resetErrorMessage } from './registerError';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
@@ -109,6 +110,8 @@ export const authApi = {
         humanMsg = 'Đã đạt hạn mức SMS tối đa trong ngày của Firebase (10 SMS/ngày).';
       } else if (err.code === 'auth/quota-exceeded') {
         humanMsg = 'Dự án đã sử dụng hết hạn mức SMS.';
+      } else if (err.code === 'auth/billing-not-enabled') {
+        humanMsg = 'Dự án Firebase chưa bật thanh toán (gói Blaze) nên chưa gửi được SMS tới số điện thoại thật. Hãy dùng số thử +84 900 000 001 (mã 123456) hoặc nhờ quản trị dự án bật thanh toán.';
       } else if (err.code === 'auth/argument-error') {
         humanMsg = 'Lỗi cấu hình phần tử reCAPTCHA: ' + err.message;
       }
@@ -144,18 +147,86 @@ export const authApi = {
     }
   },
 
-  // Không có đăng ký cán bộ công khai (Story 1.1 AC1): tài khoản officer/admin do quản trị viên tạo.
-  // Trước đây hàm này giả vờ thành công với mã hồ sơ bịa; giờ báo đúng sự thật.
-  async registerOfficerRequest() {
-    throw new Error('Tài khoản cán bộ do quản trị viên cấp trực tiếp; hệ thống chưa nhận đăng ký cán bộ trực tuyến.');
+  // Story 4.19: báo trùng email ngay ở bước nhập thông tin, trước khi tốn một tin nhắn OTP.
+  // Lỗi mạng thì coi như "chưa biết" (false): lúc đăng ký máy chủ vẫn chặn email trùng bằng 409.
+  async emailExists(email) {
+    try {
+      const data = await axiosClient.get('/auth/email-exists', { params: { email: email.trim() } });
+      return data?.exists === true;
+    } catch {
+      return false;
+    }
+  },
+
+  // Story 4.21: quên mật khẩu bằng mã 6 số gửi qua email (không tốn SMS, không cần Firebase Blaze).
+  async requestEmailCode(email) {
+    try {
+      await axiosClient.post('/auth/password-reset/email/request', { email: email.trim() });
+    } catch (err) {
+      throw new Error(resetErrorMessage(err));
+    }
+  },
+
+  async verifyEmailCode(email, code) {
+    try {
+      const data = await axiosClient.post('/auth/password-reset/email/verify', { email: email.trim(), code });
+      return data.resetToken;
+    } catch (err) {
+      throw new Error(resetErrorMessage(err));
+    }
+  },
+
+  async completeEmailReset({ email, resetToken, newPassword }) {
+    try {
+      await axiosClient.post('/auth/password-reset/email/complete', { email: email.trim(), resetToken, newPassword });
+    } catch (err) {
+      throw new Error(resetErrorMessage(err));
+    }
+  },
+
+  // Story 4.20: quên mật khẩu bằng OTP của số điện thoại đã đăng ký.
+  // Hỏi trước xem email + SĐT có khớp một tài khoản không, để sai thì không tốn tin nhắn OTP.
+  async canResetPassword(email, phoneNumber) {
+    try {
+      const data = await axiosClient.post('/auth/password-reset/check', { email: email.trim(), phoneNumber });
+      return data?.eligible === true;
+    } catch {
+      return false;
+    }
+  },
+
+  async resetPassword({ email, phoneNumber, phoneToken, newPassword }) {
+    try {
+      await axiosClient.post('/auth/password-reset', { email: email.trim(), phoneNumber, phoneToken, newPassword });
+    } catch (err) {
+      const status = err.response?.status;
+      const message = err.response?.data?.message || '';
+      if (!err.response) throw new Error('Không kết nối được máy chủ. Thử lại sau.');
+      if (/token/i.test(message)) throw new Error('Mã OTP không hợp lệ hoặc đã hết hạn. Hãy gửi lại mã.');
+      if (status === 400) throw new Error(message || 'Thông tin chưa hợp lệ.');
+      throw new Error(`Không đặt lại được mật khẩu (mã lỗi ${status}).`);
+    }
+  },
+
+  // Story 4.8: gửi hồ sơ cán bộ (cần SĐT đã xác minh OTP). Tài khoản ở trạng thái "chờ duyệt"
+  // cho tới khi quản trị viên phê duyệt; requestId là mã thật do máy chủ trả về.
+  async registerOfficerRequest(data) {
+    try {
+      return await axiosClient.post('/auth/officer-requests', data);
+    } catch (err) {
+      throw new Error(registerErrorMessage(err));
+    }
   },
 
   // Đăng ký tài khoản Công dân (Nhận cảnh báo SMS/Push - UC07)
-  // Backend luôn ép role = citizen bất kể truyền gì (xem AC1 Story 1.1) — gửi `role` ở đây
-  // chỉ để tương thích payload cũ, backend sẽ bỏ qua trường này.
+  // Backend luôn tạo role = citizen (Story 1.1 AC1) nên web không gửi `role`.
   async registerCitizen(data) {
-    // Mọi lỗi (409 email trùng, 400 dữ liệu sai, mất mạng) đều báo cho người dùng: không có tài khoản giả.
-    return axiosClient.post('/auth/register', { ...data, role: 'citizen' });
+    // Mọi lỗi (409 email trùng, 400 dữ liệu sai, mất mạng) đều báo rõ cho người dùng: không có tài khoản giả.
+    try {
+      return await axiosClient.post('/auth/register', data);
+    } catch (err) {
+      throw new Error(registerErrorMessage(err));
+    }
   },
 
   // Đăng xuất

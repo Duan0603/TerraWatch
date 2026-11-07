@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   ShieldAlert, 
@@ -19,10 +19,63 @@ import {
   Info,
   MessageSquare,
   RotateCcw,
-  KeyRound
+  KeyRound,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import authApi from '../api/authApi';
+import LoginBackdrop from '../components/LoginBackdrop';
+import OtpBoxes from '../components/OtpBoxes';
+import FormSteps from '../components/FormSteps';
+import ForgotPasswordPanel from '../components/ForgotPasswordPanel';
+import './login.css';
+
+// Hai tấm trượt ngang trong cùng một khung: đăng nhập trượt sang trái, form đăng ký trượt vào từ phải.
+// Chiều cao khung đổi mượt theo tấm đang hiện; tấm còn lại bị khóa (inert) để Tab/đọc màn hình không lọt vào.
+function SlidePanels({ view, login, register, reset }) {
+  const refs = { login: useRef(null), register: useRef(null), reset: useRef(null) };
+  const viewRef = useRef(view);
+  const [h, setH] = useState('auto');
+  viewRef.current = view;
+  const measure = () => {
+    const el = refs[viewRef.current]?.current;
+    if (el) setH(el.offsetHeight);
+  };
+  useEffect(() => {
+    measure();
+    if (!window.ResizeObserver) return undefined;
+    const ro = new ResizeObserver(measure);
+    Object.values(refs).forEach((r) => { if (r.current) ro.observe(r.current); });
+    return () => ro.disconnect();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(measure, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+  const lock = (name) => (view === name ? {} : { inert: '', 'aria-hidden': true });
+  return (
+    <div className="lg-viewport" style={{ height: h }}>
+      <div className={`lg-track lg-track-${view}`}>
+        <div ref={refs.login} className="lg-slide" {...lock('login')}>{login}</div>
+        <div ref={refs.register} className="lg-slide" {...lock('register')}>{register}</div>
+        <div ref={refs.reset} className="lg-slide" {...lock('reset')}>{reset}</div>
+      </div>
+    </div>
+  );
+}
+
+// Khung tự đổi chiều cao mượt khi nội dung bên trong thay đổi (chuyển bước đăng ký).
+function AutoHeight({ children }) {
+  const inner = useRef(null);
+  const [h, setH] = useState('auto');
+  useEffect(() => {
+    const el = inner.current;
+    if (!el || !window.ResizeObserver) return undefined;
+    const ro = new ResizeObserver(() => setH(el.offsetHeight));
+    ro.observe(el);
+    setH(el.offsetHeight);
+    return () => ro.disconnect();
+  }, []);
+  return <div className="lg-auto" style={{ height: h }}><div ref={inner}>{children}</div></div>;
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -36,10 +89,17 @@ export default function LoginPage() {
   const [regFullName, setRegFullName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPhone, setRegPhone] = useState('');
-  const [regUnit, setRegUnit] = useState('Chi cục Thủy lợi & PCTT Tỉnh Yên Bái');
-  const [regArea, setRegArea] = useState('Huyện Mù Cang Chải, Tỉnh Yên Bái');
+  const [regUnit, setRegUnit] = useState('');
+  const [regArea, setRegArea] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
+  const [showPw, setShowPw] = useState(false);
+  const [emailTaken, setEmailTaken] = useState(false); // email vừa nhập đã có tài khoản
+  const [view, setView] = useState('login'); // 'login' | 'register': tấm đang hiện trong khung
+  const closeTimer = useRef(null);
+  const [forgotMounted, setForgotMounted] = useState(false); // tấm quên mật khẩu còn trong khung
+  const forgotTimer = useRef(null);
+  const prevStepRef = useRef(1);
   const [regLoading, setRegLoading] = useState(false);
   const [regError, setRegError] = useState('');
   const [regSuccessResult, setRegSuccessResult] = useState(null);
@@ -54,6 +114,8 @@ export default function LoginPage() {
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpError, setOtpError] = useState('');
 
+  const passwordRef = useRef(null);
+  const submitRef = useRef(null);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -86,7 +148,17 @@ export default function LoginPage() {
       await login(email, password);
       navigate('/');
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || 'Đăng nhập không thành công. Vui lòng kiểm tra lại.');
+      const status = err.response?.status;
+      if (status === 401) {
+        setErrorMsg('Email hoặc mật khẩu không đúng.');
+        setPassword('');
+        setTimeout(() => passwordRef.current?.focus(), 0);
+      } else if (!err.response) {
+        setErrorMsg('Không kết nối được máy chủ. Thử lại sau.');
+      } else {
+        // 403 (khóa / chờ duyệt): máy chủ đã viết sẵn câu tiếng Việt.
+        setErrorMsg(err.response?.data?.message || 'Đăng nhập không thành công. Vui lòng kiểm tra lại.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -101,37 +173,74 @@ export default function LoginPage() {
       setEmail('admin@terrawatch.vn');
     }
     setPassword('Terrawatch@2026');
+    setErrorMsg('');
+    setTimeout(() => submitRef.current?.focus(), 0);
   };
 
   const openRegisterModal = (role) => {
+    clearTimeout(closeTimer.current);
+    prevStepRef.current = 1;
+    setView('register');
     setActiveModal(role);
     setRegStep('form');
     setRegFullName('');
     setRegEmail('');
+    setEmailTaken(false);
     setRegPhone('');
     setRegPassword('');
     setRegConfirmPassword('');
+    setShowPw(false);
     setRegError('');
     setRegSuccessResult(null);
     setOtpCode('');
     setGeneratedOtp('');
     setOtpCountdown(60);
     setOtpError('');
-    if (role === 'officer') {
-      setRegUnit('Chi cục PCTT & Ban Chỉ huy TKCN Tỉnh Yên Bái');
-    } else {
-      setRegArea('Huyện Mù Cang Chải, Tỉnh Yên Bái (Vùng trọng điểm AOI 1)');
-    }
+    setRegUnit('');
+    setRegArea('');
+  };
+
+  const openForgot = () => {
+    clearTimeout(forgotTimer.current);
+    setForgotMounted(true);
+    setView('reset');
+  };
+
+  // emailToFill (chuỗi) = vừa đổi mật khẩu xong: điền sẵn email, xóa ô mật khẩu cũ.
+  const closeForgot = (emailToFill) => {
+    if (typeof emailToFill === 'string') { setEmail(emailToFill.trim()); setPassword(''); setErrorMsg(''); }
+    setView('login');
+    clearTimeout(forgotTimer.current);
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setForgotMounted(false); return; }
+    forgotTimer.current = setTimeout(() => setForgotMounted(false), 650);
   };
 
   const closeRegisterModal = () => {
-    setActiveModal(null);
-    setRegStep('form');
-    setRegSuccessResult(null);
-    setRegError('');
-    setOtpCode('');
-    setOtpError('');
+    setView('login');
+    const finish = () => {
+      setActiveModal(null);
+      setRegStep('form');
+      setRegSuccessResult(null);
+      setRegError('');
+      setOtpCode('');
+      setOtpError('');
+    };
+    clearTimeout(closeTimer.current);
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { finish(); return; }
+    closeTimer.current = setTimeout(finish, 650); // sau khi tấm đăng ký đã trượt ra khỏi khung
   };
+
+  // Esc quay lại đăng nhập; mở tấm mới thì đưa con trỏ vào ô đầu tiên khi tấm đã trượt vào.
+  useEffect(() => {
+    if (view === 'login') return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') (view === 'register' ? closeRegisterModal() : closeForgot()); };
+    window.addEventListener('keydown', onKey);
+    const t = setTimeout(() => {
+      const id = view === 'register' ? 'rg-name' : 'fp-email';
+      document.getElementById(id)?.focus({ preventScroll: true });
+    }, 420);
+    return () => { window.removeEventListener('keydown', onKey); clearTimeout(t); };
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Bước 1: Kiểm tra form và Gửi mã OTP về Số điện thoại
   const handleInitiateRegister = async (e) => {
@@ -140,6 +249,11 @@ export default function LoginPage() {
 
     if (!regFullName.trim() || !regEmail.trim() || !regPhone.trim() || !regPassword) {
       setRegError('Vui lòng điền đầy đủ các thông tin bắt buộc.');
+      return;
+    }
+
+    if (activeModal === 'officer' && !regUnit.trim()) {
+      setRegError('Vui lòng nhập đơn vị công tác để Quản trị viên xét duyệt.');
       return;
     }
 
@@ -161,6 +275,12 @@ export default function LoginPage() {
 
     try {
       setRegLoading(true);
+      // Email đã có tài khoản thì báo ngay, không gửi OTP (mỗi tin nhắn tốn hạn mức SMS).
+      if (await authApi.emailExists(regEmail)) {
+        setEmailTaken(true);
+        document.getElementById('rg-email')?.focus();
+        return;
+      }
       // Gửi mã OTP SMS qua Firebase Phone Auth
       const res = await authApi.sendSmsOtp(cleanPhone, 'recaptcha-container');
       setIsRealSms(!!res.isRealSms);
@@ -224,16 +344,15 @@ export default function LoginPage() {
           email: regEmail,
           phoneNumber: cleanPhone,
           phoneToken,
-          departmentUnit: regUnit,
-          password: regPassword,
-          role: 'officer'
+          departmentUnit: regUnit.trim(),
+          password: regPassword
         });
         setRegSuccessResult({
           type: 'officer',
-          title: 'Xác Thực SĐT & Gửi Hồ Sơ Cán Bộ Thành Công!',
-          requestId: result.requestId || `REG-OFFICER-${Date.now().toString().slice(-6)}`,
+          title: 'Đã Gửi Hồ Sơ Cán Bộ!',
+          requestId: result?.requestId,
           phone: cleanPhone,
-          message: 'Số điện thoại đã được xác thực OTP chính chủ. Hồ sơ đăng ký đã được chuyển vào hàng đợi phê duyệt của Ban Quản Trị (Admin) theo quy chuẩn UC06.'
+          message: 'Số điện thoại đã được xác thực OTP. Hồ sơ đang chờ Quản trị viên phê duyệt; bạn chỉ đăng nhập được sau khi được duyệt.'
         });
       } else {
         const result = await authApi.registerCitizen({
@@ -247,7 +366,7 @@ export default function LoginPage() {
         setRegSuccessResult({
           type: 'citizen',
           title: 'Đăng Ký & Xác Thực Số Điện Thoại Thành Công!',
-          userId: result.userId || `citizen-${Date.now().toString().slice(-6)}`,
+          userId: result?.user?.userId,
           phone: cleanPhone,
           message: 'Số điện thoại của bạn đã được xác thực và lưu vào hệ thống cảnh báo sớm. Bạn sẽ nhận được tin nhắn SMS khẩn cấp (Story 4.4) khi có nguy cơ sạt lở tại khu vực.'
         });
@@ -259,910 +378,282 @@ export default function LoginPage() {
     }
   };
 
+  const stepNow = regSuccessResult ? 3 : regStep === 'otp' ? 2 : 1;
+  const stepDir = stepNow >= prevStepRef.current ? 'fwd' : 'back';
+  useEffect(() => { prevStepRef.current = stepNow; }, [stepNow]);
+
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '100vh',
-      backgroundColor: 'var(--bg-primary)',
-      backgroundImage: 'radial-gradient(circle at 50% 30%, rgba(14, 165, 233, 0.12) 0%, transparent 70%)',
-      padding: 20
-    }}>
-      <div style={{
-        width: '100%',
-        maxWidth: 440,
-        background: 'rgba(19, 27, 46, 0.88)',
-        border: '1px solid var(--border-color)',
-        borderRadius: 16,
-        padding: 32,
-        boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)',
-        backdropFilter: 'blur(16px)'
-      }}>
-        {/* Logo & Header */}
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{
-            display: 'inline-flex',
-            background: 'rgba(14, 165, 233, 0.15)',
-            border: '1px solid rgba(14, 165, 233, 0.3)',
-            padding: 12,
-            borderRadius: 14,
-            marginBottom: 12
-          }}>
-            <ShieldAlert size={36} color="#38bdf8" />
+    <div className="lg-stage">
+      <LoginBackdrop />
+      <main className="lg-layout">
+        <section className="lg-hero">
+          <div className="lg-brand">
+            <span className="lg-mark" aria-hidden="true"><ShieldAlert size={22} color="#5FD0C0" /></span>
+            TERRAWATCH GEOSENTRY
           </div>
-          <h1 style={{ fontSize: 20, fontWeight: 800, color: '#f8fafc', letterSpacing: '0.03em', marginBottom: 4 }}>
-            TERRAWATCH <span style={{ color: '#38bdf8' }}>GEOSENTRY</span>
-          </h1>
-          <p style={{ fontSize: 12, color: '#94a3b8' }}>
-            Hệ thống Viễn thám & AI Giám sát Cảnh báo Sớm Sạt lở Đất
-          </p>
-        </div>
+          <h1>Theo dõi mưa và địa hình, <em>cảnh báo sạt lở 24 giờ tới</em></h1>
+          <p>Trung tâm chỉ huy dành cho cán bộ và quản trị viên: xem dự báo từng khu vực, thẩm định và phát lệnh cảnh báo.</p>
+          <p className="lg-note">Hệ thống đang ở giai đoạn thử nghiệm. Điểm nguy cơ là điểm thử nghiệm, chưa phải xác suất đã hiệu chuẩn và chưa thay thế cảnh báo chính thức.</p>
+        </section>
 
-        {errorMsg && (
-          <div style={{
-            background: 'rgba(239, 68, 68, 0.12)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            color: '#f87171',
-            padding: '10px 14px',
-            borderRadius: 8,
-            fontSize: 12,
-            marginBottom: 16
-          }}>
-            {errorMsg}
-          </div>
-        )}
+        <section className={`lg-card lg-card-${view}`}>
+          <SlidePanels
+            view={view}
+            login={(
+              <>
+          <h2 id="lg-title">Đăng nhập</h2>
+          <p className="lg-sub">Dành cho công dân, cán bộ và quản trị viên</p>
 
-        {/* Login Form */}
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#cbd5e1', marginBottom: 6 }}>
-              Email đăng nhập (Công dân / Cán bộ / Admin)
-            </label>
-            <div style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', left: 12, top: 11, color: '#64748b' }}>
-                <Mail size={16} />
-              </div>
+          {errorMsg && <div className="lg-error" role="alert">{errorMsg}</div>}
+
+          <form onSubmit={handleSubmit} noValidate>
+            <label className="lg-label" htmlFor="lg-email">Email</label>
+            <div className="lg-field">
+              <Mail size={18} aria-hidden="true" />
               <input
+                id="lg-email"
+                className="lg-input"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@terrawatch.vn"
-                style={{
-                  width: '100%',
-                  background: 'rgba(13, 19, 34, 0.9)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 8,
-                  padding: '10px 12px 10px 38px',
-                  color: '#fff',
-                  fontSize: 13,
-                  outline: 'none'
-                }}
+                placeholder="ten@terrawatch.vn"
+                autoComplete="username"
+                readOnly={isLoading}
               />
             </div>
-          </div>
-
-          <div style={{ marginBottom: 20 }}>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#cbd5e1', marginBottom: 6 }}>
-              Mật khẩu bảo mật
-            </label>
-            <div style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', left: 12, top: 11, color: '#64748b' }}>
-                <Lock size={16} />
-              </div>
+            <label className="lg-label" htmlFor="lg-password">Mật khẩu</label>
+            <div className="lg-field">
+              <Lock size={18} aria-hidden="true" />
               <input
+                id="lg-password"
+                ref={passwordRef}
+                className="lg-input"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                style={{
-                  width: '100%',
-                  background: 'rgba(13, 19, 34, 0.9)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 8,
-                  padding: '10px 12px 10px 38px',
-                  color: '#fff',
-                  fontSize: 13,
-                  outline: 'none'
-                }}
+                placeholder="Ít nhất 8 ký tự"
+                autoComplete="current-password"
+                readOnly={isLoading}
               />
             </div>
-          </div>
+            <div className="lg-forgot-row">
+              <button type="button" className="lg-textbtn" onClick={openForgot}>Quên mật khẩu?</button>
+            </div>
+            <button ref={submitRef} className="lg-btn lg-btn-primary" type="submit" disabled={isLoading}>
+              {isLoading ? 'Đang đăng nhập…' : <>Vào trung tâm chỉ huy <ArrowRight size={18} aria-hidden="true" /></>}
+            </button>
+            <Link className="lg-btn lg-btn-ghost" to="/model-demo">Xem demo mô hình trên dữ liệu lịch sử</Link>
+          </form>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            style={{
-              width: '100%',
-              background: '#0284c7',
-              color: '#fff',
-              border: 'none',
-              padding: '12px',
-              borderRadius: 8,
-              fontSize: 14,
-              fontWeight: 700,
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              transition: 'background 0.2s ease'
-            }}
-          >
-            {isLoading ? 'Đang xác thực JWT...' : (
-              <>
-                Vào Trung Tâm Chỉ Huy <ArrowRight size={16} />
+          <div className="lg-sep">Diễn tập nhanh</div>
+          <div className="lg-chips">
+            <button type="button" className="lg-chip" onClick={() => handleQuickLogin('citizen')}>
+              <span className="lg-dot" style={{ background: '#4ADE80' }} />Công dân
+            </button>
+            <button type="button" className="lg-chip" onClick={() => handleQuickLogin('officer')}>
+              <span className="lg-dot" style={{ background: '#FB923C' }} />Cán bộ
+            </button>
+            <button type="button" className="lg-chip" onClick={() => handleQuickLogin('admin')}>
+              <span className="lg-dot" style={{ background: '#F87171' }} />Quản trị
+            </button>
+          </div>
+          <p className="lg-hint">Điền sẵn tài khoản demo để diễn tập.</p>
+
+          <div className="lg-links">
+            <button type="button" className="lg-action" onClick={() => openRegisterModal('citizen')}>
+              <span className="lg-action-icon"><Smartphone size={20} aria-hidden="true" /></span>
+              <span className="lg-action-text">
+                <strong>Đăng ký công dân</strong>
+                <small>Nhận cảnh báo qua SMS và ứng dụng</small>
+              </span>
+              <ArrowRight size={18} className="lg-action-go" aria-hidden="true" />
+            </button>
+            <button type="button" className="lg-action" onClick={() => openRegisterModal('officer')}>
+              <span className="lg-action-icon"><UserPlus size={20} aria-hidden="true" /></span>
+              <span className="lg-action-text">
+                <strong>Yêu cầu tài khoản cán bộ</strong>
+                <small>Quản trị viên sẽ xét duyệt hồ sơ</small>
+              </span>
+              <ArrowRight size={18} className="lg-action-go" aria-hidden="true" />
+            </button>
+          </div>
               </>
             )}
-          </button>
-        </form>
-
-        <Link to="/model-demo" className="model-demo-login-link">Xem demo mô hình trên dữ liệu lịch sử <ArrowRight size={16} /></Link>
-
-        {/* Quick Demo Helper (Hữu ích khi demo cho Hội đồng chấm thi) */}
-        <div style={{ marginTop: 22, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 8, textAlign: 'center' }}>
-            Nút chọn nhanh tài khoản diễn tập:
-          </div>
-          <div className="form-grid-3">
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('citizen')}
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                padding: '8px',
-                borderRadius: 6,
-                color: '#34d399',
-                fontSize: 11,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 4
-              }}
-            >
-              <Smartphone size={13} /> Công Dân
+            register={activeModal ? (
+              <>
+            <button type="button" className="lg-backlink" onClick={closeRegisterModal}>
+              <ArrowLeft size={16} aria-hidden="true" /> Quay lại đăng nhập
             </button>
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('officer')}
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                padding: '8px',
-                borderRadius: 6,
-                color: '#38bdf8',
-                fontSize: 11,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 4
-              }}
-            >
-              <UserCheck size={13} /> Cán Bộ (Officer)
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('admin')}
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                padding: '8px',
-                borderRadius: 6,
-                color: '#f87171',
-                fontSize: 11,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 4
-              }}
-            >
-              <ShieldCheck size={13} /> Quản Trị (Admin)
-            </button>
-          </div>
-        </div>
-
-        {/* Liên kết phụ: Đăng ký Cán bộ (Yêu cầu Admin phê duyệt) hoặc Công dân */}
-        <div style={{ marginTop: 18, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 10, textAlign: 'center' }}>
-            Chưa có tài khoản trên hệ thống?
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div
-              role="note"
-              style={{
-                border: '1px dashed rgba(56, 189, 248, 0.35)',
-                padding: '9px 12px',
-                borderRadius: 8,
-                color: '#7dd3fc',
-                fontSize: 12,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-                textAlign: 'center'
-              }}
-            >
-              <UserPlus size={14} />
-              <span>Tài khoản cán bộ do quản trị viên cấp. Liên hệ Ban quản trị hệ thống để được tạo tài khoản.</span>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => openRegisterModal('citizen')}
-              style={{
-                background: 'rgba(16, 185, 129, 0.06)',
-                border: '1px dashed rgba(16, 185, 129, 0.35)',
-                padding: '9px 12px',
-                borderRadius: 8,
-                color: '#34d399',
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-                transition: 'all 0.2s ease',
-                textAlign: 'center'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(16, 185, 129, 0.14)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(16, 185, 129, 0.06)'; }}
-            >
-              <Smartphone size={14} />
-              <span>Đăng ký tài khoản công dân <span style={{ opacity: 0.8, fontSize: 11, fontWeight: 400 }}>(Nhận cảnh báo)</span></span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Modal Đăng Ký Chuyên Nghiệp (Cán Bộ / Công Dân) */}
-      {activeModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(3, 7, 18, 0.75)',
-          backdropFilter: 'blur(8px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 16,
-          zIndex: 9999
-        }}>
-          <div style={{
-            width: '100%',
-            maxWidth: 480,
-            background: 'rgba(15, 23, 42, 0.95)',
-            border: activeModal === 'officer' ? '1px solid rgba(56, 189, 248, 0.35)' : '1px solid rgba(16, 185, 129, 0.35)',
-            borderRadius: 16,
-            padding: 28,
-            boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8)',
-            maxHeight: '92vh',
-            overflowY: 'auto'
-          }}>
-            {/* Modal Header */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{
-                  background: activeModal === 'officer' ? 'rgba(56, 189, 248, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-                  border: activeModal === 'officer' ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid rgba(16, 185, 129, 0.3)',
-                  padding: 8,
-                  borderRadius: 10,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  {activeModal === 'officer' ? (
-                    <UserPlus size={22} color="#38bdf8" />
-                  ) : (
-                    <Smartphone size={22} color="#34d399" />
-                  )}
-                </div>
-                <div>
-                  <h2 style={{ fontSize: 16, fontWeight: 700, color: '#f8fafc', margin: 0 }}>
-                    {activeModal === 'officer' ? 'Đăng Ký Tài Khoản Cán Bộ Chuyên Môn' : 'Đăng Ký Tài Khoản Công Dân'}
-                  </h2>
-                  <p style={{ fontSize: 11, color: '#94a3b8', margin: '2px 0 0 0' }}>
-                    {activeModal === 'officer' 
-                      ? 'Dành cho cán bộ Ban Chỉ huy PCTT & TKCN các địa phương' 
-                      : 'Đăng ký nhận cảnh báo sạt lở sớm qua SMS & TerraWatch Mobile'}
-                  </p>
-                </div>
+            <div className="lg-modal-head">
+              <span className="lg-modal-icon" aria-hidden="true">
+                {activeModal === 'officer' ? <UserPlus size={22} /> : <Smartphone size={22} />}
+              </span>
+              <div className="lg-modal-titles">
+                <h2 id="lg-register-title">{activeModal === 'officer' ? 'Yêu cầu tài khoản cán bộ' : 'Đăng ký tài khoản công dân'}</h2>
+                <p>{activeModal === 'officer'
+                  ? 'Dành cho cán bộ Ban Chỉ huy PCTT & TKCN các địa phương'
+                  : 'Nhận cảnh báo sạt lở sớm qua SMS và ứng dụng TerraWatch'}</p>
               </div>
-              <button
-                type="button"
-                onClick={closeRegisterModal}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#94a3b8',
-                  cursor: 'pointer',
-                  padding: 4,
-                  borderRadius: 6
-                }}
-              >
-                <X size={20} />
-              </button>
             </div>
 
-            {/* Success Result View */}
-            {regSuccessResult ? (
-              <div style={{ textAlign: 'center', padding: '16px 8px' }}>
-                <div style={{
-                  display: 'inline-flex',
-                  background: 'rgba(16, 185, 129, 0.15)',
-                  border: '1px solid rgba(16, 185, 129, 0.3)',
-                  padding: 12,
-                  borderRadius: '50%',
-                  marginBottom: 12
-                }}>
-                  <CheckCircle2 size={36} color="#34d399" />
-                </div>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: '#f8fafc', marginBottom: 8 }}>
-                  {regSuccessResult.title}
-                </h3>
-                <p style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 16 }}>
-                  {regSuccessResult.message}
-                </p>
+            <FormSteps current={regSuccessResult ? 3 : regStep === 'otp' ? 2 : 1} ariaLabel="Các bước đăng ký" />
 
+            <AutoHeight>
+            <div key={stepNow} className={`lg-pane lg-pane-${stepDir}`}>
+            {regSuccessResult ? (
+              <div className="lg-done">
+                <span className="lg-done-icon" aria-hidden="true"><CheckCircle2 size={40} /></span>
+                <h3>{regSuccessResult.title}</h3>
+                <p>{regSuccessResult.message}</p>
                 {regSuccessResult.requestId && (
-                  <div style={{
-                    background: 'rgba(0, 0, 0, 0.3)',
-                    border: '1px solid rgba(56, 189, 248, 0.2)',
-                    padding: '8px 12px',
-                    borderRadius: 8,
-                    fontSize: 12,
-                    color: '#38bdf8',
-                    marginBottom: 20
-                  }}>
-                    Mã hồ sơ tiếp nhận: <strong>{regSuccessResult.requestId}</strong>
+                  <div className="lg-code">
+                    <span>Mã hồ sơ tiếp nhận</span>
+                    <strong>{regSuccessResult.requestId}</strong>
                   </div>
                 )}
-
-                <button
-                  type="button"
-                  onClick={closeRegisterModal}
-                  style={{
-                    background: '#0284c7',
-                    color: '#fff',
-                    border: 'none',
-                    padding: '10px 24px',
-                    borderRadius: 8,
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: 'pointer'
-                  }}
-                >
-                  Quay lại Đăng nhập
-                </button>
+                <button type="button" className="lg-btn lg-btn-primary" onClick={closeRegisterModal}>Quay lại đăng nhập</button>
               </div>
             ) : regStep === 'otp' ? (
-              /* OTP Verification View */
-              <form onSubmit={handleVerifyOtpAndRegister}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                  <button
-                    type="button"
-                    onClick={() => { setRegStep('form'); setOtpError(''); }}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      color: '#38bdf8',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 4,
-                      padding: 0
-                    }}
-                  >
-                    <ArrowLeft size={14} /> Quay lại sửa thông tin
-                  </button>
-                  <span style={{ fontSize: 11, color: '#94a3b8' }}>Bước 2 / 2: Xác thực SĐT</span>
-                </div>
-
-                {/* Invisible reCAPTCHA container for Firebase Phone Auth */}
-                <div id="recaptcha-container"></div>
-
-                {/* SMS Notification Banner (Real SMS vs Simulation) */}
-                {isRealSms ? (
-                  <div style={{
-                    background: 'rgba(16, 185, 129, 0.12)',
-                    border: '1px solid rgba(16, 185, 129, 0.35)',
-                    borderRadius: 10,
-                    padding: '12px 14px',
-                    marginBottom: 16
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#34d399', fontSize: 13, fontWeight: 700 }}>
-                        <Smartphone size={16} /> 📲 Đã gửi tin nhắn SMS thật về điện thoại!
-                      </div>
-                      <span style={{ fontSize: 10, color: '#a7f3d0', background: 'rgba(16, 185, 129, 0.2)', padding: '2px 8px', borderRadius: 4, fontWeight: 600 }}>
-                        Google Firebase SMS
-                      </span>
-                    </div>
-                    <div style={{ fontSize: 12, color: '#f8fafc', lineHeight: 1.5 }}>
-                      Google Firebase vừa gửi tin nhắn SMS chứa mã OTP gồm 6 chữ số đến SIM điện thoại: <strong style={{ color: '#34d399' }}>{formattedPhone || regPhone}</strong>.
-                    </div>
-                    <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>
-                      👉 Vui lòng mở tin nhắn SMS trên điện thoại của bạn và nhập 6 chữ số vào ô bên dưới.
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{
-                    background: 'rgba(14, 165, 233, 0.12)',
-                    border: '1px solid rgba(14, 165, 233, 0.35)',
-                    borderRadius: 10,
-                    padding: '12px 14px',
-                    marginBottom: 16
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#38bdf8', fontSize: 12, fontWeight: 700 }}>
-                        <MessageSquare size={15} /> 💬 [Chế Độ Mô Phỏng SMS Diễn Tập]
-                      </div>
-                      <span style={{ fontSize: 10, color: '#94a3b8', background: 'rgba(255,255,255,0.06)', padding: '2px 6px', borderRadius: 4 }}>
-                        Gửi tới {formattedPhone || regPhone}
-                      </span>
-                    </div>
-                    {smsWarning && (
-                      <div style={{ fontSize: 11, color: '#fbbf24', marginBottom: 6, lineHeight: 1.4 }}>
-                        ℹ️ {smsWarning}
-                      </div>
-                    )}
-                    <div style={{ fontSize: 13, color: '#f8fafc', lineHeight: 1.5 }}>
-                      TerraWatch PCTT: Ma OTP xac thuc so dien thoai cua ban la{' '}
-                      <strong style={{
-                        color: '#38bdf8',
-                        fontSize: 16,
-                        letterSpacing: '2px',
-                        background: 'rgba(0, 0, 0, 0.4)',
-                        padding: '2px 8px',
-                        borderRadius: 4,
-                        border: '1px solid rgba(56, 189, 248, 0.3)'
-                      }}>
-                        {generatedOtp}
-                      </strong>. Hiệu lực trong 5 phút.
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => { setOtpCode(generatedOtp); setOtpError(''); }}
-                      style={{
-                        marginTop: 8,
-                        background: 'rgba(56, 189, 248, 0.2)',
-                        border: '1px solid rgba(56, 189, 248, 0.4)',
-                        color: '#38bdf8',
-                        fontSize: 11,
-                        fontWeight: 600,
-                        padding: '4px 10px',
-                        borderRadius: 6,
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 4
-                      }}
-                    >
-                      ⚡ Tự động điền nhanh mã OTP: {generatedOtp}
-                    </button>
-                  </div>
-                )}
-
-                {otpError && (
-                  <div style={{
-                    background: 'rgba(239, 68, 68, 0.12)',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                    color: '#f87171',
-                    padding: '8px 12px',
-                    borderRadius: 8,
-                    fontSize: 12,
-                    marginBottom: 14
-                  }}>
-                    {otpError}
-                  </div>
-                )}
-
-                {/* 6-Digit OTP Input */}
-                <div style={{ textAlign: 'center', marginBottom: 20 }}>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#cbd5e1', marginBottom: 8 }}>
-                    Nhập mã xác thực gồm 6 chữ số:
-                  </label>
-                  <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
-                    <input
-                      type="text"
-                      maxLength={6}
-                      autoFocus
-                      value={otpCode}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, '');
-                        setOtpCode(val);
-                      }}
-                      placeholder="••••••"
-                      style={{
-                        width: '240px',
-                        textAlign: 'center',
-                        fontSize: '24px',
-                        fontWeight: 800,
-                        letterSpacing: '8px',
-                        padding: '10px 12px',
-                        background: 'rgba(13, 19, 34, 0.95)',
-                        border: '2px solid #0284c7',
-                        borderRadius: 10,
-                        color: '#38bdf8',
-                        outline: 'none',
-                        boxShadow: '0 0 15px rgba(2, 132, 199, 0.35)'
-                      }}
-                    />
-                  </div>
-                  <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 8 }}>
-                    Đã gửi mã tới số: <strong style={{ color: '#fff' }}>{regPhone}</strong>
-                  </p>
-                </div>
-
-                {/* Resend OTP button */}
-                <div style={{ textAlign: 'center', marginBottom: 20 }}>
+              <form onSubmit={handleVerifyOtpAndRegister} noValidate>
+                <p className="lg-otp-lead">
+                  Chúng tôi đã gửi tin nhắn SMS chứa mã 6 chữ số tới <strong>{formattedPhone || regPhone}</strong>.
+                  Nhập mã đó vào các ô dưới đây.
+                </p>
+                {otpError && <div className="lg-error" role="alert">{otpError}</div>}
+                <OtpBoxes value={otpCode} onChange={(v) => { setOtpCode(v); setOtpError(''); }} disabled={otpLoading} />
+                <div className="lg-resend">
                   {otpCountdown > 0 ? (
-                    <span style={{ fontSize: 11, color: '#94a3b8' }}>
-                      Có thể gửi lại mã OTP sau <strong style={{ color: '#38bdf8' }}>{otpCountdown}s</strong>
-                    </span>
+                    <span>Có thể gửi lại mã sau <strong>{otpCountdown} giây</strong></span>
                   ) : (
-                    <button
-                      type="button"
-                      disabled={otpLoading}
-                      onClick={handleResendOtp}
-                      style={{
-                        background: 'transparent',
-                        border: 'none',
-                        color: '#38bdf8',
-                        fontSize: 12,
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 4
-                      }}
-                    >
-                      <RotateCcw size={13} /> {otpLoading ? 'Đang gửi...' : 'Gửi lại mã OTP qua SMS'}
+                    <button type="button" className="lg-textbtn" disabled={otpLoading} onClick={handleResendOtp}>
+                      <RotateCcw size={14} aria-hidden="true" /> {otpLoading ? 'Đang gửi…' : 'Gửi lại mã qua SMS'}
                     </button>
                   )}
                 </div>
-
-                {/* Submit button */}
-                <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-                  <button
-                    type="button"
-                    onClick={closeRegisterModal}
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.06)',
-                      border: '1px solid rgba(255, 255, 255, 0.12)',
-                      color: '#cbd5e1',
-                      padding: '9px 16px',
-                      borderRadius: 8,
-                      fontSize: 12,
-                      fontWeight: 600,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Hủy bỏ
+                <div className="lg-actions">
+                  <button type="button" className="lg-btn lg-btn-ghost lg-back" onClick={() => { setRegStep('form'); setOtpError(''); }}>
+                    <ArrowLeft size={16} aria-hidden="true" /> Sửa thông tin
                   </button>
-                  <button
-                    type="submit"
-                    disabled={otpLoading || otpCode.length !== 6}
-                    style={{
-                      background: activeModal === 'officer' ? '#0284c7' : '#059669',
-                      color: '#fff',
-                      border: 'none',
-                      padding: '9px 22px',
-                      borderRadius: 8,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      cursor: (otpLoading || otpCode.length !== 6) ? 'not-allowed' : 'pointer',
-                      opacity: (otpLoading || otpCode.length !== 6) ? 0.6 : 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6
-                    }}
-                  >
-                    {otpLoading ? 'Đang xác thực...' : (
-                      <>
-                        <KeyRound size={14} /> Xác Nhận & Hoàn Tất Đăng Ký
-                      </>
-                    )}
+                  <button type="submit" className="lg-btn lg-btn-primary" disabled={otpLoading || otpCode.length !== 6}>
+                    {otpLoading ? 'Đang xác thực…' : <><KeyRound size={16} aria-hidden="true" /> Xác nhận và hoàn tất</>}
                   </button>
                 </div>
               </form>
             ) : (
-              /* Registration Form (Step 1) */
-              <form onSubmit={handleInitiateRegister}>
-                {/* Note/Badge theo nghiệp vụ RBAC */}
-                <div style={{
-                  background: activeModal === 'officer' ? 'rgba(14, 165, 233, 0.08)' : 'rgba(16, 185, 129, 0.08)',
-                  border: activeModal === 'officer' ? '1px solid rgba(14, 165, 233, 0.25)' : '1px solid rgba(16, 185, 129, 0.25)',
-                  borderRadius: 8,
-                  padding: '10px 12px',
-                  marginBottom: 16,
-                  display: 'flex',
-                  gap: 8,
-                  alignItems: 'flex-start'
-                }}>
-                  <Info size={16} color={activeModal === 'officer' ? '#38bdf8' : '#34d399'} style={{ flexShrink: 0, marginTop: 2 }} />
-                  <div style={{ fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 }}>
-                    {activeModal === 'officer' ? (
-                      <>
-                        <strong>Quy chuẩn an toàn UC06:</strong> Sau khi xác thực OTP số điện thoại, hồ sơ cán bộ sẽ được chuyển tới <em>Ban Quản Trị (Admin) phê duyệt</em> trước khi có thể đăng nhập.
-                      </>
-                    ) : (
-                      <>
-                        <strong>Quy chuẩn UC07:</strong> Hệ thống sẽ gửi mã OTP SMS xác thực số điện thoại để kích hoạt danh bạ nhận tin cảnh báo thiên tai khẩn cấp (Story 4.4).
-                      </>
-                    )}
-                  </div>
-                </div>
+              <form onSubmit={handleInitiateRegister} noValidate>
+                <p className="lg-info">
+                  <Info size={16} aria-hidden="true" />
+                  <span>{activeModal === 'officer'
+                    ? 'Sau khi xác minh số điện thoại, hồ sơ được gửi tới Quản trị viên. Bạn chỉ đăng nhập được khi hồ sơ được duyệt.'
+                    : 'Chúng tôi gửi mã OTP qua SMS để xác minh số điện thoại nhận cảnh báo khẩn cấp.'}</span>
+                </p>
+                {regError && <div className="lg-error" role="alert">{regError}</div>}
 
-                {regError && (
-                  <div style={{
-                    background: 'rgba(239, 68, 68, 0.12)',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                    color: '#f87171',
-                    padding: '8px 12px',
-                    borderRadius: 8,
-                    fontSize: 12,
-                    marginBottom: 14
-                  }}>
-                    {regError}
+                <fieldset className="lg-group">
+                  <legend>Thông tin cá nhân</legend>
+                  <label className="lg-label" htmlFor="rg-name">Họ và tên</label>
+                  <div className="lg-field">
+                    <User size={18} aria-hidden="true" />
+                    <input id="rg-name" className="lg-input" type="text" value={regFullName} onChange={(e) => setRegFullName(e.target.value)}
+                      placeholder={activeModal === 'officer' ? 'Nguyễn Văn Huy' : 'Hoàng Văn Dũng'} autoComplete="name" />
                   </div>
-                )}
-
-                {/* Họ và tên */}
-                <div style={{ marginBottom: 12 }}>
-                  <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
-                    Họ và tên <span style={{ color: '#f87171' }}>*</span>
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <div style={{ position: 'absolute', left: 10, top: 9, color: '#64748b' }}>
-                      <User size={15} />
-                    </div>
-                    <input
-                      type="text"
-                      value={regFullName}
-                      onChange={(e) => setRegFullName(e.target.value)}
-                      placeholder={activeModal === 'officer' ? 'Đ/c Nguyễn Văn Huy' : 'Hoàng Văn Dũng'}
-                      style={{
-                        width: '100%',
-                        background: 'rgba(13, 19, 34, 0.9)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: 6,
-                        padding: '8px 10px 8px 34px',
-                        color: '#fff',
-                        fontSize: 12,
-                        outline: 'none'
-                      }}
-                    />
+                  <label className="lg-label" htmlFor="rg-email">Email</label>
+                  <div className="lg-field">
+                    <Mail size={18} aria-hidden="true" />
+                    <input id="rg-email" className="lg-input" type="email" value={regEmail}
+                      onChange={(e) => { setRegEmail(e.target.value); setEmailTaken(false); }}
+                      onBlur={async () => { if (/^\S+@\S+\.\S+$/.test(regEmail) && await authApi.emailExists(regEmail)) setEmailTaken(true); }}
+                      placeholder="ten@email.com" autoComplete="email" aria-invalid={emailTaken || undefined}
+                      aria-describedby={emailTaken ? 'rg-email-taken' : undefined} />
                   </div>
-                </div>
+                  {emailTaken && (
+                    <p id="rg-email-taken" className="lg-match lg-match-bad lg-taken" role="alert">
+                      Email này đã được đăng ký.{' '}
+                      <button type="button" className="lg-textbtn" onClick={() => { setEmail(regEmail.trim()); closeRegisterModal(); }}>
+                        Đăng nhập bằng email này
+                      </button>
+                    </p>
+                  )}
+                </fieldset>
 
-                {/* Email & Phone */}
-                <div className="form-grid-2" style={{ marginBottom: 12 }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
-                      Email <span style={{ color: '#f87171' }}>*</span>
-                    </label>
-                    <div style={{ position: 'relative' }}>
-                      <div style={{ position: 'absolute', left: 10, top: 9, color: '#64748b' }}>
-                        <Mail size={15} />
+                <fieldset className="lg-group">
+                  <legend>{activeModal === 'officer' ? 'Số điện thoại và đơn vị' : 'Số điện thoại và khu vực'}</legend>
+                  <label className="lg-label" htmlFor="rg-phone">Số điện thoại nhận mã OTP</label>
+                  <div className="lg-field">
+                    <Phone size={18} aria-hidden="true" />
+                    <input id="rg-phone" className="lg-input" type="tel" inputMode="tel" value={regPhone} onChange={(e) => setRegPhone(e.target.value)}
+                      placeholder="0912345678" autoComplete="tel" aria-describedby="rg-phone-hint" />
+                  </div>
+                  <p id="rg-phone-hint" className="lg-helper">Số di động Việt Nam, ví dụ 0912345678. Mã OTP gửi qua SMS tới số này.</p>
+                  {activeModal === 'officer' ? (
+                    <>
+                      <label className="lg-label" htmlFor="rg-unit">Đơn vị công tác</label>
+                      <div className="lg-field">
+                        <Building2 size={18} aria-hidden="true" />
+                        <input id="rg-unit" className="lg-input" type="text" value={regUnit} onChange={(e) => setRegUnit(e.target.value)}
+                          placeholder="Chi cục Thủy lợi & PCTT Tỉnh Yên Bái" autoComplete="organization" />
                       </div>
-                      <input
-                        type="email"
-                        value={regEmail}
-                        onChange={(e) => setRegEmail(e.target.value)}
-                        placeholder={activeModal === 'officer' ? 'officer@terrawatch.vn' : 'citizen@gmail.com'}
-                        style={{
-                          width: '100%',
-                          background: 'rgba(13, 19, 34, 0.9)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: 6,
-                          padding: '8px 10px 8px 34px',
-                          color: '#fff',
-                          fontSize: 12,
-                          outline: 'none'
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
-                      Số điện thoại nhận OTP SMS <span style={{ color: '#f87171' }}>*</span>
-                    </label>
-                    <div style={{ position: 'relative' }}>
-                      <div style={{ position: 'absolute', left: 10, top: 9, color: '#64748b' }}>
-                        <Phone size={15} />
+                    </>
+                  ) : (
+                    <>
+                      <label className="lg-label" htmlFor="rg-area">Khu vực muốn nhận cảnh báo (tùy chọn)</label>
+                      <div className="lg-field">
+                        <MapPin size={18} aria-hidden="true" />
+                        <input id="rg-area" className="lg-input" type="text" value={regArea} onChange={(e) => setRegArea(e.target.value)}
+                          placeholder="Bản Lìm Mông, xã Cao Phạ, huyện Mù Cang Chải" />
                       </div>
-                      <input
-                        type="tel"
-                        value={regPhone}
-                        onChange={(e) => setRegPhone(e.target.value)}
-                        placeholder="0912345678"
-                        style={{
-                          width: '100%',
-                          background: 'rgba(13, 19, 34, 0.9)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: 6,
-                          padding: '8px 10px 8px 34px',
-                          color: '#fff',
-                          fontSize: 12,
-                          outline: 'none'
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
+                    </>
+                  )}
+                </fieldset>
 
-                {/* Đơn vị công tác (Cán bộ) hoặc Khu vực quan tâm (Công dân) */}
-                {activeModal === 'officer' ? (
-                  <div style={{ marginBottom: 12 }}>
-                    <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
-                      Đơn vị công tác / Ban Chỉ huy PCTT <span style={{ color: '#f87171' }}>*</span>
-                    </label>
-                    <div style={{ position: 'relative' }}>
-                      <div style={{ position: 'absolute', left: 10, top: 9, color: '#64748b' }}>
-                        <Building2 size={15} />
+                <fieldset className="lg-group">
+                  <legend>Mật khẩu</legend>
+                  <div className="lg-two">
+                    <div>
+                      <label className="lg-label" htmlFor="rg-pw">Mật khẩu</label>
+                      <div className="lg-field">
+                        <Lock size={18} aria-hidden="true" />
+                        <input id="rg-pw" className="lg-input lg-has-eye" type={showPw ? 'text' : 'password'} value={regPassword}
+                          onChange={(e) => setRegPassword(e.target.value)} placeholder="Tối thiểu 8 ký tự" autoComplete="new-password" />
+                        <button type="button" className="lg-eye" onClick={() => setShowPw((v) => !v)} aria-label={showPw ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}>
+                          {showPw ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
+                        </button>
                       </div>
-                      <input
-                        type="text"
-                        value={regUnit}
-                        onChange={(e) => setRegUnit(e.target.value)}
-                        placeholder="Ví dụ: Chi cục Thủy lợi & PCTT Tỉnh Yên Bái"
-                        style={{
-                          width: '100%',
-                          background: 'rgba(13, 19, 34, 0.9)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: 6,
-                          padding: '8px 10px 8px 34px',
-                          color: '#fff',
-                          fontSize: 12,
-                          outline: 'none'
-                        }}
-                      />
+                    </div>
+                    <div>
+                      <label className="lg-label" htmlFor="rg-pw2">Nhập lại mật khẩu</label>
+                      <div className="lg-field">
+                        <Lock size={18} aria-hidden="true" />
+                        <input id="rg-pw2" className="lg-input" type={showPw ? 'text' : 'password'} value={regConfirmPassword}
+                          onChange={(e) => setRegConfirmPassword(e.target.value)} placeholder="Nhập lại" autoComplete="new-password" />
+                      </div>
                     </div>
                   </div>
-                ) : (
-                  <div style={{ marginBottom: 12 }}>
-                    <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
-                      Địa bàn cư trú / Vùng nhận cảnh báo (AOI) <span style={{ color: '#f87171' }}>*</span>
-                    </label>
-                    <div style={{ position: 'relative' }}>
-                      <div style={{ position: 'absolute', left: 10, top: 9, color: '#64748b' }}>
-                        <MapPin size={15} />
-                      </div>
-                      <input
-                        type="text"
-                        value={regArea}
-                        onChange={(e) => setRegArea(e.target.value)}
-                        placeholder="Ví dụ: Bản Lìm Mông, Xã Cao Phạ, Huyện Mù Cang Chải"
-                        style={{
-                          width: '100%',
-                          background: 'rgba(13, 19, 34, 0.9)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: 6,
-                          padding: '8px 10px 8px 34px',
-                          color: '#fff',
-                          fontSize: 12,
-                          outline: 'none'
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
+                  {regConfirmPassword && (
+                    <p className={regPassword === regConfirmPassword ? 'lg-match lg-match-ok' : 'lg-match lg-match-bad'} role="status">
+                      {regPassword === regConfirmPassword ? 'Mật khẩu khớp.' : 'Hai mật khẩu chưa khớp.'}
+                    </p>
+                  )}
+                </fieldset>
 
-                {/* Password & Confirm Password */}
-                <div className="form-grid-2" style={{ marginBottom: 18 }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
-                      Mật khẩu <span style={{ color: '#f87171' }}>*</span>
-                    </label>
-                    <div style={{ position: 'relative' }}>
-                      <div style={{ position: 'absolute', left: 10, top: 9, color: '#64748b' }}>
-                        <Lock size={15} />
-                      </div>
-                      <input
-                        type="password"
-                        value={regPassword}
-                        onChange={(e) => setRegPassword(e.target.value)}
-                        placeholder="••••••••"
-                        style={{
-                          width: '100%',
-                          background: 'rgba(13, 19, 34, 0.9)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: 6,
-                          padding: '8px 10px 8px 34px',
-                          color: '#fff',
-                          fontSize: 12,
-                          outline: 'none'
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
-                      Xác nhận mật khẩu <span style={{ color: '#f87171' }}>*</span>
-                    </label>
-                    <div style={{ position: 'relative' }}>
-                      <div style={{ position: 'absolute', left: 10, top: 9, color: '#64748b' }}>
-                        <Lock size={15} />
-                      </div>
-                      <input
-                        type="password"
-                        value={regConfirmPassword}
-                        onChange={(e) => setRegConfirmPassword(e.target.value)}
-                        placeholder="••••••••"
-                        style={{
-                          width: '100%',
-                          background: 'rgba(13, 19, 34, 0.9)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: 6,
-                          padding: '8px 10px 8px 34px',
-                          color: '#fff',
-                          fontSize: 12,
-                          outline: 'none'
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Submit button */}
-                <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-                  <button
-                    type="button"
-                    onClick={closeRegisterModal}
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.06)',
-                      border: '1px solid rgba(255, 255, 255, 0.12)',
-                      color: '#cbd5e1',
-                      padding: '9px 16px',
-                      borderRadius: 8,
-                      fontSize: 12,
-                      fontWeight: 600,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Hủy bỏ
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={regLoading}
-                    style={{
-                      background: activeModal === 'officer' ? '#0284c7' : '#059669',
-                      color: '#fff',
-                      border: 'none',
-                      padding: '9px 20px',
-                      borderRadius: 8,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      cursor: regLoading ? 'not-allowed' : 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6
-                    }}
-                  >
-                    {regLoading ? 'Đang gửi mã OTP...' : (
-                      <>
-                        Tiếp tục: Nhận mã OTP SMS <ArrowRight size={14} />
-                      </>
-                    )}
+                <div className="lg-actions">
+                  <button type="button" className="lg-btn lg-btn-ghost lg-back" onClick={closeRegisterModal}>Hủy</button>
+                  <button type="submit" className="lg-btn lg-btn-primary" disabled={regLoading}>
+                    {regLoading ? 'Đang gửi mã OTP…' : <>Tiếp tục: nhận mã OTP <ArrowRight size={18} aria-hidden="true" /></>}
                   </button>
                 </div>
               </form>
             )}
-          </div>
-        </div>
-      )}
+            </div>
+            </AutoHeight>
+              </>
+            ) : null}
+            reset={forgotMounted ? <ForgotPasswordPanel initialEmail={email} onBack={closeForgot} /> : null}
+          />
+        </section>
+
+        <p className="lg-note lg-note-m">Hệ thống đang ở giai đoạn thử nghiệm. Điểm nguy cơ là điểm thử nghiệm, chưa phải xác suất đã hiệu chuẩn và chưa thay thế cảnh báo chính thức.</p>
+      </main>
 
       {/* Phần tử container gắn reCAPTCHA ẩn cho Firebase */}
       <div id="recaptcha-container"></div>

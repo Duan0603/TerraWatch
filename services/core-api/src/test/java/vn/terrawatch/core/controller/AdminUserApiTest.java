@@ -124,35 +124,73 @@ class AdminUserApiTest {
     }
 
     @Test
-    void adminCanApproveAndRejectOfficerRegistration() throws Exception {
-        String admin = withRole("admin-approver@example.com", "admin");
-
-        // Officer registers with requestedRole = "officer"
+    void selfRegistrationCannotAskForOfficerRole() throws Exception {
         call(HttpMethod.POST, "/api/v1/auth/register", null, Map.of(
-            "fullName", "Pending Officer",
-            "email", "pending-officer@example.com",
-            "password", "secret123",
-            "requestedRole", "officer"
-        )).andExpect(status().isCreated())
-          .andExpect(jsonPath("$.token").doesNotExist());
+            "fullName", "Wannabe Officer", "email", "wannabe-officer@example.com",
+            "password", "secret123", "role", "officer", "requestedRole", "officer"))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.role").value("citizen"))
+            .andExpect(jsonPath("$.token").isNotEmpty());
+    }
 
-        // Login is rejected while pending
+    @Test
+    void adminCanApproveAndRejectPendingOfficerRequestsOnly() throws Exception {
+        String admin = withRole("admin-approver@example.com", "admin");
+        register("pending-officer@example.com");
+        register("rejected-officer@example.com");
+        // Requests created before Story 4.7 stay in the database as pending officers.
+        jdbc.update("UPDATE core_schema.users SET role = CAST('officer' AS core_schema.user_role), approval_status = 'pending' "
+            + "WHERE email IN ('pending-officer@example.com', 'rejected-officer@example.com')");
+        entityManager.clear();
+
         call(HttpMethod.POST, "/api/v1/auth/login", null, Map.of("email", "pending-officer@example.com", "password", "secret123"))
             .andExpect(status().isForbidden());
 
         UUID officerId = jdbc.queryForObject(
             "SELECT user_id FROM core_schema.users WHERE email = 'pending-officer@example.com'", UUID.class);
+        UUID rejectedId = jdbc.queryForObject(
+            "SELECT user_id FROM core_schema.users WHERE email = 'rejected-officer@example.com'", UUID.class);
 
-        // Admin approves officer
         call(HttpMethod.POST, "/api/v1/admin/users/" + officerId + "/approve", admin, null)
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.role").value("officer"))
             .andExpect(jsonPath("$.approvalStatus").value("approved"));
-
-        // Officer can now login successfully
         call(HttpMethod.POST, "/api/v1/auth/login", null, Map.of("email", "pending-officer@example.com", "password", "secret123"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.role").value("officer"));
+
+        call(HttpMethod.POST, "/api/v1/admin/users/" + rejectedId + "/reject", admin, null)
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.approvalStatus").value("rejected"));
+        call(HttpMethod.POST, "/api/v1/auth/login", null, Map.of("email", "rejected-officer@example.com", "password", "secret123"))
+            .andExpect(status().isForbidden());
+
+        // Already decided: approve/reject must not re-role or revive an account.
+        call(HttpMethod.POST, "/api/v1/admin/users/" + officerId + "/reject", admin, null).andExpect(status().isConflict());
+        call(HttpMethod.POST, "/api/v1/admin/users/" + rejectedId + "/approve", admin, null).andExpect(status().isConflict());
+    }
+
+    @Test
+    void adminCannotChangeOwnRole() throws Exception {
+        String admin = withRole("admin-self-role@example.com", "admin");
+        UUID adminId = jdbc.queryForObject(
+            "SELECT user_id FROM core_schema.users WHERE email = 'admin-self-role@example.com'", UUID.class);
+
+        call(HttpMethod.PATCH, "/api/v1/admin/users/" + adminId + "/role", admin, Map.of("role", "citizen"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void lockedAccountLosesAccessWithItsExistingToken() throws Exception {
+        String admin = withRole("admin-lock-token@example.com", "admin");
+        String victim = register("victim-token@example.com");
+        UUID victimId = jdbc.queryForObject(
+            "SELECT user_id FROM core_schema.users WHERE email = 'victim-token@example.com'", UUID.class);
+
+        call(HttpMethod.GET, "/api/v1/auth/me", victim, null).andExpect(status().isOk());
+        call(HttpMethod.PATCH, "/api/v1/admin/users/" + victimId + "/status", admin, Map.of("isActive", false))
+            .andExpect(status().isOk());
+        call(HttpMethod.GET, "/api/v1/auth/me", victim, null).andExpect(status().isUnauthorized());
     }
 
     @Test

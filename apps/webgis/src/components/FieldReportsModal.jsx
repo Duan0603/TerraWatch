@@ -16,6 +16,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import forecastApi from '../api/forecastApi';
+import AuthImage from './AuthImage';
 import { fmtVN } from '../utils/time';
 
 const STATUS_CONFIG = {
@@ -278,11 +279,10 @@ export default function FieldReportsModal({ isOpen, onClose, onSelectLocation })
                         }}
                         title="Bấm để phóng to ảnh"
                       >
-                        <img
-                          src={report.imageUrl}
+                        <AuthImage
+                          path={report.imageUrl}
                           alt="Hiện trường"
                           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                          onError={(e) => { e.target.style.display = 'none'; }}
                         />
                         <div style={{
                           position: 'absolute',
@@ -490,8 +490,8 @@ export default function FieldReportsModal({ isOpen, onClose, onSelectLocation })
             }}
           >
             <div style={{ position: 'relative', maxWidth: '90vw', maxHeight: '90vh' }}>
-              <img
-                src={previewImage}
+              <AuthImage
+                path={previewImage}
                 alt="Phóng to"
                 style={{ maxWidth: '100%', maxHeight: '85vh', borderRadius: 8, objectFit: 'contain' }}
               />

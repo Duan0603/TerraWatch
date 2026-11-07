@@ -575,7 +575,6 @@ export default function BroadcastHistoryModal({ isOpen, onClose, onOpenNewBroadc
                           <tr style={{ background: 'rgba(255, 255, 255, 0.04)', color: '#94a3b8', textAlign: 'left', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
                             <th style={{ padding: '8px 10px' }}>Người nhận</th>
                             <th style={{ padding: '8px 10px' }}>Số điện thoại</th>
-                            <th style={{ padding: '8px 10px' }}>FCM Token</th>
                             <th style={{ padding: '8px 10px' }}>Trạng thái</th>
                           </tr>
                         </thead>
@@ -589,9 +588,6 @@ export default function BroadcastHistoryModal({ isOpen, onClose, onOpenNewBroadc
                                 </td>
                                 <td style={{ padding: '8px 10px', color: '#cbd5e1' }}>
                                   {d.phoneNumber || '—'}
-                                </td>
-                                <td style={{ padding: '8px 10px', color: '#64748b', fontFamily: 'monospace' }}>
-                                  {d.fcmToken ? `...${d.fcmToken.slice(-10)}` : '—'}
                                 </td>
                                 <td style={{ padding: '8px 10px' }}>
                                   <span style={{

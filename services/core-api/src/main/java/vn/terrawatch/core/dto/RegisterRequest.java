@@ -11,19 +11,16 @@ public record RegisterRequest(
     @NotBlank @Email @Size(max = 150) String email,
     @NotBlank @Size(min = 8, max = 72) @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) String password,
     @JsonAlias("phone_number") @Size(max = 20) String phoneNumber,
-    @JsonAlias({"phone_token", "phoneToken", "id_token", "idToken", "otp", "otp_code", "otpCode"}) String phoneToken,
-    @JsonAlias({"requested_role", "requestedRole", "role"}) String requestedRole
+    @JsonAlias({"phone_token", "phoneToken", "id_token", "idToken", "otp", "otp_code", "otpCode"}) String phoneToken
 ) {
-    public RegisterRequest(String fullName, String email, String password, String phoneNumber, String phoneToken) {
-        this(fullName, email, password, phoneNumber, phoneToken, null);
-    }
-
+    // Story 4.7: no role field. Self-registration always creates a citizen (Story 1.1 AC1);
+    // an admin promotes staff afterwards. An unknown "role" in the JSON is ignored.
     public RegisterRequest(String fullName, String email, String password, String phoneNumber) {
-        this(fullName, email, password, phoneNumber, null, null);
+        this(fullName, email, password, phoneNumber, null);
     }
 
     public RegisterRequest(String fullName, String email, String password) {
-        this(fullName, email, password, null, null, null);
+        this(fullName, email, password, null, null);
     }
 
     @Override

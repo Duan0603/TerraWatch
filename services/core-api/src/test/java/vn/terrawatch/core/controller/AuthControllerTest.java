@@ -107,6 +107,98 @@ class AuthControllerTest {
     }
 
     @Test
+    void forgotPasswordNeedsTheRegisteredPhoneAndItsOtp() throws Exception {
+        users.saveAndFlush(new User("Forgetful", "forgot@auth-test.example", passwords.encode("old-secret1"), "citizen", "0901234567"));
+        users.saveAndFlush(new User("No Phone", "nophone@auth-test.example", passwords.encode("old-secret1"), "citizen", null));
+        User locked = new User("Locked", "locked-reset@auth-test.example", passwords.encode("old-secret1"), "citizen", "0901234567");
+        locked.setActive(false);
+        users.saveAndFlush(locked);
+
+        // The pre-check only says yes for the right email + registered phone (no SMS is wasted otherwise).
+        postJson("/auth/password-reset/check", Map.of("email", "Forgot@Auth-Test.Example", "phoneNumber", "+84901234567"))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.eligible").value(true));
+        for (Map<String, String> no : java.util.List.of(
+            Map.of("email", "forgot@auth-test.example", "phoneNumber", "0912345678"),
+            Map.of("email", "nobody@auth-test.example", "phoneNumber", "0901234567"),
+            Map.of("email", "nophone@auth-test.example", "phoneNumber", "0901234567"),
+            Map.of("email", "locked-reset@auth-test.example", "phoneNumber", "0901234567"))) {
+            postJson("/auth/password-reset/check", no).andExpect(jsonPath("$.eligible").value(false));
+        }
+
+        Map<String, String> reset = new java.util.HashMap<>(Map.of("email", "forgot@auth-test.example",
+            "phoneNumber", "0901234567", "newPassword", "brand-new-pw1"));
+        // No / wrong-owner / invalid token, short password, unknown or locked account: all the same 400.
+        postJson("/auth/password-reset", reset).andExpect(status().isBadRequest());
+        for (String token : new String[]{"mismatch-token", "fake-token"}) {
+            Map<String, String> bad = new java.util.HashMap<>(reset);
+            bad.put("phoneToken", token);
+            postJson("/auth/password-reset", bad).andExpect(status().isBadRequest());
+        }
+        Map<String, String> shortPw = new java.util.HashMap<>(reset);
+        shortPw.put("phoneToken", "valid-token");
+        shortPw.put("newPassword", "short");
+        postJson("/auth/password-reset", shortPw).andExpect(status().isBadRequest());
+        Map<String, String> lockedReq = new java.util.HashMap<>(reset);
+        lockedReq.put("phoneToken", "valid-token");
+        lockedReq.put("email", "locked-reset@auth-test.example");
+        postJson("/auth/password-reset", lockedReq).andExpect(status().isBadRequest());
+        postJson("/auth/login", Map.of("email", "forgot@auth-test.example", "password", "old-secret1")).andExpect(status().isOk());
+
+        // The right phone token sets the new password; the old one stops working.
+        Map<String, String> ok = new java.util.HashMap<>(reset);
+        ok.put("phoneToken", "valid-token");
+        postJson("/auth/password-reset", ok).andExpect(status().isNoContent());
+        postJson("/auth/login", Map.of("email", "forgot@auth-test.example", "password", "brand-new-pw1")).andExpect(status().isOk());
+        postJson("/auth/login", Map.of("email", "forgot@auth-test.example", "password", "old-secret1")).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void emailExistsIsPublicAndNormalisesTheEmail() throws Exception {
+        mvc.perform(get("/api/v1/auth/email-exists").param("email", "Nobody-Here@Auth-Test.Example"))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.exists").value(false));
+        users.saveAndFlush(new User("Test", "taken@auth-test.example", passwords.encode("secret123"), "citizen", null));
+        mvc.perform(get("/api/v1/auth/email-exists").param("email", " Taken@Auth-Test.Example "))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.exists").value(true));
+        mvc.perform(get("/api/v1/auth/email-exists").param("email", " ")).andExpect(jsonPath("$.exists").value(false));
+    }
+
+    @Test
+    void officerRequestNeedsVerifiedPhoneAndStaysPendingUntilApproved() throws Exception {
+        Map<String, String> base = Map.of("fullName", "Cán bộ Mới", "email", "new-officer@auth-test.example",
+            "password", "secret123", "phoneNumber", "0912345678", "departmentUnit", "Chi cục PCTT Yên Bái");
+
+        // Missing OTP token, missing unit or a token for another number are refused.
+        postJson("/auth/officer-requests", base).andExpect(status().isBadRequest());
+        Map<String, String> noUnit = new java.util.HashMap<>(base);
+        noUnit.put("phoneToken", "officer-token");
+        noUnit.remove("departmentUnit");
+        postJson("/auth/officer-requests", noUnit).andExpect(status().isBadRequest());
+        Map<String, String> wrongPhone = new java.util.HashMap<>(base);
+        wrongPhone.put("phoneToken", "valid-token");
+        postJson("/auth/officer-requests", wrongPhone).andExpect(status().isBadRequest());
+
+        Map<String, String> ok = new java.util.HashMap<>(base);
+        ok.put("phoneToken", "officer-token");
+        JsonNode created = body(postJson("/auth/officer-requests", ok).andExpect(status().isCreated())
+            .andExpect(jsonPath("$.approvalStatus").value("pending")).andExpect(jsonPath("$.token").doesNotExist()));
+        assertThat(created.path("requestId").asText()).isNotBlank();
+
+        User saved = users.findByEmail("new-officer@auth-test.example").orElseThrow();
+        assertThat(saved.getRole()).isEqualTo("officer");
+        assertThat(saved.getApprovalStatus()).isEqualTo("pending");
+        assertThat(saved.getDepartmentUnit()).isEqualTo("Chi cục PCTT Yên Bái");
+
+        // No sign-in and no API access until an admin approves.
+        postJson("/auth/login", Map.of("email", "new-officer@auth-test.example", "password", "secret123"))
+            .andExpect(status().isForbidden());
+        mvc.perform(get("/api/v1/forecasts/queue").header("Authorization", "Bearer " + tokens.generateToken(saved)))
+            .andExpect(status().isUnauthorized());
+
+        // The same email cannot be requested twice.
+        postJson("/auth/officer-requests", ok).andExpect(status().isConflict());
+    }
+
+    @Test
     void acceptsCamelCasePhoneAndIgnoresOfficerRole() throws Exception {
         body(postJson("/auth/register", Map.of("fullName", "Test", "email", "phone@auth-test.example",
             "password", "secret123", "phoneNumber", "0912345678", "role", "officer", "phoneToken", "officer-token"))
@@ -174,13 +266,44 @@ class AuthControllerTest {
 
     @Test
     void existingRoutesAndDocsRemainPublicEvenWithGarbageBearer() throws Exception {
-        for (String path : new String[]{"/landslides/queue", "/landslides/active", "/community-reports", "/monitoring-areas"}) {
+        for (String path : new String[]{"/landslides/queue", "/landslides/active", "/monitoring-areas"}) {
             mvc.perform(get("/api/v1" + path)).andExpect(status().isOk());
             mvc.perform(get("/api/v1" + path).header("Authorization", "Bearer garbage")).andExpect(status().isOk());
         }
         mvc.perform(get("/api-docs")).andExpect(status().isOk());
         mvc.perform(get("/swagger-ui/index.html")).andExpect(status().isOk());
         mvc.perform(get("/swagger-ui.html")).andExpect(status().is3xxRedirection());
+    }
+
+    @Test
+    void fullCommunityReportListNeedsStaffRoleBecauseItCarriesPhonesAndGps() throws Exception {
+        mvc.perform(get("/api/v1/community-reports")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/v1/community-reports").header("Authorization", "Bearer garbage"))
+            .andExpect(status().isUnauthorized());
+        User citizen = users.saveAndFlush(new User("Test", "citizen-reports@auth-test.example",
+            passwords.encode("secret123"), "citizen", null));
+        mvc.perform(get("/api/v1/community-reports").header("Authorization", "Bearer " + tokens.generateToken(citizen)))
+            .andExpect(status().isForbidden());
+        User officer = users.saveAndFlush(new User("Test", "officer-reports@auth-test.example",
+            passwords.encode("secret123"), "officer", null));
+        mvc.perform(get("/api/v1/community-reports").header("Authorization", "Bearer " + tokens.generateToken(officer)))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void oldTokenStopsWorkingWhenTheAccountIsLockedOrDemoted() throws Exception {
+        User admin = users.saveAndFlush(new User("Test", "admin-stale@auth-test.example",
+            passwords.encode("secret123"), "admin", null));
+        String token = tokens.generateToken(admin);
+        mvc.perform(get("/api/v1/admin/users").header("Authorization", "Bearer " + token)).andExpect(status().isOk());
+
+        admin.setRole("citizen");
+        users.saveAndFlush(admin);
+        mvc.perform(get("/api/v1/admin/users").header("Authorization", "Bearer " + token)).andExpect(status().isForbidden());
+
+        admin.setActive(false);
+        users.saveAndFlush(admin);
+        mvc.perform(get("/api/v1/auth/me").header("Authorization", "Bearer " + token)).andExpect(status().isUnauthorized());
     }
 
     @Test

@@ -1,0 +1,192 @@
+/* Trang đăng nhập: xem _bmad-output/planning-artifacts/ux-designs/ux-TerraWatch-2026-11-07 (DESIGN.md + EXPERIENCE.md). */
+body.page-login { background: #070D1A; }
+
+.lg-stage {
+  --ink-1: #F1F6F8; --ink-2: #B4C4CC; --ink-3: #8196A1;
+  --glass: rgba(10, 18, 32, 0.74); --glass-line: rgba(255, 255, 255, 0.14);
+  --field: #0C1626; --field-line: #2B4054;
+  --brand: #087B70; --brand-hover: #0A9185; --brand-text: #5FD0C0; --focus: #5FD0C0;
+  --err: #FCA5A5;
+  position: relative; min-height: 100vh; overflow: hidden; overflow: clip; color: var(--ink-1);
+  font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased;
+  background: linear-gradient(180deg, #070D1A 0%, #0F1E33 55%, #17324A 100%);
+}
+.lg-backdrop { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.lg-cloud { position: absolute; left: -30%; width: 160%; border-radius: 50%; filter: blur(46px); opacity: .55; will-change: transform; }
+.lg-c1 { top: -8%; height: 34%; background: radial-gradient(ellipse at 30% 50%, #27415C 0%, transparent 62%), radial-gradient(ellipse at 72% 40%, #1D3350 0%, transparent 60%); animation: lg-drift 120s linear infinite; }
+.lg-c2 { top: 6%; height: 30%; background: radial-gradient(ellipse at 45% 50%, #33506C 0%, transparent 60%), radial-gradient(ellipse at 85% 55%, #223B57 0%, transparent 58%); opacity: .4; animation: lg-drift 85s linear infinite reverse; }
+.lg-c3 { top: 16%; height: 26%; background: radial-gradient(ellipse at 20% 50%, #2C4963 0%, transparent 58%), radial-gradient(ellipse at 60% 45%, #1A2F49 0%, transparent 60%); opacity: .35; animation: lg-drift 150s linear infinite; }
+@keyframes lg-drift { from { transform: translateX(0); } to { transform: translateX(18%); } }
+.lg-rain { position: absolute; inset: 0; width: 100%; height: 100%; }
+.lg-ridge { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 34%; }
+
+.lg-layout { position: relative; z-index: 2; min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 48px; align-items: center; max-width: 1180px; margin: 0 auto; padding: 48px 32px; box-sizing: border-box; }
+.lg-hero h1 { font-size: clamp(34px, 4.4vw, 52px); line-height: 1.08; font-weight: 800; letter-spacing: -.02em; margin: 18px 0 14px; color: var(--ink-1); }
+.lg-hero h1 em { font-style: normal; color: var(--brand-text); }
+.lg-hero p { font-size: 17px; line-height: 1.55; color: var(--ink-2); max-width: 30em; margin: 0; }
+.lg-brand { display: flex; align-items: center; gap: 12px; font-weight: 700; letter-spacing: .06em; font-size: 14px; color: var(--ink-2); }
+.lg-mark { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: rgba(95, 208, 192, .12); border: 1px solid rgba(95, 208, 192, .35); }
+.lg-note { font-size: 13.5px; line-height: 1.5; color: var(--ink-3); border-left: 2px solid rgba(95, 208, 192, .5); padding-left: 12px; margin: 0; }
+.lg-hero .lg-note { margin-top: 28px; max-width: 34em; }
+.lg-note-m { display: none; margin-top: 16px; }
+
+.lg-card { background: var(--glass); border: 1px solid var(--glass-line); border-radius: 18px; padding: 32px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 24px 60px rgba(0, 0, 0, .45); width: 100%; max-width: 440px; justify-self: end; box-sizing: border-box; }
+.lg-card h2 { margin: 0 0 4px; font-size: 22px; font-weight: 700; color: var(--ink-1); }
+.lg-sub { margin: 0 0 22px; color: var(--ink-3); font-size: 14px; }
+.lg-label { display: block; font-size: 13.5px; font-weight: 600; color: var(--ink-2); margin: 0 0 6px; }
+.lg-field { position: relative; margin-bottom: 16px; }
+.lg-field svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ink-3); }
+.lg-input { width: 100%; height: 46px; box-sizing: border-box; border-radius: 10px; border: 1px solid var(--field-line); background: var(--field); color: var(--ink-1); font: inherit; font-size: 15px; padding: 0 14px 0 42px; outline: none; transition: border-color .15s, box-shadow .15s; }
+.lg-input::placeholder { color: #5F7584; }
+.lg-input:focus-visible { border-color: var(--focus); box-shadow: 0 0 0 3px rgba(95, 208, 192, .25); }
+.lg-error { background: rgba(239, 68, 68, .12); border: 1px solid rgba(239, 68, 68, .35); color: var(--err); padding: 10px 14px; border-radius: 10px; font-size: 13.5px; margin-bottom: 16px; }
+.lg-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; box-sizing: border-box; border-radius: 10px; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; border: 1px solid transparent; transition: background .15s, border-color .15s; text-decoration: none; }
+.lg-btn:disabled { opacity: .7; cursor: not-allowed; }
+.lg-btn-primary { background: var(--brand); color: #fff; }
+.lg-btn-primary:hover:not(:disabled) { background: var(--brand-hover); }
+.lg-btn-ghost { background: transparent; color: var(--brand-text); border-color: rgba(95, 208, 192, .4); height: 44px; font-weight: 600; margin-top: 10px; }
+.lg-btn-ghost:hover { background: rgba(95, 208, 192, .08); }
+.lg-btn:focus-visible, .lg-chip:focus-visible, .lg-link:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.lg-sep { display: flex; align-items: center; gap: 12px; margin: 22px 0 12px; color: var(--ink-3); font-size: 12.5px; letter-spacing: .04em; text-transform: uppercase; }
+.lg-sep::before, .lg-sep::after { content: ""; height: 1px; background: var(--glass-line); flex: 1; }
+.lg-chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.lg-chip { height: 44px; border-radius: 10px; background: rgba(255, 255, 255, .04); border: 1px solid var(--glass-line); color: var(--ink-1); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; }
+.lg-chip:hover { background: rgba(255, 255, 255, .09); }
+.lg-dot { width: 8px; height: 8px; border-radius: 50%; }
+.lg-hint { margin: 8px 0 0; color: var(--ink-3); font-size: 12.5px; }
+.lg-links { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--glass-line); }
+.lg-action { width: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 14px; padding: 12px 14px; min-height: 64px; text-align: left; font: inherit; color: var(--ink-1); cursor: pointer; background: rgba(255, 255, 255, .04); border: 1px solid var(--glass-line); border-radius: 12px; transition: background .15s, border-color .15s, transform .15s; }
+.lg-action:hover { background: rgba(95, 208, 192, .08); border-color: rgba(95, 208, 192, .45); }
+.lg-action:hover .lg-action-go { transform: translateX(3px); color: var(--brand-text); }
+.lg-action:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.lg-action-icon { flex: none; width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; color: var(--brand-text); background: rgba(95, 208, 192, .12); border: 1px solid rgba(95, 208, 192, .3); }
+.lg-action-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.lg-action-text strong { font-size: 14.5px; font-weight: 700; color: var(--ink-1); }
+.lg-action-text small { font-size: 12.5px; color: var(--ink-3); line-height: 1.35; }
+.lg-action-go { flex: none; color: var(--ink-3); transition: transform .15s, color .15s; }
+
+/* Chrome tự điền làm ô sáng trắng: giữ nền tối, chữ sáng. */
+.lg-input:-webkit-autofill, .lg-input:-webkit-autofill:hover, .lg-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--ink-1); caret-color: var(--ink-1);
+  -webkit-box-shadow: 0 0 0 1000px var(--field) inset; box-shadow: 0 0 0 1000px var(--field) inset;
+  transition: background-color 9999s ease-out 0s;
+}
+
+/* ── Hộp đăng ký (Story 4.17) ── */
+.lg-modal-head { display: flex; align-items: flex-start; gap: 14px; }
+.lg-modal-icon { flex: none; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; color: var(--brand-text); background: rgba(95, 208, 192, .12); border: 1px solid rgba(95, 208, 192, .35); }
+.lg-modal-titles { flex: 1; min-width: 0; }
+.lg-modal-titles h2 { margin: 0; font-size: 20px; font-weight: 700; color: var(--ink-1); }
+.lg-modal-titles p { margin: 4px 0 0; font-size: 13.5px; color: var(--ink-3); line-height: 1.4; }
+
+.lg-steps { list-style: none; display: flex; align-items: center; margin: 16px 0 14px; padding: 0; }
+.lg-step { display: flex; align-items: center; gap: 8px; color: var(--ink-3); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.lg-step + .lg-step { flex: 1; }
+.lg-step + .lg-step::before { content: ""; flex: 1; height: 2px; margin: 0 10px; border-radius: 2px; background: var(--glass-line); min-width: 12px; }
+.lg-step-dot { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 12.5px; border: 1.5px solid var(--glass-line); flex: none; }
+.lg-step-now { color: var(--ink-1); }
+.lg-step-now .lg-step-dot { background: var(--brand); border-color: var(--brand); color: #fff; }
+.lg-step-done { color: var(--brand-text); }
+.lg-step-done .lg-step-dot { border: 0; background: none; color: var(--brand-text); }
+.lg-step-done + .lg-step::before, .lg-step-now + .lg-step::before { background: var(--glass-line); }
+.lg-step-done + .lg-step-now::before, .lg-step-done + .lg-step-done::before { background: var(--brand-text); }
+
+.lg-info { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 14px; padding: 12px 14px; border-radius: 12px; font-size: 13.5px; line-height: 1.5; color: var(--ink-2); background: rgba(95, 208, 192, .07); border: 1px solid rgba(95, 208, 192, .22); }
+.lg-info svg { flex: none; margin-top: 2px; color: var(--brand-text); }
+.lg-group { border: 0; margin: 0 0 4px; padding: 0; min-width: 0; }
+.lg-group .lg-field { margin-bottom: 12px; }
+.lg-group .lg-label { margin-bottom: 5px; }
+.lg-group legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.lg-two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.lg-helper { margin: -6px 0 12px; font-size: 12.5px; color: var(--ink-3); line-height: 1.4; }
+.lg-has-eye { padding-right: 44px; }
+.lg-eye { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; display: grid; place-items: center; background: none; border: 0; border-radius: 8px; color: var(--ink-3); cursor: pointer; }
+.lg-field .lg-eye svg { position: static; transform: none; }
+.lg-eye:hover { color: #fff; }
+.lg-eye:focus-visible { outline: 3px solid var(--focus); }
+.lg-match { margin: -6px 0 0; font-size: 13px; font-weight: 600; }
+.lg-match-ok { color: #4ADE80; }
+.lg-match-bad { color: var(--err); }
+.lg-actions { display: flex; gap: 10px; margin-top: 8px; }
+.lg-actions .lg-btn { margin-top: 0; }
+.lg-actions .lg-btn-primary { flex: 1; }
+.lg-actions .lg-back { width: auto; flex: none; padding: 0 18px; color: var(--ink-2); border-color: var(--glass-line); }
+.lg-actions .lg-back:hover { background: rgba(255, 255, 255, .06); }
+
+.lg-otp-lead { margin: 0 0 18px; font-size: 14.5px; line-height: 1.55; color: var(--ink-2); }
+.lg-otp-lead strong { color: var(--ink-1); }
+.lg-otp { display: flex; justify-content: center; gap: 10px; margin: 6px 0 14px; }
+.lg-otp-box { width: 52px; height: 60px; box-sizing: border-box; text-align: center; font: inherit; font-size: 24px; font-weight: 700; color: var(--ink-1); background: var(--field); border: 1px solid var(--field-line); border-radius: 12px; outline: none; caret-color: var(--brand-text); transition: border-color .15s, box-shadow .15s; }
+.lg-otp-box:focus-visible { border-color: var(--focus); box-shadow: 0 0 0 3px rgba(95, 208, 192, .25); }
+.lg-resend { text-align: center; min-height: 28px; margin-bottom: 18px; font-size: 13.5px; color: var(--ink-3); }
+.lg-resend strong { color: var(--brand-text); }
+.lg-textbtn { display: inline-flex; align-items: center; gap: 6px; background: none; border: 0; color: var(--brand-text); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; padding: 6px 8px; border-radius: 8px; }
+.lg-textbtn:hover:not(:disabled) { background: rgba(95, 208, 192, .1); }
+.lg-textbtn:focus-visible { outline: 3px solid var(--focus); }
+
+.lg-done { text-align: center; padding: 8px 0 0; }
+.lg-done-icon { display: inline-grid; place-items: center; width: 72px; height: 72px; border-radius: 50%; color: #4ADE80; background: rgba(74, 222, 128, .12); border: 1px solid rgba(74, 222, 128, .35); }
+.lg-done h3 { margin: 16px 0 8px; font-size: 20px; font-weight: 700; }
+.lg-done p { margin: 0 auto 18px; max-width: 30em; font-size: 14.5px; line-height: 1.55; color: var(--ink-2); }
+.lg-code { margin: 0 auto 20px; padding: 12px 14px; border-radius: 12px; background: rgba(255, 255, 255, .05); border: 1px dashed var(--glass-line); display: flex; flex-direction: column; gap: 4px; }
+.lg-code span { font-size: 12.5px; color: var(--ink-3); }
+.lg-code strong { font-size: 14px; word-break: break-all; color: var(--brand-text); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 560px) {
+  .lg-two { grid-template-columns: 1fr; gap: 0; }
+  .lg-step-label { display: none; }
+  .lg-step-now .lg-step-label { display: inline; }
+  .lg-otp { gap: 6px; }
+  .lg-otp-box { width: 44px; height: 54px; font-size: 22px; }
+  .lg-actions { flex-direction: column-reverse; }
+  .lg-actions .lg-back { width: 100%; }
+}
+
+/* ── Chuyển cảnh trong cùng một khung (Story 4.18): đăng nhập trượt trái, đăng ký trượt vào từ phải ── */
+.lg-card { min-width: 0; transition: max-width .55s cubic-bezier(.65, 0, .2, 1); }
+.lg-card-register, .lg-card-reset { max-width: 520px; }
+.lg-viewport { overflow: hidden; margin: -6px; padding: 6px; box-sizing: content-box; transition: height .55s cubic-bezier(.65, 0, .2, 1); }
+.lg-track { display: flex; align-items: flex-start; transition: transform .55s cubic-bezier(.65, 0, .2, 1); }
+.lg-track-register { transform: translateX(-100%); }
+.lg-track-reset { transform: translateX(-200%); }
+.lg-slide { flex: 0 0 100%; min-width: 0; box-sizing: border-box; padding: 0 6px; transition: opacity .35s ease; }
+.lg-slide[inert] { opacity: 0; }
+.lg-backlink { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 14px -4px; padding: 6px 8px; background: none; border: 0; border-radius: 8px; color: var(--ink-2); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.lg-backlink:hover { color: #fff; background: rgba(255, 255, 255, .06); }
+.lg-backlink:focus-visible { outline: 3px solid var(--focus); }
+/* Đổi bước: nội dung mới trượt vào (tiến từ phải, lùi từ trái), chiều cao khung đổi mượt. */
+.lg-auto { box-sizing: content-box; overflow: hidden; margin: -6px; padding: 6px; transition: height .35s cubic-bezier(.2, .8, .2, 1); }
+.lg-pane { animation: lg-pane-fwd .38s cubic-bezier(.2, .8, .2, 1) both; }
+.lg-pane-back { animation-name: lg-pane-back; }
+@keyframes lg-pane-fwd { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+@keyframes lg-pane-back { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 900px) {
+  .lg-layout { grid-template-columns: minmax(0, 1fr); gap: 28px; padding: 28px 16px 40px; align-items: start; }
+  .lg-hero h1 { font-size: 26px; margin: 14px 0 0; }
+  .lg-hero p, .lg-hero .lg-note { display: none; }
+  .lg-note-m { display: block; }
+  .lg-card { justify-self: stretch; max-width: none; padding: 24px 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lg-pane { animation: none !important; }
+  .lg-card, .lg-viewport, .lg-track, .lg-slide, .lg-auto { transition: none; }
+  .lg-cloud { animation: none; }
+  .lg-rain { display: none; }
+}
+
+/* Báo email đã đăng ký ngay dưới ô email (Story 4.19) */
+.lg-taken { margin: -6px 0 12px; line-height: 1.4; }
+.lg-taken .lg-textbtn { padding: 2px 4px; font-size: 13px; text-decoration: underline; }
+.lg-input[aria-invalid="true"] { border-color: var(--err); }
+
+/* Quên mật khẩu (Story 4.20) */
+.lg-forgot-row { display: flex; justify-content: flex-end; margin: -6px 0 14px; }
+.lg-forgot-row .lg-textbtn { padding: 4px 6px; font-size: 13.5px; }
+
+/* Chọn cách nhận mã xác nhận (Story 4.21) */
+.lg-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; margin: 0 0 14px; border-radius: 12px; background: rgba(255, 255, 255, .05); border: 1px solid var(--glass-line); }
+.lg-tab { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 0 10px; border: 0; border-radius: 9px; background: transparent; color: var(--ink-2); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: background .15s, color .15s; }
+.lg-tab:hover { color: #fff; }
+.lg-tab.is-on { background: var(--brand); color: #fff; }
+.lg-tab:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
