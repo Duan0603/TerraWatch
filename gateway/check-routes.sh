@@ -12,4 +12,7 @@ check POST /api/v1/ai/inference 403
 check POST /api/v1/ai/forecasts 403
 check GET  /api/v1/gis/rainfall/live open
 check POST /api/v1/auth/login open
+# Story 4.7: /admin must reach core-api (401 without a token), not the SPA (200 HTML / 405).
+code=$(curl -s -o /dev/null -w '%{http_code}' "$G/api/v1/admin/users")
+[ "$code" = 401 ] && echo "ok   GET    /api/v1/admin/users (no token)          $code" || { echo "FAIL GET    /api/v1/admin/users (no token)          $code (expected 401)"; fail=1; }
 exit $fail
