@@ -8,6 +8,7 @@ import org.springframework.web.server.ResponseStatusException;
 import vn.terrawatch.core.dto.*;
 import vn.terrawatch.core.entity.User;
 import vn.terrawatch.core.repository.UserRepository;
+import vn.terrawatch.core.security.FirebaseIdTokenVerifier;
 import vn.terrawatch.core.security.JwtTokenProvider;
 import vn.terrawatch.core.security.Role;
 
@@ -21,15 +22,23 @@ public class AuthService {
     private final UserRepository users;
     private final BCryptPasswordEncoder passwords;
     private final JwtTokenProvider tokens;
+    private final FirebaseIdTokenVerifier firebaseVerifier;
     private static final java.time.LocalDate MIN_BIRTH_DATE = java.time.LocalDate.of(1900, 1, 1);
 
     private final String dummyHash;
 
-    public AuthService(UserRepository users, BCryptPasswordEncoder passwords, JwtTokenProvider tokens) {
+    @org.springframework.beans.factory.annotation.Autowired
+    public AuthService(UserRepository users, BCryptPasswordEncoder passwords, JwtTokenProvider tokens,
+                       FirebaseIdTokenVerifier firebaseVerifier) {
         this.users = users;
         this.passwords = passwords;
         this.tokens = tokens;
+        this.firebaseVerifier = firebaseVerifier;
         this.dummyHash = passwords.encode("unused-login-timing-check");
+    }
+
+    public AuthService(UserRepository users, BCryptPasswordEncoder passwords, JwtTokenProvider tokens) {
+        this(users, passwords, tokens, null);
     }
 
     public AuthResponse register(RegisterRequest request) {
@@ -38,8 +47,27 @@ public class AuthService {
         if (users.existsByEmail(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
+
+        // Bắt buộc xác minh số điện thoại qua OTP:
+        // Gọi thẳng API với số điện thoại mà không qua xác minh OTP sẽ bị từ chối 400.
+        String verifiedPhone = null;
+        if (request.phoneNumber() != null && !request.phoneNumber().isBlank()) {
+            if (request.phoneToken() == null || request.phoneToken().isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Phone number must be verified via OTP before registration");
+            }
+            if (firebaseVerifier != null) {
+                String tokenPhone = firebaseVerifier.verifyPhoneToken(request.phoneToken());
+                if (!phonesMatch(tokenPhone, request.phoneNumber())) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Phone number in verification token does not match registered phone number");
+                }
+            }
+            verifiedPhone = request.phoneNumber().trim();
+        }
+
         User user = new User(request.fullName(), email, passwords.encode(request.password()),
-            Role.CITIZEN.dbValue(), request.phoneNumber());
+            Role.CITIZEN.dbValue(), verifiedPhone);
         try {
             user = users.saveAndFlush(user);
         } catch (DataIntegrityViolationException error) {
@@ -49,6 +77,20 @@ public class AuthService {
             throw error;
         }
         return response(user);
+    }
+
+    public static boolean phonesMatch(String tokenPhone, String requestPhone) {
+        if (tokenPhone == null || requestPhone == null) return false;
+        String p1 = tokenPhone.replaceAll("[^0-9]", "");
+        String p2 = requestPhone.replaceAll("[^0-9]", "");
+        if (p1.equals(p2)) return true;
+        if (p1.startsWith("84") && p2.startsWith("0")) {
+            return p1.substring(2).equals(p2.substring(1));
+        }
+        if (p2.startsWith("84") && p1.startsWith("0")) {
+            return p2.substring(2).equals(p1.substring(1));
+        }
+        return false;
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -72,13 +114,13 @@ public class AuthService {
     }
 
     public UserProfileResponse getCurrentUser(UUID userId) {
-        return profile(users.findById(userId).orElseThrow(() ->
-            new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized")));
+        return profile(users.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized")));
     }
 
     public UserProfileResponse updateProfile(UUID userId, UpdateProfileRequest request) {
-        User user = users.findById(userId).orElseThrow(() ->
-            new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
+        User user = users.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
         if (request.dateOfBirth() != null && request.dateOfBirth().isBefore(MIN_BIRTH_DATE)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Date of birth is out of range");
         }
@@ -103,15 +145,18 @@ public class AuthService {
     }
 
     /**
-     * Wrong current password is 400, not 401: clients treat 401 on an authenticated call as an
-     * expired session and sign the user out. Google-only accounts have no password to change.
+     * Wrong current password is 400, not 401: clients treat 401 on an authenticated
+     * call as an
+     * expired session and sign the user out. Google-only accounts have no password
+     * to change.
      */
     public void changePassword(UUID userId, ChangePasswordRequest request) {
         validatePasswordLength(request.newPassword());
-        User user = users.findById(userId).orElseThrow(() ->
-            new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
+        User user = users.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
         if (!"email".equals(user.getAuthProvider())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This account signs in with Google and has no password");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "This account signs in with Google and has no password");
         }
         boolean matches;
         try {
@@ -141,18 +186,21 @@ public class AuthService {
     private UserProfileResponse profile(User user) {
         requireKnownRole(user);
         return new UserProfileResponse(user.getUserId().toString(), user.getFullName(), user.getEmail(),
-            user.getRole(), user.getPhoneNumber(), user.getAuthProvider(),
-            user.getDateOfBirth() == null ? null : user.getDateOfBirth().toString(), user.getGender(),
-            user.getProvince(), user.getDistrict(), user.getCommune(), user.getAddressLine(),
-            user.getEmergencyContactName(), user.getEmergencyContactPhone(), user.getEmergencyContactRelation(),
-            user.isHasAvatar());
+                user.getRole(), user.getPhoneNumber(), user.getAuthProvider(),
+                user.getDateOfBirth() == null ? null : user.getDateOfBirth().toString(), user.getGender(),
+                user.getProvince(), user.getDistrict(), user.getCommune(), user.getAddressLine(),
+                user.getEmergencyContactName(), user.getEmergencyContactPhone(), user.getEmergencyContactRelation(),
+                user.isHasAvatar());
     }
 
-    /** Refuses to issue a token/profile for a row whose role isn't one of the three known values. */
+    /**
+     * Refuses to issue a token/profile for a row whose role isn't one of the three
+     * known values.
+     */
     private static void requireKnownRole(User user) {
         if (Role.fromDbValue(user.getRole()).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                "User account has an invalid role and cannot be authenticated");
+                    "User account has an invalid role and cannot be authenticated");
         }
     }
 }

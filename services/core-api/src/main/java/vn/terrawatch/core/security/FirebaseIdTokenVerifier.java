@@ -69,6 +69,43 @@ public class FirebaseIdTokenVerifier {
         return new GoogleIdentity(email, claims.get("name", String.class));
     }
 
+    /**
+     * Verifies a Firebase ID token issued for phone number authentication.
+     * Rejects tokens from other providers (e.g. google.com), expired tokens, or forged signatures.
+     *
+     * @param phoneIdToken RS256 JWT issued by Firebase after SMS OTP verification
+     * @return E.164 formatted phone number from the verified token (e.g. +84900000001)
+     */
+    public String verifyPhoneToken(String phoneIdToken) {
+        Claims claims;
+        try {
+            claims = Jwts.parser()
+                .keyLocator(new LocatorAdapter<Key>() {
+                    @Override
+                    protected Key locate(JwsHeader header) {
+                        if (!"RS256".equals(header.getAlgorithm())) {
+                            return null;
+                        }
+                        return keyForKid.apply(header.getKeyId());
+                    }
+                })
+                .requireIssuer("https://securetoken.google.com/" + projectId)
+                .requireAudience(projectId)
+                .clockSkewSeconds(60)
+                .build().parseSignedClaims(phoneIdToken).getPayload();
+        } catch (ResponseStatusException unavailable) {
+            throw unavailable;
+        } catch (Exception invalid) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid or expired phone verification token");
+        }
+
+        String phone = claims.get("phone_number", String.class);
+        if (phone == null || phone.isBlank() || !"phone".equals(signInProvider(claims))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token is not a valid phone verification token");
+        }
+        return phone;
+    }
+
     private static String signInProvider(Claims claims) {
         Object firebase = claims.get("firebase");
         return firebase instanceof Map<?, ?> map && map.get("sign_in_provider") instanceof String provider

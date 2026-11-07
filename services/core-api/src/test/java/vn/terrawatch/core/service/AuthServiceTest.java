@@ -39,14 +39,14 @@ class AuthServiceTest {
             assertThat(user.getPhoneNumber()).isEqualTo("0901234567");
             return user;
         });
-        var result = auth.register(new RegisterRequest("Test", "test@example.com", "secret123", "0901234567"));
+        var result = auth.register(new RegisterRequest("Test", "test@example.com", "secret123", "0901234567", "valid-token"));
         assertThat(result.role()).isEqualTo("citizen");
         assertThat(tokens.validateAndParse(result.token()).getSubject()).isEqualTo(result.user().userId());
     }
 
     @Test
     void rejectsExistingAndConcurrentlyRegisteredEmail() {
-        var request = new RegisterRequest("Test", "test@example.com", "secret123", null);
+        var request = new RegisterRequest("Test", "test@example.com", "secret123", null, null);
         when(users.existsByEmail(request.email())).thenReturn(true);
         assertStatus(() -> auth.register(request), 409);
         verify(users, never()).saveAndFlush(any());
@@ -75,7 +75,10 @@ class AuthServiceTest {
         assertStatus(() -> auth.login(new LoginRequest("known@example.com", "wrong")), 401);
         assertStatus(() -> auth.login(new LoginRequest("unknown@example.com", "wrong")), 401);
         assertStatus(() -> auth.getCurrentUser(UUID.randomUUID()), 401);
-        assertStatus(() -> auth.register(new RegisterRequest("Test", "test@example.com", "界".repeat(25), null)), 400);
+        assertStatus(() -> auth.register(new RegisterRequest("Test", "test@example.com", "界".repeat(25), null, null)), 400);
+        // Có số điện thoại nhưng thiếu phoneToken (bỏ qua OTP) -> 400
+        assertStatus(() -> auth.register(new RegisterRequest("Test", "test@example.com", "secret123", "0901234567", null)), 400);
+        assertStatus(() -> auth.register(new RegisterRequest("Test", "test@example.com", "secret123", "0901234567", "   ")), 400);
     }
 
     private void assertStatus(Runnable action, int status) {

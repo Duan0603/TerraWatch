@@ -11,6 +11,7 @@ import forecastApi, { apiErrorMessage } from '../api/forecastApi';
 import { useAuth } from '../context/AuthContext';
 import { useResponsive } from '../hooks/useResponsive';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { playAlertBeep } from '../utils/sound';
 
 const REFRESH_MS = 60000; // làm mới để trạng thái "hết hạn" luôn đúng
 
@@ -28,6 +29,7 @@ export default function DashboardPage() {
   const [reviewTarget, setReviewTarget] = useState(null); // { event, decision }
   const [fieldReports, setFieldReports] = useState([]);
   const [aoi, setAoi] = useState(null);
+  const [lastLoadedAt, setLastLoadedAt] = useState(null); // thời điểm tải dữ liệu thành công gần nhất
 
   const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
@@ -49,6 +51,7 @@ export default function DashboardPage() {
       const data = await forecastApi.getReviewQueue('all');
       setEvents(data);
       setLoadError(null);
+      setLastLoadedAt(new Date()); // ghi nhận thời điểm tải thành công
       setSelectedEventId(prev => (data.some(e => e.id === prev) ? prev : data[0]?.id ?? null));
     } catch (err) {
       setLoadError(apiErrorMessage(err, 'Không tải được hàng đợi dự báo'));
@@ -69,7 +72,7 @@ export default function DashboardPage() {
 
   const handleReviewRequest = (id, decision) => {
     const event = events.find(e => e.id === id);
-    if (event) setReviewTarget({ event, decision });
+    if (event && !event.expired) setReviewTarget({ event, decision });
   };
 
   const submitReview = async (reason) => {
@@ -85,6 +88,7 @@ export default function DashboardPage() {
     await loadEvents();
     if (decision === 'approved' && (event.risk === 'extreme' || event.risk === 'high')) {
       setAlertPromptEvent({ ...event, status: 'approved' }); // bản trong state là bản trước khi duyệt
+      if (soundEnabled) playAlertBeep();
     }
   };
 
@@ -104,6 +108,8 @@ export default function DashboardPage() {
         setSoundEnabled={setSoundEnabled}
         onOpenBroadcast={() => handleOpenBroadcast(selectedEvent)}
         onOpenHistory={() => setIsHistoryOpen(true)}
+        lastLoadedAt={lastLoadedAt}
+        loadError={loadError}
       />
 
       {loadError && (

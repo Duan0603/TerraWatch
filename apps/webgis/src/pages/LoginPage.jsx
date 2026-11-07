@@ -25,9 +25,8 @@ import { useAuth } from '../context/AuthContext';
 import authApi from '../api/authApi';
 
 export default function LoginPage() {
-  // Khớp với tài khoản seed thật (V2) + mật khẩu demo đặt bởi migration V4
-  const [email, setEmail] = useState('officer.yenbai@terrawatch.vn');
-  const [password, setPassword] = useState('Terrawatch@2026');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   
@@ -215,18 +214,19 @@ export default function LoginPage() {
       const cleanPhone = regPhone.replace(/\s+/g, '');
 
       // 1. Kiểm tra xác thực mã OTP
-      await authApi.verifySmsOtp(cleanPhone, cleanOtp, generatedOtp);
+      const verifyRes = await authApi.verifySmsOtp(cleanPhone, cleanOtp, generatedOtp);
+      const phoneToken = verifyRes.idToken || (await verifyRes.user?.getIdToken?.());
 
-      // 2. Hoàn tất đăng ký sau khi OTP hợp lệ
+      // 2. Hoàn tất đăng ký sau khi OTP hợp lệ (gửi kèm phoneToken để server kiểm tra)
       if (activeModal === 'officer') {
         const result = await authApi.registerOfficerRequest({
           fullName: regFullName,
           email: regEmail,
           phoneNumber: cleanPhone,
+          phoneToken,
           departmentUnit: regUnit,
           password: regPassword,
-          role: 'officer',
-          phoneVerified: true
+          role: 'officer'
         });
         setRegSuccessResult({
           type: 'officer',
@@ -240,9 +240,9 @@ export default function LoginPage() {
           fullName: regFullName,
           email: regEmail,
           phoneNumber: cleanPhone,
+          phoneToken,
           areaOfInterest: regArea,
-          password: regPassword,
-          phoneVerified: true
+          password: regPassword
         });
         setRegSuccessResult({
           type: 'citizen',

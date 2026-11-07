@@ -14,16 +14,19 @@ export default function VerificationQueue({
   const [query, setQuery] = useState('');
 
   const count = (pred) => events.filter(pred).length;
-  const pendingCount = count(e => e.status === 'pending');
+  // Chờ duyệt: chỉ đếm pending còn hiệu lực (hết hạn không duyệt được)
+  const pendingCount = count(e => e.status === 'pending' && !e.expired);
   const approvedCount = count(e => e.status === 'approved');
   const rejectedCount = count(e => e.status === 'rejected');
   const extremeCount = count(e => e.risk === 'extreme');
   const highCount = count(e => e.risk === 'high');
 
   const q = query.trim().toLowerCase();
-  const filteredEvents = events.filter(e =>
-    (filter === 'all' || e.status === filter) && (!q || e.location.toLowerCase().includes(q))
-  );
+  const filteredEvents = events.filter(e => {
+    // Dự báo hết hạn không hiện trong tab "Chờ duyệt" (không thẩm định được)
+    if (filter === 'pending' && e.expired) return false;
+    return (filter === 'all' || e.status === filter) && (!q || e.location.toLowerCase().includes(q));
+  });
 
   return (
     <aside className={`sidebar${className ? ' ' + className : ''}`}>

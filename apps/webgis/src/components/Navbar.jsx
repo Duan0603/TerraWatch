@@ -1,13 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, LogOut, Activity, BellRing, History } from 'lucide-react';
+import { ShieldCheck, LogOut, BellRing, History, Volume2, VolumeX } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { fmtVN } from '../utils/time';
+import { playAlertBeep } from '../utils/sound';
 
 export default function Navbar({
   soundEnabled,
   setSoundEnabled,
   onOpenBroadcast,
   onOpenHistory,
+  lastLoadedAt,       // Date | null – thời điểm loadEvents() thành công gần nhất
+  loadError,          // string | null – lỗi kết nối API
 }) {
   const { user, role, logout } = useAuth();
   const isAdmin = role === 'admin';
@@ -16,6 +20,29 @@ export default function Navbar({
     ? user.fullName.split(' ').slice(-2).map(w => w[0]).join('').toUpperCase()
     : (isAdmin ? 'TL' : 'NA');
   const roleName = isAdmin ? 'Lãnh đạo phê duyệt' : 'Cán bộ giám sát';
+
+  // Chip trạng thái: phản ánh chính xác kết nối và lần tải dữ liệu thật
+  let statusText = 'Đang kết nối...';
+  let chipClass = 'status-chip status-chip--warning';
+  let dotClass = 'live-dot live-dot--warning';
+  if (loadError) {
+    statusText = 'Mất kết nối API';
+    chipClass = 'status-chip status-chip--error';
+    dotClass = 'live-dot live-dot--error';
+  } else if (lastLoadedAt) {
+    const timeStr = lastLoadedAt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    statusText = `Hệ thống trực tuyến (${timeStr})`;
+    chipClass = 'status-chip';
+    dotClass = 'live-dot';
+  }
+
+  const handleSoundToggle = () => {
+    const next = !soundEnabled;
+    setSoundEnabled?.(next);
+    if (next) {
+      playAlertBeep(); // phát tiếng bíp thật ngay lập tức để người dùng kiểm tra âm thanh
+    }
+  };
 
   return (
     <header className="top-nav">
@@ -36,19 +63,23 @@ export default function Navbar({
       {/* Right controls */}
       <div className="nav-right">
         <Link to="/model-demo" className="btn-ghost nav-model-demo-link">Demo mô hình</Link>
-        <div className="status-chip">
-          <span className="live-dot" />
-          Hệ thống trực tuyến
+        <div
+          className={chipClass}
+          title={loadError || (lastLoadedAt ? `Lần tải cuối: ${fmtVN(lastLoadedAt.toISOString())}` : 'Đang đồng bộ')}
+          style={{ cursor: 'default' }}
+        >
+          <span className={dotClass} />
+          {statusText}
         </div>
 
-        {/* Sound toggle */}
+        {/* Nút bật/tắt âm báo thật */}
         <button
           className="btn-ghost"
-          onClick={() => setSoundEnabled?.(!soundEnabled)}
-          title={soundEnabled ? 'Tắt âm báo' : 'Bật âm báo'}
-          style={{ padding: '6px 10px' }}
+          onClick={handleSoundToggle}
+          title={soundEnabled ? 'Tắt âm báo' : 'Bật âm báo (phát tiếng bíp thật)'}
+          style={{ padding: '6px 10px', color: soundEnabled ? '#22C55E' : undefined }}
         >
-          <Activity size={14} color={soundEnabled ? '#22C55E' : undefined} />
+          {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
         </button>
 
         {/* Lịch sử phát lệnh */}

@@ -52,6 +52,38 @@ class FirebaseIdTokenVerifierTest {
     }
 
     @Test
+    void acceptsValidPhoneTokenAndReturnsPhoneNumber() {
+        String iss = "https://securetoken.google.com/" + PROJECT;
+        String phoneToken = Jwts.builder().header().keyId("kid-1").and()
+            .issuer(iss).audience().add(PROJECT).and().subject("firebase-phone-uid")
+            .claim("phone_number", "+84900000001")
+            .claim("firebase", Map.of("sign_in_provider", "phone"))
+            .issuedAt(Date.from(Instant.now().minusSeconds(30)))
+            .expiration(Date.from(Instant.now().plusSeconds(3600)))
+            .signWith(signer.getPrivate()).compact();
+
+        String verified = verifier.verifyPhoneToken(phoneToken);
+        assertThat(verified).isEqualTo("+84900000001");
+    }
+
+    @Test
+    void rejectsInvalidPhoneTokenOrOtherProviders() {
+        String iss = "https://securetoken.google.com/" + PROJECT;
+        Instant later = Instant.now().plusSeconds(3600);
+        // Google token is rejected for phone verification
+        assertThatThrownBy(() -> verifier.verifyPhoneToken(valid()))
+            .isInstanceOf(ResponseStatusException.class);
+
+        // Phone token without phone_number claim
+        String noPhone = Jwts.builder().header().keyId("kid-1").and()
+            .issuer(iss).audience().add(PROJECT).and().subject("uid")
+            .claim("firebase", Map.of("sign_in_provider", "phone"))
+            .signWith(signer.getPrivate()).compact();
+        assertThatThrownBy(() -> verifier.verifyPhoneToken(noPhone))
+            .isInstanceOf(ResponseStatusException.class);
+    }
+
+    @Test
     void rejectsWrongAudienceIssuerExpiredUnverifiedEmailAndOtherProviders() {
         String iss = "https://securetoken.google.com/" + PROJECT;
         Instant later = Instant.now().plusSeconds(3600);

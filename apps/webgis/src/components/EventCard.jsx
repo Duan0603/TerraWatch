@@ -42,7 +42,7 @@ export default function EventCard({ event, isSelected, onSelect, onReview }) {
       </div>
 
       <div className="grid-metrics">
-        <div>Xác suất: <span style={{ color: 'var(--primary)' }}>{event.probability == null ? '—' : `${Math.round(event.probability * 100)}%`}</span></div>
+        <div>Điểm thử nghiệm: <span style={{ color: 'var(--primary)' }}>{event.probability == null ? '—' : `${Math.round(event.probability * 100)}%`}</span></div>
         <div>Độ dốc TB: <span>{fmtNum(event.unit.slopeAvg, '°', 1)}</span></div>
         <div>Độ cao TB: <span>{fmtNum(event.unit.elevationAvg, ' m')}</span></div>
         <div>Mô hình: <span>{event.modelVersion}</span></div>
@@ -50,7 +50,7 @@ export default function EventCard({ event, isSelected, onSelect, onReview }) {
 
       <div style={{ fontSize: 11, marginTop: 6, color: event.expired ? '#B91C1C' : 'var(--text-2)', display: 'flex', alignItems: 'center', gap: 4 }} title={`Hiệu lực đến ${fmtVN(event.validUntil)}`}>
         <Clock size={11} />
-        {event.expired ? 'Hết hạn' : 'Hiệu lực'}: {relativeToNow(event.validUntil)}
+        {event.expired ? 'Đã hết hạn' : 'Hiệu lực'}: {relativeToNow(event.validUntil)}
       </div>
       {event.availability !== 'available' && (
         <div style={{ fontSize: 11, color: '#92400E', marginTop: 4 }}>
