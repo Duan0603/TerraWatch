@@ -188,4 +188,30 @@ class BroadcastAdminApiTest {
             .andExpect(jsonPath("$.name").value("Vung Sau Cap Nhat"))
             .andExpect(jsonPath("$.description").value("da cap nhat"));
     }
+
+    // Hình nơ (cạnh tự cắt): PostGIS vẫn lưu được nhưng ST_IsValid = false -> API phải từ chối với 400.
+    private static final Map<String, Object> BOW_TIE = Map.of("type", "Polygon", "coordinates", List.of(List.of(
+        List.of(104.0, 22.0), List.of(104.1, 22.1), List.of(104.1, 22.0), List.of(104.0, 22.1), List.of(104.0, 22.0))));
+
+    @Test
+    void selfIntersectingBoundaryIsRejectedOnCreateAndUpdate() throws Exception {
+        String admin = withRole("admin-bowtie@history-test.example", "admin");
+        call(HttpMethod.POST, "/api/v1/monitoring-areas", admin, Map.of("name", "Vung Hinh No", "geojson", BOW_TIE))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("Monitoring area boundary is not a valid polygon (it may cross itself)"));
+        assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM gis_schema.monitoring_areas WHERE name = 'Vung Hinh No'", Integer.class));
+
+        int areaId = jdbc.queryForObject("SELECT area_id FROM gis_schema.monitoring_areas ORDER BY area_id LIMIT 1", Integer.class);
+        call(HttpMethod.PUT, "/api/v1/monitoring-areas/" + areaId, admin, Map.of("geojson", BOW_TIE))
+            .andExpect(status().isBadRequest());
+        assertTrue(jdbc.queryForObject("SELECT ST_IsValid(geom) FROM gis_schema.monitoring_areas WHERE area_id = ?", Boolean.class, areaId));
+    }
+
+    @Test
+    void unreadableBoundaryIsABadRequestNotAServerError() throws Exception {
+        String admin = withRole("admin-badgeojson@history-test.example", "admin");
+        call(HttpMethod.POST, "/api/v1/monitoring-areas", admin,
+            Map.of("name", "Vung GeoJSON Hong", "geojson", Map.of("type", "Nope", "coordinates", List.of())))
+            .andExpect(status().isBadRequest());
+    }
 }

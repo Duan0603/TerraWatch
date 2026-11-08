@@ -144,6 +144,12 @@ public class SpatialRepository {
         return jdbcTemplate.queryForList(sql);
     }
 
+    /** False for e.g. a self-intersecting ring; PostGIS would still store it, but areas and overlaps come out wrong. */
+    public Boolean isValidGeometry(String geoJsonGeometry) {
+        return jdbcTemplate.queryForObject(
+            "SELECT ST_IsValid(ST_SetSRID(ST_GeomFromGeoJSON(?), 4326))", Boolean.class, geoJsonGeometry);
+    }
+
     public Map<String, Object> createMonitoringArea(String name, String description, String geoJsonGeometry) {
         String sql = """
             INSERT INTO gis_schema.monitoring_areas (name, description, geom)
