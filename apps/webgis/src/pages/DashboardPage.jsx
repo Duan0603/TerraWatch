@@ -11,7 +11,10 @@ import FieldReportsModal from '../components/FieldReportsModal';
 import AoiManagementModal from '../components/AoiManagementModal';
 import UserManagementModal from '../components/UserManagementModal';
 import ReviewDialog from '../components/ReviewDialog';
+import KpiStrip from '../components/KpiStrip';
 import forecastApi, { apiErrorMessage } from '../api/forecastApi';
+import broadcastApi from '../api/broadcastApi';
+import { exportReport, FORECAST_COLUMNS } from '../utils/reportExport';
 import { useAuth } from '../context/AuthContext';
 import { useResponsive } from '../hooks/useResponsive';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
@@ -33,6 +36,7 @@ export default function DashboardPage() {
   const [reviewTarget, setReviewTarget] = useState(null); // { event, decision }
   const [fieldReports, setFieldReports] = useState([]);
   const [aoi, setAoi] = useState(null);
+  const [broadcasts, setBroadcasts] = useState(null); // chỉ admin xem được lịch sử phát lệnh
   const [lastLoadedAt, setLastLoadedAt] = useState(null); // thời điểm tải dữ liệu thành công gần nhất
 
   const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);
@@ -59,6 +63,9 @@ export default function DashboardPage() {
   });
 
   const loadEvents = useCallback(async () => {
+    // Số liệu phụ của dải KPI: lỗi ở đây không được làm hỏng hàng đợi.
+    forecastApi.getFieldReports().then(setFieldReports).catch(() => {});
+    if (isAdmin) broadcastApi.getBroadcastHistory().then(setBroadcasts).catch(() => setBroadcasts(null));
     try {
       const data = await forecastApi.getReviewQueue('all');
       setEvents(data);
@@ -68,7 +75,7 @@ export default function DashboardPage() {
     } catch (err) {
       setLoadError(apiErrorMessage(err, 'Không tải được hàng đợi dự báo'));
     }
-  }, []);
+  }, [isAdmin]);
 
   useEffect(() => {
     loadEvents();
@@ -78,7 +85,6 @@ export default function DashboardPage() {
 
   // Lớp bản đồ phụ: lỗi ở đây không chặn hàng đợi duyệt.
   useEffect(() => {
-    forecastApi.getFieldReports().then(setFieldReports).catch(() => setFieldReports([]));
     forecastApi.getAoiCollection().then(setAoi).catch(() => setAoi(null));
   }, []);
 
@@ -124,6 +130,7 @@ export default function DashboardPage() {
         onOpenFieldReports={() => setIsFieldReportsOpen(true)}
         onOpenAoi={() => setIsAoiOpen(true)}
         onOpenUsers={() => setIsUserManagementOpen(true)}
+        onExportReport={() => exportReport('du-bao', FORECAST_COLUMNS, events)}
         lastLoadedAt={lastLoadedAt}
         loadError={loadError}
       />
@@ -134,6 +141,8 @@ export default function DashboardPage() {
           <button className="btn-ghost" style={{ marginLeft: 'auto' }} onClick={loadEvents}>Thử lại</button>
         </div>
       )}
+
+      <KpiStrip events={events} fieldReports={fieldReports} broadcasts={broadcasts} />
 
       <div className="main-layout">
         <VerificationQueue

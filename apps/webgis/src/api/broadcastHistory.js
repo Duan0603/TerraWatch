@@ -12,6 +12,7 @@ const deliveryStatus = (b) => {
 export const toHistoryEntry = (b) => ({
   id: `BC-${b.broadcastId.slice(0, 8)}`,
   broadcastId: b.broadcastId,
+  sentAt: b.sentAt, // ISO gốc, để tính "đã phát trong 24h" (dải KPI)
   timestamp: fmtVN(b.sentAt),
   location: b.areaName || `Khu vực #${b.areaId ?? '?'}`,
   scope: 'area',

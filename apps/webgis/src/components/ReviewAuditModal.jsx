@@ -8,12 +8,14 @@ import {
   Clock, 
   User, 
   RefreshCw,
+  Download,
   FileText,
   AlertTriangle,
   ShieldCheck
 } from 'lucide-react';
 import forecastApi from '../api/forecastApi';
 import { fmtVN } from '../utils/time';
+import { exportReport, AUDIT_COLUMNS } from '../utils/reportExport';
 
 export default function ReviewAuditModal({ isOpen, onClose }) {
   const [logs, setLogs] = useState([]);
@@ -174,6 +176,28 @@ export default function ReviewAuditModal({ isOpen, onClose }) {
             <option value="approved">Đã Phê Duyệt</option>
             <option value="rejected">Đã Bác Bỏ / Từ Chối</option>
           </select>
+
+
+          <button
+            onClick={() => exportReport('nhat-ky-tham-dinh', AUDIT_COLUMNS, filteredLogs)}
+            disabled={!filteredLogs.length}
+            style={{
+              background: 'rgba(255, 255, 255, 0.06)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              color: '#38bdf8',
+              padding: '8px 12px',
+              borderRadius: 8,
+              cursor: filteredLogs.length ? 'pointer' : 'not-allowed',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              fontSize: 12
+            }}
+            title="Xuất danh sách đang hiển thị ra tệp CSV"
+          >
+            <Download size={14} />
+            <span>Xuất CSV</span>
+          </button>
 
           <button
             onClick={fetchLogs}

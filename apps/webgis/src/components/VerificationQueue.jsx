@@ -18,8 +18,6 @@ export default function VerificationQueue({
   const pendingCount = count(e => e.status === 'pending' && !e.expired);
   const approvedCount = count(e => e.status === 'approved');
   const rejectedCount = count(e => e.status === 'rejected');
-  const extremeCount = count(e => e.risk === 'extreme');
-  const highCount = count(e => e.risk === 'high');
 
   const q = query.trim().toLowerCase();
   const filteredEvents = events.filter(e => {
@@ -54,25 +52,6 @@ export default function VerificationQueue({
               outline: 'none',
             }}
           />
-        </div>
-      </div>
-
-      <div className="sidebar-overview">
-        <div className="overview-item">
-          <div className="ov-num" style={{ color: 'var(--text-1)' }}>{events.length}</div>
-          <div className="ov-label">Ô đánh giá</div>
-        </div>
-        <div className="overview-item">
-          <div className="ov-num" style={{ color: 'var(--risk-extreme)' }}>{pendingCount}</div>
-          <div className="ov-label">Chờ thẩm định</div>
-        </div>
-        <div className="overview-item">
-          <div className="ov-num" style={{ color: 'var(--risk-extreme)' }}>{extremeCount}</div>
-          <div className="ov-label">Cực nguy hiểm</div>
-        </div>
-        <div className="overview-item">
-          <div className="ov-num" style={{ color: 'var(--risk-high)' }}>{highCount}</div>
-          <div className="ov-label">Mức cao</div>
         </div>
       </div>
 

@@ -78,6 +78,46 @@ body {
   overflow: hidden;
 }
 
+/* ── KPI STRIP ── */
+
+.kpi-strip {
+  display: flex;
+  gap: 10px;
+  padding: 10px 24px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.kpi-card {
+  flex: 1 0 160px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--text-3);
+  border-radius: var(--radius-md);
+}
+
+.kpi-value { font-size: 26px; font-weight: 800; line-height: 1; color: var(--text-1); min-width: 28px; }
+.kpi-label { font-size: 12px; font-weight: 700; color: var(--text-1); }
+.kpi-sub { font-size: 11px; color: var(--text-2); }
+.kpi-ok { border-left-color: var(--risk-low); }
+.kpi-warn { border-left-color: var(--risk-high); }
+.kpi-warn .kpi-value { color: var(--risk-high); }
+.kpi-danger { border-left-color: var(--risk-extreme); background: var(--risk-extreme-bg); }
+.kpi-danger .kpi-value { color: var(--risk-extreme); }
+
+@media (max-width: 767px) {
+  .kpi-strip { padding: 6px 12px; gap: 8px; scrollbar-width: none; }
+  .kpi-strip::-webkit-scrollbar { display: none; }
+  .kpi-card { flex-basis: 132px; padding: 5px 10px; gap: 8px; }
+  .kpi-value { font-size: 20px; min-width: 22px; }
+}
+
 /* ── TOP NAVIGATION ── */
 
 .top-nav {
@@ -343,35 +383,6 @@ body {
   font-weight: 700;
   color: var(--text-1);
   margin-bottom: 10px;
-}
-
-.sidebar-overview {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg);
-}
-
-.overview-item {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 8px 10px;
-}
-
-.overview-item .ov-num {
-  font-size: 20px;
-  font-weight: 800;
-  line-height: 1;
-  margin-bottom: 2px;
-}
-
-.overview-item .ov-label {
-  font-size: 10px;
-  color: var(--text-2);
-  font-weight: 500;
 }
 
 .filter-tabs {
@@ -858,7 +869,6 @@ body.page-login {
   .mobile-tab-btn.active { color: var(--primary); }
 
   /* Sidebar overview grid 2-col → 4-col on mobile for space */
-  .sidebar-overview { grid-template-columns: repeat(4, 1fr); }
 
   /* Form grids: stack to 1 column on mobile */
   .form-grid-2,
