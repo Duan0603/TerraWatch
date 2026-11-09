@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test:model-demo": "node --test test-model-demo.mjs",
-    "test": "node tests/run-all-tests.mjs"
+    "test": "node tests/run-all-tests.mjs",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "axios": "^1.6.8",
@@ -20,6 +21,7 @@
     "react-router-dom": "^6.22.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.0",
     "@vitejs/plugin-react": "^4.2.1",
     "vite": "^5.1.4"
   }
