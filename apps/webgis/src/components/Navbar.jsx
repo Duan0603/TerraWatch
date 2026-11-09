@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, LogOut, BellRing, History, Volume2, VolumeX, FileCheck2, Radio, Layers, Users, Download, ScrollText } from 'lucide-react';
+import { ShieldCheck, LogOut, BellRing, History, Volume2, VolumeX, FileCheck2, Radio, Layers, Users, Download, Activity, ScrollText } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fmtVN } from '../utils/time';
 import { playAlertBeep } from '../utils/sound';
@@ -15,6 +15,7 @@ export default function Navbar({
   onOpenAoi,
   onOpenUsers,
   onOpenAdminAudit,
+  onOpenHealth,
   onExportReport,
   lastLoadedAt,      // Date | null – thời điểm loadEvents() thành công gần nhất
   loadError,          // string | null – lỗi kết nối API
@@ -161,6 +162,18 @@ export default function Navbar({
           >
             <ScrollText size={14} />
             <span className="btn-label">Nhật ký quản trị</span>
+          </button>
+        )}
+
+        {/* Tình trạng hệ thống & độ tươi dữ liệu — Admin only (Story 4.26) */}
+        {isAdmin && (
+          <button
+            className="btn-ghost"
+            onClick={onOpenHealth}
+            title="Xem dịch vụ nào đang chạy và dữ liệu mưa, dự báo cập nhật lần cuối khi nào"
+          >
+            <Activity size={14} />
+            <span className="btn-label">Tình trạng hệ thống</span>
           </button>
         )}
 

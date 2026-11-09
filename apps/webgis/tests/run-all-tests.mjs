@@ -7,6 +7,7 @@ import { testBroadcastHistory } from './test-broadcast-history.mjs';
 import { testRegisterErrors } from './test-register-errors.mjs';
 import { testAoiCsvKpi } from './test-aoi-csv-kpi.mjs';
 import { testAdminAudit } from './test-admin-audit.mjs';
+import { testSystemHealth } from './test-system-health.mjs';
 
 async function runAllWebGisTests() {
   console.log('===============================================================');
@@ -24,6 +25,7 @@ async function runAllWebGisTests() {
     await testRegisterErrors();
     await testAoiCsvKpi();
     await testAdminAudit();
+    await testSystemHealth();
 
     const elapsed = Date.now() - startTime;
     console.log('===============================================================');
