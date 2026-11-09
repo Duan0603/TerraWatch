@@ -19,6 +19,17 @@ export function ringToJson(pts) {
   return JSON.stringify(rounded.length >= 3 ? [...rounded, rounded[0]] : rounded, null, 2);
 }
 
+// Diện tích gần đúng (km²) của vòng; phép chiếu phẳng cục bộ, đủ chính xác cho vùng cỡ một tỉnh.
+export function areaKm2(pts) {
+  if (pts.length < 3) return 0;
+  const R = 6371.0088, rad = Math.PI / 180;
+  const lat0 = (pts.reduce((s, p) => s + p[1], 0) / pts.length) * rad;
+  const xy = pts.map(([lng, lat]) => [R * Math.cos(lat0) * lng * rad, R * lat * rad]);
+  let sum = 0;
+  xy.forEach(([x1, y1], i) => { const [x2, y2] = xy[(i + 1) % xy.length]; sum += x1 * y2 - x2 * y1; });
+  return Math.abs(sum) / 2;
+}
+
 const cross = (a, b, c) => (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
 
 // Vòng có hai cạnh không kề nhau cắt nhau (hình nơ)? PostGIS vẫn nhận nhưng ST_IsValid = false

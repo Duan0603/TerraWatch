@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { parseRing, ringToJson, selfIntersects } from '../src/utils/aoiRing.js';
+import { areaKm2, parseRing, ringToJson, selfIntersects } from '../src/utils/aoiRing.js';
 import { toCsv } from '../src/utils/csv.js';
 import { FORECAST_COLUMNS } from '../src/utils/reportExport.js';
 import { buildKpis } from '../src/utils/kpis.js';
@@ -24,7 +24,10 @@ export async function testAoiCsvKpi() {
   assert.equal(selfIntersects([[0, 0], [4, 0], [4, 4], [2, 1], [0, 4]]), false); // lõm nhưng hợp lệ
   assert.equal(selfIntersects(sq.slice(0, 3)), false); // tam giác
   assert.equal(selfIntersects([]), false);
-  console.log('  ✓ AOI ring: close/open round trip, bad input, self-intersection');
+  const a = areaKm2(sq); // 0,15° x 0,15° ở ~22,4°B: ~15,4 km x ~16,7 km ≈ 257 km²
+  assert.ok(a > 245 && a < 270, `diện tích ${a}`);
+  assert.equal(areaKm2(sq.slice(0, 2)), 0);
+  console.log('  ✓ AOI ring: close/open round trip, bad input, self-intersection, area');
 
   // --- CSV ---
   const cols = [{ label: 'Tên', value: r => r.a }, { label: 'Ghi chú', value: r => r.b }];
