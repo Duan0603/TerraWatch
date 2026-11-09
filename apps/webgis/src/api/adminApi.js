@@ -16,6 +16,16 @@ export const adminApi = {
     return axiosClient.patch(`/admin/users/${userId}/role`, { role });
   },
 
+  // Nhật ký thao tác quản trị, mới nhất trước (Story 4.27)
+  async getAudit(limit = 200) {
+    return axiosClient.get('/admin/audit', { params: { limit } });
+  },
+
+  // Tình trạng DB/Redis/AI/GIS và độ tươi dữ liệu (Story 4.26)
+  async getSystemHealth() {
+    return axiosClient.get('/admin/system-health');
+  },
+
   // Phê duyệt tài khoản cán bộ
   async approveOfficer(userId) {
     return axiosClient.post(`/admin/users/${userId}/approve`);

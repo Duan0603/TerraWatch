@@ -10,6 +10,8 @@ import ReviewAuditModal from '../components/ReviewAuditModal';
 import FieldReportsModal from '../components/FieldReportsModal';
 import AoiManagementModal from '../components/AoiManagementModal';
 import UserManagementModal from '../components/UserManagementModal';
+import AdminAuditModal from '../components/AdminAuditModal';
+import SystemHealthModal from '../components/SystemHealthModal';
 import ReviewDialog from '../components/ReviewDialog';
 import KpiStrip from '../components/KpiStrip';
 import forecastApi, { apiErrorMessage } from '../api/forecastApi';
@@ -46,6 +48,8 @@ export default function DashboardPage() {
   const [isFieldReportsOpen, setIsFieldReportsOpen] = useState(false);
   const [isAoiOpen, setIsAoiOpen] = useState(false);
   const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
+  const [isAdminAuditOpen, setIsAdminAuditOpen] = useState(false);
+  const [isHealthOpen, setIsHealthOpen] = useState(false);
   const [broadcastTargetEvent, setBroadcastTargetEvent] = useState(null);
 
   // Keyboard navigation shortcuts for emergency operations
@@ -57,6 +61,8 @@ export default function DashboardPage() {
       else if (isFieldReportsOpen) setIsFieldReportsOpen(false);
       else if (isAoiOpen) setIsAoiOpen(false);
       else if (isUserManagementOpen) setIsUserManagementOpen(false);
+      else if (isAdminAuditOpen) setIsAdminAuditOpen(false);
+      else if (isHealthOpen) setIsHealthOpen(false);
       else if (alertPromptEvent) setAlertPromptEvent(null);
     },
     'Alt+m': () => setMobileTab('map'),
@@ -132,6 +138,8 @@ export default function DashboardPage() {
         onOpenFieldReports={() => setIsFieldReportsOpen(true)}
         onOpenAoi={() => setIsAoiOpen(true)}
         onOpenUsers={() => setIsUserManagementOpen(true)}
+        onOpenAdminAudit={() => setIsAdminAuditOpen(true)}
+        onOpenHealth={() => setIsHealthOpen(true)}
         onExportReport={() => exportReport('du-bao', FORECAST_COLUMNS, events)}
         lastLoadedAt={lastLoadedAt}
         loadError={loadError}
@@ -230,6 +238,9 @@ export default function DashboardPage() {
         isOpen={isUserManagementOpen}
         onClose={() => setIsUserManagementOpen(false)}
       />
+
+      <AdminAuditModal isOpen={isAdminAuditOpen} onClose={() => setIsAdminAuditOpen(false)} />
+      <SystemHealthModal isOpen={isHealthOpen} onClose={() => setIsHealthOpen(false)} />
     </div>
   );
 }

@@ -58,6 +58,9 @@ development_status:
   4-22-login-preload-home: review
   4-23-security-review-round-2: review
   4-24-webgis-maintenance-batch-1: review
+  4-27-admin-audit-log: review
+  4-26-webgis-system-health-panel: review
+  4-25-aoi-draw-polish: review
   4-28-webgis-e2e-playwright: review
   epic-4-retrospective: optional
 
