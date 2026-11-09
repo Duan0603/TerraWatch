@@ -23,4 +23,6 @@ VALUES
  ('d0000000-0000-4000-8000-000000000002', 'DEMO_EXPIRED', now() - interval '25 hours', now() - interval '25 hours', now() - interval '1 hour',  0.75, 'medium', 'demo', 'demo', 'approved', TRUE),
  ('d0000000-0000-4000-8000-000000000003', 'DEMO_PENDING', now(),                      now(),                      now() + interval '24 hours', 0.60, 'medium', 'demo', 'demo', 'pending',  TRUE)
 ON CONFLICT (run_id) DO UPDATE SET issued_at = EXCLUDED.issued_at, valid_from = EXCLUDED.valid_from,
-    valid_until = EXCLUDED.valid_until, review_status = EXCLUDED.review_status, is_active = TRUE;
+    valid_until = EXCLUDED.valid_until, review_status = EXCLUDED.review_status, is_active = TRUE,
+    -- a forecast job may have marked the row "unavailable" (AI circuit breaker); a refreshed demo row must be reviewable again
+    availability = 'available', unavailability_reason = NULL;
