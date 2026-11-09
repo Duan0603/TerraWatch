@@ -78,7 +78,7 @@ export default function SystemHealthModal({ isOpen, onClose }) {
                         <span style={dot(s.color)} aria-hidden="true" />
                         <div style={{ flex: 1 }}>
                           <div style={{ fontSize: 13, fontWeight: 600 }}>{c.label}</div>
-                          <div style={{ fontSize: 11, color: '#94a3b8' }}>{c.detail}</div>
+                          <div style={{ fontSize: 11, color: '#94a3b8' }}>{c.status === 'ok' ? 'Phản hồi bình thường' : c.detail}</div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
                           <div style={{ fontSize: 12, color: s.color, fontWeight: 600 }}>{s.label}</div>
