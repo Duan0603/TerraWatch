@@ -10,6 +10,7 @@ import {
   Radio, 
   AlertTriangle,
   RefreshCw,
+  Download,
   Send,
   RotateCcw,
   Users,
@@ -17,6 +18,7 @@ import {
   XCircle
 } from 'lucide-react';
 import broadcastApi from '../api/broadcastApi';
+import { exportReport, HISTORY_COLUMNS } from '../utils/reportExport';
 
 export default function BroadcastHistoryModal({ isOpen, onClose, onOpenNewBroadcast }) {
   const [history, setHistory] = useState([]);
@@ -224,6 +226,28 @@ export default function BroadcastHistoryModal({ isOpen, onClose, onOpenNewBroadc
               }}
             />
           </div>
+
+
+          <button
+            onClick={() => exportReport('lich-su-lenh', HISTORY_COLUMNS, filteredHistory)}
+            disabled={!filteredHistory.length}
+            style={{
+              background: 'rgba(255, 255, 255, 0.06)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              color: '#38bdf8',
+              padding: '8px 12px',
+              borderRadius: 8,
+              cursor: filteredHistory.length ? 'pointer' : 'not-allowed',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              fontSize: 12
+            }}
+            title="Xuất danh sách đang hiển thị ra tệp CSV"
+          >
+            <Download size={14} />
+            <span>Xuất CSV</span>
+          </button>
 
           <button
             onClick={fetchHistory}

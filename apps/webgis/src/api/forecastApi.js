@@ -13,6 +13,11 @@ const ERROR_BY_STATUS = {
 export const apiErrorMessage = (err, fallback) =>
   ERROR_BY_STATUS[err.response?.status] || `${fallback} (${err.message})`;
 
+// Lưu vùng giám sát: 400 ở đây là ranh giới không hợp lệ (hình nơ / GeoJSON hỏng), không phải thiếu lý do từ chối.
+const aoiSaveError = (err, fallback) => err.response?.status === 400
+  ? new Error('Ranh giới vùng không hợp lệ (tự cắt nhau hoặc sai định dạng). Hãy chỉnh lại các điểm.')
+  : new Error(apiErrorMessage(err, fallback));
+
 // Chuyển một ForecastReviewItem của backend sang mô hình hiển thị dùng chung cho hàng đợi, bản đồ và panel bằng chứng.
 export const toForecastView = (item) => {
   const { unit } = item;
@@ -132,7 +137,7 @@ export const forecastApi = {
     try {
       return await axiosClient.post('/monitoring-areas', { name, description, geojson });
     } catch (err) {
-      throw new Error(apiErrorMessage(err, 'Không tạo được vùng giám sát'));
+      throw aoiSaveError(err, 'Không tạo được vùng giám sát');
     }
   },
 
@@ -141,7 +146,7 @@ export const forecastApi = {
     try {
       return await axiosClient.put(`/monitoring-areas/${id}`, { name, description, isActive, geojson });
     } catch (err) {
-      throw new Error(apiErrorMessage(err, 'Không cập nhật được vùng giám sát'));
+      throw aoiSaveError(err, 'Không cập nhật được vùng giám sát');
     }
   },
 

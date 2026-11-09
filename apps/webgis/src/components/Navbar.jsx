@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, LogOut, BellRing, History, Volume2, VolumeX, FileCheck2, Radio, Layers, Users } from 'lucide-react';
+import { ShieldCheck, LogOut, BellRing, History, Volume2, VolumeX, FileCheck2, Radio, Layers, Users, Download } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fmtVN } from '../utils/time';
 import { playAlertBeep } from '../utils/sound';
@@ -14,7 +14,8 @@ export default function Navbar({
   onOpenFieldReports,
   onOpenAoi,
   onOpenUsers,
-  lastLoadedAt,       // Date | null – thời điểm loadEvents() thành công gần nhất
+  onExportReport,
+  lastLoadedAt,      // Date | null – thời điểm loadEvents() thành công gần nhất
   loadError,          // string | null – lỗi kết nối API
 }) {
   const { user, role, logout } = useAuth();
@@ -84,6 +85,16 @@ export default function Navbar({
           style={{ padding: '6px 10px', color: soundEnabled ? '#22C55E' : undefined }}
         >
           {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+        </button>
+
+        {/* Xuất báo cáo hàng đợi dự báo ra CSV */}
+        <button
+          className="btn-ghost"
+          onClick={onExportReport}
+          title="Xuất hàng đợi dự báo hiện tại ra tệp CSV (mở được bằng Excel)"
+        >
+          <Download size={14} />
+          <span className="btn-label">Xuất báo cáo</span>
         </button>
 
         {/* Lịch sử phát lệnh */}

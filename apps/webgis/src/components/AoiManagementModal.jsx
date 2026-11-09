@@ -14,6 +14,8 @@ import {
   Search
 } from 'lucide-react';
 import forecastApi from '../api/forecastApi';
+import AoiDrawMap from './AoiDrawMap';
+import { parseRing, selfIntersects } from '../utils/aoiRing';
 import { fmtVN } from '../utils/time';
 
 const PRESETS = [
@@ -148,6 +150,11 @@ export default function AoiManagementModal({ isOpen, onClose, onAoiUpdated }) {
       }
     } catch (err) {
       alert(`Định dạng tọa độ không hợp lệ: ${err.message}`);
+      return;
+    }
+
+    if (selfIntersects(parseRing(formCoordsStr))) {
+      alert('Ranh giới vùng tự cắt nhau (hình nơ) nên không hợp lệ. Hãy kéo các điểm cho ranh giới không giao nhau.');
       return;
     }
 
@@ -486,16 +493,23 @@ export default function AoiManagementModal({ isOpen, onClose, onAoiUpdated }) {
               )}
 
               <div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
+                  VẼ RANH GIỚI TRÊN BẢN ĐỒ *
+                </div>
+                <AoiDrawMap value={formCoordsStr} onChange={setFormCoordsStr} />
+              </div>
+
+              <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                   <label style={{ fontSize: 11, fontWeight: 600, color: '#cbd5e1' }}>
-                    TỌA ĐỘ RANH GIỚI VÙNG (Polygon JSON: [ [lng, lat], ... ]) *
+                    TỌA ĐỘ (nâng cao, tự cập nhật theo bản đồ — Polygon JSON: [ [lng, lat], ... ])
                   </label>
                   <span style={{ fontSize: 10, color: '#64748b' }}>WGS84 EPSG:4326</span>
                 </div>
                 <textarea
                   value={formCoordsStr}
                   onChange={(e) => setFormCoordsStr(e.target.value)}
-                  rows={8}
+                  rows={5}
                   style={{
                     width: '100%',
                     background: 'rgba(6, 9, 17, 0.95)',
