@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Map, 
   X, 
@@ -68,6 +68,17 @@ export default function AoiManagementModal({ isOpen, onClose, onAoiUpdated }) {
   const [formCoordsStr, setFormCoordsStr] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Các vùng khác (không kể vùng đang sửa) vẽ mờ trên bản đồ để đặt ranh giới cho khớp.
+  const otherAreas = useMemo(() => ({
+    type: 'FeatureCollection',
+    features: areas.filter(a => a.area_id !== selectedArea?.area_id).map(a => {
+      try {
+        const g = typeof a.geometry_geojson === 'string' ? JSON.parse(a.geometry_geojson) : a.geometry_geojson;
+        return g?.coordinates ? { type: 'Feature', properties: {}, geometry: g } : null;
+      } catch { return null; }
+    }).filter(Boolean)
+  }), [areas, selectedArea]);
 
   const fetchAreas = async () => {
     try {
@@ -496,7 +507,7 @@ export default function AoiManagementModal({ isOpen, onClose, onAoiUpdated }) {
                 <div style={{ fontSize: 11, fontWeight: 600, color: '#cbd5e1', marginBottom: 4 }}>
                   VẼ RANH GIỚI TRÊN BẢN ĐỒ *
                 </div>
-                <AoiDrawMap value={formCoordsStr} onChange={setFormCoordsStr} />
+                <AoiDrawMap value={formCoordsStr} onChange={setFormCoordsStr} others={otherAreas} />
               </div>
 
               <div>
