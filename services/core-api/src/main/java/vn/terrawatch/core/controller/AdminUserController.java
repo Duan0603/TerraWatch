@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import vn.terrawatch.core.dto.AdminUserItem;
 import vn.terrawatch.core.dto.UpdateUserRoleRequest;
 import vn.terrawatch.core.dto.UpdateUserStatusRequest;
+import vn.terrawatch.core.service.AdminAuditService;
 import vn.terrawatch.core.service.AdminUserService;
 
 import java.util.List;
@@ -23,8 +24,16 @@ public class AdminUserController {
 
     private final AdminUserService adminUserService;
 
-    public AdminUserController(AdminUserService adminUserService) {
+    private final AdminAuditService audit;
+
+    public AdminUserController(AdminUserService adminUserService, AdminAuditService audit) {
         this.adminUserService = adminUserService;
+        this.audit = audit;
+    }
+
+    private AdminUserItem logged(Authentication auth, String action, AdminUserItem item, String detail) {
+        audit.record((UUID) auth.getPrincipal(), action, "user", item.userId().toString(), item.email(), detail);
+        return item;
     }
 
     @GetMapping
@@ -45,7 +54,7 @@ public class AdminUserController {
             Authentication authentication) {
         UUID adminId = (UUID) authentication.getPrincipal();
         boolean active = request.isActive() != null ? request.isActive() : true;
-        return ResponseEntity.ok(adminUserService.updateUserStatus(id, active, adminId));
+        return ResponseEntity.ok(logged(authentication, active ? "USER_UNLOCK" : "USER_LOCK", adminUserService.updateUserStatus(id, active, adminId), null));
     }
 
     @PatchMapping("/{id}/role")
@@ -55,18 +64,19 @@ public class AdminUserController {
             @Valid @RequestBody UpdateUserRoleRequest request,
             Authentication authentication) {
         UUID adminId = (UUID) authentication.getPrincipal();
-        return ResponseEntity.ok(adminUserService.updateUserRole(id, request.role(), adminId));
+        AdminUserItem item = adminUserService.updateUserRole(id, request.role(), adminId);
+        return ResponseEntity.ok(logged(authentication, "USER_ROLE", item, "role=" + item.role()));
     }
 
     @PostMapping("/{id}/approve")
     @Operation(summary = "Phê duyệt tài khoản cán bộ")
-    public ResponseEntity<AdminUserItem> approveOfficer(@PathVariable UUID id) {
-        return ResponseEntity.ok(adminUserService.approveOfficer(id));
+    public ResponseEntity<AdminUserItem> approveOfficer(@PathVariable UUID id, Authentication authentication) {
+        return ResponseEntity.ok(logged(authentication, "OFFICER_APPROVE", adminUserService.approveOfficer(id), null));
     }
 
     @PostMapping("/{id}/reject")
     @Operation(summary = "Từ chối phê duyệt tài khoản cán bộ")
-    public ResponseEntity<AdminUserItem> rejectOfficer(@PathVariable UUID id) {
-        return ResponseEntity.ok(adminUserService.rejectOfficer(id));
+    public ResponseEntity<AdminUserItem> rejectOfficer(@PathVariable UUID id, Authentication authentication) {
+        return ResponseEntity.ok(logged(authentication, "OFFICER_REJECT", adminUserService.rejectOfficer(id), null));
     }
 }

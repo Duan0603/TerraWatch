@@ -16,6 +16,11 @@ export const adminApi = {
     return axiosClient.patch(`/admin/users/${userId}/role`, { role });
   },
 
+  // Nhật ký thao tác quản trị, mới nhất trước (Story 4.27)
+  async getAudit(limit = 200) {
+    return axiosClient.get('/admin/audit', { params: { limit } });
+  },
+
   // Phê duyệt tài khoản cán bộ
   async approveOfficer(userId) {
     return axiosClient.post(`/admin/users/${userId}/approve`);
