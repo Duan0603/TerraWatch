@@ -19,9 +19,9 @@ const HAZARD_COLORS = {
   extreme: { bg: 'rgba(239, 68, 68, 0.2)', border: '#f87171', text: '#fca5a5', label: 'CỰC KỲ NGUY HIỂM' },
   high: { bg: 'rgba(249, 115, 22, 0.2)', border: '#fb923c', text: '#fdba74', label: 'NGUY HIỂM CAO' },
   medium: { bg: 'rgba(234, 179, 8, 0.2)', border: '#facc15', text: '#fde047', label: 'TRUNG BÌNH' },
-  low: { bg: 'rgba(56, 189, 248, 0.2)', border: '#38bdf8', text: '#7dd3fc', label: 'THẤP / AN TOÀN' },
+  low: { bg: 'rgba(56, 189, 248, 0.2)', border: '#38bdf8', text: '#7dd3fc', label: 'NGUY CƠ THẤP' },
   unavailable: { bg: 'rgba(148, 163, 184, 0.15)', border: '#94a3b8', text: '#cbd5e1', label: 'KHÔNG CÓ DỰ BÁO' },
-  safe: { bg: 'rgba(34, 197, 94, 0.2)', border: '#4ade80', text: '#86efac', label: 'AN TOÀN' },
+  safe: { bg: 'rgba(34, 197, 94, 0.2)', border: '#4ade80', text: '#86efac', label: 'NGUY CƠ RẤT THẤP' },
 };
 
 const REVIEW_LABELS = {

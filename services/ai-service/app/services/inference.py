@@ -129,7 +129,8 @@ class LandslidePredictor:
 
     @staticmethod
     def _check_name(name: str) -> None:
-        if os.path.basename(name) != name or not name.lower().endswith((".tif", ".tiff")):
+        # A backslash is rejected on every OS: on Windows it is a path separator, on Linux basename() would let it through.
+        if "\\" in name or os.path.basename(name) != name or not name.lower().endswith((".tif", ".tiff")):
             raise ValueError(f"invalid scene file name: {name!r}")
 
     def _resolve(self, name: str) -> str:

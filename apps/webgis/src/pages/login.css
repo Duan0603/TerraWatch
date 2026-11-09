@@ -190,3 +190,26 @@ body.page-login { background: #070D1A; }
 .lg-tab:hover { color: #fff; }
 .lg-tab.is-on { background: var(--brand); color: #fff; }
 .lg-tab:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+/* Màn chuẩn bị sau đăng nhập (Story 4.22) */
+.lg-prep { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; background: rgba(4, 9, 18, .72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); animation: lg-prep-in .35s ease-out both; }
+.lg-prep.is-leaving { animation: lg-prep-out .35s ease-in both; }
+.lg-prep-card { width: 100%; max-width: 420px; box-sizing: border-box; padding: 28px; border-radius: 18px; text-align: center; background: rgba(10, 18, 32, .94); border: 1px solid var(--glass-line); box-shadow: 0 30px 80px rgba(0, 0, 0, .6); color: var(--ink-1); font-family: 'Inter', system-ui, sans-serif; }
+.lg-prep-mark { display: inline-grid; place-items: center; width: 52px; height: 52px; border-radius: 14px; background: rgba(95, 208, 192, .12); border: 1px solid rgba(95, 208, 192, .35); }
+.lg-prep-card h2 { margin: 14px 0 6px; font-size: 20px; font-weight: 700; }
+.lg-prep-card p { margin: 0 0 18px; font-size: 14px; color: var(--ink-3); }
+.lg-prep-list { list-style: none; margin: 0 0 18px; padding: 0; text-align: left; display: flex; flex-direction: column; gap: 10px; }
+.lg-prep-list li { display: flex; align-items: center; gap: 10px; font-size: 14.5px; color: var(--ink-2); }
+.lg-prep-list li.lg-prep-done { color: var(--ink-1); }
+.lg-prep-dot { flex: none; width: 20px; height: 20px; display: grid; place-items: center; color: #4ADE80; }
+.lg-spin { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(95, 208, 192, .25); border-top-color: var(--brand-text); animation: lg-spin .8s linear infinite; }
+.lg-prep-bar { height: 6px; border-radius: 6px; background: rgba(255, 255, 255, .08); overflow: hidden; }
+.lg-prep-bar span { display: block; height: 100%; border-radius: 6px; background: var(--brand-text); transition: width .45s cubic-bezier(.2, .8, .2, 1); }
+@keyframes lg-spin { to { transform: rotate(360deg); } }
+@keyframes lg-prep-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes lg-prep-out { from { opacity: 1; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .lg-prep, .lg-prep.is-leaving { animation: none; }
+  .lg-spin { animation-duration: 2.4s; }
+  .lg-prep-bar span { transition: none; }
+}

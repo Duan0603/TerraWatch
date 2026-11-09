@@ -266,13 +266,46 @@ class AuthControllerTest {
 
     @Test
     void existingRoutesAndDocsRemainPublicEvenWithGarbageBearer() throws Exception {
-        for (String path : new String[]{"/landslides/queue", "/landslides/active", "/monitoring-areas"}) {
+        for (String path : new String[]{"/landslides/active", "/monitoring-areas"}) {
             mvc.perform(get("/api/v1" + path)).andExpect(status().isOk());
             mvc.perform(get("/api/v1" + path).header("Authorization", "Bearer garbage")).andExpect(status().isOk());
         }
         mvc.perform(get("/api-docs")).andExpect(status().isOk());
         mvc.perform(get("/swagger-ui/index.html")).andExpect(status().isOk());
         mvc.perform(get("/swagger-ui.html")).andExpect(status().is3xxRedirection());
+    }
+
+    @Test
+    void legacyIncidentReviewAndDiagnosticsAreStaffOnly() throws Exception {
+        String verify = "/api/v1/landslides/00000000-0000-0000-0000-000000000000/verify";
+        String patch = "{\"status\":\"rejected\"}";
+        // Anonymous: 401. Citizen: 403. (Before Story 4.23 anyone could approve or reject an incident.)
+        mvc.perform(get("/api/v1/landslides/queue")).andExpect(status().isUnauthorized());
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch(verify)
+            .contentType(MediaType.APPLICATION_JSON).content(patch)).andExpect(status().isUnauthorized());
+        User citizen = users.saveAndFlush(new User("Test", "citizen-incident@auth-test.example", passwords.encode("secret123"), "citizen", null));
+        String citizenToken = "Bearer " + tokens.generateToken(citizen);
+        mvc.perform(get("/api/v1/landslides/queue").header("Authorization", citizenToken)).andExpect(status().isForbidden());
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch(verify).header("Authorization", citizenToken)
+            .contentType(MediaType.APPLICATION_JSON).content(patch)).andExpect(status().isForbidden());
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/v1/diagnostic/event-bus/publish")
+            .header("Authorization", citizenToken)).andExpect(status().isForbidden());
+
+        // Bad input from an officer is a clear 4xx, never a 500.
+        String officerToken = "Bearer " + tokens.generateToken(users.saveAndFlush(
+            new User("Test", "officer-bad-input@auth-test.example", passwords.encode("secret123"), "officer", null)));
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch(verify).header("Authorization", officerToken)
+            .contentType(MediaType.APPLICATION_JSON).content("{\"status\":\"rejected\"}")).andExpect(status().isNotFound());
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch(verify).header("Authorization", officerToken)
+            .contentType(MediaType.APPLICATION_JSON).content("{\"status\":\"banana\"}")).andExpect(status().isBadRequest());
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch("/api/v1/landslides/not-a-uuid/verify")
+            .header("Authorization", officerToken).contentType(MediaType.APPLICATION_JSON).content("{\"status\":\"rejected\"}"))
+            .andExpect(status().isBadRequest());
+
+        // An officer reaches the queue.
+        User officer = users.saveAndFlush(new User("Test", "officer-incident@auth-test.example", passwords.encode("secret123"), "officer", null));
+        mvc.perform(get("/api/v1/landslides/queue").header("Authorization", "Bearer " + tokens.generateToken(officer)))
+            .andExpect(status().isOk());
     }
 
     @Test

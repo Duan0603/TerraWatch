@@ -9,7 +9,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
 
-@RestControllerAdvice(assignableTypes = {AuthController.class, AlertSubscriptionController.class, ProfileAvatarController.class, CommunityReportController.class, NotificationController.class, DeviceController.class, AlertBroadcastController.class, ForecastController.class, MonitoringAreaController.class, AdminUserController.class})
+// Story 4.23: every controller of the package, so a new one can never fall back to a bare 401 on an error.
+@RestControllerAdvice(basePackages = "vn.terrawatch.core.controller")
 public class AuthExceptionHandler {
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Map<String, String>> authError(ResponseStatusException error) {

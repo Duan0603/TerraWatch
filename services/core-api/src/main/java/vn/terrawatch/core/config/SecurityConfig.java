@@ -72,7 +72,15 @@ public class SecurityConfig {
                         // internet-reachable for the first time once the gateway added a route for it
                         // (previously internal-network-only). Require a valid session (any role) rather
                         // than leaving it in the blanket permitAll below.
-                        .requestMatchers("/api/v1/diagnostic/**").authenticated()
+                        // Story 4.23: it also lets a caller push events onto the Redis bus, so admin only.
+                        .requestMatchers("/api/v1/diagnostic/**").hasRole("ADMIN")
+                        // Story 4.23: review of the legacy incident queue is staff work; before this anyone,
+                        // signed in or not, could approve or reject an incident (PATCH .../verify).
+                        .requestMatchers(HttpMethod.GET, "/api/v1/landslides/queue").hasAnyRole("OFFICER", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/landslides/*/verify").hasAnyRole("OFFICER", "ADMIN")
+                        // Errors thrown inside a controller are re-dispatched to /error; without this they
+                        // came back as a misleading 401 whenever a controller had no JSON error handler.
+                        .requestMatchers("/error").permitAll()
                         // Only the admin-authored broadcast is currently role-gated; other pre-existing
                         // routes stay permitAll below to avoid regressing Stories 4.2/4.3/4.4 (see
                         // story

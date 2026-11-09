@@ -89,4 +89,4 @@ Core Flyway manages schema migrations; Hibernate ddl-auto is none. Existing migr
 
 The existing clean command removes database volumes; use it only for an intentional reset. CI currently compiles Core/builds WebGIS and installs AI dependencies; this is not evidence of end-to-end or model testing.
 
-Follow [CONTRIBUTING.md](./CONTRIBUTING.md). Auth Story 1.1 remains ready-for-dev; changed forecast stories remain backlog. Before modeling, confirm the pilot AOI, event inventory and archived weather forecasts.
+Follow [CONTRIBUTING.md](./CONTRIBUTING.md). Auth (Story 1.1), user management, officer approval and password recovery are implemented (see _bmad-output/implementation-artifacts/sprint-status.yaml); the forecasting model stories (Epic 3) remain backlog. Before modeling, confirm the pilot AOI, event inventory and archived weather forecasts.

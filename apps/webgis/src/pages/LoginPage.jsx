@@ -6,18 +6,13 @@ import {
   Mail, 
   ArrowRight, 
   ArrowLeft,
-  UserCheck, 
-  ShieldCheck, 
   UserPlus, 
   Smartphone, 
-  X, 
   Building2, 
-  MapPin, 
   Phone, 
   User, 
   CheckCircle2, 
   Info,
-  MessageSquare,
   RotateCcw,
   KeyRound,
   Eye,
@@ -29,6 +24,8 @@ import LoginBackdrop from '../components/LoginBackdrop';
 import OtpBoxes from '../components/OtpBoxes';
 import FormSteps from '../components/FormSteps';
 import ForgotPasswordPanel from '../components/ForgotPasswordPanel';
+import { warmUpHome } from '../preload/warmUp';
+import { DEMO_ACCOUNTS } from '../config/demoLogin';
 import './login.css';
 
 // Hai tấm trượt ngang trong cùng một khung: đăng nhập trượt sang trái, form đăng ký trượt vào từ phải.
@@ -90,7 +87,6 @@ export default function LoginPage() {
   const [regEmail, setRegEmail] = useState('');
   const [regPhone, setRegPhone] = useState('');
   const [regUnit, setRegUnit] = useState('');
-  const [regArea, setRegArea] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
@@ -106,16 +102,14 @@ export default function LoginPage() {
 
   // State quản lý mã OTP qua Số điện thoại
   const [otpCode, setOtpCode] = useState('');
-  const [generatedOtp, setGeneratedOtp] = useState('');
-  const [isRealSms, setIsRealSms] = useState(false);
   const [formattedPhone, setFormattedPhone] = useState('');
-  const [smsWarning, setSmsWarning] = useState('');
   const [otpCountdown, setOtpCountdown] = useState(60);
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpError, setOtpError] = useState('');
 
   const passwordRef = useRef(null);
   const submitRef = useRef(null);
+  const [prep, setPrep] = useState(null); // null | { steps, leaving }: đang chuẩn bị trang chủ sau đăng nhập
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -135,6 +129,28 @@ export default function LoginPage() {
     return () => clearInterval(timer);
   }, [regStep, otpCountdown]);
 
+  // Sau đăng nhập: chuẩn bị bản đồ + dữ liệu ngay tại trang login (có tiến độ) rồi mới vào trang chủ.
+  const prepareHome = async (role) => {
+    const isCitizen = String(role || '').toLowerCase().includes('citizen');
+    const steps = [
+      { key: 'auth', label: 'Đã xác thực tài khoản', state: 'done' },
+      ...(isCitizen ? [] : [{ key: 'data', label: 'Tải dữ liệu dự báo và báo cáo', state: 'wait' }]),
+      { key: 'map', label: 'Chuẩn bị bản đồ địa hình 3D', state: 'wait' }
+    ];
+    setPrep({ steps, leaving: false });
+    const onStep = (key, state) => setPrep((cur) => cur && ({ ...cur, steps: cur.steps.map((x) => (x.key === key ? { ...x, state } : x)) }));
+    try {
+      await warmUpHome(role, onStep);
+    } finally {
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reduce) {
+        setPrep((cur) => cur && ({ ...cur, leaving: true }));
+        await new Promise((r) => setTimeout(r, 350)); // cho màn chuẩn bị mờ đi rồi mới chuyển trang
+      }
+      navigate('/');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
@@ -145,8 +161,8 @@ export default function LoginPage() {
     try {
       setIsLoading(true);
       setErrorMsg('');
-      await login(email, password);
-      navigate('/');
+      const user = await login(email, password);
+      await prepareHome(user?.role);
     } catch (err) {
       const status = err.response?.status;
       if (status === 401) {
@@ -165,14 +181,9 @@ export default function LoginPage() {
   };
 
   const handleQuickLogin = (role) => {
-    if (role === 'officer') {
-      setEmail('officer.yenbai@terrawatch.vn');
-    } else if (role === 'citizen') {
-      setEmail('citizen.limmong@terrawatch.vn');
-    } else {
-      setEmail('admin@terrawatch.vn');
-    }
-    setPassword('Terrawatch@2026');
+    if (!DEMO_ACCOUNTS) return;
+    setEmail(DEMO_ACCOUNTS[role] || DEMO_ACCOUNTS.admin);
+    setPassword(DEMO_ACCOUNTS.password);
     setErrorMsg('');
     setTimeout(() => submitRef.current?.focus(), 0);
   };
@@ -193,11 +204,9 @@ export default function LoginPage() {
     setRegError('');
     setRegSuccessResult(null);
     setOtpCode('');
-    setGeneratedOtp('');
     setOtpCountdown(60);
     setOtpError('');
     setRegUnit('');
-    setRegArea('');
   };
 
   const openForgot = () => {
@@ -283,10 +292,7 @@ export default function LoginPage() {
       }
       // Gửi mã OTP SMS qua Firebase Phone Auth
       const res = await authApi.sendSmsOtp(cleanPhone, 'recaptcha-container');
-      setIsRealSms(!!res.isRealSms);
       setFormattedPhone(res.formattedPhone || cleanPhone);
-      setGeneratedOtp(res.otp || '');
-      setSmsWarning(res.warning || '');
       setOtpCode('');
       setOtpCountdown(60);
       setOtpError('');
@@ -306,10 +312,7 @@ export default function LoginPage() {
       setOtpError('');
       const cleanPhone = regPhone.replace(/\s+/g, '');
       const res = await authApi.sendSmsOtp(cleanPhone, 'recaptcha-container');
-      setIsRealSms(!!res.isRealSms);
       setFormattedPhone(res.formattedPhone || cleanPhone);
-      setGeneratedOtp(res.otp || '');
-      setSmsWarning(res.warning || '');
       setOtpCountdown(60);
     } catch (err) {
       setOtpError('Không thể gửi lại mã OTP: ' + (err.message || 'Vui lòng thử lại sau.'));
@@ -334,7 +337,7 @@ export default function LoginPage() {
       const cleanPhone = regPhone.replace(/\s+/g, '');
 
       // 1. Kiểm tra xác thực mã OTP
-      const verifyRes = await authApi.verifySmsOtp(cleanPhone, cleanOtp, generatedOtp);
+      const verifyRes = await authApi.verifySmsOtp(cleanPhone, cleanOtp);
       const phoneToken = verifyRes.idToken || (await verifyRes.user?.getIdToken?.());
 
       // 2. Hoàn tất đăng ký sau khi OTP hợp lệ (gửi kèm phoneToken để server kiểm tra)
@@ -360,7 +363,6 @@ export default function LoginPage() {
           email: regEmail,
           phoneNumber: cleanPhone,
           phoneToken,
-          areaOfInterest: regArea,
           password: regPassword
         });
         setRegSuccessResult({
@@ -445,6 +447,7 @@ export default function LoginPage() {
             <Link className="lg-btn lg-btn-ghost" to="/model-demo">Xem demo mô hình trên dữ liệu lịch sử</Link>
           </form>
 
+          {DEMO_ACCOUNTS && (<>
           <div className="lg-sep">Diễn tập nhanh</div>
           <div className="lg-chips">
             <button type="button" className="lg-chip" onClick={() => handleQuickLogin('citizen')}>
@@ -458,6 +461,7 @@ export default function LoginPage() {
             </button>
           </div>
           <p className="lg-hint">Điền sẵn tài khoản demo để diễn tập.</p>
+          </>)}
 
           <div className="lg-links">
             <button type="button" className="lg-action" onClick={() => openRegisterModal('citizen')}>
@@ -577,7 +581,7 @@ export default function LoginPage() {
                 </fieldset>
 
                 <fieldset className="lg-group">
-                  <legend>{activeModal === 'officer' ? 'Số điện thoại và đơn vị' : 'Số điện thoại và khu vực'}</legend>
+                  <legend>{activeModal === 'officer' ? 'Số điện thoại và đơn vị' : 'Số điện thoại'}</legend>
                   <label className="lg-label" htmlFor="rg-phone">Số điện thoại nhận mã OTP</label>
                   <div className="lg-field">
                     <Phone size={18} aria-hidden="true" />
@@ -585,22 +589,13 @@ export default function LoginPage() {
                       placeholder="0912345678" autoComplete="tel" aria-describedby="rg-phone-hint" />
                   </div>
                   <p id="rg-phone-hint" className="lg-helper">Số di động Việt Nam, ví dụ 0912345678. Mã OTP gửi qua SMS tới số này.</p>
-                  {activeModal === 'officer' ? (
+                  {activeModal === 'officer' && (
                     <>
                       <label className="lg-label" htmlFor="rg-unit">Đơn vị công tác</label>
                       <div className="lg-field">
                         <Building2 size={18} aria-hidden="true" />
                         <input id="rg-unit" className="lg-input" type="text" value={regUnit} onChange={(e) => setRegUnit(e.target.value)}
                           placeholder="Chi cục Thủy lợi & PCTT Tỉnh Yên Bái" autoComplete="organization" />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <label className="lg-label" htmlFor="rg-area">Khu vực muốn nhận cảnh báo (tùy chọn)</label>
-                      <div className="lg-field">
-                        <MapPin size={18} aria-hidden="true" />
-                        <input id="rg-area" className="lg-input" type="text" value={regArea} onChange={(e) => setRegArea(e.target.value)}
-                          placeholder="Bản Lìm Mông, xã Cao Phạ, huyện Mù Cang Chải" />
                       </div>
                     </>
                   )}
@@ -654,6 +649,27 @@ export default function LoginPage() {
 
         <p className="lg-note lg-note-m">Hệ thống đang ở giai đoạn thử nghiệm. Điểm nguy cơ là điểm thử nghiệm, chưa phải xác suất đã hiệu chuẩn và chưa thay thế cảnh báo chính thức.</p>
       </main>
+
+      {prep && (
+        <div className={`lg-prep${prep.leaving ? ' is-leaving' : ''}`} role="status" aria-live="polite">
+          <div className="lg-prep-card">
+            <span className="lg-prep-mark" aria-hidden="true"><ShieldAlert size={26} color="#5FD0C0" /></span>
+            <h2>Đang chuẩn bị trung tâm chỉ huy</h2>
+            <p>Tải bản đồ và dữ liệu trước để vào là dùng được ngay.</p>
+            <ul className="lg-prep-list">
+              {prep.steps.map((st) => (
+                <li key={st.key} className={`lg-prep-${st.state}`}>
+                  <span className="lg-prep-dot" aria-hidden="true">{st.state === 'done' ? <CheckCircle2 size={18} /> : <span className="lg-spin" />}</span>
+                  {st.label}
+                </li>
+              ))}
+            </ul>
+            <div className="lg-prep-bar" aria-hidden="true">
+              <span style={{ width: `${Math.round((prep.steps.filter((x) => x.state === 'done').length / prep.steps.length) * 100)}%` }} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Phần tử container gắn reCAPTCHA ẩn cho Firebase */}
       <div id="recaptcha-container"></div>
