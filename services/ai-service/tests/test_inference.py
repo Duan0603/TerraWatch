@@ -34,6 +34,16 @@ class InferenceTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.p.predict_scene("a.tif", "b.tif", "c.tif")
 
+    def test_model_info_exposes_card_identity(self):  # Story 4.29
+        real = LandslidePredictor()
+        if not real.is_ready():
+            self.skipTest("model files not present")
+        info = real.model_info()
+        self.assertEqual(info["version"], "v1.0")
+        self.assertIn("experimental", info["status"])
+        self.assertEqual(len(info["input_channels"]), 8)
+        self.assertTrue(info["trained_on"])
+
     def test_scene_names_cannot_escape_scene_dir(self):
         for bad in ("../x.tif", "a/b.tif", r"..\x.tif", "x.txt", "/etc/passwd"):
             with self.assertRaises(ValueError):

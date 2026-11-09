@@ -57,7 +57,10 @@ def gru_model_info():
         model = live_gru_model()
         return {'ready': True, 'model_id': model.card['model_id'],
                 'checkpoint_sha256': model.card['source_checkpoint_sha256'],
-                'experimental_only': True}
+                'experimental_only': True, 'runtime': model.card.get('runtime'),
+                'trained_history_provider': model.card.get('trained_history_provider'),
+                'trained_forecast_provider': model.card.get('trained_forecast_provider'),
+                'calibrated_probability': model.card.get('calibrated_probability')}
     except (OSError, ValueError, KeyError):
         return {'ready': False, 'reason': 'GRU_ARTIFACT_UNAVAILABLE_OR_INVALID'}
 

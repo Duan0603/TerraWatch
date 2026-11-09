@@ -777,10 +777,10 @@ body.page-login {
   display: none;
 }
 
-/* ── NAVBAR TIGHT (≤ 1280px) ──
-   Admin has up to 11 buttons; below this width only icons show (every button has a title) so the bar never wraps or overflows. */
+/* ── NAVBAR TIGHT (≤ 1520px) ──
+   Admin has up to 12 buttons (needs ~1520px with text); below this width only icons show (every button has a title) so the bar never wraps or overflows. */
 .btn-ghost, .btn-danger { white-space: nowrap; }
-@media (max-width: 1280px) {
+@media (max-width: 1520px) {
   .btn-label { display: none; }
   .btn-ghost { padding: 6px 8px; }
 }

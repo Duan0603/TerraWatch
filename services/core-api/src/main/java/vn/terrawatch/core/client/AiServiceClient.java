@@ -73,4 +73,24 @@ public class AiServiceClient {
         log.warn("⚠️ AI forecast unavailable for unit {}: {}", forecastRequest.get("assessment_unit_id"), throwable.getMessage());
         return null;
     }
+
+    /** Story 4.29: the segmentation model card, exactly as the AI service reports it. */
+    @CircuitBreaker(name = "aiService", fallbackMethod = "fallbackCard")
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> segmentationCard() {
+        return restTemplate.getForObject(aiServiceUrl + "/api/v1/models/info", Map.class);
+    }
+
+    /** Story 4.29: the GRU model card, exactly as the AI service reports it. */
+    @CircuitBreaker(name = "aiService", fallbackMethod = "fallbackCard")
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> gruCard() {
+        return restTemplate.getForObject(aiServiceUrl + "/api/v1/models/gru/info", Map.class);
+    }
+
+    /** Fallback: say the card is unavailable; never fill in numbers. */
+    public Map<String, Object> fallbackCard(Throwable throwable) {
+        log.warn("AI model card unavailable: {}", throwable.getMessage());
+        return Map.of("ready", false);
+    }
 }
