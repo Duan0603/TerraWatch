@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, LogOut, BellRing, History, Volume2, VolumeX, FileCheck2, Radio, Layers, Users, Download, Activity, ScrollText } from 'lucide-react';
+import { ShieldCheck, LogOut, BellRing, History, Volume2, VolumeX, FileCheck2, Radio, Download } from 'lucide-react';
+import AdminMenu from './AdminMenu';
 import { useAuth } from '../context/AuthContext';
 import { fmtVN } from '../utils/time';
 import { playAlertBeep } from '../utils/sound';
@@ -129,52 +130,9 @@ export default function Navbar({
           <span className="btn-label">Báo cáo hiện trường</span>
         </button>
 
-        {/* Quản lý vùng giám sát AOI — Admin only */}
+        {/* Bốn công cụ quản trị gom vào một menu — Admin only (Story 4.31) */}
         {isAdmin && (
-          <button
-            className="btn-ghost"
-            onClick={onOpenAoi}
-            title="Quản lý ranh giới & định nghĩa vùng giám sát trọng điểm"
-          >
-            <Layers size={14} />
-            <span className="btn-label">Vùng giám sát</span>
-          </button>
-        )}
-
-        {/* Quản lý người dùng & Duyệt cán bộ — Admin only */}
-        {isAdmin && (
-          <button
-            className="btn-ghost"
-            onClick={onOpenUsers}
-            title="Quản lý người dùng, phân quyền và phê duyệt cán bộ trực ban"
-          >
-            <Users size={14} />
-            <span className="btn-label">Quản trị người dùng</span>
-          </button>
-        )}
-
-        {/* Nhật ký thao tác quản trị — Admin only (Story 4.27) */}
-        {isAdmin && (
-          <button
-            className="btn-ghost"
-            onClick={onOpenAdminAudit}
-            title="Xem ai đã khóa, đổi quyền, duyệt cán bộ, phát hoặc thu hồi cảnh báo"
-          >
-            <ScrollText size={14} />
-            <span className="btn-label">Nhật ký quản trị</span>
-          </button>
-        )}
-
-        {/* Tình trạng hệ thống & độ tươi dữ liệu — Admin only (Story 4.26) */}
-        {isAdmin && (
-          <button
-            className="btn-ghost"
-            onClick={onOpenHealth}
-            title="Xem dịch vụ nào đang chạy và dữ liệu mưa, dự báo cập nhật lần cuối khi nào"
-          >
-            <Activity size={14} />
-            <span className="btn-label">Tình trạng hệ thống</span>
-          </button>
+          <AdminMenu onOpenAoi={onOpenAoi} onOpenUsers={onOpenUsers} onOpenAdminAudit={onOpenAdminAudit} onOpenHealth={onOpenHealth} />
         )}
 
         {/* Phát cảnh báo — Admin only */}
