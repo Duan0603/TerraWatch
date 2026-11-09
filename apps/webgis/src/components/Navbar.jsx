@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, LogOut, BellRing, History, Volume2, VolumeX, FileCheck2, Radio, Layers, Users, Download, Activity } from 'lucide-react';
+import { ShieldCheck, LogOut, BellRing, History, Volume2, VolumeX, FileCheck2, Radio, Layers, Users, Download, Activity, ScrollText } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fmtVN } from '../utils/time';
 import { playAlertBeep } from '../utils/sound';
@@ -14,6 +14,7 @@ export default function Navbar({
   onOpenFieldReports,
   onOpenAoi,
   onOpenUsers,
+  onOpenAdminAudit,
   onOpenHealth,
   onExportReport,
   lastLoadedAt,      // Date | null – thời điểm loadEvents() thành công gần nhất
@@ -149,6 +150,18 @@ export default function Navbar({
           >
             <Users size={14} />
             <span className="btn-label">Quản trị người dùng</span>
+          </button>
+        )}
+
+        {/* Nhật ký thao tác quản trị — Admin only (Story 4.27) */}
+        {isAdmin && (
+          <button
+            className="btn-ghost"
+            onClick={onOpenAdminAudit}
+            title="Xem ai đã khóa, đổi quyền, duyệt cán bộ, phát hoặc thu hồi cảnh báo"
+          >
+            <ScrollText size={14} />
+            <span className="btn-label">Nhật ký quản trị</span>
           </button>
         )}
 
