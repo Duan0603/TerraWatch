@@ -94,7 +94,7 @@ export default function Navbar({
         <button
           className="btn-ghost"
           onClick={onExportReport}
-          title="Xuất hàng đợi dự báo hiện tại ra tệp CSV (mở được bằng Excel)"
+          aria-label="Xuất báo cáo" title="Xuất hàng đợi dự báo hiện tại ra tệp CSV (mở được bằng Excel)"
         >
           <Download size={14} />
           <span className="btn-label">Xuất báo cáo</span>
@@ -104,7 +104,7 @@ export default function Navbar({
         <button
           className="btn-ghost"
           onClick={onOpenHistory}
-          title="Xem nhật ký phát lệnh cảnh báo SMS / FCM"
+          aria-label="Lịch sử lệnh" title="Xem nhật ký phát lệnh cảnh báo SMS / FCM"
         >
           <History size={14} />
           <span className="btn-label">Lịch sử lệnh</span>
@@ -114,7 +114,7 @@ export default function Navbar({
         <button
           className="btn-ghost"
           onClick={onOpenAuditLog}
-          title="Xem nhật ký kiểm toán thẩm định dự báo (ai duyệt, lý do)"
+          aria-label="Nhật ký thẩm định" title="Xem nhật ký kiểm toán thẩm định dự báo (ai duyệt, lý do)"
         >
           <FileCheck2 size={14} />
           <span className="btn-label">Nhật ký thẩm định</span>
@@ -124,7 +124,7 @@ export default function Navbar({
         <button
           className="btn-ghost"
           onClick={onOpenFieldReports}
-          title="Xem danh sách báo cáo hiện trường & hình ảnh từ người dân"
+          aria-label="Báo cáo hiện trường" title="Xem danh sách báo cáo hiện trường & hình ảnh từ người dân"
         >
           <Radio size={14} />
           <span className="btn-label">Báo cáo hiện trường</span>
@@ -146,7 +146,7 @@ export default function Navbar({
             }
           }}
           style={{ opacity: isAdmin ? 1 : 0.5, cursor: isAdmin ? 'pointer' : 'not-allowed' }}
-          title={isAdmin ? 'Phát cảnh báo (SMS / App Push)' : 'Cần quyền Admin'}
+          aria-label="Phát cảnh báo" title={isAdmin ? 'Phát cảnh báo (SMS / App Push)' : 'Cần quyền Admin'}
         >
           <BellRing size={14} />
           <span className="btn-label">Phát cảnh báo</span>

@@ -25,7 +25,7 @@ export default function AdminMenu({ onOpenAoi, onOpenUsers, onOpenAdminAudit, on
   return (
     <div ref={box} style={{ position: 'relative' }}>
       <button type="button" className="btn-ghost" aria-haspopup="menu" aria-expanded={open}
-        onClick={() => setOpen((v) => !v)} title="Công cụ quản trị">
+        onClick={() => setOpen((v) => !v)} aria-label="Quản trị" title="Công cụ quản trị">
         <Settings2 size={14} />
         <span className="btn-label">Quản trị</span>
         <ChevronDown size={12} aria-hidden="true" />
