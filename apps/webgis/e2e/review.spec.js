@@ -56,10 +56,8 @@ test('officer approves a pending proposal', async ({ page }) => {
     .toEqual([{ decision: 'approved', reasonNotes: null }]);
 });
 
-// Found while writing this suite: ReviewDialog stays mounted after a successful review, so a second review in
-// the same session opens with the previous reason still typed and the button stuck on "Đang gửi..." (busy never
-// resets on success). Remove `.fixme` when ReviewDialog resets its state.
-test.fixme('officer can review a second proposal without reloading', async ({ page }) => {
+// Regression: ReviewDialog stays mounted, so it used to keep the previous reason and a stuck "Đang gửi..." button.
+test('officer can review a second proposal without reloading', async ({ page }) => {
   const { card } = await openQueue(page);
   await reject(page, card('Mù Cang Chải - E2E'));
   await expect(page.getByRole('button', { name: /Từ chối \(1\)/ })).toBeVisible();

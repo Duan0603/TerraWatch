@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle } from 'lucide-react';
 
 // Hộp thoại thẩm định: lý do bắt buộc khi từ chối, tùy chọn khi phê duyệt. Lỗi từ server hiện ngay trong hộp.
@@ -6,6 +6,13 @@ export default function ReviewDialog({ target, onCancel, onSubmit }) {
   const [reason, setReason] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
+  // Component luôn được mount (trả null khi đóng) nên state phải đặt lại mỗi lần mở cho một đề xuất mới;
+  // nếu không, lần duyệt thứ hai còn nguyên lý do cũ và nút kẹt ở "Đang gửi...".
+  useEffect(() => {
+    setReason('');
+    setBusy(false);
+    setError(null);
+  }, [target]);
   if (!target) return null;
 
   const approve = target.decision === 'approved';
