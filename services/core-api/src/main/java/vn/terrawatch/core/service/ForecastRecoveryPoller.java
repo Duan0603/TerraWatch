@@ -22,9 +22,12 @@ public class ForecastRecoveryPoller {
     private final ForecastRunJpaRepository repo;
     private final ForecastJobService jobService;
     private final int stuckTimeoutMinutes;
+    private final LiveUpdateHub live;
 
     public ForecastRecoveryPoller(ForecastRunJpaRepository repo, ForecastJobService jobService,
+                                  LiveUpdateHub live,
                                   @Value("${forecast.recovery.stuck-timeout-minutes:5}") int stuckTimeoutMinutes) {
+        this.live = live;
         this.repo = repo;
         this.jobService = jobService;
         this.stuckTimeoutMinutes = stuckTimeoutMinutes;
@@ -41,6 +44,7 @@ public class ForecastRecoveryPoller {
         for (ForecastRun run : stuck) {
             try {
                 jobService.executeJob(run.getRunId());
+                live.publish("queue"); // Story 4.35
             } catch (Exception e) {
                 log.error("Recovery failed for job {}: {}", run.getRunId(), e.getMessage());
             }

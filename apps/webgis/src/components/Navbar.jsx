@@ -21,6 +21,7 @@ export default function Navbar({
   onExportReport,
   lastLoadedAt,      // Date | null – thời điểm loadEvents() thành công gần nhất
   loadError,          // string | null – lỗi kết nối API
+  liveConnected,      // boolean – luồng cập nhật tức thì (SSE) đang mở (Story 4.35)
 }) {
   const { user, role, logout } = useAuth();
   const isAdmin = role === 'admin';
@@ -40,7 +41,7 @@ export default function Navbar({
     dotClass = 'live-dot live-dot--error';
   } else if (lastLoadedAt) {
     const timeStr = lastLoadedAt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    statusText = `Hệ thống trực tuyến (${timeStr})`;
+    statusText = liveConnected ? `Trực tiếp (${timeStr})` : `Hệ thống trực tuyến (${timeStr})`;
     chipClass = 'status-chip';
     dotClass = 'live-dot';
   }
@@ -74,7 +75,7 @@ export default function Navbar({
         <Link to="/model-demo" className="btn-ghost nav-model-demo-link">Demo mô hình</Link>
         <div
           className={chipClass}
-          title={loadError || (lastLoadedAt ? `Lần tải cuối: ${fmtVN(lastLoadedAt.toISOString())}` : 'Đang đồng bộ')}
+          title={loadError || (lastLoadedAt ? `Lần tải cuối: ${fmtVN(lastLoadedAt.toISOString())}${liveConnected ? ' · nhận cập nhật tức thì từ máy chủ' : ' · cập nhật mỗi phút'}` : 'Đang đồng bộ')}
           style={{ cursor: 'default' }}
         >
           <span className={dotClass} />

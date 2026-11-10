@@ -17,6 +17,7 @@ import vn.terrawatch.core.repository.ForecastReviewJpaRepository;
 import vn.terrawatch.core.repository.ForecastRunJpaRepository;
 import vn.terrawatch.core.service.ForecastJobService;
 import vn.terrawatch.core.service.ForecastService;
+import vn.terrawatch.core.service.LiveUpdateHub;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.UUID;
 @RequestMapping("/api/v1/forecasts")
 @Tag(name = "Forecasts", description = "Forecast job orchestration, review and query")
 public class ForecastController {
+    private final LiveUpdateHub live;
     private final ForecastService service;
     private final ForecastJobService jobService;
     private final ForecastRunJpaRepository runRepo;
@@ -35,7 +37,8 @@ public class ForecastController {
 
     public ForecastController(ForecastService service, ForecastJobService jobService,
                               ForecastRunJpaRepository runRepo, ForecastReviewJpaRepository reviewRepo,
-                              EventPublisher events) {
+                              EventPublisher events, LiveUpdateHub live) {
+        this.live = live;
         this.service = service;
         this.jobService = jobService;
         this.runRepo = runRepo;
@@ -154,6 +157,7 @@ public class ForecastController {
             // non-fatal
         }
 
+        live.publish("queue"); // Story 4.35
         return ResponseEntity.ok(Map.of("runId", id, "reviewStatus", req.decision()));
     }
 }

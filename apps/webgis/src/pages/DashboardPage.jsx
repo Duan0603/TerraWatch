@@ -16,6 +16,8 @@ import ModelCardModal from '../components/ModelCardModal';
 import ReviewDialog from '../components/ReviewDialog';
 import KpiStrip from '../components/KpiStrip';
 import forecastApi, { apiErrorMessage } from '../api/forecastApi';
+import { API_BASE_URL } from '../api/axiosClient';
+import { connectLiveUpdates } from '../api/liveUpdates';
 import broadcastApi from '../api/broadcastApi';
 import { exportReport, FORECAST_COLUMNS } from '../utils/reportExport';
 import { takePrefetched } from '../preload/warmUp';
@@ -53,6 +55,7 @@ export default function DashboardPage() {
   const [isHealthOpen, setIsHealthOpen] = useState(false);
   const [isModelCardOpen, setIsModelCardOpen] = useState(false);
   const [reviewMetrics, setReviewMetrics] = useState(null);
+  const [liveConnected, setLiveConnected] = useState(false);
   const [broadcastTargetEvent, setBroadcastTargetEvent] = useState(null);
 
   // Keyboard navigation shortcuts for emergency operations
@@ -94,6 +97,21 @@ export default function DashboardPage() {
     loadEvents();
     const timer = setInterval(loadEvents, REFRESH_MS);
     return () => clearInterval(timer);
+  }, [loadEvents]);
+
+  // Story 4.35: máy chủ báo có thay đổi -> tải lại ngay (gom các tin dồn dập). Vòng 60 giây ở trên vẫn là phương án dự phòng.
+  useEffect(() => {
+    let debounce = null;
+    const stop = connectLiveUpdates({
+      url: `${API_BASE_URL}/api/v1/stream`,
+      getToken: () => localStorage.getItem('terrawatch_token'),
+      onStatus: setLiveConnected,
+      onUpdate: () => {
+        clearTimeout(debounce);
+        debounce = setTimeout(loadEvents, 400);
+      }
+    });
+    return () => { clearTimeout(debounce); stop(); };
   }, [loadEvents]);
 
   // Lớp bản đồ phụ: lỗi ở đây không chặn hàng đợi duyệt.
@@ -149,6 +167,7 @@ export default function DashboardPage() {
         onExportReport={() => exportReport('du-bao', FORECAST_COLUMNS, events)}
         lastLoadedAt={lastLoadedAt}
         loadError={loadError}
+        liveConnected={liveConnected}
       />
 
       {loadError && (

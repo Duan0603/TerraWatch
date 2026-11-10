@@ -1,5 +1,6 @@
 package vn.terrawatch.core.config;
 
+import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -49,6 +50,8 @@ public class SecurityConfig {
                         }))
                 .addFilterBefore(new JwtAuthenticationFilter(tokens, users), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
+                        // Story 4.35: the dispatch that ends a stream carries no JWT; the request itself was authorised when it started.
+                        .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
                         .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/google",
                                 "/api/v1/auth/officer-requests", "/api/v1/auth/email-exists",
@@ -67,6 +70,8 @@ public class SecurityConfig {
                         // Story 4.7: the full list carries names, phones and exact GPS of citizens.
                         .requestMatchers(HttpMethod.GET, "/api/v1/community-reports", "/api/v1/community-reports/photos/*")
                         .hasAnyRole("OFFICER", "ADMIN")
+                        // Story 4.35: live-update stream, staff only.
+                        .requestMatchers("/api/v1/stream").hasAnyRole("OFFICER", "ADMIN")
                         // Story 4.29: model cards are staff reading.
                         .requestMatchers("/api/v1/model-card").hasAnyRole("OFFICER", "ADMIN")
                         // Story 1.3 review: this diagnostic/circuit-breaker/event-bus test endpoint
