@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { mockBackend } from './helpers.js';
+import { mockBackend, openTool } from './helpers.js';
 
 // Story 4.29. Mocked API: the card text is whatever the AI service says, the page adds nothing.
 
@@ -15,7 +15,7 @@ test('officer reads the model card: experimental banner, mode thresholds, GRU no
   });
 
   await page.goto('/');
-  await page.getByRole('button', { name: 'Thẻ mô hình' }).click();
+  await openTool(page, 'Thẻ mô hình');
 
   const dialog = page.getByRole('dialog');
   await expect(dialog).toContainText('Mô hình đang ở mức thử nghiệm');
@@ -31,7 +31,7 @@ test('when the AI service is down the card shows no numbers', async ({ page }) =
   });
 
   await page.goto('/');
-  await page.getByRole('button', { name: 'Thẻ mô hình' }).click();
+  await openTool(page, 'Thẻ mô hình');
 
   const dialog = page.getByRole('dialog');
   await expect(dialog).toContainText('Không hiển thị số liệu nào.');

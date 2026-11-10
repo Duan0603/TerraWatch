@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { mockBackend } from './helpers.js';
+import { mockBackend, openTool } from './helpers.js';
 
 // Story 4.34. Mocked API: the numbers are whatever the server says, the page only formats them.
 
@@ -21,7 +21,7 @@ test('KPI strip shows the review card and the audit dialog shows the summary wit
   await expect(strip).toContainText('42 phút');
   await expect(strip).toContainText('78% duyệt · 3 hết hạn chưa duyệt');
 
-  await page.getByRole('button', { name: 'Nhật ký thẩm định' }).click();
+  await openTool(page, 'Nhật ký thẩm định');
   const summary = page.getByLabel('Tóm tắt hiệu quả thẩm định');
   await expect(summary).toContainText('Thời gian duyệt trung bình');
   await expect(summary).toContainText('23'); // 18 approved + 5 rejected

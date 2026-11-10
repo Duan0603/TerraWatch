@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { List, Map, AlertTriangle } from 'lucide-react';
+import React, { useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import VerificationQueue from '../components/VerificationQueue';
 import DetailPanel from '../components/DetailPanel';
@@ -15,109 +15,45 @@ import SystemHealthModal from '../components/SystemHealthModal';
 import ModelCardModal from '../components/ModelCardModal';
 import ReviewDialog from '../components/ReviewDialog';
 import KpiStrip from '../components/KpiStrip';
-import forecastApi, { apiErrorMessage } from '../api/forecastApi';
-import { API_BASE_URL } from '../api/axiosClient';
-import { connectLiveUpdates } from '../api/liveUpdates';
-import broadcastApi from '../api/broadcastApi';
+import MobileTabBar from '../components/MobileTabBar';
+import forecastApi from '../api/forecastApi';
 import { exportReport, FORECAST_COLUMNS } from '../utils/reportExport';
-import { takePrefetched } from '../preload/warmUp';
 import { useAuth } from '../context/AuthContext';
-import { useResponsive } from '../hooks/useResponsive';
+import { useDashboardData } from '../hooks/useDashboardData';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { playAlertBeep } from '../utils/sound';
 
-const REFRESH_MS = 60000; // làm mới để trạng thái "hết hạn" luôn đúng
+// Thứ tự Escape đóng hộp thoại: cái đầu danh sách đóng trước.
+const DIALOG_ORDER = ['broadcast', 'history', 'audit', 'fieldReports', 'aoi', 'users', 'adminAudit', 'health', 'modelCard'];
 
 export default function DashboardPage() {
   const { user, role } = useAuth();
   const isAdmin = role === 'admin';
-  const { isMobile } = useResponsive();
 
-  const [events, setEvents] = useState([]);
-  const [selectedEventId, setSelectedEventId] = useState(null);
+  const {
+    events, selectedEventId, setSelectedEventId, loadError, fieldReports, aoi, broadcasts,
+    reviewMetrics, lastLoadedAt, liveConnected, loadEvents, refreshAoi
+  } = useDashboardData(isAdmin);
+
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [alertPromptEvent, setAlertPromptEvent] = useState(null);
-  const [loadError, setLoadError] = useState(null);
   const [mobileTab, setMobileTab] = useState('map');
   const [reviewTarget, setReviewTarget] = useState(null); // { event, decision }
-  const [fieldReports, setFieldReports] = useState([]);
-  const [aoi, setAoi] = useState(null);
-  const [broadcasts, setBroadcasts] = useState(null); // chỉ admin xem được lịch sử phát lệnh
-  const [lastLoadedAt, setLastLoadedAt] = useState(null); // thời điểm tải dữ liệu thành công gần nhất
-
-  const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [isAuditLogOpen, setIsAuditLogOpen] = useState(false);
-  const [isFieldReportsOpen, setIsFieldReportsOpen] = useState(false);
-  const [isAoiOpen, setIsAoiOpen] = useState(false);
-  const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
-  const [isAdminAuditOpen, setIsAdminAuditOpen] = useState(false);
-  const [isHealthOpen, setIsHealthOpen] = useState(false);
-  const [isModelCardOpen, setIsModelCardOpen] = useState(false);
-  const [reviewMetrics, setReviewMetrics] = useState(null);
-  const [liveConnected, setLiveConnected] = useState(false);
   const [broadcastTargetEvent, setBroadcastTargetEvent] = useState(null);
+  const [dialogs, setDialogs] = useState({}); // { broadcast: true, ... } - hộp thoại nào đang mở
+  const show = (name) => setDialogs(d => ({ ...d, [name]: true }));
+  const hide = (name) => setDialogs(d => ({ ...d, [name]: false }));
 
   // Keyboard navigation shortcuts for emergency operations
   useKeyboardShortcuts({
     Escape: () => {
-      if (isBroadcastOpen) setIsBroadcastOpen(false);
-      else if (isHistoryOpen) setIsHistoryOpen(false);
-      else if (isAuditLogOpen) setIsAuditLogOpen(false);
-      else if (isFieldReportsOpen) setIsFieldReportsOpen(false);
-      else if (isAoiOpen) setIsAoiOpen(false);
-      else if (isUserManagementOpen) setIsUserManagementOpen(false);
-      else if (isAdminAuditOpen) setIsAdminAuditOpen(false);
-      else if (isHealthOpen) setIsHealthOpen(false);
-      else if (isModelCardOpen) setIsModelCardOpen(false);
+      const openName = DIALOG_ORDER.find(name => dialogs[name]);
+      if (openName) hide(openName);
       else if (alertPromptEvent) setAlertPromptEvent(null);
     },
     'Alt+m': () => setMobileTab('map'),
     'Alt+l': () => setMobileTab('list'),
   });
-
-  const loadEvents = useCallback(async () => {
-    // Số liệu phụ của dải KPI: lỗi ở đây không được làm hỏng hàng đợi.
-    takePrefetched('fieldReports', () => forecastApi.getFieldReports()).then(setFieldReports).catch(() => {});
-    forecastApi.getReviewMetrics(7).then(setReviewMetrics).catch(() => setReviewMetrics(null));
-    if (isAdmin) broadcastApi.getBroadcastHistory().then(setBroadcasts).catch(() => setBroadcasts(null));
-    try {
-      // Lần đầu sau đăng nhập: dùng kết quả đã tải sẵn ở trang login (Story 4.22), không có thì gọi thật.
-      const data = await takePrefetched('queue', () => forecastApi.getReviewQueue('all'));
-      setEvents(data);
-      setLoadError(null);
-      setLastLoadedAt(new Date()); // ghi nhận thời điểm tải thành công
-      setSelectedEventId(prev => (data.some(e => e.id === prev) ? prev : data[0]?.id ?? null));
-    } catch (err) {
-      setLoadError(apiErrorMessage(err, 'Không tải được hàng đợi dự báo'));
-    }
-  }, [isAdmin]);
-
-  useEffect(() => {
-    loadEvents();
-    const timer = setInterval(loadEvents, REFRESH_MS);
-    return () => clearInterval(timer);
-  }, [loadEvents]);
-
-  // Story 4.35: máy chủ báo có thay đổi -> tải lại ngay (gom các tin dồn dập). Vòng 60 giây ở trên vẫn là phương án dự phòng.
-  useEffect(() => {
-    let debounce = null;
-    const stop = connectLiveUpdates({
-      url: `${API_BASE_URL}/api/v1/stream`,
-      getToken: () => localStorage.getItem('terrawatch_token'),
-      onStatus: setLiveConnected,
-      onUpdate: () => {
-        clearTimeout(debounce);
-        debounce = setTimeout(loadEvents, 400);
-      }
-    });
-    return () => { clearTimeout(debounce); stop(); };
-  }, [loadEvents]);
-
-  // Lớp bản đồ phụ: lỗi ở đây không chặn hàng đợi duyệt.
-  useEffect(() => {
-    takePrefetched('aoi', () => forecastApi.getAoiCollection()).then(setAoi).catch(() => setAoi(null));
-  }, []);
 
   const handleReviewRequest = (id, decision) => {
     const event = events.find(e => e.id === id);
@@ -146,7 +82,7 @@ export default function DashboardPage() {
   // Mở form phát cảnh báo — không bao giờ tự gửi.
   const handleOpenBroadcast = (ev = null) => {
     setBroadcastTargetEvent(ev || selectedEvent);
-    setIsBroadcastOpen(true);
+    show('broadcast');
     setAlertPromptEvent(null);
   };
 
@@ -156,14 +92,14 @@ export default function DashboardPage() {
         soundEnabled={soundEnabled}
         setSoundEnabled={setSoundEnabled}
         onOpenBroadcast={() => handleOpenBroadcast(selectedEvent)}
-        onOpenHistory={() => setIsHistoryOpen(true)}
-        onOpenAuditLog={() => setIsAuditLogOpen(true)}
-        onOpenFieldReports={() => setIsFieldReportsOpen(true)}
-        onOpenAoi={() => setIsAoiOpen(true)}
-        onOpenUsers={() => setIsUserManagementOpen(true)}
-        onOpenAdminAudit={() => setIsAdminAuditOpen(true)}
-        onOpenHealth={() => setIsHealthOpen(true)}
-        onOpenModelCard={() => setIsModelCardOpen(true)}
+        onOpenHistory={() => show('history')}
+        onOpenAuditLog={() => show('audit')}
+        onOpenFieldReports={() => show('fieldReports')}
+        onOpenAoi={() => show('aoi')}
+        onOpenUsers={() => show('users')}
+        onOpenAdminAudit={() => show('adminAudit')}
+        onOpenHealth={() => show('health')}
+        onOpenModelCard={() => show('modelCard')}
         onExportReport={() => exportReport('du-bao', FORECAST_COLUMNS, events)}
         lastLoadedAt={lastLoadedAt}
         loadError={loadError}
@@ -199,27 +135,7 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Mobile Bottom Tab Bar */}
-      <nav className="mobile-tab-bar" role="tablist" aria-label="Điều hướng giao diện di động">
-        <button
-          role="tab"
-          aria-selected={mobileTab === 'list'}
-          className={`mobile-tab-btn${mobileTab === 'list' ? ' active' : ''}`}
-          onClick={() => setMobileTab('list')}
-        >
-          <List size={20} aria-hidden="true" />
-          <span>Danh sách</span>
-        </button>
-        <button
-          role="tab"
-          aria-selected={mobileTab === 'map'}
-          className={`mobile-tab-btn${mobileTab === 'map' ? ' active' : ''}`}
-          onClick={() => setMobileTab('map')}
-        >
-          <Map size={20} aria-hidden="true" />
-          <span>Bản đồ</span>
-        </button>
-      </nav>
+      <MobileTabBar active={mobileTab} onChange={setMobileTab} />
 
       <ReviewDialog target={reviewTarget} onCancel={() => setReviewTarget(null)} onSubmit={submitReview} />
 
@@ -231,42 +147,25 @@ export default function DashboardPage() {
       />
 
       <BroadcastModal
-        isOpen={isBroadcastOpen}
-        onClose={() => setIsBroadcastOpen(false)}
+        isOpen={!!dialogs.broadcast}
+        onClose={() => hide('broadcast')}
         event={broadcastTargetEvent}
         currentUser={user}
       />
 
       <BroadcastHistoryModal
-        isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
+        isOpen={!!dialogs.history}
+        onClose={() => hide('history')}
         onOpenNewBroadcast={() => handleOpenBroadcast(selectedEvent)}
       />
 
-      <ReviewAuditModal
-        isOpen={isAuditLogOpen}
-        onClose={() => setIsAuditLogOpen(false)}
-      />
-
-      <FieldReportsModal
-        isOpen={isFieldReportsOpen}
-        onClose={() => setIsFieldReportsOpen(false)}
-      />
-
-      <AoiManagementModal
-        isOpen={isAoiOpen}
-        onClose={() => setIsAoiOpen(false)}
-        onAoiUpdated={() => forecastApi.getAoiCollection().then(setAoi).catch(() => setAoi(null))}
-      />
-
-      <UserManagementModal
-        isOpen={isUserManagementOpen}
-        onClose={() => setIsUserManagementOpen(false)}
-      />
-
-      <AdminAuditModal isOpen={isAdminAuditOpen} onClose={() => setIsAdminAuditOpen(false)} />
-      <SystemHealthModal isOpen={isHealthOpen} onClose={() => setIsHealthOpen(false)} />
-      <ModelCardModal isOpen={isModelCardOpen} onClose={() => setIsModelCardOpen(false)} />
+      <ReviewAuditModal isOpen={!!dialogs.audit} onClose={() => hide('audit')} />
+      <FieldReportsModal isOpen={!!dialogs.fieldReports} onClose={() => hide('fieldReports')} />
+      <AoiManagementModal isOpen={!!dialogs.aoi} onClose={() => hide('aoi')} onAoiUpdated={refreshAoi} />
+      <UserManagementModal isOpen={!!dialogs.users} onClose={() => hide('users')} />
+      <AdminAuditModal isOpen={!!dialogs.adminAudit} onClose={() => hide('adminAudit')} />
+      <SystemHealthModal isOpen={!!dialogs.health} onClose={() => hide('health')} />
+      <ModelCardModal isOpen={!!dialogs.modelCard} onClose={() => hide('modelCard')} />
     </div>
   );
 }

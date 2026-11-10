@@ -779,10 +779,10 @@ body.page-login {
   display: none;
 }
 
-/* ── NAVBAR TIGHT (≤ 1520px) ──
-   Admin has up to 12 buttons (needs ~1520px with text); below this width only icons show (every button has a title) so the bar never wraps or overflows. */
+/* ── NAVBAR TIGHT (≤ 1280px) ──
+   Story 4.37: tools sit in two menus, so the admin bar needs ~1280px with text; below this width only icons show (every button has a title and aria-label) so the bar never wraps or overflows. */
 .btn-ghost, .btn-danger { white-space: nowrap; }
-@media (max-width: 1520px) {
+@media (max-width: 1280px) {
   .btn-label { display: none; }
   .btn-ghost { padding: 6px 8px; }
 }

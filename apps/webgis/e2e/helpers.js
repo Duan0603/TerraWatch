@@ -87,3 +87,9 @@ export function forecastItem(runId, name, hazardLevel, extra = {}) {
     ...extra
   };
 }
+
+/** Story 4.37: shared tools live in the "Công cụ" menu. */
+export async function openTool(page, name) {
+  await page.getByRole('button', { name: 'Công cụ' }).click();
+  await page.getByRole('menuitem', { name }).click();
+}
