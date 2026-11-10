@@ -88,6 +88,11 @@ export const forecastApi = {
     }
   },
 
+  // Hiệu quả thẩm định trong N ngày: số duyệt/từ chối, thời gian duyệt, dự báo hết hạn chưa duyệt (Story 4.34)
+  async getReviewMetrics(days = 7) {
+    return axiosClient.get('/forecasts/reviews/metrics', { params: { days } });
+  },
+
   // Nhật ký thẩm định dự báo: ai duyệt, lúc nào, lý do gì (core_schema.forecast_reviews)
   async getReviewAuditLog(limit = 100) {
     try {

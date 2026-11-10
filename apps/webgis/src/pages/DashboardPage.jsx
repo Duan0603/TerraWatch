@@ -52,6 +52,7 @@ export default function DashboardPage() {
   const [isAdminAuditOpen, setIsAdminAuditOpen] = useState(false);
   const [isHealthOpen, setIsHealthOpen] = useState(false);
   const [isModelCardOpen, setIsModelCardOpen] = useState(false);
+  const [reviewMetrics, setReviewMetrics] = useState(null);
   const [broadcastTargetEvent, setBroadcastTargetEvent] = useState(null);
 
   // Keyboard navigation shortcuts for emergency operations
@@ -75,6 +76,7 @@ export default function DashboardPage() {
   const loadEvents = useCallback(async () => {
     // Số liệu phụ của dải KPI: lỗi ở đây không được làm hỏng hàng đợi.
     takePrefetched('fieldReports', () => forecastApi.getFieldReports()).then(setFieldReports).catch(() => {});
+    forecastApi.getReviewMetrics(7).then(setReviewMetrics).catch(() => setReviewMetrics(null));
     if (isAdmin) broadcastApi.getBroadcastHistory().then(setBroadcasts).catch(() => setBroadcasts(null));
     try {
       // Lần đầu sau đăng nhập: dùng kết quả đã tải sẵn ở trang login (Story 4.22), không có thì gọi thật.
@@ -156,7 +158,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <KpiStrip events={events} fieldReports={fieldReports} broadcasts={broadcasts} />
+      <KpiStrip events={events} fieldReports={fieldReports} broadcasts={broadcasts} reviewMetrics={reviewMetrics} />
 
       <div className="main-layout">
         <VerificationQueue

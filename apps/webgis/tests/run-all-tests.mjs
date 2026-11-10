@@ -9,6 +9,7 @@ import { testAoiCsvKpi } from './test-aoi-csv-kpi.mjs';
 import { testAdminAudit } from './test-admin-audit.mjs';
 import { testSystemHealth } from './test-system-health.mjs';
 import { testModelCard } from './test-model-card.mjs';
+import { testReviewKpi } from './test-review-kpi.mjs';
 
 async function runAllWebGisTests() {
   console.log('===============================================================');
@@ -28,6 +29,7 @@ async function runAllWebGisTests() {
     await testAdminAudit();
     await testSystemHealth();
     await testModelCard();
+    await testReviewKpi();
 
     const elapsed = Date.now() - startTime;
     console.log('===============================================================');

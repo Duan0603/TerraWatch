@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import vn.terrawatch.core.dto.ForecastReviewAuditItem;
 import vn.terrawatch.core.dto.ForecastReviewItem;
+import vn.terrawatch.core.dto.ForecastReviewMetrics;
 import vn.terrawatch.core.dto.ForecastZoneResponse;
 
 import java.sql.ResultSet;
@@ -125,6 +126,26 @@ public class ForecastRepository {
                 rs.getString("reason_notes"),
                 instant(rs, "reviewed_at")
             ), Math.max(1, Math.min(limit, 500)));
+    }
+
+    /** Story 4.34: how fast and how often proposals are decided, computed in SQL over the last {@code days} days. */
+    public ForecastReviewMetrics reviewMetrics(int days) {
+        int window = Math.max(1, Math.min(days, 90));
+        return jdbc.queryForObject("""
+            SELECT count(*) FILTER (WHERE r.decision = 'approved') AS approved,
+                   count(*) FILTER (WHERE r.decision = 'rejected') AS rejected,
+                   CAST(avg(EXTRACT(EPOCH FROM (r.reviewed_at - f.issued_at))) FILTER (WHERE r.reviewed_at >= f.issued_at) / 60.0 AS double precision) AS avg_min,
+                   CAST(percentile_cont(0.5) WITHIN GROUP (ORDER BY EXTRACT(EPOCH FROM (r.reviewed_at - f.issued_at)))
+                       FILTER (WHERE r.reviewed_at >= f.issued_at) / 60.0 AS double precision) AS median_min,
+                   (SELECT count(*) FROM core_schema.forecast_runs p
+                     WHERE p.review_status = 'pending' AND p.availability = 'available'
+                       AND p.valid_until < now() AND p.issued_at >= now() - make_interval(days => ?)) AS expired_unreviewed
+            FROM core_schema.forecast_reviews r
+            JOIN core_schema.forecast_runs f ON f.run_id = r.run_id
+            WHERE r.reviewed_at >= now() - make_interval(days => ?)
+            """, (rs, i) -> new ForecastReviewMetrics(window, rs.getLong("approved"), rs.getLong("rejected"),
+                rs.getObject("avg_min", Double.class), rs.getObject("median_min", Double.class), rs.getLong("expired_unreviewed")),
+            window, window);
     }
 
     private static java.time.Instant instant(ResultSet rs, String col) throws SQLException {

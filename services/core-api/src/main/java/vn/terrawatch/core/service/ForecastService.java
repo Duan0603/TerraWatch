@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import vn.terrawatch.core.dto.ForecastOfflineSyncResponse;
 import vn.terrawatch.core.dto.ForecastReviewAuditItem;
 import vn.terrawatch.core.dto.ForecastReviewItem;
+import vn.terrawatch.core.dto.ForecastReviewMetrics;
 import vn.terrawatch.core.repository.ForecastRepository;
 
 import java.time.Instant;
@@ -24,6 +25,10 @@ public class ForecastService {
     }
 
     @Transactional(readOnly = true)
+    public ForecastReviewMetrics reviewMetrics(int days) {
+        return forecasts.reviewMetrics(days);
+    }
+
     public List<ForecastReviewAuditItem> reviewAuditLog(int limit) {
         return forecasts.reviewAuditLog(limit);
     }
