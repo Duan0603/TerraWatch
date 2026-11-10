@@ -55,6 +55,12 @@ import MapErrorBoundary from './MapErrorBoundary';
 // Story 4.38/4.39: một bản đồ chỉ gắn popup một lần (React StrictMode tạo bản đồ hai lần); màu theo mức rủi ro dùng chung cho vùng và chấm.
 const confirmedClickBound = new WeakSet();
 const CONFIRMED_LAYERS = ['confirmed-landslides-fill', 'confirmed-landslides-line', 'confirmed-landslides-dot'];
+// Story 4.40: popup mở ra phía trên điểm bấm; nếu điểm quá gần mép trên thì kéo bản đồ xuống để popup không chui dưới thanh điều khiển.
+const POPUP_ROOM_PX = 260;
+const focusPopup = (map, lngLat) => {
+  const h = map.getCanvas().clientHeight;
+  if (map.project(lngLat).y < POPUP_ROOM_PX) map.easeTo({ center: lngLat, offset: [0, POPUP_ROOM_PX - h / 2], duration: 300 });
+};
 const CONFIRMED_COLOR = ['match', ['get', 'risk_level'], 'extreme', '#b91c1c', 'high', '#c2410c', 'medium', '#a16207', '#4b5563'];
 
 /**
@@ -261,6 +267,8 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
       map.on('click', ['confirmed-landslides-fill', 'confirmed-landslides-dot'], (e) => {
         const props = e.features?.[0]?.properties;
         if (!props) return;
+        // Báo cáo hiện trường nằm đè lên điểm này: chỉ mở một popup (của ghim), tránh hai khung chồng nhau
+        if (e.originalEvent?.target?.closest?.('.community-report-marker')) return;
         const { title, lines } = describeConfirmed(props);
         const box = document.createElement('div');
         box.style.cssText = 'color:#0f172a;padding:4px;font-family:sans-serif;max-width:260px';
@@ -275,6 +283,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
           box.append(p);
         });
         new maplibregl.Popup({ offset: 12 }).setLngLat(e.lngLat).setDOMContent(box).addTo(map);
+        focusPopup(map, e.lngLat);
       });
     }
   };
@@ -317,6 +326,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
       when.textContent = 'Thời điểm: ' + (rep.time ? new Date(rep.time).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }) + ' (UTC+7)' : '—');
       box.append(title, desc, when);
       const popup = new maplibregl.Popup({ offset: 25 }).setDOMContent(box);
+      popup.on('open', () => focusPopup(map, rep.coords));
 
       const marker = new maplibregl.Marker({ element: el })
         .setLngLat(rep.coords)
@@ -453,6 +463,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
           closeOnClick: false,
           className: 'coord-popup-box'
         }).setHTML(popupContent);
+        popup.on('open', () => focusPopup(map, [lng, lat]));
 
         // Tạo Marker mới tại vị trí click (màu thương hiệu GeoSentry #087B70)
         const marker = new maplibregl.Marker({
@@ -782,7 +793,8 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
             }}
           >
             <MapPinned size={14} />
-            <span className="btn-text">Sạt lở đã xác nhận ({confirmed.features.length})</span>
+            <span className="btn-text">Sạt lở đã xác nhận</span>
+            <span className="map-ctrl-count">{confirmed.features.length}</span>
           </button>
         )}
       </div>
