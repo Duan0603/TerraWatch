@@ -16,6 +16,7 @@ import {
 import forecastApi from '../api/forecastApi';
 import { fmtVN } from '../utils/time';
 import { exportReport, AUDIT_COLUMNS } from '../utils/reportExport';
+import { reviewSummaryRows } from '../utils/reviewKpi';
 
 export default function ReviewAuditModal({ isOpen, onClose }) {
   const [logs, setLogs] = useState([]);
@@ -23,6 +24,9 @@ export default function ReviewAuditModal({ isOpen, onClose }) {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDecision, setFilterDecision] = useState('ALL'); // ALL | approved | rejected
+  const [days, setDays] = useState(7); // Story 4.34: cửa sổ số liệu tổng hợp
+  const [metrics, setMetrics] = useState(null);
+  const [metricsError, setMetricsError] = useState(false);
 
   const fetchLogs = async () => {
     try {
@@ -43,6 +47,12 @@ export default function ReviewAuditModal({ isOpen, onClose }) {
       fetchLogs();
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setMetricsError(false);
+    forecastApi.getReviewMetrics(days).then(setMetrics).catch(() => { setMetrics(null); setMetricsError(true); });
+  }, [isOpen, days]);
 
   if (!isOpen) return null;
 
@@ -126,6 +136,30 @@ export default function ReviewAuditModal({ isOpen, onClose }) {
           >
             <X size={18} />
           </button>
+        </div>
+
+        {/* Story 4.34: số liệu tổng hợp từ server, không tính lại ở trình duyệt */}
+        <div aria-label="Tóm tắt hiệu quả thẩm định" style={{ padding: '12px 24px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+            <span style={{ fontSize: 11, letterSpacing: 0.6, textTransform: 'uppercase', color: '#94a3b8', flex: 1 }}>Hiệu quả thẩm định</span>
+            {[7, 30].map(d => (
+              <button key={d} type="button" className="btn-ghost" aria-pressed={days === d} onClick={() => setDays(d)}
+                style={{ padding: '3px 10px', fontSize: 11, borderColor: days === d ? '#38bdf8' : undefined }}>{d} ngày</button>
+            ))}
+          </div>
+          {metricsError && <div role="alert" style={{ fontSize: 12, color: '#fbbf24' }}>Không tải được số liệu tổng hợp.</div>}
+          {!metricsError && !metrics && <div style={{ fontSize: 12, color: '#94a3b8' }}>Đang tải…</div>}
+          {metrics && (
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {reviewSummaryRows(metrics).map(r => (
+                <div key={r.label} style={{ flex: '1 1 150px', padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div style={{ fontSize: 11, color: '#94a3b8' }}>{r.label}</div>
+                  <div style={{ fontSize: 18, fontWeight: 700 }}>{r.value}</div>
+                  {r.sub && <div style={{ fontSize: 10.5, color: '#64748b' }}>{r.sub}</div>}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Toolbar */}

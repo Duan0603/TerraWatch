@@ -97,6 +97,13 @@ public class ForecastController {
         return service.reviewAuditLog(limit);
     }
 
+    @GetMapping("/reviews/metrics")
+    @PreAuthorize("hasAnyRole('OFFICER', 'ADMIN')")
+    @Operation(summary = "Hiệu quả thẩm định: số duyệt/từ chối, thời gian duyệt trung bình và trung vị, dự báo hết hạn chưa duyệt")
+    public ForecastReviewMetrics reviewMetrics(@RequestParam(defaultValue = "7") int days) {
+        return service.reviewMetrics(days);
+    }
+
     @GetMapping("/active")
     @Operation(summary = "Approved, active, unexpired forecasts")
     public List<ForecastJobResponse> active() {

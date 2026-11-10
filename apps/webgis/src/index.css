@@ -103,6 +103,8 @@ body {
 }
 
 .kpi-value { font-size: 26px; font-weight: 800; line-height: 1; color: var(--text-1); min-width: 28px; }
+.kpi-card-wide { flex: 1.6 0 250px; }
+.kpi-value-text { font-size: 18px; white-space: nowrap; }
 .kpi-label { font-size: 12px; font-weight: 700; color: var(--text-1); }
 .kpi-sub { font-size: 11px; color: var(--text-2); }
 .kpi-ok { border-left-color: var(--risk-low); }

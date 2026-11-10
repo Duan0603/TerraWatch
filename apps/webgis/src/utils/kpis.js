@@ -1,3 +1,5 @@
+import { reviewKpiCard } from './reviewKpi.js';
+
 // Số liệu tổng quan cho dải KPI của dashboard. Hàm thuần để kiểm thử bằng Node.
 
 const SOON_MS = 6 * 3600 * 1000; // "sắp hết hạn" = trong 6 giờ tới
@@ -5,7 +7,7 @@ const DAY_MS = 24 * 3600 * 1000;
 
 // events: hàng đợi dự báo (toForecastView); fieldReports: báo cáo hiện trường;
 // broadcasts: lịch sử phát lệnh (toHistoryEntry) hoặc null nếu tài khoản không xem được (không phải admin).
-export function buildKpis({ events, fieldReports, broadcasts, now = Date.now() }) {
+export function buildKpis({ events, fieldReports, broadcasts, reviewMetrics = null, now = Date.now() }) {
   const live = events.filter(e => !e.expired && e.availability === 'available');
   const pending = events.filter(e => e.status === 'pending' && !e.expired).length;
   const extreme = live.filter(e => e.risk === 'extreme').length;
@@ -23,6 +25,9 @@ export function buildKpis({ events, fieldReports, broadcasts, now = Date.now() }
     { key: 'expiring', label: 'Sắp hết hạn', value: expiringSoon, sub: 'trong 6 giờ tới', tone: expiringSoon ? 'warn' : 'ok' },
     { key: 'reports', label: 'Báo cáo hiện trường mới', value: newReports, sub: 'chưa xử lý', tone: newReports ? 'warn' : 'ok' },
   ];
+
+  const review = reviewKpiCard(reviewMetrics); // Story 4.34: chỉ có khi đã tải được số liệu
+  if (review) kpis.push(review);
 
   if (broadcasts) {
     const recent = broadcasts.filter(b => b.status !== 'ĐÃ THU HỒI' && now - new Date(b.sentAt).getTime() <= DAY_MS);
