@@ -67,6 +67,8 @@ public class SecurityConfig {
                         // Story 4.7: the full list carries names, phones and exact GPS of citizens.
                         .requestMatchers(HttpMethod.GET, "/api/v1/community-reports", "/api/v1/community-reports/photos/*")
                         .hasAnyRole("OFFICER", "ADMIN")
+                        // Story 4.29: model cards are staff reading.
+                        .requestMatchers("/api/v1/model-card").hasAnyRole("OFFICER", "ADMIN")
                         // Story 1.3 review: this diagnostic/circuit-breaker/event-bus test endpoint
                         // became
                         // internet-reachable for the first time once the gateway added a route for it

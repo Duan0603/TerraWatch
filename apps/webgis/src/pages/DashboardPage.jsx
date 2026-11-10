@@ -12,6 +12,7 @@ import AoiManagementModal from '../components/AoiManagementModal';
 import UserManagementModal from '../components/UserManagementModal';
 import AdminAuditModal from '../components/AdminAuditModal';
 import SystemHealthModal from '../components/SystemHealthModal';
+import ModelCardModal from '../components/ModelCardModal';
 import ReviewDialog from '../components/ReviewDialog';
 import KpiStrip from '../components/KpiStrip';
 import forecastApi, { apiErrorMessage } from '../api/forecastApi';
@@ -50,6 +51,7 @@ export default function DashboardPage() {
   const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
   const [isAdminAuditOpen, setIsAdminAuditOpen] = useState(false);
   const [isHealthOpen, setIsHealthOpen] = useState(false);
+  const [isModelCardOpen, setIsModelCardOpen] = useState(false);
   const [broadcastTargetEvent, setBroadcastTargetEvent] = useState(null);
 
   // Keyboard navigation shortcuts for emergency operations
@@ -63,6 +65,7 @@ export default function DashboardPage() {
       else if (isUserManagementOpen) setIsUserManagementOpen(false);
       else if (isAdminAuditOpen) setIsAdminAuditOpen(false);
       else if (isHealthOpen) setIsHealthOpen(false);
+      else if (isModelCardOpen) setIsModelCardOpen(false);
       else if (alertPromptEvent) setAlertPromptEvent(null);
     },
     'Alt+m': () => setMobileTab('map'),
@@ -140,6 +143,7 @@ export default function DashboardPage() {
         onOpenUsers={() => setIsUserManagementOpen(true)}
         onOpenAdminAudit={() => setIsAdminAuditOpen(true)}
         onOpenHealth={() => setIsHealthOpen(true)}
+        onOpenModelCard={() => setIsModelCardOpen(true)}
         onExportReport={() => exportReport('du-bao', FORECAST_COLUMNS, events)}
         lastLoadedAt={lastLoadedAt}
         loadError={loadError}
@@ -241,6 +245,7 @@ export default function DashboardPage() {
 
       <AdminAuditModal isOpen={isAdminAuditOpen} onClose={() => setIsAdminAuditOpen(false)} />
       <SystemHealthModal isOpen={isHealthOpen} onClose={() => setIsHealthOpen(false)} />
+      <ModelCardModal isOpen={isModelCardOpen} onClose={() => setIsModelCardOpen(false)} />
     </div>
   );
 }

@@ -33,5 +33,13 @@ class LiveGRUTests(unittest.TestCase):
         with patch('app.services.live_gru.hashlib.sha256', return_value=Mock(hexdigest=lambda: 'invalid')):
             with self.assertRaisesRegex(ValueError, 'integrity'): LiveGRU()
 
+    def test_info_endpoint_states_what_the_gru_is_not(self):  # Story 4.29
+        from app.main import gru_model_info
+        info = gru_model_info()
+        self.assertTrue(info['ready'])
+        self.assertIs(info['calibrated_probability'], False)
+        self.assertEqual(info['trained_history_provider'], 'IMERG')
+        self.assertEqual(info['trained_forecast_provider'], 'GFS')
+
 
 if __name__ == '__main__': unittest.main()

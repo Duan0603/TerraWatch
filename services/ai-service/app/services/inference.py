@@ -120,6 +120,10 @@ class LandslidePredictor:
                     default_mode="balanced", temporal_rule=CHANGE["rule"], schema_version=SCHEMA,
                     sha256_ok=(self._sha256() == expected), metrics=card.get("metrics"),
                     metrics_note="L4S official test and reviewed VN013/Lang Nu scenes; see model_card.json; not field validated")
+        # Story 4.29: identity fields the model-card page shows; all read from the card, none invented.
+        info.update(version=card.get("version"), status=card.get("status"),
+                    trained_on=(card.get("artifact") or {}).get("trained_on"),
+                    input_channels=(card.get("input") or {}).get("channels"))
         return info
 
     def predict_patch(self, bbox: List[float], **_ignored) -> Dict[str, Any]:
