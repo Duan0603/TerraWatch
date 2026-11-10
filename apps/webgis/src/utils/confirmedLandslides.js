@@ -1,12 +1,19 @@
 // Story 4.38: helpers for the "confirmed landslides" map layer. No imports: Node tests load this file as it is.
 
-const RISK = { extreme: 'Cực cao', high: 'Cao', medium: 'Trung bình', low: 'Thấp' };
+// Same wording as RISK_LABELS in components/EventCard.jsx (that file has JSX, so Node tests cannot import it)
+const RISK = { extreme: 'Cực nguy hiểm', high: 'Cao', medium: 'Trung bình', low: 'Thấp' };
 const VN = new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', dateStyle: 'short', timeStyle: 'short' });
 
-/** Anything that is not a FeatureCollection with features (empty array, error body) counts as "no data". */
+// A coordinate tree must end in [lon, lat] pairs of finite numbers; anything else would break the map layer.
+const validCoords = (c) => Array.isArray(c) && c.length > 0
+  && (typeof c[0] === 'number' ? c.length >= 2 && Number.isFinite(c[0]) && Number.isFinite(c[1]) : c.every(validCoords));
+
+const validFeature = (f) => !!f && !!f.properties && ['Polygon', 'MultiPolygon'].includes(f.geometry?.type) && validCoords(f.geometry.coordinates);
+
+/** Anything that is not a FeatureCollection with valid polygons (empty array, error body, broken geometry) counts as "no data". */
 export function toConfirmedCollection(data) {
   const features = data && data.type === 'FeatureCollection' && Array.isArray(data.features)
-    ? data.features.filter(f => f && f.geometry && f.properties)
+    ? data.features.filter(validFeature)
     : [];
   return { type: 'FeatureCollection', features };
 }

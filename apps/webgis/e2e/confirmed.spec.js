@@ -36,3 +36,34 @@ test('no confirmed landslides (or the call fails): no toggle, dashboard still wo
   await expect(page.getByLabel('Tổng quan tình hình')).toContainText('Chờ thẩm định');
   await expect(page.getByRole('button', { name: /Sạt lở đã xác nhận/ })).toHaveCount(0);
 });
+
+// Story 4.39
+test('broken geometry from the server is dropped: no toggle, no crash', async ({ page }) => {
+  await mockBackend(page, 'officer', ({ path }) => {
+    if (path === '/landslides/active') {
+      return { type: 'FeatureCollection', features: [
+        { type: 'Feature', geometry: {}, properties: { risk_level: 'high' } },
+        { type: 'Feature', geometry: { type: 'Polygon', coordinates: [null] }, properties: { risk_level: 'high' } }
+      ] };
+    }
+    if (path === '/forecasts/review-queue') return [forecastItem('run-e', 'Điểm E2E', 'high')];
+  });
+  await page.goto('/');
+  await expect(page.getByLabel('Tổng quan tình hình')).toContainText('Chờ thẩm định');
+  await expect(page.getByRole('button', { name: /Sạt lở đã xác nhận/ })).toHaveCount(0);
+});
+
+test('a manual refresh reloads the queue but does not re-download the confirmed landslides', async ({ page }) => {
+  const calls = await mockBackend(page, 'officer', ({ path }) => {
+    if (path === '/landslides/active') return FC;
+    if (path === '/forecasts/review-queue') return [forecastItem('run-f', 'Điểm E2E', 'high')];
+  });
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: 'Sạt lở đã xác nhận (1)' })).toBeVisible();
+  const count = (p) => calls.filter(c => c.path === p).length;
+  await page.waitForTimeout(1000); // the dev server's double mount settles
+  const [queue0, confirmed0] = [count('/forecasts/review-queue'), count('/landslides/active')];
+  await page.getByRole('button', { name: 'Làm mới' }).click();
+  await expect.poll(() => count('/forecasts/review-queue')).toBeGreaterThan(queue0);
+  expect(count('/landslides/active')).toBe(confirmed0);
+});

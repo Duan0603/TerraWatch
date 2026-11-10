@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import forecastApi, { apiErrorMessage } from '../api/forecastApi';
 import broadcastApi from '../api/broadcastApi';
 import landslideApi from '../api/landslideApi';
@@ -8,6 +8,7 @@ import { connectLiveUpdates } from '../api/liveUpdates';
 import { takePrefetched } from '../preload/warmUp';
 
 const REFRESH_MS = 60000; // làm mới để trạng thái "hết hạn" luôn đúng
+const CONFIRMED_MS = 5 * 60000; // sạt lở đã xác nhận hiếm khi đổi: không cần hỏi mỗi phút
 
 /** Story 4.36: mọi dữ liệu của dashboard (tải, làm mới 60 s, luồng cập nhật tức thì) gom ở một chỗ; trang chỉ lo giao diện. */
 export function useDashboardData(isAdmin) {
@@ -21,11 +22,19 @@ export function useDashboardData(isAdmin) {
   const [confirmed, setConfirmed] = useState(null); // sạt lở đã xác nhận (GeoJSON), lớp bản đồ phụ
   const [lastLoadedAt, setLastLoadedAt] = useState(null); // thời điểm tải dữ liệu thành công gần nhất
   const [liveConnected, setLiveConnected] = useState(false);
+  const confirmedAt = useRef(0); // lần tải thành công gần nhất
 
   const loadEvents = useCallback(async () => {
     // Số liệu phụ của dải KPI: lỗi ở đây không được làm hỏng hàng đợi.
     takePrefetched('fieldReports', () => forecastApi.getFieldReports()).then(setFieldReports).catch(() => {});
-    landslideApi.getConfirmed().then(d => setConfirmed(toConfirmedCollection(d))).catch(() => setConfirmed(null));
+    if (Date.now() - confirmedAt.current > CONFIRMED_MS) {
+      // Lỗi tạm thời thì giữ dữ liệu cũ (lớp không biến mất); dữ liệu y hệt thì giữ nguyên đối tượng để bản đồ không vẽ lại.
+      landslideApi.getConfirmed().then(d => {
+        confirmedAt.current = Date.now();
+        const next = toConfirmedCollection(d);
+        setConfirmed(prev => (prev && JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
+      }).catch(() => {});
+    }
     forecastApi.getReviewMetrics(7).then(setReviewMetrics).catch(() => setReviewMetrics(null));
     if (isAdmin) broadcastApi.getBroadcastHistory().then(setBroadcasts).catch(() => setBroadcasts(null));
     try {
