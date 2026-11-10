@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, LogOut, BellRing, History, Volume2, VolumeX, FileCheck2, Radio, Download, Cpu } from 'lucide-react';
+import { ShieldCheck, LogOut, BellRing, History, Volume2, VolumeX, FileCheck2, Radio, Download, Cpu, Wrench } from 'lucide-react';
 import AdminMenu from './AdminMenu';
+import NavMenu from './NavMenu';
 import { useAuth } from '../context/AuthContext';
 import { fmtVN } from '../utils/time';
 import { playAlertBeep } from '../utils/sound';
@@ -49,13 +50,13 @@ export default function Navbar({
 
   const { statusText, chipClass, dotClass } = connectionStatus({ loadError, lastLoadedAt, liveConnected });
 
-  // Nút công cụ chung của cán bộ và admin (aria-label = nhãn, nên vẫn có tên khi nhãn bị ẩn ở màn hẹp)
-  const toolbar = [
-    { key: 'export', onClick: onExportReport, Icon: Download, label: 'Xuất báo cáo', title: 'Xuất hàng đợi dự báo hiện tại ra tệp CSV (mở được bằng Excel)' },
-    { key: 'history', onClick: onOpenHistory, Icon: History, label: 'Lịch sử lệnh', title: 'Xem nhật ký phát lệnh cảnh báo SMS / FCM' },
-    { key: 'audit', onClick: onOpenAuditLog, Icon: FileCheck2, label: 'Nhật ký thẩm định', title: 'Xem nhật ký kiểm toán thẩm định dự báo (ai duyệt, lý do)' },
-    { key: 'fieldReports', onClick: onOpenFieldReports, Icon: Radio, label: 'Báo cáo hiện trường', title: 'Xem danh sách báo cáo hiện trường & hình ảnh từ người dân' },
-    { key: 'modelCard', onClick: onOpenModelCard, Icon: Cpu, label: 'Thẻ mô hình', title: 'Mô hình AI là gì, đã kiểm tra thế nào, giới hạn ra sao' }
+  // Story 4.37: công cụ chung của cán bộ và admin gom vào menu "Công cụ" (giữ nhãn chữ trên màn 1440 px)
+  const tools = [
+    { icon: Download, label: 'Xuất báo cáo', hint: 'Hàng đợi dự báo hiện tại ra tệp CSV (mở được bằng Excel)', run: onExportReport },
+    { icon: History, label: 'Lịch sử lệnh', hint: 'Nhật ký phát lệnh cảnh báo SMS / FCM', run: onOpenHistory },
+    { icon: FileCheck2, label: 'Nhật ký thẩm định', hint: 'Ai duyệt dự báo, lý do', run: onOpenAuditLog },
+    { icon: Radio, label: 'Báo cáo hiện trường', hint: 'Báo cáo và hình ảnh từ người dân', run: onOpenFieldReports },
+    { icon: Cpu, label: 'Thẻ mô hình', hint: 'Mô hình AI là gì, đã kiểm tra thế nào, giới hạn ra sao', run: onOpenModelCard }
   ];
 
   const handleSoundToggle = () => {
@@ -104,12 +105,7 @@ export default function Navbar({
           {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
         </button>
 
-        {toolbar.map(({ key, onClick, Icon, label, title }) => (
-          <button key={key} className="btn-ghost" onClick={onClick} aria-label={label} title={title}>
-            <Icon size={14} />
-            <span className="btn-label">{label}</span>
-          </button>
-        ))}
+        <NavMenu label="Công cụ" title="Xuất báo cáo, nhật ký, báo cáo hiện trường, thẻ mô hình" icon={Wrench} items={tools} />
 
         {/* Bốn công cụ quản trị gom vào một menu — Admin only (Story 4.31) */}
         {isAdmin && (
