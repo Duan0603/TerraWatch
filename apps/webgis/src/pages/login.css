@@ -20,6 +20,45 @@ body.page-login { background: #070D1A; }
 .lg-rain { position: absolute; inset: 0; width: 100%; height: 100%; }
 .lg-ridge { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 34%; }
 
+/* Ánh sét: LoginBackdrop bật class lg-strike đúng nhịp chớp. Bật nhanh (.05s), tắt chậm (.7s) như ánh sáng thật tắt dần. */
+.lg-cloud { transition: filter .7s ease-out; }
+.lg-strike .lg-cloud { filter: blur(46px) brightness(2.2); transition-duration: .05s; }
+.lg-rim-crest { fill: none; stroke: #9FC3E6; stroke-width: 1; stroke-opacity: .12; transition: stroke-opacity .7s ease-out; }
+.lg-strike .lg-rim-crest { stroke-opacity: .4; transition-duration: .05s; }
+.lg-rim, .lg-lit { opacity: 0; transition: opacity .7s ease-out; }
+.lg-strike .lg-rim, .lg-strike .lg-lit { opacity: 1; transition-duration: .05s; }
+.lg-rim { fill: none; stroke: #C4DBF5; stroke-width: .5; stroke-opacity: .4; }
+.lg-lit { fill: rgba(176, 205, 240, .2); }
+
+/* Vụ sạt lở: ban đêm các khe nứt chỉ thấy mờ, chỉ rõ lên khi có sét. Diễn biến trong một chu kỳ --d (đặt riêng cho từng vụ):
+   khe nứt mở ra -> mảng đất lộ ra chảy xuống sườn, đá nảy -> bụi dâng ở chân dốc -> mờ dần. --delay lệch giữa hai vụ. */
+.lg-fissure { fill: #02050B; fill-opacity: .92; }
+.lg-streak { fill: none; stroke: #1A120C; stroke-opacity: .3; stroke-width: 1.1; stroke-linejoin: round; }
+.lg-soil { fill: url(#lg-soil); }
+.lg-soil-edge { fill: url(#lg-soil-edge-grad); }
+.lg-debris { fill: #5B4D41; fill-opacity: .85; }
+.lg-slide-crack { opacity: 0; transform-box: fill-box; transform-origin: center; animation: lg-crack-open var(--d, 24s) ease-out calc(var(--delay, 0s) + var(--cd, 0s)) infinite both; }
+.lg-slide-scar { opacity: 0; transform-box: fill-box; transform-origin: 50% 0; animation: lg-scar-flow var(--d, 24s) cubic-bezier(.35, 0, .25, 1) var(--delay, 0s) infinite both; }
+.lg-rock { fill: #54463A; stroke: #8A7968; stroke-width: .3; stroke-opacity: .5; opacity: 0; transform-box: fill-box; transform-origin: center; animation: lg-rock var(--d, 24s) ease-in calc(var(--delay, 0s) + var(--rd, 0s)) infinite both; }
+.lg-dust { fill: url(#lg-dust-grad); opacity: 0; transform-box: fill-box; transform-origin: center bottom; animation: lg-dust var(--d, 24s) ease-out calc(var(--delay, 0s) + var(--dd, 0s)) infinite both; }
+@keyframes lg-crack-open { 0% { opacity: 0; transform: scale(.55); } 5% { opacity: 1; transform: scale(1); } 80% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1); } }
+@keyframes lg-scar-flow { 0%, 10% { opacity: 0; transform: scaleY(.04); } 12% { opacity: 1; } 36%, 80% { opacity: 1; transform: scaleY(1); } 100% { opacity: 0; transform: scaleY(1); } }
+@keyframes lg-rock {
+  0%, 12% { opacity: 0; transform: translate(0, 0) rotate(0); }
+  14% { opacity: 1; }
+  22% { transform: translate(calc(var(--dx) * .3), calc(var(--dy) * .22)) rotate(120deg); }
+  26% { transform: translate(calc(var(--dx) * .42), calc(var(--dy) * .24 - 7px)) rotate(190deg); } /* nảy lên khỏi mặt dốc */
+  34% { transform: translate(calc(var(--dx) * .75), calc(var(--dy) * .68)) rotate(330deg); }
+  40% { opacity: 1; transform: translate(var(--dx), var(--dy)) rotate(420deg); }
+  44%, 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(420deg); }
+}
+@keyframes lg-dust {
+  0%, 16% { opacity: 0; transform: translate(0, 0) scale(.3); }
+  22% { opacity: .55; }
+  60% { opacity: .22; transform: translate(var(--dx), -34px) scale(2.2); }
+  80%, 100% { opacity: 0; transform: translate(var(--dx), -46px) scale(2.8); }
+}
+
 .lg-layout { position: relative; z-index: 2; min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 48px; align-items: center; max-width: 1180px; margin: 0 auto; padding: 48px 32px; box-sizing: border-box; }
 .lg-hero h1 { font-size: clamp(34px, 4.4vw, 52px); line-height: 1.08; font-weight: 800; letter-spacing: -.02em; margin: 18px 0 14px; color: var(--ink-1); }
 .lg-hero h1 em { font-style: normal; color: var(--brand-text); }
@@ -173,6 +212,9 @@ body.page-login { background: #070D1A; }
   .lg-card, .lg-viewport, .lg-track, .lg-slide, .lg-auto { transition: none; }
   .lg-cloud { animation: none; }
   .lg-rain { display: none; }
+  .lg-slide-crack { animation: none; opacity: 1; transform: none; } /* vụ sạt lở đứng yên: chỉ còn khe nứt và mảng đất, không có đá và bụi */
+  .lg-slide-scar { animation: none; opacity: .8; transform: none; }
+  .lg-rock, .lg-dust { display: none; }
 }
 
 /* Báo email đã đăng ký ngay dưới ô email (Story 4.19) */
