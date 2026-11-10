@@ -10,6 +10,7 @@ import { testAdminAudit } from './test-admin-audit.mjs';
 import { testSystemHealth } from './test-system-health.mjs';
 import { testModelCard } from './test-model-card.mjs';
 import { testReviewKpi } from './test-review-kpi.mjs';
+import { testLiveUpdates } from './test-live-updates.mjs';
 
 async function runAllWebGisTests() {
   console.log('===============================================================');
@@ -30,6 +31,7 @@ async function runAllWebGisTests() {
     await testSystemHealth();
     await testModelCard();
     await testReviewKpi();
+    await testLiveUpdates();
 
     const elapsed = Date.now() - startTime;
     console.log('===============================================================');

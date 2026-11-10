@@ -12,6 +12,7 @@ import vn.terrawatch.core.dto.BroadcastPreview;
 import vn.terrawatch.core.repository.BroadcastRepository.DeliveryItem;
 import vn.terrawatch.core.service.AdminAuditService;
 import vn.terrawatch.core.service.NotificationService;
+import vn.terrawatch.core.service.LiveUpdateHub;
 
 import java.util.List;
 import java.util.Map;
@@ -25,8 +26,10 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     private final AdminAuditService audit;
+    private final LiveUpdateHub live;
 
-    public NotificationController(NotificationService notificationService, AdminAuditService audit) {
+    public NotificationController(NotificationService notificationService, AdminAuditService audit, LiveUpdateHub live) {
+        this.live = live;
         this.notificationService = notificationService;
         this.audit = audit;
     }
@@ -39,6 +42,7 @@ public class NotificationController {
         Object bid = result.get("broadcast_id");
         audit.record(adminId, "BROADCAST_SEND", "broadcast", bid == null ? null : bid.toString(), null,
             "status=" + result.get("status") + ", area=" + request.areaId() + ", risk=" + request.riskLevel());
+        live.publish("broadcasts"); // Story 4.35
         return ResponseEntity.ok(result);
     }
 
@@ -60,6 +64,7 @@ public class NotificationController {
     public void revoke(@PathVariable UUID id, Authentication authentication) {
         notificationService.revoke(id);
         audit.record((UUID) authentication.getPrincipal(), "BROADCAST_REVOKE", "broadcast", id.toString(), null, null);
+        live.publish("broadcasts"); // Story 4.35
     }
 
     @GetMapping("/broadcast/{id}/deliveries")

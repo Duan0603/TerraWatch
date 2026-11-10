@@ -17,6 +17,7 @@ import vn.terrawatch.core.dto.ReportPhotoRequest;
 import vn.terrawatch.core.dto.ReportPhotoResponse;
 import vn.terrawatch.core.service.CommunityReportService;
 import vn.terrawatch.core.service.FieldReportService;
+import vn.terrawatch.core.service.LiveUpdateHub;
 
 import java.time.Duration;
 import java.util.List;
@@ -30,8 +31,10 @@ public class CommunityReportController {
 
     private final CommunityReportService reportService;
     private final FieldReportService fieldReports;
+    private final LiveUpdateHub live;
 
-    public CommunityReportController(CommunityReportService reportService, FieldReportService fieldReports) {
+    public CommunityReportController(CommunityReportService reportService, FieldReportService fieldReports, LiveUpdateHub live) {
+        this.live = live;
         this.reportService = reportService;
         this.fieldReports = fieldReports;
     }
@@ -50,7 +53,9 @@ public class CommunityReportController {
         if (status == null || !List.of("submitted", "processed", "archived").contains(status.trim().toLowerCase())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status: must be submitted, processed, or archived");
         }
-        return ResponseEntity.ok(reportService.updateStatus(id, status.trim().toLowerCase()));
+        var updated = reportService.updateStatus(id, status.trim().toLowerCase());
+        live.publish("field_reports"); // Story 4.35
+        return ResponseEntity.ok(updated);
     }
 
     @PostMapping
@@ -58,6 +63,7 @@ public class CommunityReportController {
     public ResponseEntity<FieldReportResponse> submitReport(Authentication authentication,
                                                             @Valid @RequestBody CommunityReportRequest request) {
         var submission = fieldReports.submit(userId(authentication), request);
+        if (submission.created()) live.publish("field_reports"); // Story 4.35
         return ResponseEntity.status(submission.created() ? HttpStatus.CREATED : HttpStatus.OK).body(submission.report());
     }
 
