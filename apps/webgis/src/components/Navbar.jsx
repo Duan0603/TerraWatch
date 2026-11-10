@@ -6,6 +6,22 @@ import { useAuth } from '../context/AuthContext';
 import { fmtVN } from '../utils/time';
 import { playAlertBeep } from '../utils/sound';
 
+// Chip trạng thái: phản ánh chính xác kết nối và lần tải dữ liệu thật
+function connectionStatus({ loadError, lastLoadedAt, liveConnected }) {
+  if (loadError) {
+    return { statusText: 'Mất kết nối API', chipClass: 'status-chip status-chip--error', dotClass: 'live-dot live-dot--error' };
+  }
+  if (lastLoadedAt) {
+    const timeStr = lastLoadedAt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    return {
+      statusText: liveConnected ? `Trực tiếp (${timeStr})` : `Hệ thống trực tuyến (${timeStr})`,
+      chipClass: 'status-chip',
+      dotClass: 'live-dot'
+    };
+  }
+  return { statusText: 'Đang kết nối...', chipClass: 'status-chip status-chip--warning', dotClass: 'live-dot live-dot--warning' };
+}
+
 export default function Navbar({
   soundEnabled,
   setSoundEnabled,
@@ -31,20 +47,16 @@ export default function Navbar({
     : (isAdmin ? 'TL' : 'NA');
   const roleName = isAdmin ? 'Lãnh đạo phê duyệt' : 'Cán bộ giám sát';
 
-  // Chip trạng thái: phản ánh chính xác kết nối và lần tải dữ liệu thật
-  let statusText = 'Đang kết nối...';
-  let chipClass = 'status-chip status-chip--warning';
-  let dotClass = 'live-dot live-dot--warning';
-  if (loadError) {
-    statusText = 'Mất kết nối API';
-    chipClass = 'status-chip status-chip--error';
-    dotClass = 'live-dot live-dot--error';
-  } else if (lastLoadedAt) {
-    const timeStr = lastLoadedAt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    statusText = liveConnected ? `Trực tiếp (${timeStr})` : `Hệ thống trực tuyến (${timeStr})`;
-    chipClass = 'status-chip';
-    dotClass = 'live-dot';
-  }
+  const { statusText, chipClass, dotClass } = connectionStatus({ loadError, lastLoadedAt, liveConnected });
+
+  // Nút công cụ chung của cán bộ và admin (aria-label = nhãn, nên vẫn có tên khi nhãn bị ẩn ở màn hẹp)
+  const toolbar = [
+    { key: 'export', onClick: onExportReport, Icon: Download, label: 'Xuất báo cáo', title: 'Xuất hàng đợi dự báo hiện tại ra tệp CSV (mở được bằng Excel)' },
+    { key: 'history', onClick: onOpenHistory, Icon: History, label: 'Lịch sử lệnh', title: 'Xem nhật ký phát lệnh cảnh báo SMS / FCM' },
+    { key: 'audit', onClick: onOpenAuditLog, Icon: FileCheck2, label: 'Nhật ký thẩm định', title: 'Xem nhật ký kiểm toán thẩm định dự báo (ai duyệt, lý do)' },
+    { key: 'fieldReports', onClick: onOpenFieldReports, Icon: Radio, label: 'Báo cáo hiện trường', title: 'Xem danh sách báo cáo hiện trường & hình ảnh từ người dân' },
+    { key: 'modelCard', onClick: onOpenModelCard, Icon: Cpu, label: 'Thẻ mô hình', title: 'Mô hình AI là gì, đã kiểm tra thế nào, giới hạn ra sao' }
+  ];
 
   const handleSoundToggle = () => {
     const next = !soundEnabled;
@@ -92,56 +104,12 @@ export default function Navbar({
           {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
         </button>
 
-        {/* Xuất báo cáo hàng đợi dự báo ra CSV */}
-        <button
-          className="btn-ghost"
-          onClick={onExportReport}
-          aria-label="Xuất báo cáo" title="Xuất hàng đợi dự báo hiện tại ra tệp CSV (mở được bằng Excel)"
-        >
-          <Download size={14} />
-          <span className="btn-label">Xuất báo cáo</span>
-        </button>
-
-        {/* Lịch sử phát lệnh */}
-        <button
-          className="btn-ghost"
-          onClick={onOpenHistory}
-          aria-label="Lịch sử lệnh" title="Xem nhật ký phát lệnh cảnh báo SMS / FCM"
-        >
-          <History size={14} />
-          <span className="btn-label">Lịch sử lệnh</span>
-        </button>
-
-        {/* Nhật ký thẩm định dự báo */}
-        <button
-          className="btn-ghost"
-          onClick={onOpenAuditLog}
-          aria-label="Nhật ký thẩm định" title="Xem nhật ký kiểm toán thẩm định dự báo (ai duyệt, lý do)"
-        >
-          <FileCheck2 size={14} />
-          <span className="btn-label">Nhật ký thẩm định</span>
-        </button>
-
-        {/* Báo cáo hiện trường từ cộng đồng */}
-        <button
-          className="btn-ghost"
-          onClick={onOpenFieldReports}
-          aria-label="Báo cáo hiện trường" title="Xem danh sách báo cáo hiện trường & hình ảnh từ người dân"
-        >
-          <Radio size={14} />
-          <span className="btn-label">Báo cáo hiện trường</span>
-        </button>
-
-        {/* Thẻ mô hình — cán bộ và admin (Story 4.29) */}
-        <button
-          className="btn-ghost"
-          onClick={onOpenModelCard}
-          aria-label="Thẻ mô hình"
-          title="Mô hình AI là gì, đã kiểm tra thế nào, giới hạn ra sao"
-        >
-          <Cpu size={14} />
-          <span className="btn-label">Thẻ mô hình</span>
-        </button>
+        {toolbar.map(({ key, onClick, Icon, label, title }) => (
+          <button key={key} className="btn-ghost" onClick={onClick} aria-label={label} title={title}>
+            <Icon size={14} />
+            <span className="btn-label">{label}</span>
+          </button>
+        ))}
 
         {/* Bốn công cụ quản trị gom vào một menu — Admin only (Story 4.31) */}
         {isAdmin && (
