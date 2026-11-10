@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "description": "Standard synthetic DEM grids for terrain feature extraction verification",
+  "profiles": {
+    "flat_plain": {
+      "grid_size": 3,
+      "elevation_m": [
+        [100.0, 100.0, 100.0],
+        [100.0, 100.0, 100.0],
+        [100.0, 100.0, 100.0]
+      ],
+      "expected_slope_deg": 0.0,
+      "expected_relief_m": 0.0
+    },
+    "uniform_slope_30deg": {
+      "grid_size": 3,
+      "elevation_m": [
+        [0.0, 17.32, 34.64],
+        [0.0, 17.32, 34.64],
+        [0.0, 17.32, 34.64]
+      ],
+      "step_m": 30.0,
+      "expected_slope_deg": 30.0,
+      "expected_relief_m": 34.64
+    },
+    "escarpment_cliff": {
+      "grid_size": 3,
+      "elevation_m": [
+        [500.0, 500.0, 500.0],
+        [500.0, 700.0, 900.0],
+        [500.0, 900.0, 1200.0]
+      ],
+      "step_m": 30.0,
+      "expected_relief_m": 700.0
+    }
+  }
+}
