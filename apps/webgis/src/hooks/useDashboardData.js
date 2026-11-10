@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import forecastApi, { apiErrorMessage } from '../api/forecastApi';
 import broadcastApi from '../api/broadcastApi';
+import landslideApi from '../api/landslideApi';
+import { toConfirmedCollection } from '../utils/confirmedLandslides';
 import { API_BASE_URL } from '../api/axiosClient';
 import { connectLiveUpdates } from '../api/liveUpdates';
 import { takePrefetched } from '../preload/warmUp';
@@ -16,12 +18,14 @@ export function useDashboardData(isAdmin) {
   const [aoi, setAoi] = useState(null);
   const [broadcasts, setBroadcasts] = useState(null); // chỉ admin xem được lịch sử phát lệnh
   const [reviewMetrics, setReviewMetrics] = useState(null);
+  const [confirmed, setConfirmed] = useState(null); // sạt lở đã xác nhận (GeoJSON), lớp bản đồ phụ
   const [lastLoadedAt, setLastLoadedAt] = useState(null); // thời điểm tải dữ liệu thành công gần nhất
   const [liveConnected, setLiveConnected] = useState(false);
 
   const loadEvents = useCallback(async () => {
     // Số liệu phụ của dải KPI: lỗi ở đây không được làm hỏng hàng đợi.
     takePrefetched('fieldReports', () => forecastApi.getFieldReports()).then(setFieldReports).catch(() => {});
+    landslideApi.getConfirmed().then(d => setConfirmed(toConfirmedCollection(d))).catch(() => setConfirmed(null));
     forecastApi.getReviewMetrics(7).then(setReviewMetrics).catch(() => setReviewMetrics(null));
     if (isAdmin) broadcastApi.getBroadcastHistory().then(setBroadcasts).catch(() => setBroadcasts(null));
     try {
@@ -65,6 +69,6 @@ export function useDashboardData(isAdmin) {
 
   return {
     events, selectedEventId, setSelectedEventId, loadError, fieldReports, aoi, broadcasts,
-    reviewMetrics, lastLoadedAt, liveConnected, loadEvents, refreshAoi
+    reviewMetrics, confirmed, lastLoadedAt, liveConnected, loadEvents, refreshAoi
   };
 }

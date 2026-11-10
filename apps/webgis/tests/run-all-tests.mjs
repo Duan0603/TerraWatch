@@ -11,6 +11,7 @@ import { testSystemHealth } from './test-system-health.mjs';
 import { testModelCard } from './test-model-card.mjs';
 import { testReviewKpi } from './test-review-kpi.mjs';
 import { testLiveUpdates } from './test-live-updates.mjs';
+import { testConfirmedLandslides } from './test-confirmed-landslides.mjs';
 
 async function runAllWebGisTests() {
   console.log('===============================================================');
@@ -32,6 +33,7 @@ async function runAllWebGisTests() {
     await testModelCard();
     await testReviewKpi();
     await testLiveUpdates();
+    await testConfirmedLandslides();
 
     const elapsed = Date.now() - startTime;
     console.log('===============================================================');
