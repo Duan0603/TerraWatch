@@ -5,7 +5,7 @@ import RainfallEvidencePanel from './RainfallEvidencePanel';
 import LiveRainfallPanel from './LiveRainfallPanel';
 import { fmtVN } from '../utils/time';
 
-export default function DetailPanel({ selectedEvent, events, onSelectEvent, fieldReports, aoi, className = '' }) {
+export default function DetailPanel({ selectedEvent, events, onSelectEvent, fieldReports, aoi, confirmed, className = '' }) {
   const [evidenceOpen, setEvidenceOpen] = useState(true);
   return (
     <main className={`map-canvas-area${className ? ' ' + className : ''}`} style={{ position: 'relative', flex: 1, height: '100%', overflow: 'hidden', background: '#E8F2EF' }}>
@@ -40,6 +40,7 @@ export default function DetailPanel({ selectedEvent, events, onSelectEvent, fiel
         onSelectEvent={onSelectEvent}
         fieldReports={fieldReports}
         aoi={aoi}
+        confirmed={confirmed}
       />
 
       {/* Hai nguồn bằng chứng: dự báo đã lưu của hệ thống (trên) và mưa cập nhật theo tọa độ (dưới) */}

@@ -14,7 +14,8 @@ import {
   MapPin,
   AlertTriangle,
   RotateCcw,
-  Satellite
+  Satellite,
+  MapPinned
 } from 'lucide-react';
 import {
   STYLE_URL,
@@ -28,6 +29,7 @@ import {
 } from '../config/mapConfig';
 import { DEFAULT_LOCATION_ID } from '../data/mountainLocations';
 import LocationSelector from './LocationSelector';
+import { describeConfirmed, confirmedBounds, confirmedCentres } from '../utils/confirmedLandslides';
 import MapErrorBoundary from './MapErrorBoundary';
 
 /**
@@ -54,7 +56,7 @@ import MapErrorBoundary from './MapErrorBoundary';
  * Component MapViewer - Bản đồ viễn thám giám sát trượt lở 3D thời gian thực (Story 1.1, 1.2, 1.3)
  * @param {MapViewerProps} props
  */
-export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldReports = [], aoi = null }) {
+export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldReports = [], aoi = null, confirmed = null }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
@@ -77,6 +79,10 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
 
   const fieldReportsRef = useRef(fieldReports);
   const aoiRef = useRef(aoi);
+  const confirmedRef = useRef(confirmed);
+  const [showConfirmed, setShowConfirmed] = useState(false); // tắt sẵn: nút bật sẽ bay tới các điểm
+  const showConfirmedRef = useRef(false);
+  const confirmedClickBound = useRef(new WeakSet()); // một bản đồ chỉ gắn một lần (React StrictMode tạo bản đồ hai lần)
 
   const onSelectEventRef = useRef(onSelectEvent);
   useEffect(() => {
@@ -214,6 +220,70 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
     });
   };
 
+  // Story 4.38: sạt lở đã được cán bộ xác nhận (phát hiện từ ảnh vệ tinh) - lớp riêng, bật/tắt được
+  const ensureConfirmedLayer = (map) => {
+    if (!map || !map.getStyle()) return;
+    const data = confirmedRef.current || { type: 'FeatureCollection', features: [] };
+    const visibility = showConfirmedRef.current ? 'visible' : 'none';
+    if (map.getSource('confirmed-landslides')) {
+      map.getSource('confirmed-landslides').setData(data);
+      map.getSource('confirmed-centres')?.setData(confirmedCentres(data));
+      ['confirmed-landslides-fill', 'confirmed-landslides-line', 'confirmed-landslides-dot'].forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', visibility));
+      return;
+    }
+    map.addSource('confirmed-landslides', { type: 'geojson', data });
+    map.addLayer({
+      id: 'confirmed-landslides-fill', type: 'fill', source: 'confirmed-landslides', layout: { visibility },
+      paint: {
+        'fill-color': ['match', ['get', 'risk_level'], 'extreme', '#b91c1c', 'high', '#c2410c', 'medium', '#a16207', '#4b5563'],
+        'fill-opacity': 0.55
+      }
+    });
+    map.addLayer({
+      id: 'confirmed-landslides-line', type: 'line', source: 'confirmed-landslides', layout: { visibility },
+      paint: { 'line-color': '#111827', 'line-width': 2, 'line-dasharray': [1, 1] }
+    });
+    // Chấm tròn ở tâm: vùng sạt lở chỉ rộng vài trăm mét, zoom xa sẽ không thấy đa giác
+    map.addSource('confirmed-centres', { type: 'geojson', data: confirmedCentres(data) });
+    map.addLayer({
+      id: 'confirmed-landslides-dot', type: 'circle', source: 'confirmed-centres', layout: { visibility },
+      paint: {
+        'circle-radius': 9, 'circle-stroke-width': 2.5, 'circle-stroke-color': '#ffffff',
+        'circle-color': ['match', ['get', 'risk_level'], 'extreme', '#b91c1c', 'high', '#c2410c', 'medium', '#a16207', '#4b5563']
+      }
+    });
+    if (!confirmedClickBound.current.has(map)) {
+      confirmedClickBound.current.add(map);
+      map.on('click', ['confirmed-landslides-fill', 'confirmed-landslides-dot'], (e) => {
+        const props = e.features?.[0]?.properties;
+        if (!props) return;
+        const { title, lines } = describeConfirmed(props);
+        const box = document.createElement('div');
+        box.style.cssText = 'color:#0f172a;padding:4px;font-family:sans-serif;max-width:260px';
+        const h = document.createElement('div');
+        h.style.cssText = 'font-weight:700;font-size:12px;margin-bottom:4px;color:#b91c1c';
+        h.textContent = title;
+        box.append(h);
+        lines.forEach(l => {
+          const p = document.createElement('div');
+          p.style.cssText = 'font-size:11px;color:#475569';
+          p.textContent = l;
+          box.append(p);
+        });
+        new maplibregl.Popup({ offset: 12 }).setLngLat(e.lngLat).setDOMContent(box).addTo(map);
+      });
+    }
+  };
+
+  // Bật lớp thì bay tới các điểm (chúng thường nằm xa vùng đang xem); tắt thì chỉ ẩn lớp.
+  const toggleConfirmed = () => {
+    if (!showConfirmed) {
+      const bounds = confirmedBounds(confirmedRef.current);
+      if (bounds && mapRef.current) mapRef.current.fitBounds(bounds, { padding: 90, maxZoom: 13, duration: 1500 });
+    }
+    setShowConfirmed(v => !v);
+  };
+
   // Marker báo cáo hiện trường của người dân (tách biệt với vùng dự báo)
   const renderCommunityReportMarkers = (map) => {
     if (!map) return;
@@ -300,6 +370,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
       map.on('style.load', () => {
         setupTerrainAndSky(map);
         ensureAoiLayer(map);
+        ensureConfirmedLayer(map);
         ensureLandslideLayers(map, eventsRef.current);
         if (markersRef.current.length === 0) {
           renderCommunityReportMarkers(map);
@@ -312,6 +383,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
 
         setupTerrainAndSky(map);
         ensureAoiLayer(map);
+        ensureConfirmedLayer(map);
         ensureLandslideLayers(map, eventsRef.current);
         if (markersRef.current.length === 0) {
           renderCommunityReportMarkers(map);
@@ -333,7 +405,8 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
       // 1.4 Click chọn điểm trên bản đồ để xem tọa độ không gian (Story 1.4, AC 1.4.1 - 1.4.5, Rule R10)
       map.on('click', (e) => {
         // Ưu tiên click vào polygon sự cố sạt lở (AC 1.4.4, FR-MAP-13)
-        const features = map.queryRenderedFeatures(e.point, { layers: ['landslide-polygons-fill'] });
+        const layers = ['landslide-polygons-fill', 'confirmed-landslides-fill', 'confirmed-landslides-dot'].filter(id => map.getLayer(id));
+        const features = map.queryRenderedFeatures(e.point, { layers });
         if (features && features.length > 0) {
           return;
         }
@@ -427,6 +500,14 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
     ensureAoiLayer(mapRef.current);
     renderCommunityReportMarkers(mapRef.current);
   }, [aoi, fieldReports, mapLoaded]);
+
+  // 1d. Lớp sạt lở đã xác nhận: dữ liệu đến sau hoặc người dùng bật/tắt
+  useEffect(() => {
+    confirmedRef.current = confirmed;
+    showConfirmedRef.current = showConfirmed;
+    if (!mapRef.current || !mapLoaded) return;
+    ensureConfirmedLayer(mapRef.current);
+  }, [confirmed, showConfirmed, mapLoaded]);
 
   // 2. Camera FlyTo mượt mà khi Cán bộ chọn sự cố từ hàng đợi (AC 1.5.5, FR-MAP-12)
   const prevSelectedEventIdRef = useRef(null);
@@ -676,6 +757,27 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
           >
             <Satellite size={14} />
             <span className="btn-text">{isSatellite ? 'Vệ tinh: BẬT' : 'Vệ tinh'}</span>
+          </button>
+        )}
+
+        {/* Story 4.38: bật/tắt lớp sạt lở đã xác nhận (chỉ hiện khi có dữ liệu) */}
+        {confirmed?.features?.length > 0 && (
+          <button
+            onClick={toggleConfirmed}
+            title="Bật để bay tới các điểm sạt lở đã được cán bộ xác nhận (phát hiện từ ảnh vệ tinh)"
+            aria-label={`Sạt lở đã xác nhận (${confirmed.features.length})`}
+            aria-pressed={showConfirmed}
+            className="map-ctrl-btn"
+            style={{
+              background: showConfirmed ? '#b91c1c' : 'rgba(255,255,255,0.92)',
+              color: showConfirmed ? '#fff' : '#172524',
+              border: '1px solid #DCE5E2', padding: '7px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)', backdropFilter: 'blur(4px)'
+            }}
+          >
+            <MapPinned size={14} />
+            <span className="btn-text">Sạt lở đã xác nhận ({confirmed.features.length})</span>
           </button>
         )}
       </div>
