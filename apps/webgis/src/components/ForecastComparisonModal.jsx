@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { 
   GitCompare, 
   X, 
@@ -47,7 +48,8 @@ export default function ForecastComparisonModal({ isOpen, onClose, selectedEvent
   // Merge current and prior, sorted descending by issuedAt
   const allRuns = [currentRun, ...prior.map(p => ({ ...p, isCurrent: false }))];
 
-  return (
+  // Portal: rendered inside the map overlay stack (z-index 10), the map HUD (z-index 15) would cover it.
+  return createPortal(
     <div style={{
       position: 'fixed',
       top: 0,
@@ -325,5 +327,5 @@ export default function ForecastComparisonModal({ isOpen, onClose, selectedEvent
         </div>
       </div>
     </div>
-  );
+  , document.body);
 }

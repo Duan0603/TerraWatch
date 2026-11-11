@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { MapPin, Clock, Ruler } from 'lucide-react';
+import { MapPin, Clock, Ruler, ChevronDown, ChevronUp } from 'lucide-react';
 import MapViewer from './MapViewer';
 import RainfallEvidencePanel from './RainfallEvidencePanel';
 import LiveRainfallPanel from './LiveRainfallPanel';
 import { fmtVN } from '../utils/time';
 
+const TABS = [['issue', 'Lúc phát hành dự báo'], ['now', 'Hiện tại & 7 ngày tới']];
+
 export default function DetailPanel({ selectedEvent, events, onSelectEvent, fieldReports, aoi, confirmed, className = '' }) {
-  const [evidenceOpen, setEvidenceOpen] = useState(true);
+  const [tab, setTab] = useState('issue');
+  const [open, setOpen] = useState(true);
+  const pick = (id) => { setTab(id); setOpen(true); };
   return (
     <main className={`map-canvas-area${className ? ' ' + className : ''}`} style={{ position: 'relative', flex: 1, height: '100%', overflow: 'hidden', background: '#E8F2EF' }}>
       {selectedEvent && (
@@ -43,17 +47,34 @@ export default function DetailPanel({ selectedEvent, events, onSelectEvent, fiel
         confirmed={confirmed}
       />
 
-      {/* Hai nguồn bằng chứng: dự báo đã lưu của hệ thống (trên) và mưa cập nhật theo tọa độ (dưới) */}
+      {/* Hai góc nhìn cùng khu vực: ảnh chụp lúc phát hành (cố định) và mưa/thời tiết hiện tại (cập nhật mỗi giờ) */}
       {selectedEvent && (
         <div className="map-evidence-stack">
-          {evidenceOpen
-            ? <RainfallEvidencePanel selectedEvent={selectedEvent} onClose={() => setEvidenceOpen(false)} />
-            : (
-              <button className="btn-ghost" style={{ background: '#fff' }} onClick={() => setEvidenceOpen(true)}>
-                Xem bằng chứng dự báo & địa hình
+          <div className="evidence-tabs" role="tablist" aria-label="Bằng chứng và thời tiết của khu vực">
+            {TABS.map(([id, label]) => (
+              <button key={id} type="button" role="tab" id={`evidence-tab-${id}`} aria-controls="evidence-tabpanel"
+                aria-selected={open && tab === id} tabIndex={tab === id ? 0 : -1} onClick={() => pick(id)}
+                onKeyDown={e => {
+                  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+                  const other = id === 'issue' ? 'now' : 'issue';
+                  pick(other);
+                  document.getElementById(`evidence-tab-${other}`)?.focus();
+                }}>
+                {label}
               </button>
-            )}
-          <LiveRainfallPanel key={`${selectedEvent.lat},${selectedEvent.lng}`} selectedEvent={selectedEvent} />
+            ))}
+            <button type="button" className="evidence-tabs-toggle" onClick={() => setOpen(v => !v)}
+              aria-expanded={open} aria-controls="evidence-tabpanel" aria-label={open ? 'Thu gọn bảng' : 'Mở bảng'}>
+              {open ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+            </button>
+          </div>
+          {open && (
+            <div id="evidence-tabpanel" role="tabpanel" aria-labelledby={`evidence-tab-${tab}`}>
+              {tab === 'issue'
+                ? <RainfallEvidencePanel selectedEvent={selectedEvent} />
+                : <LiveRainfallPanel key={`${selectedEvent.lat},${selectedEvent.lng}`} selectedEvent={selectedEvent} />}
+            </div>
+          )}
         </div>
       )}
     </main>

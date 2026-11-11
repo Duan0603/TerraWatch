@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { weatherKind, dayLabel, numberText, rainLevel24h } from '../src/utils/weather.js';
+import { weatherKind, dayLabel, numberText, rainLevel24h, scoreText } from '../src/utils/weather.js';
 
 // Bảng thời tiết 7 ngày: mã WMO, nhãn ngày theo lịch Việt Nam, số thiếu không thành 0.
 export async function testWeather() {
@@ -33,4 +33,11 @@ export async function testWeather() {
   assert.equal(rainLevel24h(100).level, 'heavy');
   assert.equal(rainLevel24h(100.1).level, 'very-heavy');
   console.log('  ✓ cấp mưa 24h theo QĐ 18/2021/QĐ-TTg, đúng biên 50 và 100 mm');
+
+  assert.equal(scoreText(0.000004810250189333029), '< 0,001'); // giá trị thật, không thành "0.000"
+  assert.equal(scoreText(0.4800521444020835), '0,480');
+  assert.equal(scoreText(0.001), '0,001');
+  assert.equal(scoreText(0), '0,000');
+  assert.equal(scoreText(null), '–');
+  console.log('  ✓ điểm GRU: số rất nhỏ hiện "< 0,001", dấu phẩy thập phân');
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { CloudRain, RefreshCw, ChevronDown, ChevronUp, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudLightning, Snowflake, HelpCircle } from 'lucide-react';
-import { weatherKind, dayLabel, numberText, rainLevel24h, hourLabel } from '../utils/weather';
+import { CloudRain, RefreshCw, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudLightning, Snowflake, HelpCircle } from 'lucide-react';
+import { weatherKind, dayLabel, numberText, rainLevel24h, hourLabel, scoreText } from '../utils/weather';
+import { fmtVN } from '../utils/time';
 import './LiveRainfallPanel.css';
 
 const WEATHER_ICONS = { clear: Sun, partly: CloudSun, cloudy: Cloud, fog: CloudFog, drizzle: CloudDrizzle, rain: CloudRain, snow: Snowflake, storm: CloudLightning, unknown: HelpCircle };
@@ -10,11 +11,11 @@ function WeatherIcon({ code, size = 18 }) {
 }
 
 const valueText = value => value === null || value === undefined ? 'Chưa đủ dữ liệu' : `${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 }).format(value)} mm`;
-const timeText = value => value ? new Date(value).toLocaleString('vi-VN', { hour12: false }) : 'Chưa có lần lấy thành công';
+const timeText = value => value ? fmtVN(value) : 'Chưa có lần lấy thành công';
 
 export default function LiveRainfallPanel({ selectedEvent }) {
   const [snapshot, setSnapshot] = useState(null), [error, setError] = useState('');
-  const [loading, setLoading] = useState(true), [reload, setReload] = useState(0), [collapsed, setCollapsed] = useState(false);
+  const [loading, setLoading] = useState(true), [reload, setReload] = useState(0);
   const latitude = selectedEvent?.lat, longitude = selectedEvent?.lng;
   useEffect(() => {
     let controller;
@@ -60,9 +61,8 @@ export default function LiveRainfallPanel({ selectedEvent }) {
   };
   return <section className="live-rain-panel" aria-label="Dữ liệu mưa cập nhật">
     <header><div><CloudRain size={18} /><h2>Mưa & thời tiết theo khu vực</h2></div>
-      <button type="button" onClick={() => setCollapsed(v => !v)} aria-expanded={!collapsed} aria-label={collapsed ? 'Mở bảng mưa' : 'Thu gọn bảng mưa'}>{collapsed ? <ChevronUp size={17} /> : <ChevronDown size={17} />}</button>
     </header>
-    {!collapsed && <div className="live-rain-body">
+    <div className="live-rain-body">
       <p className="live-rain-location">{selectedEvent.location}<br />{latitude?.toFixed(4)}°N, {longitude?.toFixed(4)}°E</p>
       <p className="live-rain-source">Open-Meteo · Ước tính từ mô hình khí tượng, không phải số đo trạm.</p>
       <div className="live-rain-status" role="status">
@@ -91,6 +91,18 @@ export default function LiveRainfallPanel({ selectedEvent }) {
           </svg>
           <div className="live-rain-chart-key"><span><i className="past" />Ước tính đã qua</span><span><i className="forecast" />Dự báo</span><span>× thiếu dữ liệu</span></div>
         </figure>
+        {prediction?.ready ? <section className="live-gru-result" aria-label="Dự báo tự động thử nghiệm">
+          <h3>GRU · Dự báo tự động 24 giờ</h3>
+          <p className="live-gru-equation"><span title={String(prediction.temporal_score)}>{scoreText(prediction.temporal_score)} <small>Mưa</small></span><b>×</b>
+            <span title={String(prediction.spatial_score)}>{scoreText(prediction.spatial_score)} <small>Địa hình · đất</small></span><b>=</b>
+            <span title={String(prediction.hazard_score)}><strong>{scoreText(prediction.hazard_score)}</strong> <small>Điểm nguy cơ</small></span></p>
+          <p className="live-gru-period">{timeText(prediction.issue_time)} → {timeText(prediction.valid_until)}<br />Ô lưới 1 km: {prediction.unit_id}</p>
+          {(stale || new Date(prediction.valid_until) <= new Date()) && <p className="live-rain-error">Kết quả cũ hoặc đầu vào chưa cập nhật. Không dùng như dự báo mới.</p>}
+          <p className="live-rain-model-hold">Dự báo thử nghiệm: Open-Meteo khác nguồn IMERG + GFS khi train; mốc chạy là giờ cập nhật hiện tại. Điểm chưa phải xác suất và không tự phát cảnh báo.</p>
+          <details><summary>Đất và độ dốc dùng cho ô này</summary><p className="live-gru-period">
+            Dốc {prediction.static_values.slope_deg.toFixed(1)}° · Sét {prediction.static_values.clay_pct.toFixed(1)}% · Cát {prediction.static_values.sand_pct.toFixed(1)}% · Khối lượng thể tích {prediction.static_values.bulk_density_g_cm3.toFixed(2)} g/cm³.
+          </p></details>
+        </section> : <p className="live-rain-model-hold">GRU chưa có kết quả: {prediction?.reason || 'đang chờ đầu vào và mô hình'}. Tác vụ sẽ tự thử lại; không tạo điểm giả.</p>}
         {weather ? <section className="live-weather" aria-label="Thời tiết 7 ngày tới">
           <h3>Thời tiết 7 ngày tới</h3>
           {now && <div className="live-weather-now">
@@ -111,23 +123,11 @@ export default function LiveRainfallPanel({ selectedEvent }) {
           </table>
           <p className="live-rain-coverage">Ngày theo giờ Việt Nam; mưa "Hôm nay" gồm cả các giờ đã qua. Ngày thiếu giờ không cộng tổng. Nhiệt độ, gió và khả năng mưa là dự báo mô hình Open-Meteo, chỉ để tham khảo, không dùng để tự phát cảnh báo.</p>
         </section> : <p className="live-rain-coverage">Chưa có bảng thời tiết cho snapshot này; sẽ có sau lần lấy dữ liệu kế tiếp.</p>}
-        {prediction?.ready ? <section className="live-gru-result" aria-label="Dự báo tự động thử nghiệm">
-          <h3>GRU · Dự báo tự động 24 giờ</h3>
-          <p className="live-gru-equation"><span>{prediction.temporal_score.toFixed(3)} <small>Mưa</small></span><b>×</b>
-            <span>{prediction.spatial_score.toFixed(3)} <small>Địa hình · đất</small></span><b>=</b>
-            <span><strong>{prediction.hazard_score.toFixed(3)}</strong> <small>Điểm nguy cơ</small></span></p>
-          <p className="live-gru-period">{timeText(prediction.issue_time)} → {timeText(prediction.valid_until)}<br />{prediction.unit_id}</p>
-          {(stale || new Date(prediction.valid_until) <= new Date()) && <p className="live-rain-error">Kết quả cũ hoặc đầu vào chưa cập nhật. Không dùng như dự báo mới.</p>}
-          <p className="live-rain-model-hold">Dự báo thử nghiệm: Open-Meteo khác nguồn IMERG + GFS khi train; mốc chạy là giờ cập nhật hiện tại. Điểm chưa phải xác suất và không tự phát cảnh báo.</p>
-          <details><summary>Đất và độ dốc dùng cho ô này</summary><p className="live-gru-period">
-            Dốc {prediction.static_values.slope_deg.toFixed(1)}° · Sét {prediction.static_values.clay_pct.toFixed(1)}% · Cát {prediction.static_values.sand_pct.toFixed(1)}% · Khối lượng thể tích {prediction.static_values.bulk_density_g_cm3.toFixed(2)} g/cm³.
-          </p></details>
-        </section> : <p className="live-rain-model-hold">GRU chưa có kết quả: {prediction?.reason || 'đang chờ đầu vào và mô hình'}. Tác vụ sẽ tự thử lại; không tạo điểm giả.</p>}
       </>}
       <footer><span>Lấy thành công: {timeText(snapshot?.last_success_at)}<br />Server tự lấy mỗi {Math.round((snapshot?.refresh_interval_seconds || 3600)/60)} phút; web kiểm tra mỗi phút.</span>
         <button type="button" onClick={() => { setLoading(true); setReload(n => n+1); }} aria-label="Đọc lại dữ liệu mưa đã lưu"><RefreshCw size={15} /></button>
       </footer>
       <a href="https://open-meteo.com/en/docs" target="_blank" rel="noreferrer">Nguồn dữ liệu và phương pháp</a>
-    </div>}
+    </div>
   </section>;
 }
