@@ -1,5 +1,5 @@
 # generated: 2026-10-02
-# last_updated: 2026-11-07
+# last_updated: 2026-11-10
 # project: SECapstone
 # project_key: TERRA
 # tracking_system: file-system
@@ -71,6 +71,7 @@ development_status:
   4-37-navbar-tools-menu: review
   4-38-confirmed-landslides-layer: review
   4-30-demo-seed-availability: review
+  4-39-core-multi-phase-sms-alert-system: review
   epic-4-retrospective: optional
 
   epic-5: backlog
