@@ -11,6 +11,9 @@ const STATE = {
   fresh: { label: 'Còn hiệu lực', bg: '#F0FDF4', fg: '#15803D', border: '#BBF7D0' },
 };
 
+// Open-Meteo values are model estimates; the project never labels them station observations.
+const SOURCE_VN = { OPEN_METEO: 'Open-Meteo · ước tính từ mô hình khí tượng, không phải số đo trạm' };
+
 const fmt = (v, d = 1) => (typeof v === 'number' ? Number(v.toFixed(d)).toString() : String(v));
 
 // Hiển thị JSON tự do (yếu tố đóng góp / chất lượng đầu vào) thành danh sách "khóa: giá trị".
@@ -56,6 +59,7 @@ export default function RainfallEvidencePanel({ selectedEvent: ev, onClose }) {
   const maxHourly = Math.max(1, ...measured.map(o => o.mm));
   const maxTotal = Math.max(1, observedTotal, latestForecast?.mm24h || 0);
   const prior = ev.priorRuns || [];
+  const sources = [...new Set(measured.map(o => o.source).filter(Boolean))];
   const noRain = obs.length === 0 && !latestForecast;
   const noTerrain = ev.unit && [ev.unit.slopeAvg, ev.unit.slopeMax, ev.unit.elevationAvg, ev.unit.reliefM].every(v => v == null);
 
@@ -94,17 +98,17 @@ export default function RainfallEvidencePanel({ selectedEvent: ev, onClose }) {
 
         {hasEvidence && noRain && (
           <div style={{ background: '#F5F8F7', border: '1px solid #DCE5E2', borderRadius: 8, padding: '8px 12px', marginBottom: 12, fontSize: 11, color: '#475569', lineHeight: 1.6 }}>
-            Chưa có mưa quan trắc hoặc dự báo được nạp <strong>trước giờ phát hành</strong> của lần chạy này, nên không thể đối chiếu.
+            Chưa có mưa đã qua hoặc dự báo được nạp <strong>trước giờ phát hành</strong> của lần chạy này, nên không thể đối chiếu.
             Mưa cập nhật mới nhất xem ở bảng "Mưa & thời tiết theo khu vực" bên dưới.
           </div>
         )}
 
         {hasEvidence && !noRain && (
           <>
-            {/* Quan trắc vs dự báo */}
-            <div style={{ fontSize: 11, fontWeight: 600, color: '#172524', marginBottom: 6 }}>Mưa quan trắc 24h trước khi phát hành vs dự báo 24h tới</div>
+            {/* Mưa đã qua vs dự báo */}
+            <div style={{ fontSize: 11, fontWeight: 600, color: '#172524', marginBottom: 6 }}>Mưa 24h trước phát hành vs dự báo 24h tới</div>
             {[
-              { label: 'Quan trắc', value: obs.length ? observedTotal : null, color: '#087B70' },
+              { label: 'Đã qua', value: obs.length ? observedTotal : null, color: '#087B70' },
               { label: 'Dự báo', value: latestForecast ? latestForecast.mm24h : null, color: '#F97316' },
             ].map(({ label, value, color }) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, fontSize: 11 }}>
@@ -115,23 +119,28 @@ export default function RainfallEvidencePanel({ selectedEvent: ev, onClose }) {
                 <strong style={{ width: 64, textAlign: 'right', color: '#172524' }}>{value == null ? 'chưa có' : `${fmt(value)} mm`}</strong>
               </div>
             ))}
+            {sources.length > 0 && (
+              <div style={{ fontSize: 10, color: '#687977', marginBottom: 6 }}>Nguồn mưa đã qua: {sources.map(s => SOURCE_VN[s] || s).join('; ')}</div>
+            )}
             {missing > 0 && (
               <div style={{ fontSize: 10, color: '#92400E', marginBottom: 6 }}>
-                Thiếu {missing}/{obs.length} khoảng quan trắc — tổng thực tế có thể cao hơn; thiếu dữ liệu không phải là không mưa.
+                Thiếu {missing}/{obs.length} khoảng giờ — tổng thực tế có thể cao hơn; thiếu dữ liệu không phải là không mưa.
               </div>
             )}
 
-            {/* Quan trắc theo khoảng */}
+            {/* Mưa đã qua theo giờ */}
             {obs.length > 0 && (
               <div style={{ margin: '10px 0 14px' }}>
-                <div style={{ fontSize: 10, color: '#687977', marginBottom: 4 }}>Mưa quan trắc theo khoảng (giờ VN)</div>
+                <div style={{ fontSize: 10, color: '#687977', marginBottom: 4 }}>
+                  Mưa đã qua theo giờ (giờ VN) · {measured.some(o => o.mm > 0) ? `cột cao nhất ${fmt(Math.max(...measured.map(o => o.mm)))} mm/giờ` : 'không có mưa'}
+                </div>
                 <div style={{ display: 'flex', alignItems: 'flex-end', height: 70, background: '#F5F8F7', padding: '6px 4px 2px', borderRadius: 8, border: '1px solid #DCE5E2', gap: 2 }}>
                   {obs.map((o, i) => (
                     <div key={i} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: '100%' }}
                       title={o.mm == null ? `Thiếu dữ liệu (${o.quality})` : `${o.mm} mm — ${o.source}`}>
                       <div style={{ width: '70%', height: o.mm == null ? 6 : `${Math.max((o.mm / maxHourly) * 48, 2)}px`,
                         background: o.mm == null ? 'repeating-linear-gradient(45deg,#CBD5E1,#CBD5E1 2px,#fff 2px,#fff 4px)' : '#087B70', borderRadius: '2px 2px 0 0' }} />
-                      <span style={{ fontSize: 7, color: '#9BB0AD' }}>{hourVN(o.intervalEnd)}</span>
+                      <span style={{ fontSize: 8, color: '#687977', whiteSpace: 'nowrap', visibility: i % 3 ? 'hidden' : 'visible' }}>{hourVN(o.intervalEnd)}</span>
                     </div>
                   ))}
                 </div>
@@ -212,6 +221,7 @@ export default function RainfallEvidencePanel({ selectedEvent: ev, onClose }) {
           <span style={{ color: ev.expired ? '#B91C1C' : '#087B70', fontWeight: 600 }} title={fmtUtc(ev.validUntil)}>
             Hiệu lực: {fmtVN(ev.validFrom)} → {fmtVN(ev.validUntil)}
           </span>
+          <span>Mô hình: <strong>{ev.modelVersion || 'chưa rõ'}</strong>{ev.modelVersion === 'demo' && ' (dữ liệu demo, không phải kết quả mô hình thật)'}</span>
         </div>
       </div>
 

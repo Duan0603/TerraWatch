@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { reasonText, forecastState } from '../src/utils/forecastStatus.js';
+import { hourVN } from '../src/utils/time.js';
 
 // Bảng bằng chứng: lý do không có dự báo bằng tiếng Việt, và "hết hạn" được ưu tiên hơn "không có dự báo".
 export async function testForecastStatus() {
@@ -18,4 +19,8 @@ export async function testForecastStatus() {
   assert.equal(forecastState({ expired: false, availability: 'available' }), 'fresh');
   assert.equal(forecastState({ status: 'superseded', expired: true, availability: 'available' }), 'superseded');
   console.log('  ✓ thứ tự trạng thái: thay thế > hết hạn > không có dự báo > còn hiệu lực');
+
+  assert.equal(hourVN('2026-11-11T05:00:00Z'), '12h'); // không thành "12 giờh"
+  assert.equal(hourVN('2026-11-11T17:00:00Z'), '00h');
+  console.log('  ✓ nhãn giờ trục biểu đồ theo giờ Việt Nam: "12h"');
 }
