@@ -17,6 +17,10 @@ from app.pipeline.rainfall_repository import RainfallRepository
 LOG = logging.getLogger(__name__)
 UTC = timezone.utc
 LOCK_ID = 74301892
+VN = timezone(timedelta(hours=7), 'Asia/Ho_Chi_Minh')  # Vietnam has no DST, so a fixed offset is exact.
+WEATHER_UNITS = {'temperature_2m': '°C', 'relative_humidity_2m': '%', 'precipitation_probability': '%',
+                 'wind_speed_10m': 'km/h', 'weather_code': 'wmo code'}
+HOURLY_VARIABLES = ','.join(['precipitation', *WEATHER_UNITS])
 
 
 def utc_now():
@@ -27,6 +31,42 @@ def location_key(lat, lon):
     if not math.isfinite(lat) or not math.isfinite(lon) or not (-90 <= lat <= 90 and -180 <= lon <= 180):
         raise ValueError('Invalid coordinates')
     return f'{lat:.4f},{lon:.4f}'
+
+
+def summarize_weather(raw, series, as_of):
+    """Current conditions and 7 Vietnam calendar days. Rain is reused from the validated series."""
+    hourly, units = raw['hourly'], raw.get('hourly_units', {})
+    times = hourly['time']
+    if any(units.get(k) != u or len(hourly.get(k) or []) != len(times) for k, u in WEATHER_UNITS.items()):
+        raise ValueError('Missing weather variable or unexpected unit')
+    def clean(value):
+        value = None if value is None else float(value)
+        return value if value is not None and math.isfinite(value) else None
+    rows = {}
+    for i, text in enumerate(times):
+        t = datetime.fromisoformat(text)
+        t = t.replace(tzinfo=UTC) if t.tzinfo is None else t.astimezone(UTC)
+        rows[t] = {k: clean(hourly[k][i]) for k in WEATHER_UNITS}
+    days, today = [], as_of.astimezone(VN).date()
+    for offset in range(7):
+        day = today + timedelta(days=offset)
+        # Temperature etc. are instants at t; precipitation at t covers the hour ending at t.
+        insts = [r for t, r in rows.items() if t.astimezone(VN).date() == day]
+        if not insts:
+            continue
+        start = datetime(day.year, day.month, day.day, tzinfo=VN)
+        rain = [series.get((start+timedelta(hours=h)).astimezone(UTC)) for h in range(1, 25)]
+        pick = lambda key, fn: fn([r[key] for r in insts if r[key] is not None], default=None)
+        days.append({'date': day.isoformat(),
+                     'rain_mm': round(sum(rain), 1) if None not in rain else None,
+                     'rain_valid_hours': sum(v is not None for v in rain),
+                     'temp_min_c': pick('temperature_2m', min), 'temp_max_c': pick('temperature_2m', max),
+                     'precip_probability_max_pct': pick('precipitation_probability', max),
+                     'weather_code': pick('weather_code', max),  # WMO codes grow with severity
+                     'wind_max_kmh': pick('wind_speed_10m', max)})
+    current = rows.get(as_of)
+    return {'timezone': 'Asia/Ho_Chi_Minh', 'units': WEATHER_UNITS,
+            'current': dict(current, at=as_of.isoformat()) if current else None, 'daily': days}
 
 
 def normalize_weather(raw, fetched_at):
@@ -60,7 +100,11 @@ def normalize_weather(raw, fetched_at):
     forecast = window(as_of, 24)
     if not any(w['valid_hours'] for w in history.values()):
         raise ValueError('No usable recent rainfall intervals')
-    return {'provider': 'OPEN_METEO', 'source_kind': 'WEATHER_MODEL_ESTIMATE',
+    try:
+        weather = summarize_weather(raw, series, as_of)
+    except (ValueError, TypeError, KeyError):
+        weather = None  # Optional display data must never block the rainfall the GRU depends on.
+    return {'weather': weather,'provider': 'OPEN_METEO', 'source_kind': 'WEATHER_MODEL_ESTIMATE',
             'source_url': 'https://open-meteo.com/en/docs', 'as_of': as_of.isoformat(),
             'fetched_at': fetched_at.isoformat(), 'provider_run_issued_at': None,
             'model_selection': 'best_match', 'history': history, 'forecast_24h': forecast,
@@ -196,7 +240,7 @@ class LiveRainfallService:
         api_key = os.getenv('OPEN_METEO_API_KEY', '').strip()
         url = 'https://customer-api.open-meteo.com/v1/forecast' if api_key else 'https://api.open-meteo.com/v1/forecast'
         params = {'latitude': location['latitude'], 'longitude': location['longitude'],
-                  'hourly': 'precipitation', 'timezone': 'UTC', 'past_days': 8, 'forecast_days': 2}
+                  'hourly': HOURLY_VARIABLES, 'timezone': 'UTC', 'past_days': 8, 'forecast_days': 8}
         if api_key:
             params['apikey'] = api_key
         response = requests.get(url, params=params, timeout=(5, 20))

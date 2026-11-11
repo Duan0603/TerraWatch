@@ -9,6 +9,13 @@
 - Khóa advisory PostgreSQL tránh nhiều worker cùng lấy. Mỗi điểm có `last_attempt_at` để tránh gọi lặp trong khoảng cấu hình. GET từ trình duyệt chỉ đọc cache, không kích hoạt yêu cầu mới tới nhà cung cấp.
 - Bảng mưa mới nằm trên bản đồ chính của cán bộ/admin và công dân, thay cho bảng số mẫu trước đây. Web đọc lại mỗi 60 giây, hiển thị nguồn và thời điểm lấy thành công.
 
+## Thời tiết 7 ngày (hiển thị tham khảo)
+
+- Cùng một request Open-Meteo lấy thêm `temperature_2m`, `relative_humidity_2m`, `precipitation_probability`, `weather_code`, `wind_speed_10m`; `forecast_days` tăng từ 2 lên 8 để đủ 7 ngày theo lịch Việt Nam. Không thêm request, không cần khóa.
+- Payload có khối `weather`: `current` (giá trị tại `as_of`) và `daily` (tối đa 7 ngày, gộp theo giờ Việt Nam UTC+7). Mưa theo ngày lấy lại từ chuỗi mưa đã kiểm tra; ngày thiếu giờ để `rain_mm=null`, không cộng một phần.
+- Nếu thiếu biến hoặc sai đơn vị, `weather=null`; mưa, `forecast_24h` và GRU vẫn chạy như cũ. Snapshot lấy trước khi có tính năng này cũng có `weather` rỗng cho tới lần lấy kế tiếp.
+- WebGIS hiển thị trong bảng "Mưa & thời tiết theo khu vực". Đây là dự báo mô hình để tham khảo; không là đầu vào của GRU và không tự phát cảnh báo.
+
 ## Khóa API
 
 Demo/nghiên cứu phi thương mại dùng endpoint công khai Open-Meteo, hiện không cần khóa. Nếu có gói thương mại, thêm ở file `.env` cạnh `docker-compose.yml` tại thư mục gốc dự án để Docker Compose truyền cấu hình vào GIS service (hoặc đặt các biến môi trường tương ứng khi chạy GIS service trực tiếp):
