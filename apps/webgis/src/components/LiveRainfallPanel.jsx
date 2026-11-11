@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CloudRain, RefreshCw, ChevronDown, ChevronUp, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudLightning, Snowflake, HelpCircle } from 'lucide-react';
+import { CloudRain, RefreshCw, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudLightning, Snowflake, HelpCircle } from 'lucide-react';
 import { weatherKind, dayLabel, numberText, rainLevel24h, hourLabel } from '../utils/weather';
 import './LiveRainfallPanel.css';
 
@@ -14,7 +14,7 @@ const timeText = value => value ? new Date(value).toLocaleString('vi-VN', { hour
 
 export default function LiveRainfallPanel({ selectedEvent }) {
   const [snapshot, setSnapshot] = useState(null), [error, setError] = useState('');
-  const [loading, setLoading] = useState(true), [reload, setReload] = useState(0), [collapsed, setCollapsed] = useState(false);
+  const [loading, setLoading] = useState(true), [reload, setReload] = useState(0);
   const latitude = selectedEvent?.lat, longitude = selectedEvent?.lng;
   useEffect(() => {
     let controller;
@@ -60,9 +60,8 @@ export default function LiveRainfallPanel({ selectedEvent }) {
   };
   return <section className="live-rain-panel" aria-label="Dữ liệu mưa cập nhật">
     <header><div><CloudRain size={18} /><h2>Mưa & thời tiết theo khu vực</h2></div>
-      <button type="button" onClick={() => setCollapsed(v => !v)} aria-expanded={!collapsed} aria-label={collapsed ? 'Mở bảng mưa' : 'Thu gọn bảng mưa'}>{collapsed ? <ChevronUp size={17} /> : <ChevronDown size={17} />}</button>
     </header>
-    {!collapsed && <div className="live-rain-body">
+    <div className="live-rain-body">
       <p className="live-rain-location">{selectedEvent.location}<br />{latitude?.toFixed(4)}°N, {longitude?.toFixed(4)}°E</p>
       <p className="live-rain-source">Open-Meteo · Ước tính từ mô hình khí tượng, không phải số đo trạm.</p>
       <div className="live-rain-status" role="status">
@@ -128,6 +127,6 @@ export default function LiveRainfallPanel({ selectedEvent }) {
         <button type="button" onClick={() => { setLoading(true); setReload(n => n+1); }} aria-label="Đọc lại dữ liệu mưa đã lưu"><RefreshCw size={15} /></button>
       </footer>
       <a href="https://open-meteo.com/en/docs" target="_blank" rel="noreferrer">Nguồn dữ liệu và phương pháp</a>
-    </div>}
+    </div>
   </section>;
 }
