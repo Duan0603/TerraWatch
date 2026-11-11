@@ -21,6 +21,36 @@ class LiveRainfallTests(unittest.TestCase):
         self.assertFalse(data['gru_inference']['ready'])
         self.assertIsNone(data['provider_run_issued_at'])
 
+    def add_weather(self):
+        n = len(self.raw['hourly']['time'])
+        self.raw['hourly_units'].update({'temperature_2m': '°C', 'relative_humidity_2m': '%',
+                                         'precipitation_probability': '%', 'wind_speed_10m': 'km/h',
+                                         'weather_code': 'wmo code'})
+        self.raw['hourly'].update({'temperature_2m': [float(i) for i in range(n)], 'relative_humidity_2m': [80]*n,
+                                   'precipitation_probability': [30]*n, 'wind_speed_10m': [10.0]*n,
+                                   'weather_code': [61]*n})
+
+    def test_weather_days_follow_vietnam_calendar(self):
+        self.add_weather()
+        weather = normalize_weather(self.raw, self.now)['weather']
+        # as_of 08:00 UTC = 15:00 Nov 5 in Vietnam; data ends 15:00 Nov 6 Vietnam time.
+        self.assertEqual([d['date'] for d in weather['daily']], ['2026-11-05', '2026-11-06'])
+        today, tomorrow = weather['daily']
+        self.assertEqual((today['rain_mm'], today['rain_valid_hours']), (24, 24))
+        self.assertEqual((today['temp_min_c'], today['temp_max_c']), (152, 175))  # local 00:00..23:00
+        self.assertIsNone(tomorrow['rain_mm'])  # partial day is not reported as a daily total
+        self.assertEqual(tomorrow['rain_valid_hours'], 15)
+        self.assertEqual(weather['current']['temperature_2m'], 167)
+        self.assertEqual(weather['current']['at'], self.end.isoformat())
+
+    def test_bad_weather_variables_do_not_block_rainfall(self):
+        self.assertIsNone(normalize_weather(self.raw, self.now)['weather'])  # older payload shape
+        self.add_weather()
+        self.raw['hourly_units']['temperature_2m'] = '°F'
+        data = normalize_weather(self.raw, self.now)
+        self.assertIsNone(data['weather'])
+        self.assertEqual(data['forecast_24h']['mm'], 24)
+
     def test_missing_timestamp_does_not_become_zero_or_partial_sum(self):
         self.raw['hourly']['time'].pop(166)
         self.raw['hourly']['precipitation'].pop(166)

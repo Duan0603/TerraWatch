@@ -13,6 +13,7 @@ import { testReviewKpi } from './test-review-kpi.mjs';
 import { testLiveUpdates } from './test-live-updates.mjs';
 import { testConfirmedLandslides } from './test-confirmed-landslides.mjs';
 import { testTerrainAssessmentContracts } from './test-terrain-assessment-contracts.mjs';
+import { testWeather } from './test-weather.mjs';
 
 async function runAllWebGisTests() {
   console.log('===============================================================');
@@ -36,6 +37,7 @@ async function runAllWebGisTests() {
     await testLiveUpdates();
     await testConfirmedLandslides();
     await testTerrainAssessmentContracts();
+    await testWeather();
 
     const elapsed = Date.now() - startTime;
     console.log('===============================================================');
