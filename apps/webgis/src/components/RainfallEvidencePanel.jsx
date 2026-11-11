@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CloudRain, Mountain, Calendar, X, AlertTriangle, GitCompare } from 'lucide-react';
 import { fmtVN, fmtUtc, hourVN, relativeToNow } from '../utils/time';
 import ForecastComparisonModal from './ForecastComparisonModal';
+import { forecastState } from '../utils/forecastStatus';
 
 const STATE = {
   expired: { label: 'Hết hạn', bg: '#FEF2F2', fg: '#B91C1C', border: '#FECACA' },
@@ -9,11 +10,6 @@ const STATE = {
   superseded: { label: 'Đã bị thay thế', bg: '#F1F5F9', fg: '#475569', border: '#CBD5E1' },
   fresh: { label: 'Còn hiệu lực', bg: '#F0FDF4', fg: '#15803D', border: '#BBF7D0' },
 };
-
-const stateOf = (e) =>
-  e.status === 'superseded' ? 'superseded'
-  : e.availability !== 'available' ? 'unavailable'
-  : e.expired ? 'expired' : 'fresh';
 
 const fmt = (v, d = 1) => (typeof v === 'number' ? Number(v.toFixed(d)).toString() : String(v));
 
@@ -49,7 +45,7 @@ export default function RainfallEvidencePanel({ selectedEvent: ev, onClose }) {
 
   const [isComparisonOpen, setIsComparisonOpen] = useState(false);
 
-  const state = STATE[stateOf(ev)];
+  const state = STATE[forecastState(ev)];
   const hasEvidence = Array.isArray(ev.observedRain);
   const obs = ev.observedRain || [];
   const measured = obs.filter(o => o.mm != null);
@@ -60,6 +56,8 @@ export default function RainfallEvidencePanel({ selectedEvent: ev, onClose }) {
   const maxHourly = Math.max(1, ...measured.map(o => o.mm));
   const maxTotal = Math.max(1, observedTotal, latestForecast?.mm24h || 0);
   const prior = ev.priorRuns || [];
+  const noRain = obs.length === 0 && !latestForecast;
+  const noTerrain = ev.unit && [ev.unit.slopeAvg, ev.unit.slopeMax, ev.unit.elevationAvg, ev.unit.reliefM].every(v => v == null);
 
   return (
     <div className="evidence-panel" style={{
@@ -94,7 +92,14 @@ export default function RainfallEvidencePanel({ selectedEvent: ev, onClose }) {
           </div>
         )}
 
-        {hasEvidence && (
+        {hasEvidence && noRain && (
+          <div style={{ background: '#F5F8F7', border: '1px solid #DCE5E2', borderRadius: 8, padding: '8px 12px', marginBottom: 12, fontSize: 11, color: '#475569', lineHeight: 1.6 }}>
+            Chưa có mưa quan trắc hoặc dự báo được nạp <strong>trước giờ phát hành</strong> của lần chạy này, nên không thể đối chiếu.
+            Mưa cập nhật mới nhất xem ở bảng "Mưa & thời tiết theo khu vực" bên dưới.
+          </div>
+        )}
+
+        {hasEvidence && !noRain && (
           <>
             {/* Quan trắc vs dự báo */}
             <div style={{ fontSize: 11, fontWeight: 600, color: '#172524', marginBottom: 6 }}>Mưa quan trắc 24h trước khi phát hành vs dự báo 24h tới</div>
@@ -132,10 +137,6 @@ export default function RainfallEvidencePanel({ selectedEvent: ev, onClose }) {
                 </div>
               </div>
             )}
-            {obs.length === 0 && (
-              <div style={{ fontSize: 11, color: '#92400E', marginBottom: 12 }}>Chưa có dữ liệu mưa quan trắc cho ô này.</div>
-            )}
-
             {/* So sánh các lần chạy dự báo */}
             {(forecasts.length > 0 || prior.length > 0) && (
               <div style={{ marginBottom: 14 }}>
@@ -188,12 +189,13 @@ export default function RainfallEvidencePanel({ selectedEvent: ev, onClose }) {
             <div style={{ fontSize: 10, color: '#687977', display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
               <Mountain size={12} color="#087B70" /> Địa hình ô đánh giá
             </div>
+            {noTerrain ? <div style={{ fontSize: 11, color: '#475569' }}>Chưa trích xuất địa hình (DEM) cho ô này.</div> :
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, fontSize: 11, color: '#475569' }}>
               <div>Độ dốc TB: <strong>{ev.unit.slopeAvg == null ? '—' : `${fmt(ev.unit.slopeAvg)}°`}</strong></div>
               <div>Độ dốc max: <strong>{ev.unit.slopeMax == null ? '—' : `${fmt(ev.unit.slopeMax)}°`}</strong></div>
               <div>Độ cao TB: <strong>{ev.unit.elevationAvg == null ? '—' : `${fmt(ev.unit.elevationAvg, 0)} m`}</strong></div>
               <div>Chênh cao: <strong>{ev.unit.reliefM == null ? '—' : `${fmt(ev.unit.reliefM, 0)} m`}</strong></div>
-            </div>
+            </div>}
             <div style={{ fontSize: 10, color: '#687977', marginTop: 6 }}>
               Độ phân giải hiệu dụng ≈ {ev.unit.effectiveResolutionM == null ? '—' : `${fmt(ev.unit.effectiveResolutionM, 0)} m`}: đây là vùng đánh giá nguy cơ, không phải vị trí chính xác của một điểm sạt lở.
             </div>

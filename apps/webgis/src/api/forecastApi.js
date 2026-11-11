@@ -1,4 +1,5 @@
 import axiosClient from './axiosClient';
+import { reasonText } from '../utils/forecastStatus';
 
 // Core API forecast contract (Stories 4.2/4.3). Không có dữ liệu giả: lỗi mạng được ném ra để UI hiển thị.
 
@@ -34,7 +35,7 @@ export const toForecastView = (item) => {
     status: item.reviewStatus, // pending | approved | rejected | superseded
     expired: item.expired,
     availability: item.availability,
-    unavailabilityReason: item.unavailabilityReason,
+    unavailabilityReason: reasonText(item.unavailabilityReason),
     probability: item.probability,
     issuedAt: item.issuedAt,
     validFrom: item.validFrom,
