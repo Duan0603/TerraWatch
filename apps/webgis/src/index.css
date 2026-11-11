@@ -917,3 +917,15 @@ body.page-login {
 
 /* Trang công dân (Story 4.5): độ rộng danh sách trên máy tính */
 @media (min-width: 769px) { .sidebar.citizen-list { width: 300px; overflow-y: auto; } }
+
+
+/* Story 4.40: the map overlays (info card top-left, controls top-right, popups) must never sit on top of each other.
+   The map area is a size container: below 1350 px its own width (not the window's) decides that the map buttons keep only their icon. */
+.map-canvas-area { container-type: inline-size; container-name: mapcanvas; }
+.maplibregl-popup { z-index: 20; }
+.map-ctrl-count { min-width: 18px; padding: 0 5px; border-radius: 9px; background: rgba(0,0,0,0.18); font-size: 11px; line-height: 18px; text-align: center; }
+@container mapcanvas (max-width: 1350px) {
+  .map-floating-controls .btn-text { display: none !important; }
+  .map-floating-controls .map-ctrl-btn { padding: 7px !important; }
+  .location-selector-label { display: none !important; }
+}
