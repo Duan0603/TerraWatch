@@ -36,5 +36,12 @@ export function hourLabel(iso) {
   return `${d.getHours()}h ${d.getDate()}/${d.getMonth() + 1}`;
 }
 
+// GRU scores are often ~1e-5: three decimals would print "0.000" and read as "no result".
+export function scoreText(v) {
+  if (v === null || v === undefined) return '–';
+  if (v > 0 && v < 0.001) return '< 0,001';
+  return new Intl.NumberFormat('vi-VN', { minimumFractionDigits: 3, maximumFractionDigits: 3 }).format(v);
+}
+
 export const numberText =(value, unit, digits = 0) =>
   value === null || value === undefined ? '–' : `${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: digits }).format(value)}${unit}`;
