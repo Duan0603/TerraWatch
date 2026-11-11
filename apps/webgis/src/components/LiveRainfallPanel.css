@@ -44,3 +44,14 @@
 .live-weather-days thead th { font-size: 9px; font-weight: 600; color: #435c55; }
 .live-weather-days tbody th { text-align: left; font-weight: 600; white-space: nowrap; }
 .live-weather-days svg { color: var(--primary-dark); vertical-align: middle; }
+.live-rain-values dt small { display: block; font-size: 8px; color: #6b807a; margin-top: 2px; white-space: nowrap; }
+.live-rain-level { display: inline-block; margin-top: 6px; padding: 2px 6px; border-radius: 999px; font-size: 9px; font-weight: 600; background: #e6efec; color: #435c55; }
+.live-rain-level-heavy { background: #fdecd8; color: #8a4b0f; }
+.live-rain-level-very-heavy { background: #fbe0dc; color: #9b1c1c; }
+td.live-rain-level-heavy, td.live-rain-level-very-heavy { font-weight: 700; }
+.live-rain-now line { stroke: #172524; stroke-width: 1; stroke-dasharray: 3 2; }
+.live-rain-chart .live-rain-now text { font-weight: 600; fill: #172524; }
+.live-rain-chart-key { gap: 10px; flex-wrap: wrap; }
+.live-rain-chart-key i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+.live-rain-chart-key i.past { background: #087b70; }
+.live-rain-chart-key i.forecast { background: #b45b17; }
