@@ -52,6 +52,11 @@ import MapErrorBoundary from './MapErrorBoundary';
  * @property {Object|null} [aoi] - GeoJSON FeatureCollection ranh giới vùng giám sát
  */
 
+// Story 4.38/4.39: một bản đồ chỉ gắn popup một lần (React StrictMode tạo bản đồ hai lần); màu theo mức rủi ro dùng chung cho vùng và chấm.
+const confirmedClickBound = new WeakSet();
+const CONFIRMED_LAYERS = ['confirmed-landslides-fill', 'confirmed-landslides-line', 'confirmed-landslides-dot'];
+const CONFIRMED_COLOR = ['match', ['get', 'risk_level'], 'extreme', '#b91c1c', 'high', '#c2410c', 'medium', '#a16207', '#4b5563'];
+
 /**
  * Component MapViewer - Bản đồ viễn thám giám sát trượt lở 3D thời gian thực (Story 1.1, 1.2, 1.3)
  * @param {MapViewerProps} props
@@ -82,7 +87,6 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
   const confirmedRef = useRef(confirmed);
   const [showConfirmed, setShowConfirmed] = useState(false); // tắt sẵn: nút bật sẽ bay tới các điểm
   const showConfirmedRef = useRef(false);
-  const confirmedClickBound = useRef(new WeakSet()); // một bản đồ chỉ gắn một lần (React StrictMode tạo bản đồ hai lần)
 
   const onSelectEventRef = useRef(onSelectEvent);
   useEffect(() => {
@@ -228,14 +232,14 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
     if (map.getSource('confirmed-landslides')) {
       map.getSource('confirmed-landslides').setData(data);
       map.getSource('confirmed-centres')?.setData(confirmedCentres(data));
-      ['confirmed-landslides-fill', 'confirmed-landslides-line', 'confirmed-landslides-dot'].forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', visibility));
+      CONFIRMED_LAYERS.forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', visibility));
       return;
     }
     map.addSource('confirmed-landslides', { type: 'geojson', data });
     map.addLayer({
       id: 'confirmed-landslides-fill', type: 'fill', source: 'confirmed-landslides', layout: { visibility },
       paint: {
-        'fill-color': ['match', ['get', 'risk_level'], 'extreme', '#b91c1c', 'high', '#c2410c', 'medium', '#a16207', '#4b5563'],
+        'fill-color': CONFIRMED_COLOR,
         'fill-opacity': 0.55
       }
     });
@@ -249,11 +253,11 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
       id: 'confirmed-landslides-dot', type: 'circle', source: 'confirmed-centres', layout: { visibility },
       paint: {
         'circle-radius': 9, 'circle-stroke-width': 2.5, 'circle-stroke-color': '#ffffff',
-        'circle-color': ['match', ['get', 'risk_level'], 'extreme', '#b91c1c', 'high', '#c2410c', 'medium', '#a16207', '#4b5563']
+        'circle-color': CONFIRMED_COLOR
       }
     });
-    if (!confirmedClickBound.current.has(map)) {
-      confirmedClickBound.current.add(map);
+    if (!confirmedClickBound.has(map)) {
+      confirmedClickBound.add(map);
       map.on('click', ['confirmed-landslides-fill', 'confirmed-landslides-dot'], (e) => {
         const props = e.features?.[0]?.properties;
         if (!props) return;
@@ -370,8 +374,8 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
       map.on('style.load', () => {
         setupTerrainAndSky(map);
         ensureAoiLayer(map);
-        ensureConfirmedLayer(map);
         ensureLandslideLayers(map, eventsRef.current);
+        ensureConfirmedLayer(map); // sau vùng dự báo để nằm trên: sạt lở thật không bị vùng dự báo che mờ
         if (markersRef.current.length === 0) {
           renderCommunityReportMarkers(map);
         }
@@ -383,8 +387,8 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
 
         setupTerrainAndSky(map);
         ensureAoiLayer(map);
-        ensureConfirmedLayer(map);
         ensureLandslideLayers(map, eventsRef.current);
+        ensureConfirmedLayer(map); // sau vùng dự báo để nằm trên: sạt lở thật không bị vùng dự báo che mờ
         if (markersRef.current.length === 0) {
           renderCommunityReportMarkers(map);
         }
@@ -489,6 +493,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
       source.setData(createFeatureCollection(events));
     } else {
       ensureLandslideLayers(map, events);
+      CONFIRMED_LAYERS.forEach(id => map.getLayer(id) && map.moveLayer(id)); // vùng dự báo vừa thêm: đưa lớp xác nhận lên trên
     }
   }, [events, mapLoaded]);
 

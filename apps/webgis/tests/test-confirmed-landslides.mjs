@@ -8,13 +8,23 @@ export async function testConfirmedLandslides() {
   assert.equal(toConfirmedCollection([]).features.length, 0);
   assert.equal(toConfirmedCollection(null).features.length, 0);
   assert.equal(toConfirmedCollection({ type: 'FeatureCollection' }).features.length, 0);
-  const ok = { type: 'FeatureCollection', features: [{ geometry: {}, properties: {} }, { properties: {} }, null] };
+  const poly = { type: 'MultiPolygon', coordinates: [[[[104.11, 21.86], [104.116, 21.86], [104.116, 21.867], [104.11, 21.86]]]] };
+  const ok = { type: 'FeatureCollection', features: [
+    { geometry: poly, properties: {} },                                      // hợp lệ
+    { geometry: {}, properties: {} },                                        // thiếu loại hình
+    { geometry: { type: 'Polygon', coordinates: [null] }, properties: {} },  // tọa độ null
+    { geometry: { type: 'Polygon', coordinates: [[['a', 1], [2, 3]]] }, properties: {} }, // không phải số
+    { geometry: { type: 'Point', coordinates: [104, 21] }, properties: {} }, // không phải đa giác
+    { geometry: { type: 'Polygon', coordinates: [] }, properties: {} },      // rỗng
+    { geometry: poly }, { properties: {} }, null                             // thiếu thuộc tính / hình học
+  ] };
   assert.equal(toConfirmedCollection(ok).features.length, 1);
-  console.log('  ✓ dữ liệu rỗng, sai dạng hoặc thiếu hình học -> bỏ qua, không lỗi');
+  assert.ok(confirmedBounds(toConfirmedCollection(ok)), 'what passes validation can always be framed');
+  console.log('  ✓ dữ liệu rỗng, sai dạng hoặc hình học hỏng (null, chữ, điểm, rỗng) -> bỏ qua, không lỗi');
 
   const d = describeConfirmed({ risk_level: 'extreme', area_m2: 480688.58, slope: 43.5, confidence: 0.96, scene_id: 'S2B_X', verified_at: '2026-10-08T03:28:52Z' });
   assert.equal(d.title, 'SẠT LỞ ĐÃ XÁC NHẬN');
-  assert.ok(d.lines[0].includes('Cực cao'));
+  assert.ok(d.lines[0].includes('Cực nguy hiểm'));
   assert.ok(d.lines[1].includes('48.1 ha') && d.lines[1].includes('43.5°'));
   assert.ok(d.lines[2].includes('96%'));
   assert.ok(d.lines[3].includes('S2B_X'));
