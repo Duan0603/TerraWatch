@@ -34,3 +34,13 @@
 .live-rain-panel footer { display: flex; align-items: center; gap: 12px; justify-content: space-between; margin-top: 12px; font-size: 9px; line-height: 1.8; color: #435c55; border-top: 1px solid var(--border); padding-top: 10px; }
 .live-rain-panel a { display: inline-block; margin-top: 10px; font-size: 10px; color: var(--primary-dark); text-underline-offset: 3px; }
 @media (max-width: 600px) { .live-rain-panel { bottom: 12px; right: 12px; width: calc(100% - 24px); max-height: 60%; } }
+.live-weather { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+.live-weather h3 { font-size: 12px; }
+.live-weather-now { display: flex; align-items: center; gap: 10px; margin: 12px 0; padding: 10px; background: var(--surface-2); border-radius: 6px; color: var(--primary-dark); }
+.live-weather-now strong { font-size: 20px; font-variant-numeric: tabular-nums; }
+.live-weather-now p { font-size: 10px; line-height: 1.6; color: #435c55; }
+.live-weather-days { width: 100%; border-collapse: collapse; font-size: 11px; font-variant-numeric: tabular-nums; }
+.live-weather-days th, .live-weather-days td { padding: 6px 2px; text-align: center; border-bottom: 1px solid var(--border); }
+.live-weather-days thead th { font-size: 9px; font-weight: 600; color: #435c55; }
+.live-weather-days tbody th { text-align: left; font-weight: 600; white-space: nowrap; }
+.live-weather-days svg { color: var(--primary-dark); vertical-align: middle; }

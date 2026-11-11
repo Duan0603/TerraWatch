@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { CloudRain, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
+import { CloudRain, RefreshCw, ChevronDown, ChevronUp, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudLightning, Snowflake, HelpCircle } from 'lucide-react';
+import { weatherKind, dayLabel, numberText } from '../utils/weather';
 import './LiveRainfallPanel.css';
+
+const WEATHER_ICONS = { clear: Sun, partly: CloudSun, cloudy: Cloud, fog: CloudFog, drizzle: CloudDrizzle, rain: CloudRain, snow: Snowflake, storm: CloudLightning, unknown: HelpCircle };
+function WeatherIcon({ code, size = 18 }) {
+  const { kind, label } = weatherKind(code), Icon = WEATHER_ICONS[kind];
+  return <Icon size={size} role="img" aria-label={label}><title>{label}</title></Icon>;
+}
 
 const valueText = value => value === null || value === undefined ? 'Chưa đủ dữ liệu' : `${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 }).format(value)} mm`;
 const timeText = value => value ? new Date(value).toLocaleString('vi-VN', { hour12: false }) : 'Chưa có lần lấy thành công';
@@ -38,6 +45,7 @@ export default function LiveRainfallPanel({ selectedEvent }) {
 
   const data = snapshot?.data;
   const prediction = data?.gru_inference;
+  const weather = data?.weather, now = weather?.current;
   const stale = error || snapshot?.stale;
   const chart = data?.hourly.filter(h => {
     const delta = (new Date(h.interval_end)-new Date(data.as_of))/3600000;
@@ -45,7 +53,7 @@ export default function LiveRainfallPanel({ selectedEvent }) {
   }) || [];
   const max = Math.max(...chart.map(h => h.mm || 0), 1);
   return <section className="live-rain-panel" aria-label="Dữ liệu mưa cập nhật">
-    <header><div><CloudRain size={18} /><h2>Mưa cập nhật theo khu vực</h2></div>
+    <header><div><CloudRain size={18} /><h2>Mưa & thời tiết theo khu vực</h2></div>
       <button type="button" onClick={() => setCollapsed(v => !v)} aria-expanded={!collapsed} aria-label={collapsed ? 'Mở bảng mưa' : 'Thu gọn bảng mưa'}>{collapsed ? <ChevronUp size={17} /> : <ChevronDown size={17} />}</button>
     </header>
     {!collapsed && <div className="live-rain-body">
@@ -72,6 +80,26 @@ export default function LiveRainfallPanel({ selectedEvent }) {
           </svg>
           <div className="live-rain-chart-key"><span>Đã qua: xanh</span><span>Dự báo: nâu</span></div>
         </figure>
+        {weather ? <section className="live-weather" aria-label="Thời tiết 7 ngày tới">
+          <h3>Thời tiết 7 ngày tới</h3>
+          {now && <div className="live-weather-now">
+            <WeatherIcon code={now.weather_code} size={30} />
+            <strong>{numberText(now.temperature_2m, '°C', 1)}</strong>
+            <p>{weatherKind(now.weather_code).label} · lúc {timeText(now.at)}<br />
+              Độ ẩm {numberText(now.relative_humidity_2m, '%')} · Gió {numberText(now.wind_speed_10m, ' km/h')} · Khả năng mưa {numberText(now.precipitation_probability, '%')}</p>
+          </div>}
+          <table className="live-weather-days" aria-label="Dự báo theo ngày">
+            <thead><tr><th scope="col">Ngày</th><th scope="col">Trời</th><th scope="col">Nhiệt độ</th><th scope="col">Mưa</th><th scope="col">Khả năng</th></tr></thead>
+            <tbody>{weather.daily.map((d, i) => <tr key={d.date}>
+              <th scope="row">{dayLabel(d.date, i)}</th>
+              <td><WeatherIcon code={d.weather_code} /></td>
+              <td>{numberText(d.temp_min_c, '°')} – {numberText(d.temp_max_c, '°')}</td>
+              <td>{d.rain_mm === null ? <span title="Thiếu giờ nên không cộng tổng">{d.rain_valid_hours}/24 giờ</span> : numberText(d.rain_mm, ' mm', 1)}</td>
+              <td>{numberText(d.precip_probability_max_pct, '%')}</td>
+            </tr>)}</tbody>
+          </table>
+          <p className="live-rain-coverage">Ngày theo giờ Việt Nam; mưa "Hôm nay" gồm cả các giờ đã qua. Ngày thiếu giờ không cộng tổng. Nhiệt độ, gió và khả năng mưa là dự báo mô hình Open-Meteo, chỉ để tham khảo, không dùng để tự phát cảnh báo.</p>
+        </section> : <p className="live-rain-coverage">Chưa có bảng thời tiết cho snapshot này; sẽ có sau lần lấy dữ liệu kế tiếp.</p>}
         {prediction?.ready ? <section className="live-gru-result" aria-label="Dự báo tự động thử nghiệm">
           <h3>GRU · Dự báo tự động 24 giờ</h3>
           <p className="live-gru-equation"><span>{prediction.temporal_score.toFixed(3)} <small>Mưa</small></span><b>×</b>
