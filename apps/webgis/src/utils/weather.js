@@ -21,5 +21,20 @@ export function dayLabel(isoDate, index) {
   return `${weekday} ${d}/${m}`;
 }
 
-export const numberText = (value, unit, digits = 0) =>
+// QĐ 18/2021/QĐ-TTg, Điều 3: mưa lớn là trên 50 mm/24h; trên 50 đến 100 mm là mưa to, trên 100 mm là mưa rất to.
+// The decree defines no lower tiers, so amounts up to 50 mm only get "below heavy rain".
+export function rainLevel24h(mm) {
+  if (mm === null || mm === undefined) return null;
+  if (mm > 100) return { level: 'very-heavy', label: 'Mưa rất to' };
+  if (mm > 50) return { level: 'heavy', label: 'Mưa to' };
+  return { level: 'below', label: 'Chưa tới mưa lớn' };
+}
+
+// Short local label for an ISO instant, e.g. "11h 11/11".
+export function hourLabel(iso) {
+  const d = new Date(iso);
+  return `${d.getHours()}h ${d.getDate()}/${d.getMonth() + 1}`;
+}
+
+export const numberText =(value, unit, digits = 0) =>
   value === null || value === undefined ? '–' : `${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: digits }).format(value)}${unit}`;

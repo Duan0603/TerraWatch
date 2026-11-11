@@ -6,7 +6,8 @@ const VN_HOUR = new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh',
 
 export const fmtVN = (iso) => (iso ? `${VN.format(new Date(iso))} (UTC+7)` : '—');
 export const fmtUtc = (iso) => (iso ? new Date(iso).toISOString().replace('T', ' ').slice(0, 16) + ' UTC' : '—');
-export const hourVN = (iso) => `${VN_HOUR.format(new Date(iso))}h`;
+// vi-VN formats a bare hour as "12 giờ"; take only the number part.
+export const hourVN = (iso) => `${VN_HOUR.formatToParts(new Date(iso)).find(p => p.type === 'hour').value}h`;
 
 // Còn bao lâu tới hạn (hoặc đã quá hạn bao lâu), dạng chữ ngắn.
 export const relativeToNow = (iso, now = Date.now()) => {

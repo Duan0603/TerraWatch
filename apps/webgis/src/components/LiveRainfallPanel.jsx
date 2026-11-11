@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { CloudRain, RefreshCw, ChevronDown, ChevronUp, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudLightning, Snowflake, HelpCircle } from 'lucide-react';
-import { weatherKind, dayLabel, numberText } from '../utils/weather';
+import { weatherKind, dayLabel, numberText, rainLevel24h, hourLabel } from '../utils/weather';
 import './LiveRainfallPanel.css';
 
 const WEATHER_ICONS = { clear: Sun, partly: CloudSun, cloudy: Cloud, fog: CloudFog, drizzle: CloudDrizzle, rain: CloudRain, snow: Snowflake, storm: CloudLightning, unknown: HelpCircle };
@@ -51,7 +51,13 @@ export default function LiveRainfallPanel({ selectedEvent }) {
     const delta = (new Date(h.interval_end)-new Date(data.as_of))/3600000;
     return delta > -12 && delta <= 12;
   }) || [];
-  const max = Math.max(...chart.map(h => h.mm || 0), 1);
+  const peak = Math.max(0, ...chart.map(h => h.mm || 0)), max = Math.max(peak, 1);
+  const nowIndex = chart.findIndex(h => h.kind === 'forecast');
+  const windowCard = (label, w) => {
+    const level = rainLevel24h(w.mm);
+    return <div><dt>{label}<small>{hourLabel(w.start)} → {hourLabel(w.end)}</small></dt><dd>{valueText(w.mm)}</dd>
+      {level && <span className={`live-rain-level live-rain-level-${level.level}`}>{level.label}</span>}</div>;
+  };
   return <section className="live-rain-panel" aria-label="Dữ liệu mưa cập nhật">
     <header><div><CloudRain size={18} /><h2>Mưa & thời tiết theo khu vực</h2></div>
       <button type="button" onClick={() => setCollapsed(v => !v)} aria-expanded={!collapsed} aria-label={collapsed ? 'Mở bảng mưa' : 'Thu gọn bảng mưa'}>{collapsed ? <ChevronUp size={17} /> : <ChevronDown size={17} />}</button>
@@ -66,19 +72,24 @@ export default function LiveRainfallPanel({ selectedEvent }) {
       {snapshot?.last_error && <p className="live-rain-error">Nguồn chưa cập nhật thành công: {snapshot.last_error}. Giữ lần lấy thành công gần nhất nếu có.</p>}
       {data && <>
         <dl className="live-rain-values">
-          <div><dt>Mưa 24 giờ đã qua</dt><dd>{valueText(data.history['24'].mm)}</dd></div>
-          <div><dt>Mưa 72 giờ đã qua</dt><dd>{valueText(data.history['72'].mm)}</dd></div>
-          <div><dt>Dự báo 24 giờ tới</dt><dd>{valueText(data.forecast_24h.mm)}</dd></div>
+          {windowCard('Mưa 24 giờ đã qua', data.history['24'])}
+          <div><dt>Mưa 72 giờ đã qua<small>{hourLabel(data.history['72'].start)} → {hourLabel(data.history['72'].end)}</small></dt><dd>{valueText(data.history['72'].mm)}</dd></div>
+          {windowCard('Dự báo 24 giờ tới', data.forecast_24h)}
         </dl>
-        <p className="live-rain-coverage">Lịch sử: {data.history['168'].valid_hours}/168 giờ · Dự báo: {data.forecast_24h.valid_hours}/24 giờ. Khoảng thiếu được giữ trống.</p>
-        <figure className="live-rain-chart"><figcaption>Mưa theo giờ · mm <span>12 giờ đã qua / 12 giờ tới</span></figcaption>
+        <p className="live-rain-coverage">Lịch sử: {data.history['168'].valid_hours}/168 giờ · Dự báo: {data.forecast_24h.valid_hours}/24 giờ. Khoảng thiếu được giữ trống.<br />
+          Cấp mưa theo QĐ 18/2021/QĐ-TTg: mưa to trên 50–100 mm/24h, mưa rất to trên 100 mm/24h. Đây là phân loại lượng mưa, không phải mức nguy cơ sạt lở.</p>
+        <figure className="live-rain-chart"><figcaption>Mưa theo giờ · mm <span>12 giờ đã qua / 12 giờ tới · {peak > 0 ? `cột cao nhất ${valueText(peak)}/giờ` : 'không có mưa trong khoảng này'}</span></figcaption>
           <svg viewBox="0 0 312 90" role="img" aria-label="Mưa ước tính và dự báo theo giờ; khoảng trống biểu thị dữ liệu thiếu">
+            {nowIndex > 0 && <g className="live-rain-now">
+              <line x1={nowIndex*13} x2={nowIndex*13} y1={11} y2={67} />
+              <text x={nowIndex*13} y={8} textAnchor="middle">Bây giờ</text>
+            </g>}
             {chart.map((h,i) => <g key={h.interval_end}>
               {h.mm !== null ? <rect x={i*13+2} y={65-Math.max(h.mm/max*48,1)} width={9} height={Math.max(h.mm/max*48,1)} fill={h.kind === 'forecast' ? '#b45b17' : '#087b70'}><title>{timeText(h.interval_end)}: {h.mm} mm ({h.kind === 'forecast' ? 'dự báo' : 'ước tính đã qua'})</title></rect> : <text x={i*13+3} y={63}>×</text>}
               {i%4===0 && <text x={i*13+5} y={84} textAnchor="middle">{new Date(h.interval_end).getHours()}h</text>}
             </g>)}
           </svg>
-          <div className="live-rain-chart-key"><span>Đã qua: xanh</span><span>Dự báo: nâu</span></div>
+          <div className="live-rain-chart-key"><span><i className="past" />Ước tính đã qua</span><span><i className="forecast" />Dự báo</span><span>× thiếu dữ liệu</span></div>
         </figure>
         {weather ? <section className="live-weather" aria-label="Thời tiết 7 ngày tới">
           <h3>Thời tiết 7 ngày tới</h3>
@@ -94,7 +105,7 @@ export default function LiveRainfallPanel({ selectedEvent }) {
               <th scope="row">{dayLabel(d.date, i)}</th>
               <td><WeatherIcon code={d.weather_code} /></td>
               <td>{numberText(d.temp_min_c, '°')} – {numberText(d.temp_max_c, '°')}</td>
-              <td>{d.rain_mm === null ? <span title="Thiếu giờ nên không cộng tổng">{d.rain_valid_hours}/24 giờ</span> : numberText(d.rain_mm, ' mm', 1)}</td>
+              <td className={`live-rain-level-${rainLevel24h(d.rain_mm)?.level || 'none'}`} title={rainLevel24h(d.rain_mm)?.label}>{d.rain_mm === null ? <span title="Thiếu giờ nên không cộng tổng">{d.rain_valid_hours}/24 giờ</span> : numberText(d.rain_mm, ' mm', 1)}</td>
               <td>{numberText(d.precip_probability_max_pct, '%')}</td>
             </tr>)}</tbody>
           </table>

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { weatherKind, dayLabel, numberText } from '../src/utils/weather.js';
+import { weatherKind, dayLabel, numberText, rainLevel24h } from '../src/utils/weather.js';
 
 // Bảng thời tiết 7 ngày: mã WMO, nhãn ngày theo lịch Việt Nam, số thiếu không thành 0.
 export async function testWeather() {
@@ -25,4 +25,12 @@ export async function testWeather() {
   assert.equal(numberText(0, ' mm', 1), '0 mm');
   assert.equal(numberText(19.74, ' mm', 1), '19,7 mm');
   console.log('  ✓ giá trị thiếu hiển thị "–", không thành 0');
+
+  assert.equal(rainLevel24h(null), null);
+  assert.equal(rainLevel24h(21.3).level, 'below');
+  assert.equal(rainLevel24h(50).level, 'below'); // "trên 50 mm" nên 50 chưa phải mưa to
+  assert.equal(rainLevel24h(50.1).level, 'heavy');
+  assert.equal(rainLevel24h(100).level, 'heavy');
+  assert.equal(rainLevel24h(100.1).level, 'very-heavy');
+  console.log('  ✓ cấp mưa 24h theo QĐ 18/2021/QĐ-TTg, đúng biên 50 và 100 mm');
 }
