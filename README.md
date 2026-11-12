@@ -81,6 +81,10 @@ Compose currently embeds connection defaults. A root .env or subservice .env fil
 
 For local development: run docker compose up -d postgres redis; install the service's declared dependencies; use mvn spring-boot:run in services/core-api, npm install then npm run dev in apps/webgis, or uvicorn app.main:app with port 8001/8002 in the corresponding Python service. Maven Wrapper files are not present. Mobile platform scaffolding/integration is incomplete.
 
+## Demo data
+
+With the stack running, `.\run.ps1 demo-seed` prepares a reproducible demo on named Lào Cai units: it loads the 10 Bát Xát/Sa Pa assessment units from `database/seed_v3_fixtures.sql` (units only, not its fixed 2026-10-14 rainfall), extracts their DEM terrain, ingests as-of rainfall, then issues three 24-hour forecast runs from `services/core-api/scripts/seed-demo-lao-cai.sql` (two approved for citizens, one pending for review). Re-run it to refresh the validity window. Probabilities carry `model_version = demo`; they are demo data, not model output. Live rain and the experimental GRU for these units appear within about a minute.
+
 ## Database and development
 
 Core Flyway manages schema migrations; Hibernate ddl-auto is none. Existing migration copies live in database/migrations and services/core-api/src/main/resources/db/migration. Add a new version when implementing the pivot; do not rewrite applied V1/V2.
