@@ -910,7 +910,7 @@ body.page-login {
 @media (max-width: 340px) { .nav-user { display: none; } }
 
 /* Bảng bằng chứng xếp chồng ở góc dưới phải bản đồ */
-.map-evidence-stack { position: absolute; bottom: 52px; right: 20px; width: min(380px, calc(100% - 32px)); max-height: calc(100% - 132px); overflow-y: auto; z-index: 10; display: flex; flex-direction: column; gap: 12px; }
+.map-evidence-stack { position: absolute; bottom: 52px; right: 20px; width: min(380px, calc(100% - 32px)); max-height: calc(100% - 178px); /* top stays below the map nav buttons (they end 118px down) */ overflow-y: auto; z-index: 10; display: flex; flex-direction: column; gap: 12px; }
 .map-evidence-stack .live-rain-panel { position: static; width: 100%; max-height: none; flex-shrink: 0; }
 .map-evidence-stack .evidence-panel { flex-shrink: 0; }
 .evidence-tabs { position: sticky; top: 0; z-index: 1; flex-shrink: 0; display: flex; gap: 4px; padding: 4px; background: #fff; border: 1px solid #DCE5E2; border-radius: 12px; box-shadow: 0 4px 16px rgba(23,37,36,0.10); }

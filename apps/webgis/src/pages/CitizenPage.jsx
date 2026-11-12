@@ -110,10 +110,10 @@ export default function CitizenPage() {
         {/* Danh sách chỉ đọc các vùng đã được cán bộ phê duyệt và còn hiệu lực — không có nút thẩm định.
             Đây là mọi vùng đang hiệu lực, chưa lọc theo khu vực người dân đăng ký (backend chưa trả khu vực của ô). */}
         <aside className={`sidebar citizen-list${mobileTab === 'map' ? ' mobile-hidden' : ''}`}>
-          <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-            <span style={{ fontWeight: 700, fontSize: 14 }}>Cảnh báo đang hiệu lực ({events.length})</span>
-            <button type="button" className="btn-ghost" onClick={locate} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
-              <LocateFixed size={14} /> Vị trí của tôi
+          <div style={{ padding: '14px 16px 10px', fontWeight: 700, fontSize: 14 }}>Cảnh báo đang hiệu lực ({events.length})</div>
+          <div style={{ padding: '0 16px 10px' }}>
+            <button type="button" className="btn-ghost" onClick={locate} style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6, fontSize: 12 }}>
+              <LocateFixed size={14} /> Kiểm tra vị trí của tôi
             </button>
           </div>
           {geoMsg && <div role="status" style={{ padding: '0 16px 10px', fontSize: 12, color: '#64748b' }}>{geoMsg}</div>}
