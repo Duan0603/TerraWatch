@@ -18,6 +18,7 @@ import { testForecastStatus } from './test-forecast-status.mjs';
 import { testTimeFormatting } from './test-time-formatting.mjs';
 import { testReportExport } from './test-report-export.mjs';
 import { testZoneLocation } from './test-zone-location.mjs';
+import { testSnapshotContracts } from './test-snapshot-contracts.mjs';
 
 async function runAllWebGisTests() {
   console.log('===============================================================');
@@ -46,6 +47,7 @@ async function runAllWebGisTests() {
     await testTimeFormatting();
     await testReportExport();
     await testZoneLocation();
+    await testSnapshotContracts();
 
     const elapsed = Date.now() - startTime;
     console.log('===============================================================');
