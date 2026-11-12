@@ -11,7 +11,7 @@ INSERT INTO core_schema.users (user_id, full_name, email, password_hash, role, p
 VALUES 
     ('11111111-1111-1111-1111-111111111111', 'Ban Chỉ Đạo Quốc Gia PCTT', 'admin@terrawatch.vn', '$2b$10$w0M/44Z6F4Yw8YgJ22Jd.OTJjYp4EKnSvy/3o1sVepvI7fL50d2tq', 'admin', '0901234567'),
     ('22222222-2222-2222-2222-222222222222', 'Cán bộ Thẩm định Yên Bái', 'officer.yenbai@terrawatch.vn', '$2b$10$w0M/44Z6F4Yw8YgJ22Jd.OTJjYp4EKnSvy/3o1sVepvI7fL50d2tq', 'officer', '0912345678'),
-    ('33333333-3333-3333-3333-333333333333', 'Hoàng Văn Dũng (Bản Lìm Mông)', 'citizen.limmong@terrawatch.vn', '$2b$10$w0M/44Z6F4Yw8YgJ22Jd.OTJjYp4EKnSvy/3o1sVepvI7fL50d2tq', 'citizen', '0987654321')
+    ('33333333-3333-3333-3333-333333333333', 'Hoàng Văn Dũng (Bản Lìm Mông)', 'citizen.limmong@terrawatch.vn', '$2b$10$w0M/44Z6F4Yw8YgJ22Jd.OTJjYp4EKnSvy/3o1sVepvI7fL50d2tq', 'citizen', '0854346968')
 ON CONFLICT (email) DO NOTHING;
 
 -- 2. Monitoring Areas (AOIs) in gis_schema
@@ -130,3 +130,13 @@ VALUES
         'Nước bùn đất chảy xiết qua cống tràn bản Tả Phìn, đã cảnh báo người dân.',
         'processed'
     );
+
+-- 5. Alert Subscriptions in core_schema (Story 4.39 Twilio Smoke Test)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'core_schema' AND tablename = 'alert_subscriptions') THEN
+        INSERT INTO core_schema.alert_subscriptions (user_id, area_id, channel_push, channel_sms, is_active)
+        VALUES ('33333333-3333-3333-3333-333333333333', 1, TRUE, TRUE, TRUE)
+        ON CONFLICT (user_id, area_id) WHERE area_id IS NOT NULL DO UPDATE SET channel_sms = TRUE, is_active = TRUE;
+    END IF;
+END $$;

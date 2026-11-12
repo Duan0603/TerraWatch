@@ -18,12 +18,15 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 import vn.terrawatch.core.client.FcmSender;
+import vn.terrawatch.core.client.SmsSender;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -41,6 +44,12 @@ class PushAlertsApiTest {
     @Autowired JdbcTemplate jdbc;
     @PersistenceContext EntityManager entityManager;
     @MockBean FcmSender fcm;
+    @MockBean SmsSender sms;
+
+    @BeforeEach
+    void stubSms() {
+        when(sms.send(anyString(), anyString())).thenReturn(SmsSender.Result.sent("MOCK_SID"));
+    }
 
     private ResultActions call(HttpMethod method, String path, String token, Object body) throws Exception {
         MockHttpServletRequestBuilder builder = request(method, path);

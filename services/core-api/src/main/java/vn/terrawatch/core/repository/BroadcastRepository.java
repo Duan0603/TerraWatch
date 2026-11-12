@@ -16,6 +16,8 @@ public class BroadcastRepository {
 
     public record Recipient(UUID userId, String fcmToken) {}
 
+    public record SmsRecipient(UUID userId, String phoneNumber) {}
+
     public record Stored(UUID broadcastId, Instant issuedAt) {}
 
     public record RunRef(UUID runId, String unitId, OffsetDateTime validUntil) {}
@@ -47,6 +49,19 @@ public class BroadcastRepository {
             areaIds.toArray());
     }
 
+    /** Story 4.39: users with SMS subscription and a non-empty phone number. */
+    public List<SmsRecipient> smsRecipients(List<Integer> areaIds) {
+        String in = String.join(",", areaIds.stream().map(a -> "?").toList());
+        return jdbc.query("""
+            SELECT DISTINCT u.user_id, u.phone_number
+            FROM core_schema.alert_subscriptions s
+            JOIN core_schema.users u ON u.user_id = s.user_id
+            WHERE s.is_active AND s.channel_sms AND u.phone_number IS NOT NULL AND u.phone_number != ''
+              AND s.area_id IN (%s)
+            """.formatted(in), (rs, i) -> new SmsRecipient(rs.getObject("user_id", UUID.class), rs.getString("phone_number")),
+            areaIds.toArray());
+    }
+
     /** The forecast a broadcast may cite: approved, active, available and not expired. */
     public java.util.Optional<RunRef> citableRun(UUID runId) {
         return jdbc.query("""
@@ -57,27 +72,42 @@ public class BroadcastRepository {
     }
 
     public Stored insert(UUID senderId, String title, String message, String severity, int areaId,
-                         OffsetDateTime validUntil, int recipients, String idempotencyKey, RunRef run) {
+                         OffsetDateTime validUntil, int recipients, String idempotencyKey, RunRef run,
+                         String incidentPhase) {
         return jdbc.queryForObject("""
-            INSERT INTO core_schema.alert_broadcasts (sender_id, title, message, severity, target_channel, area_id, valid_until, total_recipients, idempotency_key, run_id, unit_id)
-            VALUES (?, ?, ?, CAST(? AS core_schema.risk_level), 'app_push', ?, ?, ?, ?, ?, ?)
+            INSERT INTO core_schema.alert_broadcasts (sender_id, title, message, severity, target_channel, area_id, valid_until, total_recipients, idempotency_key, run_id, unit_id, incident_phase)
+            VALUES (?, ?, ?, CAST(? AS core_schema.risk_level), 'all', ?, ?, ?, ?, ?, ?, ?)
             RETURNING broadcast_id, broadcast_time
             """, (rs, i) -> new Stored(rs.getObject("broadcast_id", UUID.class),
                 rs.getObject("broadcast_time", OffsetDateTime.class).toInstant()),
             senderId, title, message, severity, areaId, validUntil, recipients, idempotencyKey,
-            run == null ? null : run.runId(), run == null ? null : run.unitId());
+            run == null ? null : run.runId(), run == null ? null : run.unitId(),
+            incidentPhase == null ? "during_incident" : incidentPhase);
     }
 
     public void insertDelivery(UUID broadcastId, Recipient to, boolean sent, String error) {
         jdbc.update("""
-            INSERT INTO core_schema.alert_deliveries (broadcast_id, user_id, fcm_token, status, error_message)
-            VALUES (?, ?, ?, CAST(? AS core_schema.alert_delivery_status), ?)
+            INSERT INTO core_schema.alert_deliveries (broadcast_id, user_id, fcm_token, channel, status, error_message)
+            VALUES (?, ?, ?, 'app_push', CAST(? AS core_schema.alert_delivery_status), ?)
             """, broadcastId, to.userId(), to.fcmToken(), sent ? "sent" : "failed", error);
     }
 
-    public void updateCounts(UUID broadcastId, int sent, int failed) {
-        jdbc.update("UPDATE core_schema.alert_broadcasts SET successful_deliveries = ?, failed_deliveries = ? WHERE broadcast_id = ?",
-            sent, failed, broadcastId);
+    /** Story 4.39: insert an SMS delivery row. */
+    public void insertSmsDelivery(UUID broadcastId, SmsRecipient to, boolean sent, String error, String providerMessageId) {
+        jdbc.update("""
+            INSERT INTO core_schema.alert_deliveries (broadcast_id, user_id, phone_number, channel, status, error_message, provider_message_id)
+            VALUES (?, ?, ?, 'sms', CAST(? AS core_schema.alert_delivery_status), ?, ?)
+            """, broadcastId, to.userId(), to.phoneNumber(), sent ? "sent" : "failed", error, providerMessageId);
+    }
+
+    /** Single query to update both push and SMS delivery counts. */
+    public void updateDeliveryCounts(UUID broadcastId, int pushSent, int pushFailed, int totalSms, int sentSms, int failedSms) {
+        jdbc.update("""
+            UPDATE core_schema.alert_broadcasts
+            SET successful_deliveries = ?, failed_deliveries = ?,
+                total_sms_recipients = ?, successful_sms = ?, failed_sms = ?
+            WHERE broadcast_id = ?
+            """, pushSent, pushFailed, totalSms, sentSms, failedSms, broadcastId);
     }
 
     /** Broadcasts addressed to the user in the last 7 days, newest first, whether or not the push arrived. */
@@ -122,15 +152,20 @@ public class BroadcastRepository {
             }, limit);
     }
 
-    /** Push subscribers of the areas and how many of them have a registered phone. */
+    /** Push subscribers + devices + SMS subscribers for preview. */
     public int[] audience(List<Integer> areaIds) {
         String in = String.join(",", areaIds.stream().map(a -> "?").toList());
         return jdbc.queryForObject("""
-            SELECT COUNT(DISTINCT s.user_id) AS subscribers, COUNT(DISTINCT t.fcm_token) AS devices
+            SELECT
+                COUNT(DISTINCT CASE WHEN s.channel_push THEN s.user_id END) AS push_subscribers,
+                COUNT(DISTINCT CASE WHEN s.channel_push THEN t.fcm_token END) AS devices,
+                COUNT(DISTINCT CASE WHEN s.channel_sms AND u.phone_number IS NOT NULL AND u.phone_number != '' THEN s.user_id END) AS sms_subscribers
             FROM core_schema.alert_subscriptions s
             LEFT JOIN core_schema.device_tokens t ON t.user_id = s.user_id
-            WHERE s.is_active AND s.channel_push AND s.area_id IN (%s)
-            """.formatted(in), (rs, i) -> new int[]{rs.getInt("subscribers"), rs.getInt("devices")}, areaIds.toArray());
+            LEFT JOIN core_schema.users u ON u.user_id = s.user_id
+            WHERE s.is_active AND s.area_id IN (%s)
+            """.formatted(in), (rs, i) -> new int[]{rs.getInt("push_subscribers"), rs.getInt("devices"), rs.getInt("sms_subscribers")},
+            areaIds.toArray());
     }
 
     /** @return false when no active broadcast has that id */
@@ -162,4 +197,3 @@ public class BroadcastRepository {
             }, broadcastId);
     }
 }
-

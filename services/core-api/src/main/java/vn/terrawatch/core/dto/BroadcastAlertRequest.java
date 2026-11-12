@@ -7,5 +7,6 @@ public record BroadcastAlertRequest(
     String message,
     String targetArea,
     Integer areaId,
-    String runId
+    String runId,
+    String incidentPhase
 ) {}
