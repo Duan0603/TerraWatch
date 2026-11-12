@@ -16,13 +16,15 @@ VALUES
  ('DEMO_PENDING', 'Demo zone (pending)', 'Demo', 'Demo', ST_MakeEnvelope(:lon - 0.06, :lat - 0.01, :lon - 0.04, :lat + 0.01, 4326))
 ON CONFLICT (unit_id) DO UPDATE SET geom = EXCLUDED.geom;
 
+-- job_status 'completed': with the column default 'pending', ForecastRecoveryPoller treats demo rows as stuck jobs,
+-- sends them to the AI service a few minutes later and marks them "unavailable".
 INSERT INTO core_schema.forecast_runs (run_id, unit_id, issued_at, valid_from, valid_until, probability, hazard_level,
-                                       model_version, threshold_version, review_status, is_active)
+                                       model_version, threshold_version, review_status, is_active, job_status)
 VALUES
- ('d0000000-0000-4000-8000-000000000001', 'DEMO_NOW',     now(),                      now(),                      now() + interval '24 hours', 0.88, 'high',   'demo', 'demo', 'approved', TRUE),
- ('d0000000-0000-4000-8000-000000000002', 'DEMO_EXPIRED', now() - interval '25 hours', now() - interval '25 hours', now() - interval '1 hour',  0.75, 'medium', 'demo', 'demo', 'approved', TRUE),
- ('d0000000-0000-4000-8000-000000000003', 'DEMO_PENDING', now(),                      now(),                      now() + interval '24 hours', 0.60, 'medium', 'demo', 'demo', 'pending',  TRUE)
+ ('d0000000-0000-4000-8000-000000000001', 'DEMO_NOW',     now(),                      now(),                      now() + interval '24 hours', 0.88, 'high',   'demo', 'demo', 'approved', TRUE, 'completed'),
+ ('d0000000-0000-4000-8000-000000000002', 'DEMO_EXPIRED', now() - interval '25 hours', now() - interval '25 hours', now() - interval '1 hour',  0.75, 'medium', 'demo', 'demo', 'approved', TRUE, 'completed'),
+ ('d0000000-0000-4000-8000-000000000003', 'DEMO_PENDING', now(),                      now(),                      now() + interval '24 hours', 0.60, 'medium', 'demo', 'demo', 'pending',  TRUE, 'completed')
 ON CONFLICT (run_id) DO UPDATE SET issued_at = EXCLUDED.issued_at, valid_from = EXCLUDED.valid_from,
     valid_until = EXCLUDED.valid_until, review_status = EXCLUDED.review_status, is_active = TRUE,
-    -- a forecast job may have marked the row "unavailable" (AI circuit breaker); a refreshed demo row must be reviewable again
-    availability = 'available', unavailability_reason = NULL;
+    -- a row the poller already marked "unavailable" (AI circuit breaker) must be reviewable again
+    availability = 'available', unavailability_reason = NULL, job_status = 'completed';
