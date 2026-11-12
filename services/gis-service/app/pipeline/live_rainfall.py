@@ -117,6 +117,24 @@ def normalize_weather(raw, fetched_at):
                               'message': 'Mô hình GRU học từ IMERG + GFS; chưa suy luận tự động bằng nguồn Open-Meteo.'}}
 
 
+def map_feature(row, interval, now):
+    """One cached location as GeoJSON. `current` is false for stale weather, expired or missing GRU results,
+    so the map never colours an old score as if it were the present one."""
+    gru = row.get('gru') or {}
+    last = row.get('last_success_at')
+    stale = last is None or (now-last).total_seconds() > interval*1.5 or bool(row.get('last_error'))
+    expired = bool(gru.get('ready')) and datetime.fromisoformat(gru['valid_until']) <= now
+    geometry = json.loads(row['geom']) if row.get('geom') else {'type': 'Point', 'coordinates': [row['longitude'], row['latitude']]}
+    return {'type': 'Feature', 'geometry': geometry, 'properties': {
+        'key': row['location_key'], 'name': row['location_name'],
+        'current': bool(gru.get('ready')) and not stale and not expired,
+        'stale': stale, 'expired': expired, 'reason': gru.get('reason'),
+        'hazard_score': gru.get('hazard_score'), 'temporal_score': gru.get('temporal_score'),
+        'spatial_score': gru.get('spatial_score'), 'issue_time': gru.get('issue_time'),
+        'valid_until': gru.get('valid_until'), 'cell_id': gru.get('unit_id'),
+        'rain_24h_mm': row.get('rain_24h_mm'), 'forecast_24h_mm': row.get('forecast_24h_mm')}}
+
+
 class LiveWeatherRepository:
     def __init__(self):
         self.db_url = RainfallRepository().db_url
@@ -160,6 +178,21 @@ class LiveWeatherRepository:
                     last_success_at=CASE WHEN EXCLUDED.payload IS NOT NULL THEN NOW() ELSE live_rainfall_snapshots.last_success_at END''',
                     (location['key'], location['name'], location['latitude'], location['longitude'],
                      Json(payload) if payload is not None else None, payload is not None, error))
+
+    def map_rows(self):
+        """Every cached location with only the fields the map needs, plus the polygon of the active
+        assessment unit centred on it (locations are registered from unit centroids)."""
+        with self.connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute('''SELECT s.location_key, s.location_name, s.latitude, s.longitude, s.last_success_at, s.last_error,
+                        s.payload->'gru_inference' AS gru, (s.payload->'forecast_24h'->>'mm')::float AS forecast_24h_mm,
+                        (s.payload->'history'->'24'->>'mm')::float AS rain_24h_mm, ST_AsGeoJSON(u.geom) AS geom
+                    FROM gis_schema.live_rainfall_snapshots s
+                    LEFT JOIN LATERAL (SELECT geom FROM gis_schema.spatial_assessment_units u WHERE u.is_active
+                        AND round(ST_Y(u.centroid)::numeric, 4) = round(s.latitude::numeric, 4)
+                        AND round(ST_X(u.centroid)::numeric, 4) = round(s.longitude::numeric, 4) LIMIT 1) u ON TRUE
+                    ORDER BY s.location_key''')
+                return cur.fetchall()
 
     def save_prediction(self, key, as_of, prediction):
         # A prediction retry must not make old weather look newly fetched.
@@ -303,6 +336,12 @@ class LiveRainfallService:
         self.stop_event.set()
         if self.thread:
             self.thread.join(timeout=2)
+
+    def map_collection(self):
+        now = utc_now()
+        return {'type': 'FeatureCollection', 'experimental': True, 'calibrated_probability': False,
+                'operational_alert': False, 'generated_at': now.isoformat(),
+                'features': [map_feature(r, self.interval, now) for r in self.repo.map_rows()]}
 
     def read(self, latitude, longitude):
         row = self.repo.get(location_key(latitude, longitude))

@@ -32,7 +32,7 @@ export default function DashboardPage() {
 
   const {
     events, selectedEventId, setSelectedEventId, loadError, fieldReports, aoi, broadcasts,
-    reviewMetrics, confirmed, lastLoadedAt, liveConnected, loadEvents, refreshAoi
+    reviewMetrics, confirmed, experimentalRisk, lastLoadedAt, liveConnected, loadEvents, refreshAoi
   } = useDashboardData(isAdmin);
 
   const [soundEnabled, setSoundEnabled] = useState(false);
@@ -132,6 +132,7 @@ export default function DashboardPage() {
           fieldReports={fieldReports}
           aoi={aoi}
           confirmed={confirmed}
+          experimentalRisk={experimentalRisk}
           className={mobileTab === 'list' ? 'mobile-hidden' : ''}
         />
       </div>

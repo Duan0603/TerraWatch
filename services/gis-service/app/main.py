@@ -60,6 +60,15 @@ def live_weather_status():
     return {"success": True, **live_rainfall.state}
 
 
+@app.get("/api/v1/gis/rainfall/live/map")
+def live_weather_map():
+    """All cached locations as GeoJSON for the staff-only experimental GRU map layer. Reads the cache only."""
+    try:
+        return live_rainfall.map_collection()
+    except Exception:
+        raise HTTPException(status_code=503, detail="Kho dữ liệu mưa tạm thời chưa sẵn sàng. Vui lòng thử lại.")
+
+
 @app.get("/api/v1/gis/rainfall/live")
 def live_weather(latitude: float = Query(..., ge=-90, le=90), longitude: float = Query(..., ge=-180, le=180)):
     """Read scheduled snapshots only; arbitrary browser requests never trigger upstream calls."""
