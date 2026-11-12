@@ -96,6 +96,9 @@ class ForecastApiTest {
         assertEquals(0.82, item.get("probability").asDouble(), 1e-9);
         assertEquals("xgb-test", item.get("modelVersion").asText());
         assertEquals("Polygon", item.get("geometry").get("type").asText());
+        // Centroid comes from PostGIS, not a ring-vertex average (which skews toward the repeated closing vertex).
+        assertEquals(22.55, item.get("centroidLat").asDouble(), 1e-9);
+        assertEquals(103.95, item.get("centroidLng").asDouble(), 1e-9);
         assertTrue(item.get("validUntil").asText().endsWith("Z"), "instants are UTC");
         assertTrue(item.get("validFrom").asText().compareTo(item.get("validUntil").asText()) < 0);
         assertTrue(body.get("serverTime").asText().endsWith("Z"));
