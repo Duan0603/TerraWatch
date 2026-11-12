@@ -20,6 +20,7 @@ export function useDashboardData(isAdmin) {
   const [broadcasts, setBroadcasts] = useState(null); // chỉ admin xem được lịch sử phát lệnh
   const [reviewMetrics, setReviewMetrics] = useState(null);
   const [confirmed, setConfirmed] = useState(null); // sạt lở đã xác nhận (GeoJSON), lớp bản đồ phụ
+  const [experimentalRisk, setExperimentalRisk] = useState(null); // điểm GRU thử nghiệm (GeoJSON), chỉ cán bộ
   const [lastLoadedAt, setLastLoadedAt] = useState(null); // thời điểm tải dữ liệu thành công gần nhất
   const [liveConnected, setLiveConnected] = useState(false);
   const confirmedAt = useRef(0); // lần tải thành công gần nhất
@@ -35,6 +36,10 @@ export function useDashboardData(isAdmin) {
         setConfirmed(prev => (prev && JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
       }).catch(() => {});
     }
+    // GIS chỉ cập nhật mỗi giờ; lỗi tạm thời giữ lớp cũ (mỗi điểm tự mang cờ current/stale).
+    landslideApi.getExperimentalRisk()
+      .then(next => setExperimentalRisk(prev => (prev && JSON.stringify(prev.features) === JSON.stringify(next.features) ? prev : next)))
+      .catch(() => {});
     forecastApi.getReviewMetrics(7).then(setReviewMetrics).catch(() => setReviewMetrics(null));
     if (isAdmin) broadcastApi.getBroadcastHistory().then(setBroadcasts).catch(() => setBroadcasts(null));
     try {
@@ -78,6 +83,6 @@ export function useDashboardData(isAdmin) {
 
   return {
     events, selectedEventId, setSelectedEventId, loadError, fieldReports, aoi, broadcasts,
-    reviewMetrics, confirmed, lastLoadedAt, liveConnected, loadEvents, refreshAoi
+    reviewMetrics, confirmed, experimentalRisk, lastLoadedAt, liveConnected, loadEvents, refreshAoi
   };
 }

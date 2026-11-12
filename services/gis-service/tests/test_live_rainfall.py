@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
-from app.pipeline.live_rainfall import normalize_weather, location_key, LiveRainfallService, utc_now
+from app.pipeline.live_rainfall import normalize_weather, location_key, LiveRainfallService, utc_now, map_feature
 
 
 class LiveRainfallTests(unittest.TestCase):
@@ -142,3 +142,39 @@ class LiveRainfallTests(unittest.TestCase):
 
 
 if __name__ == '__main__': unittest.main()
+
+
+class LiveMapFeatureTests(unittest.TestCase):
+    def setUp(self):
+        self.now = datetime(2026, 11, 12, 13, 30, tzinfo=timezone.utc)
+        self.gru = {'ready': True, 'hazard_score': 0.59, 'temporal_score': 1.0, 'spatial_score': 0.59,
+                    'issue_time': '2026-11-12T13:00:00+00:00', 'valid_until': '2026-11-13T13:00:00+00:00',
+                    'unit_id': 'UTM48N_1km_408000_2494000'}
+        self.row = {'location_key': '22.5250,103.8650', 'location_name': 'Ô 002', 'latitude': 22.525, 'longitude': 103.865,
+                    'last_success_at': self.now - timedelta(minutes=20), 'last_error': None, 'gru': self.gru,
+                    'rain_24h_mm': 24.8, 'forecast_24h_mm': 14.2,
+                    'geom': '{"type":"Polygon","coordinates":[[[103.86,22.52],[103.87,22.52],[103.87,22.53],[103.86,22.52]]]}'}
+
+    def test_unit_centre_uses_unit_polygon_and_is_current(self):
+        f = map_feature(self.row, 3600, self.now)
+        self.assertEqual(f['geometry']['type'], 'Polygon')
+        self.assertTrue(f['properties']['current'])
+        self.assertEqual(f['properties']['hazard_score'], 0.59)
+
+    def test_location_without_unit_falls_back_to_point(self):
+        self.row['geom'] = None
+        self.assertEqual(map_feature(self.row, 3600, self.now)['geometry'], {'type': 'Point', 'coordinates': [103.865, 22.525]})
+
+    def test_stale_weather_expired_or_missing_result_is_not_current(self):
+        stale = dict(self.row, last_success_at=self.now - timedelta(hours=2))
+        self.assertFalse(map_feature(stale, 3600, self.now)['properties']['current'])
+        failed = dict(self.row, last_error='HTTPError HTTP 503')
+        self.assertFalse(map_feature(failed, 3600, self.now)['properties']['current'])
+        expired = dict(self.row, gru=dict(self.gru, valid_until='2026-11-12T13:00:00+00:00'))
+        props = map_feature(expired, 3600, self.now)['properties']
+        self.assertTrue(props['expired'])
+        self.assertFalse(props['current'])
+        held = dict(self.row, gru={'ready': False, 'reason': 'STATIC_FEATURES_UNAVAILABLE'})
+        props = map_feature(held, 3600, self.now)['properties']
+        self.assertFalse(props['current'])
+        self.assertEqual(props['reason'], 'STATIC_FEATURES_UNAVAILABLE')

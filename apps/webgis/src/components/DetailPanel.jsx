@@ -8,7 +8,7 @@ import { fmtVN } from '../utils/time';
 const TABS = [['issue', 'Lúc phát hành dự báo'], ['now', 'Hiện tại & 7 ngày tới']];
 
 // citizen: the review evidence and the experimental GRU score are staff tools, not public information.
-export default function DetailPanel({ selectedEvent, events, onSelectEvent, fieldReports, aoi, confirmed, className = '', citizen = false }) {
+export default function DetailPanel({ selectedEvent, events, onSelectEvent, fieldReports, aoi, confirmed, experimentalRisk, className = '', citizen = false }) {
   const tabs = citizen ? TABS.slice(1) : TABS;
   const [tab, setTab] = useState(tabs[0][0]);
   const [open, setOpen] = useState(true);
@@ -47,6 +47,7 @@ export default function DetailPanel({ selectedEvent, events, onSelectEvent, fiel
         fieldReports={fieldReports}
         aoi={aoi}
         confirmed={confirmed}
+        experimentalRisk={citizen ? null : experimentalRisk}
       />
 
       {/* Hai góc nhìn cùng khu vực: ảnh chụp lúc phát hành (cố định) và mưa/thời tiết hiện tại (cập nhật mỗi giờ) */}

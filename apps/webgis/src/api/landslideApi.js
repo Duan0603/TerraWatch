@@ -4,6 +4,11 @@ import { axiosClient } from './axiosClient';
 const landslideApi = {
   getConfirmed() {
     return axiosClient.get('/landslides/active');
+  },
+
+  // GeoJSON điểm GRU thử nghiệm (mưa Open-Meteo + đất/độ dốc) từ cache của GIS; chỉ dùng cho cán bộ.
+  getExperimentalRisk() {
+    return axiosClient.get('/gis/rainfall/live/map');
   }
 };
 

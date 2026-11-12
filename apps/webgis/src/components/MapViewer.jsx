@@ -15,7 +15,8 @@ import {
   AlertTriangle,
   RotateCcw,
   Satellite,
-  MapPinned
+  MapPinned,
+  FlaskConical
 } from 'lucide-react';
 import {
   STYLE_URL,
@@ -31,6 +32,7 @@ import { DEFAULT_LOCATION_ID } from '../data/mountainLocations';
 import LocationSelector from './LocationSelector';
 import { describeConfirmed, confirmedBounds, confirmedCentres } from '../utils/confirmedLandslides';
 import MapErrorBoundary from './MapErrorBoundary';
+import { describeRisk, RISK_COLOR } from '../utils/experimentalRisk';
 
 /**
  * @typedef {Object} GeoEvent
@@ -55,6 +57,8 @@ import MapErrorBoundary from './MapErrorBoundary';
 // Story 4.38/4.39: một bản đồ chỉ gắn popup một lần (React StrictMode tạo bản đồ hai lần); màu theo mức rủi ro dùng chung cho vùng và chấm.
 const confirmedClickBound = new WeakSet();
 const CONFIRMED_LAYERS = ['confirmed-landslides-fill', 'confirmed-landslides-line', 'confirmed-landslides-dot'];
+const riskClickBound = new WeakSet();
+const RISK_LAYERS = ['gru-risk-fill', 'gru-risk-line', 'gru-risk-dot'];
 // Story 4.40: popup mở ra phía trên điểm bấm; nếu điểm quá gần mép trên thì kéo bản đồ xuống để popup không chui dưới thanh điều khiển.
 const POPUP_ROOM_PX = 260;
 const focusPopup = (map, lngLat) => {
@@ -67,7 +71,7 @@ const CONFIRMED_COLOR = ['match', ['get', 'risk_level'], 'extreme', '#b91c1c', '
  * Component MapViewer - Bản đồ viễn thám giám sát trượt lở 3D thời gian thực (Story 1.1, 1.2, 1.3)
  * @param {MapViewerProps} props
  */
-export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldReports = [], aoi = null, confirmed = null }) {
+export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldReports = [], aoi = null, confirmed = null, experimentalRisk = null }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
@@ -93,6 +97,9 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
   const confirmedRef = useRef(confirmed);
   const [showConfirmed, setShowConfirmed] = useState(false); // tắt sẵn: nút bật sẽ bay tới các điểm
   const showConfirmedRef = useRef(false);
+  const riskRef = useRef(experimentalRisk);
+  const [showRisk, setShowRisk] = useState(false); // tắt sẵn: điểm thử nghiệm, chỉ bật khi cán bộ muốn xem
+  const showRiskRef = useRef(false);
 
   const onSelectEventRef = useRef(onSelectEvent);
   useEffect(() => {
@@ -288,6 +295,61 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
     }
   };
 
+  // Điểm GRU thử nghiệm (mưa Open-Meteo + đất/độ dốc), chỉ cán bộ. Nằm dưới vùng dự báo đã duyệt để không che quyết định thật.
+  const ensureRiskLayer = (map) => {
+    if (!map || !map.getStyle()) return;
+    const data = riskRef.current || { type: 'FeatureCollection', features: [] };
+    const visibility = showRiskRef.current ? 'visible' : 'none';
+    if (map.getSource('gru-risk')) {
+      map.getSource('gru-risk').setData(data);
+      map.getSource('gru-risk-centres')?.setData(confirmedCentres(data));
+      RISK_LAYERS.forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', visibility));
+      return;
+    }
+    const below = map.getLayer('landslide-polygons-fill') ? 'landslide-polygons-fill' : undefined;
+    const polygons = ['==', ['geometry-type'], 'Polygon'];
+    map.addSource('gru-risk', { type: 'geojson', data });
+    map.addLayer({ id: 'gru-risk-fill', type: 'fill', source: 'gru-risk', filter: polygons, layout: { visibility },
+      paint: { 'fill-color': RISK_COLOR, 'fill-opacity': 0.6 } }, below);
+    map.addLayer({ id: 'gru-risk-line', type: 'line', source: 'gru-risk', filter: polygons, layout: { visibility },
+      paint: { 'line-color': '#4c1d95', 'line-width': 1.5, 'line-dasharray': [2, 1] } }, below);
+    // Ô 1 km gần như không thấy khi zoom xa: thêm chấm ở tâm mọi điểm (cả ô lẫn điểm chỉ có toạ độ)
+    map.addSource('gru-risk-centres', { type: 'geojson', data: confirmedCentres(data) });
+    map.addLayer({ id: 'gru-risk-dot', type: 'circle', source: 'gru-risk-centres', layout: { visibility },
+      paint: { 'circle-radius': 9, 'circle-color': RISK_COLOR, 'circle-stroke-width': 2, 'circle-stroke-color': '#4c1d95' } }, below);
+    if (!riskClickBound.has(map)) {
+      riskClickBound.add(map);
+      map.on('click', ['gru-risk-fill', 'gru-risk-dot'], (e) => {
+        const props = e.features?.[0]?.properties;
+        // Vùng dự báo đã duyệt nằm trên: nhường click cho nó (chọn sự cố), không mở thêm popup chồng lên
+        if (!props || map.queryRenderedFeatures(e.point, { layers: ['landslide-polygons-fill'].filter(id => map.getLayer(id)) }).length) return;
+        const { title, lines } = describeRisk(props);
+        const box = document.createElement('div');
+        box.style.cssText = 'color:#0f172a;padding:4px;font-family:sans-serif;max-width:280px';
+        const h = document.createElement('div');
+        h.style.cssText = 'font-weight:700;font-size:12px;margin-bottom:4px;color:#5b21b6';
+        h.textContent = title;
+        box.append(h);
+        lines.forEach(l => {
+          const p = document.createElement('div');
+          p.style.cssText = 'font-size:11px;color:#475569;margin-top:2px';
+          p.textContent = l;
+          box.append(p);
+        });
+        new maplibregl.Popup({ offset: 12 }).setLngLat(e.lngLat).setDOMContent(box).addTo(map);
+        focusPopup(map, e.lngLat);
+      });
+    }
+  };
+
+  const toggleRisk = () => {
+    if (!showRisk) {
+      const bounds = confirmedBounds(riskRef.current);
+      if (bounds && mapRef.current) mapRef.current.fitBounds(bounds, { padding: 90, maxZoom: 11, duration: 1500 });
+    }
+    setShowRisk(v => !v);
+  };
+
   // Bật lớp thì bay tới các điểm (chúng thường nằm xa vùng đang xem); tắt thì chỉ ẩn lớp.
   const toggleConfirmed = () => {
     if (!showConfirmed) {
@@ -386,6 +448,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
         ensureAoiLayer(map);
         ensureLandslideLayers(map, eventsRef.current);
         ensureConfirmedLayer(map); // sau vùng dự báo để nằm trên: sạt lở thật không bị vùng dự báo che mờ
+        ensureRiskLayer(map);
         if (markersRef.current.length === 0) {
           renderCommunityReportMarkers(map);
         }
@@ -399,6 +462,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
         ensureAoiLayer(map);
         ensureLandslideLayers(map, eventsRef.current);
         ensureConfirmedLayer(map); // sau vùng dự báo để nằm trên: sạt lở thật không bị vùng dự báo che mờ
+        ensureRiskLayer(map);
         if (markersRef.current.length === 0) {
           renderCommunityReportMarkers(map);
         }
@@ -419,7 +483,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
       // 1.4 Click chọn điểm trên bản đồ để xem tọa độ không gian (Story 1.4, AC 1.4.1 - 1.4.5, Rule R10)
       map.on('click', (e) => {
         // Ưu tiên click vào polygon sự cố sạt lở (AC 1.4.4, FR-MAP-13)
-        const layers = ['landslide-polygons-fill', 'confirmed-landslides-fill', 'confirmed-landslides-dot'].filter(id => map.getLayer(id));
+        const layers = ['landslide-polygons-fill', 'confirmed-landslides-fill', 'confirmed-landslides-dot', 'gru-risk-fill', 'gru-risk-dot'].filter(id => map.getLayer(id));
         const features = map.queryRenderedFeatures(e.point, { layers });
         if (features && features.length > 0) {
           return;
@@ -524,6 +588,14 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
     if (!mapRef.current || !mapLoaded) return;
     ensureConfirmedLayer(mapRef.current);
   }, [confirmed, showConfirmed, mapLoaded]);
+
+  // 1e. Lớp GRU thử nghiệm: dữ liệu mới mỗi phút hoặc cán bộ bật/tắt
+  useEffect(() => {
+    riskRef.current = experimentalRisk;
+    showRiskRef.current = showRisk;
+    if (!mapRef.current || !mapLoaded) return;
+    ensureRiskLayer(mapRef.current);
+  }, [experimentalRisk, showRisk, mapLoaded]);
 
   // 2. Camera FlyTo mượt mà khi Cán bộ chọn sự cố từ hàng đợi (AC 1.5.5, FR-MAP-12)
   const prevSelectedEventIdRef = useRef(null);
@@ -797,7 +869,42 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
             <span className="map-ctrl-count">{confirmed.features.length}</span>
           </button>
         )}
+
+        {/* Điểm GRU thử nghiệm từ mưa cập nhật: chỉ cán bộ (trang công dân không truyền dữ liệu này) */}
+        {experimentalRisk?.features?.length > 0 && (
+          <button
+            onClick={toggleRisk}
+            title="Điểm GRU thử nghiệm tính từ mưa Open-Meteo và đất/độ dốc, cập nhật mỗi giờ. Không phải xác suất, không phải cảnh báo."
+            aria-label={`Nguy cơ thử nghiệm GRU (${experimentalRisk.features.length} điểm)`}
+            aria-pressed={showRisk}
+            className="map-ctrl-btn"
+            style={{
+              background: showRisk ? '#5b21b6' : 'rgba(255,255,255,0.92)',
+              color: showRisk ? '#fff' : '#172524',
+              border: '1px solid #DCE5E2', padding: '7px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)', backdropFilter: 'blur(4px)'
+            }}
+          >
+            <FlaskConical size={14} />
+            <span className="btn-text">GRU thử nghiệm</span>
+            <span className="map-ctrl-count">{experimentalRisk.features.length}</span>
+          </button>
+        )}
       </div>
+
+      {showRisk && experimentalRisk?.features?.length > 0 && (
+        <div role="note" aria-label="Chú giải lớp GRU thử nghiệm" style={{
+          position: 'absolute', bottom: 52, left: 16, zIndex: 5, background: 'rgba(255,255,255,0.94)',
+          border: '1px solid #DCE5E2', borderRadius: 8, padding: '8px 10px', fontSize: 10, color: '#334155', maxWidth: 230
+        }}>
+          <div style={{ fontWeight: 700, color: '#5b21b6', marginBottom: 4 }}>GRU thử nghiệm · điểm 0 → 1</div>
+          <div style={{ height: 8, borderRadius: 4, background: 'linear-gradient(90deg,#ede9fe,#a78bfa,#6d28d9,#3b0764)' }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}><span>0</span><span>0,3</span><span>0,6</span><span>1</span></div>
+          <div style={{ marginTop: 4 }}><span style={{ display: 'inline-block', width: 10, height: 10, background: '#9ca3af', borderRadius: 2, verticalAlign: -1, marginRight: 4 }} />Xám: chưa có điểm hoặc dữ liệu cũ</div>
+          <div style={{ marginTop: 4, color: '#64748b' }}>Không phải xác suất, không phải cảnh báo. Bấm vào ô để xem phần mưa và phần đất/địa hình.</div>
+        </div>
+      )}
 
       {/* Chỉ báo trạng thái nạp & hiệu năng */}
       {idleLoadTime && (
