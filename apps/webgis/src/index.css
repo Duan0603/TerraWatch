@@ -829,8 +829,8 @@ body.page-login {
   }
 
   .sidebar.mobile-hidden { display: none; }
-  /* Trang công dân: danh sách nằm trên, bản đồ chiếm phần còn lại */
-  .sidebar.citizen-list { height: auto; max-height: 40vh; flex: none; border-bottom: 1px solid var(--border); }
+  /* Trang công dân: danh sách và bản đồ là hai tab (MobileTabBar); danh sách cuộn trong khung của nó */
+  .sidebar.citizen-list { overflow-y: auto; }
   .map-canvas-area.mobile-hidden { display: none; }
 
   /* HUD overlay compact */
@@ -910,7 +910,7 @@ body.page-login {
 @media (max-width: 340px) { .nav-user { display: none; } }
 
 /* Bảng bằng chứng xếp chồng ở góc dưới phải bản đồ */
-.map-evidence-stack { position: absolute; bottom: 20px; right: 20px; width: min(380px, calc(100% - 32px)); max-height: calc(100% - 100px); overflow-y: auto; z-index: 10; display: flex; flex-direction: column; gap: 12px; }
+.map-evidence-stack { position: absolute; bottom: 52px; right: 20px; width: min(380px, calc(100% - 32px)); max-height: calc(100% - 178px); /* top stays below the map nav buttons (they end 118px down) */ overflow-y: auto; z-index: 10; display: flex; flex-direction: column; gap: 12px; }
 .map-evidence-stack .live-rain-panel { position: static; width: 100%; max-height: none; flex-shrink: 0; }
 .map-evidence-stack .evidence-panel { flex-shrink: 0; }
 .evidence-tabs { position: sticky; top: 0; z-index: 1; flex-shrink: 0; display: flex; gap: 4px; padding: 4px; background: #fff; border: 1px solid #DCE5E2; border-radius: 12px; box-shadow: 0 4px 16px rgba(23,37,36,0.10); }
@@ -918,7 +918,7 @@ body.page-login {
 .evidence-tabs [role="tab"][aria-selected="true"] { background: #087B70; color: #fff; }
 .evidence-tabs-toggle { display: inline-flex; align-items: center; padding: 0 8px; border: 1px solid #DCE5E2; border-radius: 8px; background: #F5F8F7; color: #065F57; cursor: pointer; }
 .evidence-tabs button:focus-visible { outline: 3px solid #087B70; outline-offset: 2px; }
-@media (max-width: 600px) { .map-evidence-stack { bottom: 12px; right: 12px; width: calc(100% - 24px); max-height: 60%; } }
+@media (max-width: 600px) { .map-evidence-stack { bottom: 52px; right: 12px; width: calc(100% - 24px); max-height: 60%; } }
 
 /* Trang công dân (Story 4.5): độ rộng danh sách trên máy tính */
 @media (min-width: 769px) { .sidebar.citizen-list { width: 300px; overflow-y: auto; } }
