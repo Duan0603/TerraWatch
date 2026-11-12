@@ -16,6 +16,7 @@ import { testTerrainAssessmentContracts } from './test-terrain-assessment-contra
 import { testWeather } from './test-weather.mjs';
 import { testForecastStatus } from './test-forecast-status.mjs';
 import { testTimeFormatting } from './test-time-formatting.mjs';
+import { testReportExport } from './test-report-export.mjs';
 
 async function runAllWebGisTests() {
   console.log('===============================================================');
@@ -42,6 +43,7 @@ async function runAllWebGisTests() {
     await testWeather();
     await testForecastStatus();
     await testTimeFormatting();
+    await testReportExport();
 
     const elapsed = Date.now() - startTime;
     console.log('===============================================================');
