@@ -96,6 +96,20 @@ logging:
     org.springframework.security: WARN
 
 
+# Story 4.39: SMS Gateway (eSMS / Twilio)
+sms:
+  provider: ${SMS_PROVIDER:}
+  hotline: ${SMS_HOTLINE:112}
+esms:
+  api-key: ${ESMS_API_KEY:}
+  secret-key: ${ESMS_SECRET_KEY:}
+  brandname: ${ESMS_BRANDNAME:Baotrixemay}
+  sandbox: ${ESMS_SANDBOX:0}
+twilio:
+  account-sid: ${TWILIO_ACCOUNT_SID:}
+  auth-token: ${TWILIO_AUTH_TOKEN:}
+  from-number: ${TWILIO_FROM_NUMBER:}
+
 # Story 4.1: Forecast job orchestration
 forecast:
   recovery:
