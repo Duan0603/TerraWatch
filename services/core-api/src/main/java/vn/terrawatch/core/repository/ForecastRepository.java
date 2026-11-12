@@ -29,7 +29,8 @@ public class ForecastRepository {
     public List<ForecastZoneResponse> listApprovedUnexpired() {
         return jdbc.query("""
             SELECT f.run_id, f.unit_id, f.unit_version, f.hazard_level::text AS hazard_level, f.probability,
-                   f.issued_at, f.valid_from, f.valid_until, f.model_version, ST_AsGeoJSON(u.geom) AS geometry
+                   f.issued_at, f.valid_from, f.valid_until, f.model_version, ST_AsGeoJSON(u.geom) AS geometry,
+                   u.unit_name, ST_Y(u.centroid) AS lat, ST_X(u.centroid) AS lng
             FROM core_schema.forecast_runs f
             JOIN gis_schema.spatial_assessment_units u ON u.unit_id = f.unit_id
             WHERE f.review_status = 'approved' AND f.is_active = TRUE AND f.availability = 'available'
@@ -185,7 +186,8 @@ public class ForecastRepository {
                 rs.getObject("issued_at", OffsetDateTime.class).toInstant(),
                 rs.getObject("valid_from", OffsetDateTime.class).toInstant(),
                 rs.getObject("valid_until", OffsetDateTime.class).toInstant(),
-                rs.getString("model_version"), json.readTree(rs.getString("geometry")));
+                rs.getString("model_version"), json.readTree(rs.getString("geometry")),
+                rs.getString("unit_name"), (Double) rs.getObject("lat"), (Double) rs.getObject("lng"));
         } catch (JsonProcessingException e) {
             throw new SQLException("Invalid geometry for unit " + rs.getString("unit_id"), e);
         }

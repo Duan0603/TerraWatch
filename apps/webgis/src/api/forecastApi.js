@@ -64,9 +64,10 @@ export const forecastApi = {
       const ring = z.geometry.coordinates[0];
       return {
         id: z.runId,
-        location: z.unitId,
-        lng: ring.reduce((s, p) => s + p[0], 0) / ring.length,
-        lat: ring.reduce((s, p) => s + p[1], 0) / ring.length,
+        location: z.unitName || z.unitId,
+        // PostGIS centroid: live rain is looked up by exact coordinate, so a ring-average guess returns 404.
+        lng: z.centroidLng,
+        lat: z.centroidLat,
         polygon: ring,
         risk: z.hazardLevel,
         status: 'approved',

@@ -7,8 +7,10 @@ import { fmtVN } from '../utils/time';
 
 const TABS = [['issue', 'Lúc phát hành dự báo'], ['now', 'Hiện tại & 7 ngày tới']];
 
-export default function DetailPanel({ selectedEvent, events, onSelectEvent, fieldReports, aoi, confirmed, className = '' }) {
-  const [tab, setTab] = useState('issue');
+// citizen: the review evidence and the experimental GRU score are staff tools, not public information.
+export default function DetailPanel({ selectedEvent, events, onSelectEvent, fieldReports, aoi, confirmed, className = '', citizen = false }) {
+  const tabs = citizen ? TABS.slice(1) : TABS;
+  const [tab, setTab] = useState(tabs[0][0]);
   const [open, setOpen] = useState(true);
   const pick = (id) => { setTab(id); setOpen(true); };
   return (
@@ -51,12 +53,12 @@ export default function DetailPanel({ selectedEvent, events, onSelectEvent, fiel
       {selectedEvent && (
         <div className="map-evidence-stack">
           <div className="evidence-tabs" role="tablist" aria-label="Bằng chứng và thời tiết của khu vực">
-            {TABS.map(([id, label]) => (
+            {tabs.map(([id, label]) => (
               <button key={id} type="button" role="tab" id={`evidence-tab-${id}`} aria-controls="evidence-tabpanel"
                 aria-selected={open && tab === id} tabIndex={tab === id ? 0 : -1} onClick={() => pick(id)}
                 onKeyDown={e => {
-                  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-                  const other = id === 'issue' ? 'now' : 'issue';
+                  const other = tabs.find(([t]) => t !== id)?.[0];
+                  if ((e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || !other) return;
                   pick(other);
                   document.getElementById(`evidence-tab-${other}`)?.focus();
                 }}>
@@ -72,7 +74,7 @@ export default function DetailPanel({ selectedEvent, events, onSelectEvent, fiel
             <div id="evidence-tabpanel" role="tabpanel" aria-labelledby={`evidence-tab-${tab}`}>
               {tab === 'issue'
                 ? <RainfallEvidencePanel selectedEvent={selectedEvent} />
-                : <LiveRainfallPanel key={`${selectedEvent.lat},${selectedEvent.lng}`} selectedEvent={selectedEvent} />}
+                : <LiveRainfallPanel key={`${selectedEvent.lat},${selectedEvent.lng}`} selectedEvent={selectedEvent} showModel={!citizen} />}
             </div>
           )}
         </div>

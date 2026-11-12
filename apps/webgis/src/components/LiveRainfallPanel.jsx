@@ -13,7 +13,7 @@ function WeatherIcon({ code, size = 18 }) {
 const valueText = value => value === null || value === undefined ? 'Chưa đủ dữ liệu' : `${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 }).format(value)} mm`;
 const timeText = value => value ? fmtVN(value) : 'Chưa có lần lấy thành công';
 
-export default function LiveRainfallPanel({ selectedEvent }) {
+export default function LiveRainfallPanel({ selectedEvent, showModel = true }) {
   const [snapshot, setSnapshot] = useState(null), [error, setError] = useState('');
   const [loading, setLoading] = useState(true), [reload, setReload] = useState(0);
   const latitude = selectedEvent?.lat, longitude = selectedEvent?.lng;
@@ -91,7 +91,7 @@ export default function LiveRainfallPanel({ selectedEvent }) {
           </svg>
           <div className="live-rain-chart-key"><span><i className="past" />Ước tính đã qua</span><span><i className="forecast" />Dự báo</span><span>× thiếu dữ liệu</span></div>
         </figure>
-        {prediction?.ready ? <section className="live-gru-result" aria-label="Dự báo tự động thử nghiệm">
+        {!showModel ? null : prediction?.ready ? <section className="live-gru-result" aria-label="Dự báo tự động thử nghiệm">
           <h3>GRU · Dự báo tự động 24 giờ</h3>
           <p className="live-gru-equation"><span title={String(prediction.temporal_score)}>{scoreText(prediction.temporal_score)} <small>Mưa</small></span><b>×</b>
             <span title={String(prediction.spatial_score)}>{scoreText(prediction.spatial_score)} <small>Địa hình · đất</small></span><b>=</b>
