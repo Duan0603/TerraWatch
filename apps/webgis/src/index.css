@@ -829,8 +829,8 @@ body.page-login {
   }
 
   .sidebar.mobile-hidden { display: none; }
-  /* Trang công dân: danh sách nằm trên, bản đồ chiếm phần còn lại */
-  .sidebar.citizen-list { height: auto; max-height: 40vh; flex: none; border-bottom: 1px solid var(--border); }
+  /* Trang công dân: danh sách và bản đồ là hai tab (MobileTabBar); danh sách cuộn trong khung của nó */
+  .sidebar.citizen-list { overflow-y: auto; }
   .map-canvas-area.mobile-hidden { display: none; }
 
   /* HUD overlay compact */

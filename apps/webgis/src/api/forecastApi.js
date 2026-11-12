@@ -81,6 +81,11 @@ export const forecastApi = {
     });
   },
 
+  // Cảnh báo khẩn đã gửi tới chính người đang đăng nhập trong 7 ngày qua (kể cả đã hết hạn / thu hồi).
+  async getMyAlerts() {
+    return axiosClient.get('/alerts/broadcasts');
+  },
+
   // decision: approved | rejected. Từ chối bắt buộc có lý do (backend kiểm tra lại).
   async review(runId, decision, reasonNotes) {
     try {
