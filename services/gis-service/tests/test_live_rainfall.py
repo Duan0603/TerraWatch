@@ -94,6 +94,19 @@ class LiveRainfallTests(unittest.TestCase):
         service.fetch.assert_not_called()
         service.repo.connect.return_value.close.assert_called_once()
 
+    def test_failed_fetch_retries_after_five_minutes_not_full_interval(self):
+        service = self.service()
+        service.repo.get.return_value = {'last_attempt_at': utc_now() - timedelta(minutes=2), 'last_error': 'ConnectTimeout'}
+        service.run_once()
+        service.fetch.assert_not_called()  # still inside the short back-off
+        service.repo.get.return_value = {'last_attempt_at': utc_now() - timedelta(minutes=6), 'last_error': 'ConnectTimeout'}
+        service.run_once()
+        service.fetch.assert_called_once()
+        service.fetch.reset_mock()
+        service.repo.get.return_value = {'last_attempt_at': utc_now() - timedelta(minutes=6), 'last_error': None}
+        service.run_once()
+        service.fetch.assert_not_called()  # a healthy location keeps the hourly interval
+
     def test_nonleader_worker_does_not_fetch(self):
         service = self.service()
         service.repo.connect.return_value.cursor.return_value.__enter__.return_value.fetchone.return_value = (False,)

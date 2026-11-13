@@ -17,6 +17,7 @@ from app.pipeline.rainfall_repository import RainfallRepository
 LOG = logging.getLogger(__name__)
 UTC = timezone.utc
 LOCK_ID = 74301892
+RETRY_AFTER_ERROR_SECONDS = 300
 VN = timezone(timedelta(hours=7), 'Asia/Ho_Chi_Minh')  # Vietnam has no DST, so a fixed offset is exact.
 WEATHER_UNITS = {'temperature_2m': '°C', 'relative_humidity_2m': '%', 'precipitation_probability': '%',
                  'wind_speed_10m': 'km/h', 'weather_code': 'wmo code'}
@@ -295,7 +296,9 @@ class LiveRainfallService:
                 if self.stop_event.is_set():
                     break
                 cached = self.repo.get(location['key'])
-                if cached and (utc_now()-cached['last_attempt_at']).total_seconds() < self.interval:
+                # A failed fetch (e.g. network not up yet after a restart) retries after 5 min, not a full interval.
+                wait = RETRY_AFTER_ERROR_SECONDS if cached and cached.get('last_error') else self.interval
+                if cached and (utc_now()-cached['last_attempt_at']).total_seconds() < wait:
                     payload = cached.get('payload')
                     if payload:
                         previous = payload.get('gru_inference', {})
