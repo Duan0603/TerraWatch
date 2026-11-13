@@ -10,6 +10,21 @@ export function pointInRing([lng, lat], ring) {
   return inside;
 }
 
+// Monitored weather points from GET /gis/rainfall/live/map. The coordinate comes from the cache key
+// ("lat,lng" rounded to 4 places), because the live rainfall lookup matches that key exactly.
+export function monitoredPoints(collection) {
+  return (collection?.features || []).map(f => {
+    const [lat, lng] = String(f.properties?.key || '').split(',').map(Number);
+    return { key: f.properties.key, name: f.properties.name, lat, lng };
+  }).filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lng))
+    .sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+}
+
+export function nearestPoint(points, position) {
+  return points.map(p => ({ ...p, distanceKm: calculateDistanceKm(position, [p.lng, p.lat]) }))
+    .sort((a, b) => a.distanceKm - b.distanceKm)[0] || null;
+}
+
 // Zones the user stands in first, then the rest by distance to the zone centre.
 export function rankZones(zones, position) {
   return zones

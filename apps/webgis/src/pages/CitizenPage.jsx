@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, LogOut, MapPin, LocateFixed } from 'lucide-react';
-import { rankZones } from '../utils/zoneLocation';
+import { rankZones, monitoredPoints, nearestPoint } from '../utils/zoneLocation';
 import DetailPanel from '../components/DetailPanel';
 import MobileTabBar from '../components/MobileTabBar';
 import { RISK_LABELS } from '../components/EventCard';
@@ -12,6 +12,7 @@ import { useAuth } from '../context/AuthContext';
 // (đã duyệt, còn hiệu lực) cùng bằng chứng mưa/địa hình — không có nút thẩm định/phát
 // cảnh báo nào (những thao tác đó chỉ dành cho officer/admin trên DashboardPage).
 const REFRESH_MS = 60000;
+const VN_TIME = new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', hour12: false });
 
 export default function CitizenPage() {
   const { user, logout } = useAuth();
@@ -22,6 +23,10 @@ export default function CitizenPage() {
   const [receivedError, setReceivedError] = useState(null);
   const [now, setNow] = useState(() => Date.now());
   const [mobileTab, setMobileTab] = useState('list');
+  const [points, setPoints] = useState([]); // điểm GIS đang lấy mưa mỗi giờ
+  const [aoi, setAoi] = useState(null); // ranh giới vùng trọng điểm (công khai)
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [chosenKey, setChosenKey] = useState('');
 
   // Vùng cảnh báo đã duyệt và còn hiệu lực (cùng nguồn với bộ nhớ ngoại tuyến của ứng dụng di động),
   // tải lại mỗi phút để vùng mới duyệt hiện ra; lỗi tạm thời giữ nguyên danh sách đang có.
@@ -29,8 +34,9 @@ export default function CitizenPage() {
     let active = true;
     const load = () => {
       forecastApi.getApprovedZones()
-        .then((data) => { if (active) { setZones(data); setLoadError(null); } })
+        .then((data) => { if (active) { setZones(data); setLoadError(null); setLastUpdated(new Date()); } })
         .catch((err) => active && setLoadError(apiErrorMessage(err, 'Không cập nhật được vùng cảnh báo')));
+      forecastApi.getMonitoredPoints().then((d) => active && setPoints(monitoredPoints(d))).catch(() => {});
       forecastApi.getMyAlerts()
         .then((data) => { if (active) { setReceived(data); setReceivedError(null); } })
         .catch((err) => active && setReceivedError(apiErrorMessage(err, 'Không tải được cảnh báo đã nhận')));
@@ -39,6 +45,9 @@ export default function CitizenPage() {
     const timer = setInterval(load, REFRESH_MS);
     return () => { active = false; clearInterval(timer); };
   }, []);
+
+  // Ranh giới vùng trọng điểm: ít khi đổi, tải một lần.
+  useEffect(() => { forecastApi.getAoiCollection().then(setAoi).catch(() => {}); }, []);
 
   // Vùng rời danh sách đúng lúc hết hạn, không đợi lần tải lại kế tiếp.
   useEffect(() => {
@@ -53,6 +62,14 @@ export default function CitizenPage() {
   const [geoMsg, setGeoMsg] = useState('');
   const list = position ? rankZones(events, position) : events;
   const insideZone = list.find((z) => z.inside);
+  // No warning to show: weather of the chosen monitored point, else of the one nearest the user.
+  const near = position ? nearestPoint(points, position) : null;
+  const wp = points.find((p) => p.key === chosenKey) || near;
+  const weatherPoint = wp && {
+    location: wp === near && !chosenKey ? `Điểm theo dõi gần bạn nhất: ${wp.name} (cách khoảng ${Math.round(near.distanceKm)} km)` : `Điểm theo dõi: ${wp.name}`,
+    lat: wp.lat, lng: wp.lng,
+  };
+  const areaNames = (aoi?.features || []).map((f) => String(f.properties?.name || '').replace(/^Vùng trọng điểm \d+:\s*/, '')).filter(Boolean);
 
   const locate = () => {
     if (!navigator.geolocation) { setGeoMsg('Trình duyệt không hỗ trợ định vị.'); return; }
@@ -110,7 +127,12 @@ export default function CitizenPage() {
         {/* Danh sách chỉ đọc các vùng đã được cán bộ phê duyệt và còn hiệu lực — không có nút thẩm định.
             Đây là mọi vùng đang hiệu lực, chưa lọc theo khu vực người dân đăng ký (backend chưa trả khu vực của ô). */}
         <aside className={`sidebar citizen-list${mobileTab === 'map' ? ' mobile-hidden' : ''}`}>
-          <div style={{ padding: '14px 16px 10px', fontWeight: 700, fontSize: 14 }}>Cảnh báo đang hiệu lực ({events.length})</div>
+          <div style={{ padding: '14px 16px 10px' }}>
+            <div style={{ fontWeight: 700, fontSize: 14 }}>Cảnh báo đang hiệu lực ({events.length})</div>
+            <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
+              {lastUpdated ? `Cập nhật lúc ${VN_TIME.format(lastUpdated)} · tự cập nhật mỗi phút` : 'Đang tải…'}
+            </div>
+          </div>
           <div style={{ padding: '0 16px 10px' }}>
             <button type="button" className="btn-ghost" onClick={locate} style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6, fontSize: 12 }}>
               <LocateFixed size={14} /> Kiểm tra vị trí của tôi
@@ -155,6 +177,19 @@ export default function CitizenPage() {
           {events.length === 0 && !loadError && (
             <div style={{ padding: 16, fontSize: 12, color: '#64748b' }}>
               Hiện chưa có vùng cảnh báo nào đã được cán bộ duyệt và còn hiệu lực. Đây không phải xác nhận an toàn.
+              {areaNames.length > 0 && <div style={{ marginTop: 6 }}>Hệ thống đang theo dõi: {areaNames.join('; ')}.</div>}
+            </div>
+          )}
+          {events.length === 0 && points.length > 0 && (
+            <div style={{ margin: '0 12px 10px', padding: '10px 12px', borderRadius: 8, background: '#F5F8F7', border: '1px solid #DCE5E2', fontSize: 12 }}>
+              <label htmlFor="weather-point" style={{ fontWeight: 600, color: '#172524' }}>Xem mưa &amp; thời tiết tại điểm theo dõi</label>
+              <select id="weather-point" value={chosenKey} onChange={(e) => { setChosenKey(e.target.value); if (e.target.value) setMobileTab('map'); }}
+                style={{ width: '100%', marginTop: 6, padding: '6px 8px', borderRadius: 6, border: '1px solid #DCE5E2', fontSize: 12, background: '#fff' }}>
+                <option value="">{near ? `Gần bạn nhất: ${near.name} (~${Math.round(near.distanceKm)} km)` : '— Chọn một điểm —'}</option>
+                {points.map((p) => <option key={p.key} value={p.key}>{p.name}</option>)}
+              </select>
+              {!near && !chosenKey && <div style={{ marginTop: 6, color: '#64748b' }}>Hoặc bấm "Kiểm tra vị trí của tôi" để chọn điểm gần bạn.</div>}
+              <div style={{ marginTop: 6, color: '#64748b' }}>Số liệu là của điểm theo dõi, không phải đúng vị trí của bạn.</div>
             </div>
           )}
 
@@ -205,6 +240,8 @@ export default function CitizenPage() {
           events={events}
           onSelectEvent={setSelectedEventId}
           className={mobileTab === 'list' ? 'mobile-hidden' : ''}
+          aoi={aoi}
+          weatherPoint={weatherPoint}
           citizen
         />
       </div>

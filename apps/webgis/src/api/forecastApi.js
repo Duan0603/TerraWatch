@@ -82,6 +82,11 @@ export const forecastApi = {
   },
 
   // Cảnh báo khẩn đã gửi tới chính người đang đăng nhập trong 7 ngày qua (kể cả đã hết hạn / thu hồi).
+  // Các điểm GIS đang lấy mưa mỗi giờ (tên + toạ độ khoá cache); trang công dân chỉ dùng để chọn điểm xem thời tiết.
+  async getMonitoredPoints() {
+    return axiosClient.get('/gis/rainfall/live/map');
+  },
+
   async getMyAlerts() {
     return axiosClient.get('/alerts/broadcasts');
   },
