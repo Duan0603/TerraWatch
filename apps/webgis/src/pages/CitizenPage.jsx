@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, LogOut, MapPin, LocateFixed } from 'lucide-react';
+import { ShieldCheck, LogOut, MapPin, LocateFixed, CheckCircle2, Phone } from 'lucide-react';
 import { rankZones, monitoredPoints, nearestPoint } from '../utils/zoneLocation';
 import DetailPanel from '../components/DetailPanel';
 import MobileTabBar from '../components/MobileTabBar';
@@ -13,6 +13,9 @@ import { useAuth } from '../context/AuthContext';
 // cảnh báo nào (những thao tác đó chỉ dành cho officer/admin trên DashboardPage).
 const REFRESH_MS = 60000;
 const VN_TIME = new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', hour12: false });
+const card = { margin: '0 12px 10px', padding: '10px 12px', borderRadius: 10, background: '#F5F8F7', border: '1px solid #DCE5E2', fontSize: 12 };
+const muted = { marginTop: 4, fontSize: 11, color: '#64748b', lineHeight: 1.5 };
+const chip = { padding: '2px 8px', borderRadius: 999, background: '#E4F4F1', color: '#065F57', fontSize: 11, fontWeight: 600 };
 
 export default function CitizenPage() {
   const { user, logout } = useAuth();
@@ -173,32 +176,41 @@ export default function CitizenPage() {
               )}
             </div>
           ))}
-          {loadError && <div role="alert" style={{ padding: 16, fontSize: 12, color: '#B91C1C' }}>{loadError}</div>}
+          {loadError && <div role="alert" style={{ padding: '0 16px 10px', fontSize: 12, color: '#B91C1C' }}>{loadError}</div>}
           {events.length === 0 && !loadError && (
-            <div style={{ padding: 16, fontSize: 12, color: '#64748b' }}>
-              Hiện chưa có vùng cảnh báo nào đã được cán bộ duyệt và còn hiệu lực. Đây không phải xác nhận an toàn.
-              {areaNames.length > 0 && <div style={{ marginTop: 6 }}>Hệ thống đang theo dõi: {areaNames.join('; ')}.</div>}
+            <div style={card}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, fontSize: 13, color: '#166534' }}>
+                <CheckCircle2 size={15} /> Không có cảnh báo đang hiệu lực
+              </div>
+              <div style={muted}>Không phải xác nhận an toàn: vẫn theo dõi thông báo của địa phương.</div>
+              {areaNames.length > 0 && (
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ ...muted, marginTop: 0, marginBottom: 4 }}>Đang theo dõi</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                    {areaNames.map((n) => <span key={n} style={chip}>{n}</span>)}
+                  </div>
+                </div>
+              )}
             </div>
           )}
           {events.length === 0 && points.length > 0 && (
-            <div style={{ margin: '0 12px 10px', padding: '10px 12px', borderRadius: 8, background: '#F5F8F7', border: '1px solid #DCE5E2', fontSize: 12 }}>
-              <label htmlFor="weather-point" style={{ fontWeight: 600, color: '#172524' }}>Xem mưa &amp; thời tiết tại điểm theo dõi</label>
+            <div style={card}>
+              <label htmlFor="weather-point" style={{ fontWeight: 700, fontSize: 13, color: '#172524' }}>Thời tiết tại điểm theo dõi</label>
               <select id="weather-point" value={chosenKey} onChange={(e) => { setChosenKey(e.target.value); if (e.target.value) setMobileTab('map'); }}
-                style={{ width: '100%', marginTop: 6, padding: '6px 8px', borderRadius: 6, border: '1px solid #DCE5E2', fontSize: 12, background: '#fff' }}>
-                <option value="">{near ? `Gần bạn nhất: ${near.name} (~${Math.round(near.distanceKm)} km)` : '— Chọn một điểm —'}</option>
+                style={{ width: '100%', marginTop: 6, padding: '7px 8px', borderRadius: 6, border: '1px solid #DCE5E2', fontSize: 12, background: '#fff' }}>
+                <option value="">{near ? `Gần bạn nhất: ${near.name} (~${Math.round(near.distanceKm)} km)` : 'Chọn một điểm…'}</option>
                 {points.map((p) => <option key={p.key} value={p.key}>{p.name}</option>)}
               </select>
-              {!near && !chosenKey && <div style={{ marginTop: 6, color: '#64748b' }}>Hoặc bấm "Kiểm tra vị trí của tôi" để chọn điểm gần bạn.</div>}
-              <div style={{ marginTop: 6, color: '#64748b' }}>Số liệu là của điểm theo dõi, không phải đúng vị trí của bạn.</div>
+              <div style={muted}>Số liệu của điểm theo dõi, không phải vị trí của bạn.</div>
             </div>
           )}
 
-          <section aria-label="Cảnh báo đã nhận trong 7 ngày qua" style={{ margin: '8px 12px 0', fontSize: 12 }}>
-            <div style={{ fontWeight: 700, fontSize: 13, margin: '4px 4px 8px', color: '#172524' }}>Cảnh báo đã nhận (7 ngày qua)</div>
+          <section aria-label="Cảnh báo đã nhận trong 7 ngày qua" style={{ margin: '4px 12px 0', fontSize: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', margin: '4px 4px 8px' }}>
+              <span style={{ fontWeight: 700, fontSize: 13, color: '#172524' }}>Cảnh báo đã nhận <span style={{ fontWeight: 400, color: '#64748b' }}>(7 ngày)</span></span>
+              {!receivedError && received.length === 0 && <span style={{ color: '#64748b' }}>Chưa có</span>}
+            </div>
             {receivedError && <div role="alert" style={{ padding: '0 4px 8px', color: '#B91C1C' }}>{receivedError}</div>}
-            {!receivedError && received.length === 0 && (
-              <div style={{ padding: '0 4px 8px', color: '#64748b' }}>Chưa nhận cảnh báo nào trong 7 ngày qua.</div>
-            )}
             {received.map((a) => {
               const state = a.status === 'revoked' ? ['Đã thu hồi', '#475569', '#F1F5F9']
                 : a.expired ? ['Hết hạn', '#475569', '#F1F5F9'] : ['Còn hiệu lực', '#B91C1C', '#FEF2F2'];
@@ -217,22 +229,28 @@ export default function CitizenPage() {
             })}
           </section>
 
-          {/* Tóm tắt từ hướng dẫn của Cục Quản lý đê điều và PCTT; không tự đặt thêm khuyến cáo. */}
-          <section aria-label="Bạn nên làm gì khi có cảnh báo sạt lở" style={{ margin: '8px 12px 16px', padding: '12px 14px', borderRadius: 10, background: '#F5F8F7', border: '1px solid #DCE5E2', fontSize: 12, lineHeight: 1.6, color: '#334155' }}>
-            <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 6, color: '#172524' }}>Bạn nên làm gì khi có cảnh báo sạt lở</div>
-            <ul style={{ margin: 0, paddingLeft: 18 }}>
-              <li>Sẵn sàng sơ tán theo hướng dẫn của chính quyền địa phương; bảo vệ tính mạng trước tiên.</li>
-              <li>Nghe tiếng động lớn hoặc thấy dấu hiệu bất thường: nhanh chóng rời khỏi nơi nguy hiểm.</li>
-              <li>Không đi qua và không lại gần khu vực đang sạt lở.</li>
-              <li>Thấy dấu hiệu sạt lở: báo ngay cho chính quyền và người xung quanh.</li>
-              <li>Theo dõi tin mưa lớn, kéo dài trên báo, đài, tivi.</li>
+          <a href="tel:112" style={{ margin: '8px 12px', padding: '10px 14px', borderRadius: 10, background: '#FEF2F2', border: '1px solid #FECACA',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#991B1B', textDecoration: 'none', fontSize: 12, fontWeight: 600 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Phone size={14} /> Cứu nạn khẩn cấp</span>
+            <span style={{ fontSize: 18, fontWeight: 800 }}>112</span>
+          </a>
+
+          {/* Tóm tắt từ hướng dẫn của Cục Quản lý đê điều và PCTT; không tự đặt thêm khuyến cáo. Mở sẵn khi đang có cảnh báo. */}
+          <details key={events.length > 0 ? 'warn' : 'calm'} open={events.length > 0}
+            style={{ margin: '0 12px 16px', padding: '10px 14px', borderRadius: 10, background: '#F5F8F7', border: '1px solid #DCE5E2', fontSize: 12, lineHeight: 1.6, color: '#334155' }}>
+            <summary style={{ fontWeight: 700, fontSize: 13, color: '#172524', cursor: 'pointer' }}>Cần làm gì khi có cảnh báo sạt lở?</summary>
+            <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
+              <li>Sẵn sàng sơ tán theo hướng dẫn của chính quyền; bảo vệ tính mạng trước tiên.</li>
+              <li>Nghe tiếng động lớn, thấy dấu hiệu bất thường: rời ngay khỏi nơi nguy hiểm.</li>
+              <li>Không đi qua, không lại gần khu vực đang sạt lở.</li>
+              <li>Thấy dấu hiệu sạt lở: báo ngay chính quyền và người xung quanh.</li>
+              <li>Theo dõi tin mưa lớn trên báo, đài, tivi.</li>
             </ul>
-            <div style={{ marginTop: 8, fontWeight: 700 }}>Cứu nạn khẩn cấp: <a href="tel:112" style={{ color: '#B91C1C' }}>112</a></div>
             <div style={{ marginTop: 6, fontSize: 10, color: '#64748b' }}>
-              Nguồn: Cục Quản lý đê điều và Phòng, chống thiên tai, qua{' '}
+              Nguồn: Cục Quản lý đê điều và PCTT, qua{' '}
               <a href="https://baoquocte.vn/ky-nang-quan-trong-de-dam-bao-an-toan-truoc-thien-tai-lu-quet-va-sat-lo-dat-329420.html" target="_blank" rel="noreferrer">Báo Quốc tế (30/09/2025)</a>.
             </div>
-          </section>
+          </details>
         </aside>
 
         <DetailPanel
