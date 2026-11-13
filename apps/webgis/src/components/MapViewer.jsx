@@ -32,7 +32,7 @@ import { DEFAULT_LOCATION_ID } from '../data/mountainLocations';
 import LocationSelector from './LocationSelector';
 import { describeConfirmed, confirmedBounds, confirmedCentres } from '../utils/confirmedLandslides';
 import MapErrorBoundary from './MapErrorBoundary';
-import { describeRisk, RISK_COLOR } from '../utils/experimentalRisk';
+import { describeRisk, RISK_COLOR, RAIN_COLOR, usableCount } from '../utils/experimentalRisk';
 
 /**
  * @typedef {Object} GeoEvent
@@ -100,6 +100,9 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
   const riskRef = useRef(experimentalRisk);
   const [showRisk, setShowRisk] = useState(false); // tắt sẵn: điểm thử nghiệm, chỉ bật khi cán bộ muốn xem
   const showRiskRef = useRef(false);
+  const [riskMode, setRiskMode] = useState('gru'); // 'gru' = điểm mô hình, 'rain' = mưa 24h tới theo QĐ 18
+  const riskModeRef = useRef('gru');
+  const riskCount = usableCount(experimentalRisk?.features, riskMode);
 
   const onSelectEventRef = useRef(onSelectEvent);
   useEffect(() => {
@@ -300,23 +303,26 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
     if (!map || !map.getStyle()) return;
     const data = riskRef.current || { type: 'FeatureCollection', features: [] };
     const visibility = showRiskRef.current ? 'visible' : 'none';
+    const color = riskModeRef.current === 'rain' ? RAIN_COLOR : RISK_COLOR;
     if (map.getSource('gru-risk')) {
       map.getSource('gru-risk').setData(data);
       map.getSource('gru-risk-centres')?.setData(confirmedCentres(data));
       RISK_LAYERS.forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', visibility));
+      if (map.getLayer('gru-risk-fill')) map.setPaintProperty('gru-risk-fill', 'fill-color', color);
+      if (map.getLayer('gru-risk-dot')) map.setPaintProperty('gru-risk-dot', 'circle-color', color);
       return;
     }
     const below = map.getLayer('landslide-polygons-fill') ? 'landslide-polygons-fill' : undefined;
     const polygons = ['==', ['geometry-type'], 'Polygon'];
     map.addSource('gru-risk', { type: 'geojson', data });
     map.addLayer({ id: 'gru-risk-fill', type: 'fill', source: 'gru-risk', filter: polygons, layout: { visibility },
-      paint: { 'fill-color': RISK_COLOR, 'fill-opacity': 0.6 } }, below);
+      paint: { 'fill-color': color, 'fill-opacity': 0.6 } }, below);
     map.addLayer({ id: 'gru-risk-line', type: 'line', source: 'gru-risk', filter: polygons, layout: { visibility },
       paint: { 'line-color': '#4c1d95', 'line-width': 1.5, 'line-dasharray': [2, 1] } }, below);
     // Ô 1 km gần như không thấy khi zoom xa: thêm chấm ở tâm mọi điểm (cả ô lẫn điểm chỉ có toạ độ)
     map.addSource('gru-risk-centres', { type: 'geojson', data: confirmedCentres(data) });
     map.addLayer({ id: 'gru-risk-dot', type: 'circle', source: 'gru-risk-centres', layout: { visibility },
-      paint: { 'circle-radius': 9, 'circle-color': RISK_COLOR, 'circle-stroke-width': 2, 'circle-stroke-color': '#4c1d95' } }, below);
+      paint: { 'circle-radius': 9, 'circle-color': color, 'circle-stroke-width': 2, 'circle-stroke-color': '#4c1d95' } }, below);
     if (!riskClickBound.has(map)) {
       riskClickBound.add(map);
       map.on('click', ['gru-risk-fill', 'gru-risk-dot'], (e) => {
@@ -593,9 +599,10 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
   useEffect(() => {
     riskRef.current = experimentalRisk;
     showRiskRef.current = showRisk;
+    riskModeRef.current = riskMode;
     if (!mapRef.current || !mapLoaded) return;
     ensureRiskLayer(mapRef.current);
-  }, [experimentalRisk, showRisk, mapLoaded]);
+  }, [experimentalRisk, showRisk, riskMode, mapLoaded]);
 
   // 2. Camera FlyTo mượt mà khi Cán bộ chọn sự cố từ hàng đợi (AC 1.5.5, FR-MAP-12)
   const prevSelectedEventIdRef = useRef(null);
@@ -874,8 +881,8 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
         {experimentalRisk?.features?.length > 0 && (
           <button
             onClick={toggleRisk}
-            title="Điểm GRU thử nghiệm tính từ mưa Open-Meteo và đất/độ dốc, cập nhật mỗi giờ. Không phải xác suất, không phải cảnh báo."
-            aria-label={`Nguy cơ thử nghiệm GRU (${experimentalRisk.features.length} điểm)`}
+            title={`Lớp thử nghiệm cho cán bộ: điểm mô hình GRU hoặc mưa 24h tới, cập nhật mỗi giờ. ${riskCount}/${experimentalRisk.features.length} điểm có dữ liệu hiện tại. Không phải xác suất, không phải cảnh báo.`}
+            aria-label={`Nguy cơ thử nghiệm GRU (${riskCount} trên ${experimentalRisk.features.length} điểm có dữ liệu hiện tại)`}
             aria-pressed={showRisk}
             className="map-ctrl-btn"
             style={{
@@ -888,7 +895,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
           >
             <FlaskConical size={14} />
             <span className="btn-text">GRU thử nghiệm</span>
-            <span className="map-ctrl-count">{experimentalRisk.features.length}</span>
+            <span className="map-ctrl-count">{riskCount}/{experimentalRisk.features.length}</span>
           </button>
         )}
       </div>
@@ -898,11 +905,28 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
           position: 'absolute', bottom: 52, left: 16, zIndex: 5, background: 'rgba(255,255,255,0.94)',
           border: '1px solid #DCE5E2', borderRadius: 8, padding: '8px 10px', fontSize: 10, color: '#334155', maxWidth: 230
         }}>
-          <div style={{ fontWeight: 700, color: '#5b21b6', marginBottom: 4 }}>GRU thử nghiệm · điểm 0 → 1</div>
-          <div style={{ height: 8, borderRadius: 4, background: 'linear-gradient(90deg,#ede9fe,#a78bfa,#6d28d9,#3b0764)' }} />
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}><span>0</span><span>0,3</span><span>0,6</span><span>1</span></div>
-          <div style={{ marginTop: 4 }}><span style={{ display: 'inline-block', width: 10, height: 10, background: '#9ca3af', borderRadius: 2, verticalAlign: -1, marginRight: 4 }} />Xám: chưa có điểm hoặc dữ liệu cũ</div>
-          <div style={{ marginTop: 4, color: '#64748b' }}>Không phải xác suất, không phải cảnh báo. Bấm vào ô để xem phần mưa và phần đất/địa hình.</div>
+          <div role="group" aria-label="Tô màu theo" style={{ display: 'flex', gap: 4, marginBottom: 6 }}>
+            {[['gru', 'Điểm mô hình'], ['rain', 'Mưa 24h tới']].map(([id, label]) => (
+              <button key={id} type="button" aria-pressed={riskMode === id} onClick={() => setRiskMode(id)} style={{
+                flex: 1, padding: '3px 6px', borderRadius: 6, fontSize: 10, fontWeight: 600, cursor: 'pointer',
+                border: '1px solid #DCE5E2', background: riskMode === id ? '#5b21b6' : '#fff', color: riskMode === id ? '#fff' : '#334155'
+              }}>{label}</button>
+            ))}
+          </div>
+          {riskMode === 'gru' ? <>
+            <div style={{ fontWeight: 700, color: '#5b21b6', marginBottom: 4 }}>Điểm mô hình thử nghiệm 0 → 1 (không phải mức nguy cơ)</div>
+            <div style={{ height: 8, borderRadius: 4, background: 'linear-gradient(90deg,#ede9fe,#a78bfa,#6d28d9,#3b0764)' }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}><span>0</span><span>0,3</span><span>0,6</span><span>1</span></div>
+            <div style={{ marginTop: 4, color: '#64748b' }}>Đậm thường do đất/địa hình: phần mưa của mô hình hay ở mức 0 hoặc tối đa. Bấm vào ô để xem từng phần.</div>
+          </> : <>
+            <div style={{ fontWeight: 700, color: '#1d4ed8', marginBottom: 4 }}>Mưa dự báo 24 giờ tới (QĐ 18/2021/QĐ-TTg)</div>
+            {[['#dbeafe', 'Chưa tới mưa lớn (≤ 50 mm)'], ['#60a5fa', 'Mưa to (trên 50–100 mm)'], ['#1d4ed8', 'Mưa rất to (trên 100 mm)']].map(([c, t]) => (
+              <div key={c}><span style={{ display: 'inline-block', width: 10, height: 10, background: c, borderRadius: 2, verticalAlign: -1, marginRight: 4, border: '1px solid #cbd5e1' }} />{t}</div>
+            ))}
+            <div style={{ marginTop: 4, color: '#64748b' }}>Lưới mưa Open-Meteo khoảng chục km: các ô gần nhau thường cùng màu.</div>
+          </>}
+          <div style={{ marginTop: 4 }}><span style={{ display: 'inline-block', width: 10, height: 10, background: '#9ca3af', borderRadius: 2, verticalAlign: -1, marginRight: 4 }} />Xám: chưa có số liệu hoặc số liệu cũ</div>
+          <div style={{ marginTop: 4, color: '#64748b' }}>Chỉ để cán bộ tham khảo; không phải xác suất, không phải cảnh báo.</div>
         </div>
       )}
 
