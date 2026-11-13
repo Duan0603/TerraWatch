@@ -1,0 +1,88 @@
+name: CI - GIS Service
+
+on:
+  push:
+    paths:
+      - 'services/gis-service/**'
+      - 'database/migrations/V1__init_postgis_schema.sql'
+      - 'database/migrations/V2__seed_vietnam_geospatial_data.sql'
+      - 'database/migrations/V3__rainfall_terrain_forecast_schema.sql'
+      - 'database/seed_v3_fixtures.sql'
+      - '.github/workflows/ci-gis-service.yml'
+    branches: [ main, develop ]
+  pull_request:
+    paths:
+      - 'services/gis-service/**'
+      - 'database/migrations/V1__init_postgis_schema.sql'
+      - 'database/migrations/V2__seed_vietnam_geospatial_data.sql'
+      - 'database/migrations/V3__rainfall_terrain_forecast_schema.sql'
+      - 'database/seed_v3_fixtures.sql'
+      - '.github/workflows/ci-gis-service.yml'
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/gis-service
+
+    services:
+      postgres:
+        image: postgis/postgis:15-3.3
+        env:
+          # Throwaway credentials for the CI-only service container.
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: terrawatch
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d terrawatch"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: terrawatch
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: services/gis-service/requirements.txt
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov httpx
+
+      - name: Load database schema and fixtures
+        working-directory: .
+        env:
+          PGPASSWORD: postgres
+          PSQL: psql -h localhost -p 5432 -U postgres -d terrawatch -v ON_ERROR_STOP=1 -q
+        run: |
+          $PSQL -f database/migrations/V1__init_postgis_schema.sql
+          $PSQL -f database/migrations/V2__seed_vietnam_geospatial_data.sql
+          $PSQL -f database/migrations/V3__rainfall_terrain_forecast_schema.sql
+          $PSQL -f database/seed_v3_fixtures.sql
+
+      - name: Run tests
+        run: python -m pytest -q --cov=app --cov-report=term
