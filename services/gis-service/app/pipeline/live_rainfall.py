@@ -118,6 +118,32 @@ def normalize_weather(raw, fetched_at):
                               'message': 'Mô hình GRU học từ IMERG + GFS; chưa suy luận tự động bằng nguồn Open-Meteo.'}}
 
 
+def rain_anomaly(climate, payload):
+    """Where current totals sit in this point's hourly IMERG record (scripts/build-rain-climatology.py).
+    Context for "unusual rain here", not a landslide threshold or a calibrated warning."""
+    if not climate:
+        return None
+    def compare(window, ref):
+        mm = window['mm']
+        level = None if mm is None else next((p for p in ('p99_9', 'p99', 'p95') if mm >= ref[p]), None)
+        return {'mm': mm, 'level': level, **{k: ref[k] for k in ('p95', 'p99', 'p99_9', 'max')}}
+    w = climate['windows']
+    return {'reference': 'IMERG_V07', 'period': climate['period'],
+            'history_24h': compare(payload['history']['24'], w['24']),
+            'history_72h': compare(payload['history']['72'], w['72']),
+            'forecast_24h': compare(payload['forecast_24h'], w['24'])}
+
+
+def load_climatology(key):
+    path = Path(__file__).resolve().parents[1] / 'config/rain_climatology.json'
+    try:
+        data = json.loads(path.read_text(encoding='utf-8'))
+        point = data['locations'].get(key)
+        return point and dict(point, period=f"{data['period_start_utc'][:4]}–{data['period_end_utc_exclusive'][:4]}")
+    except (OSError, ValueError, KeyError):
+        return None  # Optional context must never block the rainfall fetch.
+
+
 def map_feature(row, interval, now):
     """One cached location as GeoJSON. `current` is false for stale weather, expired or missing GRU results,
     so the map never colours an old score as if it were the present one."""
@@ -160,6 +186,11 @@ class LiveWeatherRepository:
                     latitude DOUBLE PRECISION NOT NULL, longitude DOUBLE PRECISION NOT NULL,
                     payload JSONB, last_attempt_at TIMESTAMPTZ NOT NULL,
                     last_success_at TIMESTAMPTZ, last_error TEXT)''')
+                # Append-only: one row per location and issue hour, kept as first fetched (no look-ahead for backtests).
+                # shortcut: no retention (~4 MB/day for 14 points); add pruning or partitioning if points grow a lot.
+                cur.execute('''CREATE TABLE IF NOT EXISTS gis_schema.live_rainfall_history (
+                    location_key TEXT NOT NULL, as_of TIMESTAMPTZ NOT NULL, fetched_at TIMESTAMPTZ NOT NULL,
+                    payload JSONB NOT NULL, PRIMARY KEY (location_key, as_of))''')
 
     def get(self, key):
         with self.connection() as conn:
@@ -179,6 +210,30 @@ class LiveWeatherRepository:
                     last_success_at=CASE WHEN EXCLUDED.payload IS NOT NULL THEN NOW() ELSE live_rainfall_snapshots.last_success_at END''',
                     (location['key'], location['name'], location['latitude'], location['longitude'],
                      Json(payload) if payload is not None else None, payload is not None, error))
+                if payload is not None:
+                    # Display-only weather is dropped; rainfall, forecast and GRU result are what backtests need.
+                    cur.execute('''INSERT INTO gis_schema.live_rainfall_history (location_key, as_of, fetched_at, payload)
+                        VALUES (%s,%s,%s,%s) ON CONFLICT (location_key, as_of) DO NOTHING''',
+                        (location['key'], payload['as_of'], payload['fetched_at'],
+                         Json({k: v for k, v in payload.items() if k != 'weather'})))
+
+    def history(self, key, since):
+        """As-issued snapshots, oldest first. rain_1h_mm per hour builds a rainfall record over time."""
+        with self.connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute('''SELECT as_of, fetched_at,
+                        (payload->'history'->'1'->>'mm')::float AS rain_1h_mm,
+                        (payload->'history'->'24'->>'mm')::float AS rain_24h_mm,
+                        (payload->'history'->'72'->>'mm')::float AS rain_72h_mm,
+                        (payload->'history'->'168'->>'mm')::float AS rain_168h_mm,
+                        (payload->'forecast_24h'->>'mm')::float AS forecast_24h_mm,
+                        payload->>'quality' AS quality,
+                        (payload->'gru_inference'->>'hazard_score')::float AS hazard_score,
+                        (payload->'gru_inference'->>'temporal_score')::float AS temporal_score,
+                        payload->'gru_inference'->>'model_id' AS model_id
+                    FROM gis_schema.live_rainfall_history WHERE location_key=%s AND as_of>=%s ORDER BY as_of''',
+                    (key, since))
+                return cur.fetchall()
 
     def map_rows(self):
         """Every cached location with only the fields the map needs, plus the polygon of the active
@@ -202,6 +257,10 @@ class LiveWeatherRepository:
                 cur.execute('''UPDATE gis_schema.live_rainfall_snapshots
                     SET payload=jsonb_set(payload,'{gru_inference}',%s::jsonb)
                     WHERE location_key=%s AND payload->>'as_of'=%s''',
+                    (Json(prediction), key, as_of))
+                cur.execute('''UPDATE gis_schema.live_rainfall_history
+                    SET payload=jsonb_set(payload,'{gru_inference}',%s::jsonb)
+                    WHERE location_key=%s AND as_of=%s''',
                     (Json(prediction), key, as_of))
 
 
@@ -309,6 +368,7 @@ class LiveRainfallService:
                     continue
                 try:
                     payload = self.fetch(location)
+                    payload['rain_anomaly'] = rain_anomaly(load_climatology(location['key']), payload)
                     payload['gru_inference'] = self.predict(location, payload)
                     self.repo.save(location, payload=payload)
                 except Exception as exc:
@@ -357,3 +417,6 @@ class LiveRainfallService:
                 'last_attempt_at': row['last_attempt_at'].isoformat(), 'last_error': row['last_error'],
                 'stale': last_success is None or age > self.interval*1.5 or bool(row['last_error']),
                 'refresh_interval_seconds': self.interval}
+
+    def history(self, latitude, longitude, days):
+        return self.repo.history(location_key(latitude, longitude), utc_now()-timedelta(days=days))

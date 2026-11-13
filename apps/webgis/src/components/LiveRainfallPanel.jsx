@@ -13,6 +13,8 @@ function WeatherIcon({ code, size = 18 }) {
 const valueText = value => value === null || value === undefined ? 'Chưa đủ dữ liệu' : `${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 }).format(value)} mm`;
 const timeText = value => value ? fmtVN(value) : 'Chưa có lần lấy thành công';
 
+const ANOMALY_TEXT = { p95: 'cao hơn 95% thời gian', p99: 'cao hơn 99% thời gian', p99_9: 'hiếm gặp, cao hơn 99,9% thời gian' };
+
 export default function LiveRainfallPanel({ selectedEvent, showModel = true }) {
   const [snapshot, setSnapshot] = useState(null), [error, setError] = useState('');
   const [loading, setLoading] = useState(true), [reload, setReload] = useState(0);
@@ -78,6 +80,11 @@ export default function LiveRainfallPanel({ selectedEvent, showModel = true }) {
         </dl>
         <p className="live-rain-coverage">Lịch sử: {data.history['168'].valid_hours}/168 giờ · Dự báo: {data.forecast_24h.valid_hours}/24 giờ. Khoảng thiếu được giữ trống.<br />
           Cấp mưa theo QĐ 18/2021/QĐ-TTg: mưa to trên 50–100 mm/24h, mưa rất to trên 100 mm/24h. Đây là phân loại lượng mưa, không phải mức nguy cơ sạt lở.</p>
+        {data.rain_anomaly && <p className="live-rain-coverage">
+          So với lịch sử mưa {data.rain_anomaly.period} tại đây (vệ tinh IMERG, ô 10 km):
+          {[['Mưa 24h đã qua', data.rain_anomaly.history_24h], ['Mưa 72h đã qua', data.rain_anomaly.history_72h], ['Dự báo 24h tới', data.rain_anomaly.forecast_24h]].map(([label, a]) =>
+            <span key={label}><br />{label}: {a.mm === null ? 'chưa đủ giờ' : a.level ? <strong>{ANOMALY_TEXT[a.level]}</strong> : 'bình thường'} <small>(ngưỡng 99%: {numberText(a.p99, ' mm', 0)})</small></span>)}
+        </p>}
         <figure className="live-rain-chart"><figcaption>Mưa theo giờ · mm <span>12 giờ đã qua / 12 giờ tới · {peak > 0 ? `cột cao nhất ${valueText(peak)}/giờ` : 'không có mưa trong khoảng này'}</span></figcaption>
           <svg viewBox="0 0 312 90" role="img" aria-label="Mưa ước tính và dự báo theo giờ; khoảng trống biểu thị dữ liệu thiếu">
             {nowIndex > 0 && <g className="live-rain-now">

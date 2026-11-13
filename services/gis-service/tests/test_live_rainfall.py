@@ -1,7 +1,8 @@
 import unittest
 from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
-from app.pipeline.live_rainfall import normalize_weather, location_key, LiveRainfallService, utc_now, map_feature
+from app.pipeline.live_rainfall import (normalize_weather, location_key, LiveRainfallService, LiveWeatherRepository,
+                                        utc_now, map_feature, rain_anomaly, load_climatology)
 
 
 class LiveRainfallTests(unittest.TestCase):
@@ -152,6 +153,39 @@ class LiveRainfallTests(unittest.TestCase):
         service.fetch.assert_not_called()
         service.repo.save_prediction.assert_called_once()
         service.repo.save.assert_not_called()
+
+    def test_rain_anomaly_levels_against_point_climatology(self):
+        ref = {'p95': 20.0, 'p99': 50.0, 'p99_9': 100.0, 'max': 200.0}
+        climate = {'period': '1998–2026', 'windows': {'24': ref, '72': dict(ref, p95=40.0, p99=100.0, p99_9=150.0)}}
+        payload = normalize_weather(self.raw, self.now)  # 24 mm/24h, 72 mm/72h, 24 mm forecast
+        a = rain_anomaly(climate, payload)
+        self.assertEqual(a['history_24h']['level'], 'p95')
+        self.assertEqual(a['history_72h']['level'], 'p95')
+        payload['forecast_24h']['mm'] = 120.0
+        self.assertEqual(rain_anomaly(climate, payload)['forecast_24h']['level'], 'p99_9')
+        payload['history']['24']['mm'] = None
+        self.assertIsNone(rain_anomaly(climate, payload)['history_24h']['level'])
+        self.assertIsNone(rain_anomaly(None, payload))
+        self.assertIsNone(load_climatology('0.0000,0.0000'))  # unknown point: no context, no error
+        self.assertEqual(load_climatology('22.3500,104.4200')['period'], '1998–2026')
+
+    def test_success_is_appended_to_history_without_weather_and_errors_are_not(self):
+        with patch('app.pipeline.live_rainfall.RainfallRepository'):
+            repo = LiveWeatherRepository()
+        repo.connect = MagicMock()
+        cur = repo.connect.return_value.cursor.return_value.__enter__.return_value
+        location = {'key': '22.5250,103.8650', 'name': 'Ô 002', 'latitude': 22.525, 'longitude': 103.865}
+        repo.save(location, payload=dict(normalize_weather(self.raw, self.now), weather={'daily': []}))
+        sql, params = cur.execute.call_args_list[-1].args
+        self.assertIn('live_rainfall_history', sql)
+        self.assertIn('DO NOTHING', sql)  # first fetch of an hour is kept, later ones cannot rewrite it
+        self.assertEqual(params[1], self.end.isoformat())
+        self.assertNotIn('weather', params[3].adapted)
+        self.assertEqual(params[3].adapted['history']['24']['mm'], 24)
+        cur.execute.reset_mock()
+        repo.save(location, error='RuntimeError')
+        self.assertEqual(cur.execute.call_count, 1)
+        self.assertNotIn('live_rainfall_history', cur.execute.call_args.args[0])
 
 
 if __name__ == '__main__': unittest.main()
