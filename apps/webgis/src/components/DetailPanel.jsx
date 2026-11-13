@@ -8,8 +8,10 @@ import { fmtVN } from '../utils/time';
 const TABS = [['issue', 'Lúc phát hành dự báo'], ['now', 'Hiện tại & 7 ngày tới']];
 
 // citizen: the review evidence and the experimental GRU score are staff tools, not public information.
-export default function DetailPanel({ selectedEvent, events, onSelectEvent, fieldReports, aoi, confirmed, experimentalRisk, className = '', citizen = false }) {
+// weatherPoint: with no warning selected, still show live rain/weather for a monitored point (citizen page).
+export default function DetailPanel({ selectedEvent, events, onSelectEvent, fieldReports, aoi, confirmed, experimentalRisk, className = '', citizen = false, weatherPoint = null }) {
   const tabs = citizen ? TABS.slice(1) : TABS;
+  const panelTarget = selectedEvent || weatherPoint;
   const [tab, setTab] = useState(tabs[0][0]);
   const [open, setOpen] = useState(true);
   const pick = (id) => { setTab(id); setOpen(true); };
@@ -51,7 +53,7 @@ export default function DetailPanel({ selectedEvent, events, onSelectEvent, fiel
       />
 
       {/* Hai góc nhìn cùng khu vực: ảnh chụp lúc phát hành (cố định) và mưa/thời tiết hiện tại (cập nhật mỗi giờ) */}
-      {selectedEvent && (
+      {panelTarget && (
         <div className="map-evidence-stack">
           <div className="evidence-tabs" role="tablist" aria-label="Bằng chứng và thời tiết của khu vực">
             {tabs.map(([id, label]) => (
@@ -73,9 +75,9 @@ export default function DetailPanel({ selectedEvent, events, onSelectEvent, fiel
           </div>
           {open && (
             <div id="evidence-tabpanel" role="tabpanel" aria-labelledby={`evidence-tab-${tab}`}>
-              {tab === 'issue'
+              {tab === 'issue' && selectedEvent
                 ? <RainfallEvidencePanel selectedEvent={selectedEvent} />
-                : <LiveRainfallPanel key={`${selectedEvent.lat},${selectedEvent.lng}`} selectedEvent={selectedEvent} showModel={!citizen} />}
+                : <LiveRainfallPanel key={`${panelTarget.lat},${panelTarget.lng}`} selectedEvent={panelTarget} showModel={!citizen} />}
             </div>
           )}
         </div>

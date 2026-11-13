@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, LogOut, MapPin, LocateFixed } from 'lucide-react';
-import { rankZones } from '../utils/zoneLocation';
+import { ShieldCheck, LogOut, MapPin, LocateFixed, CheckCircle2, Phone } from 'lucide-react';
+import { rankZones, monitoredPoints, nearestPoint } from '../utils/zoneLocation';
 import DetailPanel from '../components/DetailPanel';
 import MobileTabBar from '../components/MobileTabBar';
 import { RISK_LABELS } from '../components/EventCard';
@@ -12,6 +12,10 @@ import { useAuth } from '../context/AuthContext';
 // (đã duyệt, còn hiệu lực) cùng bằng chứng mưa/địa hình — không có nút thẩm định/phát
 // cảnh báo nào (những thao tác đó chỉ dành cho officer/admin trên DashboardPage).
 const REFRESH_MS = 60000;
+const VN_TIME = new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', hour12: false });
+const card = { margin: '0 12px 10px', padding: '10px 12px', borderRadius: 10, background: '#F5F8F7', border: '1px solid #DCE5E2', fontSize: 12 };
+const muted = { marginTop: 4, fontSize: 11, color: '#64748b', lineHeight: 1.5 };
+const chip = { padding: '2px 8px', borderRadius: 999, background: '#E4F4F1', color: '#065F57', fontSize: 11, fontWeight: 600 };
 
 export default function CitizenPage() {
   const { user, logout } = useAuth();
@@ -22,6 +26,10 @@ export default function CitizenPage() {
   const [receivedError, setReceivedError] = useState(null);
   const [now, setNow] = useState(() => Date.now());
   const [mobileTab, setMobileTab] = useState('list');
+  const [points, setPoints] = useState([]); // điểm GIS đang lấy mưa mỗi giờ
+  const [aoi, setAoi] = useState(null); // ranh giới vùng trọng điểm (công khai)
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [chosenKey, setChosenKey] = useState('');
 
   // Vùng cảnh báo đã duyệt và còn hiệu lực (cùng nguồn với bộ nhớ ngoại tuyến của ứng dụng di động),
   // tải lại mỗi phút để vùng mới duyệt hiện ra; lỗi tạm thời giữ nguyên danh sách đang có.
@@ -29,8 +37,9 @@ export default function CitizenPage() {
     let active = true;
     const load = () => {
       forecastApi.getApprovedZones()
-        .then((data) => { if (active) { setZones(data); setLoadError(null); } })
+        .then((data) => { if (active) { setZones(data); setLoadError(null); setLastUpdated(new Date()); } })
         .catch((err) => active && setLoadError(apiErrorMessage(err, 'Không cập nhật được vùng cảnh báo')));
+      forecastApi.getMonitoredPoints().then((d) => active && setPoints(monitoredPoints(d))).catch(() => {});
       forecastApi.getMyAlerts()
         .then((data) => { if (active) { setReceived(data); setReceivedError(null); } })
         .catch((err) => active && setReceivedError(apiErrorMessage(err, 'Không tải được cảnh báo đã nhận')));
@@ -39,6 +48,9 @@ export default function CitizenPage() {
     const timer = setInterval(load, REFRESH_MS);
     return () => { active = false; clearInterval(timer); };
   }, []);
+
+  // Ranh giới vùng trọng điểm: ít khi đổi, tải một lần.
+  useEffect(() => { forecastApi.getAoiCollection().then(setAoi).catch(() => {}); }, []);
 
   // Vùng rời danh sách đúng lúc hết hạn, không đợi lần tải lại kế tiếp.
   useEffect(() => {
@@ -53,6 +65,14 @@ export default function CitizenPage() {
   const [geoMsg, setGeoMsg] = useState('');
   const list = position ? rankZones(events, position) : events;
   const insideZone = list.find((z) => z.inside);
+  // No warning to show: weather of the chosen monitored point, else of the one nearest the user.
+  const near = position ? nearestPoint(points, position) : null;
+  const wp = points.find((p) => p.key === chosenKey) || near;
+  const weatherPoint = wp && {
+    location: wp === near && !chosenKey ? `Điểm theo dõi gần bạn nhất: ${wp.name} (cách khoảng ${Math.round(near.distanceKm)} km)` : `Điểm theo dõi: ${wp.name}`,
+    lat: wp.lat, lng: wp.lng,
+  };
+  const areaNames = (aoi?.features || []).map((f) => String(f.properties?.name || '').replace(/^Vùng trọng điểm \d+:\s*/, '')).filter(Boolean);
 
   const locate = () => {
     if (!navigator.geolocation) { setGeoMsg('Trình duyệt không hỗ trợ định vị.'); return; }
@@ -110,7 +130,12 @@ export default function CitizenPage() {
         {/* Danh sách chỉ đọc các vùng đã được cán bộ phê duyệt và còn hiệu lực — không có nút thẩm định.
             Đây là mọi vùng đang hiệu lực, chưa lọc theo khu vực người dân đăng ký (backend chưa trả khu vực của ô). */}
         <aside className={`sidebar citizen-list${mobileTab === 'map' ? ' mobile-hidden' : ''}`}>
-          <div style={{ padding: '14px 16px 10px', fontWeight: 700, fontSize: 14 }}>Cảnh báo đang hiệu lực ({events.length})</div>
+          <div style={{ padding: '14px 16px 10px' }}>
+            <div style={{ fontWeight: 700, fontSize: 14 }}>Cảnh báo đang hiệu lực ({events.length})</div>
+            <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
+              {lastUpdated ? `Cập nhật lúc ${VN_TIME.format(lastUpdated)} · tự cập nhật mỗi phút` : 'Đang tải…'}
+            </div>
+          </div>
           <div style={{ padding: '0 16px 10px' }}>
             <button type="button" className="btn-ghost" onClick={locate} style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6, fontSize: 12 }}>
               <LocateFixed size={14} /> Kiểm tra vị trí của tôi
@@ -151,19 +176,41 @@ export default function CitizenPage() {
               )}
             </div>
           ))}
-          {loadError && <div role="alert" style={{ padding: 16, fontSize: 12, color: '#B91C1C' }}>{loadError}</div>}
+          {loadError && <div role="alert" style={{ padding: '0 16px 10px', fontSize: 12, color: '#B91C1C' }}>{loadError}</div>}
           {events.length === 0 && !loadError && (
-            <div style={{ padding: 16, fontSize: 12, color: '#64748b' }}>
-              Hiện chưa có vùng cảnh báo nào đã được cán bộ duyệt và còn hiệu lực. Đây không phải xác nhận an toàn.
+            <div style={card}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, fontSize: 13, color: '#166534' }}>
+                <CheckCircle2 size={15} /> Không có cảnh báo đang hiệu lực
+              </div>
+              <div style={muted}>Không phải xác nhận an toàn: vẫn theo dõi thông báo của địa phương.</div>
+              {areaNames.length > 0 && (
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ ...muted, marginTop: 0, marginBottom: 4 }}>Đang theo dõi</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                    {areaNames.map((n) => <span key={n} style={chip}>{n}</span>)}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          {events.length === 0 && points.length > 0 && (
+            <div style={card}>
+              <label htmlFor="weather-point" style={{ fontWeight: 700, fontSize: 13, color: '#172524' }}>Thời tiết tại điểm theo dõi</label>
+              <select id="weather-point" value={chosenKey} onChange={(e) => { setChosenKey(e.target.value); if (e.target.value) setMobileTab('map'); }}
+                style={{ width: '100%', marginTop: 6, padding: '7px 8px', borderRadius: 6, border: '1px solid #DCE5E2', fontSize: 12, background: '#fff' }}>
+                <option value="">{near ? `Gần bạn nhất: ${near.name} (~${Math.round(near.distanceKm)} km)` : 'Chọn một điểm…'}</option>
+                {points.map((p) => <option key={p.key} value={p.key}>{p.name}</option>)}
+              </select>
+              <div style={muted}>Số liệu của điểm theo dõi, không phải vị trí của bạn.</div>
             </div>
           )}
 
-          <section aria-label="Cảnh báo đã nhận trong 7 ngày qua" style={{ margin: '8px 12px 0', fontSize: 12 }}>
-            <div style={{ fontWeight: 700, fontSize: 13, margin: '4px 4px 8px', color: '#172524' }}>Cảnh báo đã nhận (7 ngày qua)</div>
+          <section aria-label="Cảnh báo đã nhận trong 7 ngày qua" style={{ margin: '4px 12px 0', fontSize: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', margin: '4px 4px 8px' }}>
+              <span style={{ fontWeight: 700, fontSize: 13, color: '#172524' }}>Cảnh báo đã nhận <span style={{ fontWeight: 400, color: '#64748b' }}>(7 ngày)</span></span>
+              {!receivedError && received.length === 0 && <span style={{ color: '#64748b' }}>Chưa có</span>}
+            </div>
             {receivedError && <div role="alert" style={{ padding: '0 4px 8px', color: '#B91C1C' }}>{receivedError}</div>}
-            {!receivedError && received.length === 0 && (
-              <div style={{ padding: '0 4px 8px', color: '#64748b' }}>Chưa nhận cảnh báo nào trong 7 ngày qua.</div>
-            )}
             {received.map((a) => {
               const state = a.status === 'revoked' ? ['Đã thu hồi', '#475569', '#F1F5F9']
                 : a.expired ? ['Hết hạn', '#475569', '#F1F5F9'] : ['Còn hiệu lực', '#B91C1C', '#FEF2F2'];
@@ -182,22 +229,28 @@ export default function CitizenPage() {
             })}
           </section>
 
-          {/* Tóm tắt từ hướng dẫn của Cục Quản lý đê điều và PCTT; không tự đặt thêm khuyến cáo. */}
-          <section aria-label="Bạn nên làm gì khi có cảnh báo sạt lở" style={{ margin: '8px 12px 16px', padding: '12px 14px', borderRadius: 10, background: '#F5F8F7', border: '1px solid #DCE5E2', fontSize: 12, lineHeight: 1.6, color: '#334155' }}>
-            <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 6, color: '#172524' }}>Bạn nên làm gì khi có cảnh báo sạt lở</div>
-            <ul style={{ margin: 0, paddingLeft: 18 }}>
-              <li>Sẵn sàng sơ tán theo hướng dẫn của chính quyền địa phương; bảo vệ tính mạng trước tiên.</li>
-              <li>Nghe tiếng động lớn hoặc thấy dấu hiệu bất thường: nhanh chóng rời khỏi nơi nguy hiểm.</li>
-              <li>Không đi qua và không lại gần khu vực đang sạt lở.</li>
-              <li>Thấy dấu hiệu sạt lở: báo ngay cho chính quyền và người xung quanh.</li>
-              <li>Theo dõi tin mưa lớn, kéo dài trên báo, đài, tivi.</li>
+          <a href="tel:112" style={{ margin: '8px 12px', padding: '10px 14px', borderRadius: 10, background: '#FEF2F2', border: '1px solid #FECACA',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#991B1B', textDecoration: 'none', fontSize: 12, fontWeight: 600 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Phone size={14} /> Cứu nạn khẩn cấp</span>
+            <span style={{ fontSize: 18, fontWeight: 800 }}>112</span>
+          </a>
+
+          {/* Tóm tắt từ hướng dẫn của Cục Quản lý đê điều và PCTT; không tự đặt thêm khuyến cáo. Mở sẵn khi đang có cảnh báo. */}
+          <details key={events.length > 0 ? 'warn' : 'calm'} open={events.length > 0}
+            style={{ margin: '0 12px 16px', padding: '10px 14px', borderRadius: 10, background: '#F5F8F7', border: '1px solid #DCE5E2', fontSize: 12, lineHeight: 1.6, color: '#334155' }}>
+            <summary style={{ fontWeight: 700, fontSize: 13, color: '#172524', cursor: 'pointer' }}>Cần làm gì khi có cảnh báo sạt lở?</summary>
+            <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
+              <li>Sẵn sàng sơ tán theo hướng dẫn của chính quyền; bảo vệ tính mạng trước tiên.</li>
+              <li>Nghe tiếng động lớn, thấy dấu hiệu bất thường: rời ngay khỏi nơi nguy hiểm.</li>
+              <li>Không đi qua, không lại gần khu vực đang sạt lở.</li>
+              <li>Thấy dấu hiệu sạt lở: báo ngay chính quyền và người xung quanh.</li>
+              <li>Theo dõi tin mưa lớn trên báo, đài, tivi.</li>
             </ul>
-            <div style={{ marginTop: 8, fontWeight: 700 }}>Cứu nạn khẩn cấp: <a href="tel:112" style={{ color: '#B91C1C' }}>112</a></div>
             <div style={{ marginTop: 6, fontSize: 10, color: '#64748b' }}>
-              Nguồn: Cục Quản lý đê điều và Phòng, chống thiên tai, qua{' '}
+              Nguồn: Cục Quản lý đê điều và PCTT, qua{' '}
               <a href="https://baoquocte.vn/ky-nang-quan-trong-de-dam-bao-an-toan-truoc-thien-tai-lu-quet-va-sat-lo-dat-329420.html" target="_blank" rel="noreferrer">Báo Quốc tế (30/09/2025)</a>.
             </div>
-          </section>
+          </details>
         </aside>
 
         <DetailPanel
@@ -205,6 +258,8 @@ export default function CitizenPage() {
           events={events}
           onSelectEvent={setSelectedEventId}
           className={mobileTab === 'list' ? 'mobile-hidden' : ''}
+          aoi={aoi}
+          weatherPoint={weatherPoint}
           citizen
         />
       </div>

@@ -98,6 +98,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
   const [showConfirmed, setShowConfirmed] = useState(false); // tắt sẵn: nút bật sẽ bay tới các điểm
   const showConfirmedRef = useRef(false);
   const riskRef = useRef(experimentalRisk);
+  const aoiFittedRef = useRef(false);
   const [showRisk, setShowRisk] = useState(false); // tắt sẵn: điểm thử nghiệm, chỉ bật khi cán bộ muốn xem
   const showRiskRef = useRef(false);
   const [riskMode, setRiskMode] = useState('gru'); // 'gru' = điểm mô hình, 'rain' = mưa 24h tới theo QĐ 18
@@ -585,6 +586,12 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
     if (!mapRef.current || !mapLoaded) return;
     ensureAoiLayer(mapRef.current);
     renderCommunityReportMarkers(mapRef.current);
+    // Nothing selected (e.g. no active warning): frame the monitored areas once instead of the wide default view.
+    const bounds = !selectedEvent && !aoiFittedRef.current && confirmedBounds(aoi);
+    if (bounds) {
+      aoiFittedRef.current = true;
+      mapRef.current.fitBounds(bounds, { padding: 60, maxZoom: 10, duration: 1200 });
+    }
   }, [aoi, fieldReports, mapLoaded]);
 
   // 1d. Lớp sạt lở đã xác nhận: dữ liệu đến sau hoặc người dùng bật/tắt

@@ -22,3 +22,25 @@ export async function testZoneLocation() {
   assert.ok(ranked[1].distanceKm > 5 && ranked[1].distanceKm < 7, `near ≈ 5.7 km, got ${ranked[1].distanceKm}`);
   console.log('  ✓ vùng đang đứng trong lên đầu, còn lại theo khoảng cách');
 }
+
+// Thời tiết khi không có cảnh báo: điểm theo dõi gần nhất, toạ độ lấy từ khoá cache để tra mưa không bị 404.
+export async function testMonitoredPoints() {
+  console.log('\n▶ testMonitoredPoints');
+  const { monitoredPoints, nearestPoint } = await import('../src/utils/zoneLocation.js');
+  const collection = { features: [
+    { geometry: { type: 'Polygon', coordinates: [[[103.78, 22.35], [103.79, 22.35], [103.79, 22.36], [103.78, 22.35]]] },
+      properties: { key: '22.3550,103.7850', name: 'Ô 005 - Ta-luy Đèo Ô Quy Hồ' } },
+    { geometry: { type: 'Point', coordinates: [104.28, 22.51] }, properties: { key: '22.5100,104.2800', name: 'Bắc Hà' } },
+    { geometry: { type: 'Point', coordinates: [0, 0] }, properties: { key: 'hỏng', name: 'Sai khoá' } },
+  ] };
+  const points = monitoredPoints(collection);
+  assert.deepEqual(points.map(p => p.name), ['Bắc Hà', 'Ô 005 - Ta-luy Đèo Ô Quy Hồ']); // bỏ khoá hỏng, xếp theo tên
+  assert.deepEqual([points[1].lat, points[1].lng], [22.355, 103.785]);
+  console.log('  ✓ toạ độ lấy đúng từ khoá cache, bỏ khoá hỏng');
+
+  const near = nearestPoint(points, [103.84, 22.336]); // thị xã Sa Pa
+  assert.equal(near.name, 'Ô 005 - Ta-luy Đèo Ô Quy Hồ');
+  assert.ok(near.distanceKm > 5 && near.distanceKm < 7, `≈ 6 km, got ${near.distanceKm}`);
+  assert.equal(nearestPoint([], [103.84, 22.336]), null);
+  console.log('  ✓ điểm gần nhất và khoảng cách');
+}
