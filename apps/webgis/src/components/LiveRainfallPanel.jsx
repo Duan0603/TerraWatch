@@ -99,7 +99,8 @@ export default function LiveRainfallPanel({ selectedEvent, showModel = true }) {
           <p className="live-gru-period">{timeText(prediction.issue_time)} → {timeText(prediction.valid_until)}<br />Ô lưới 1 km: {prediction.unit_id}</p>
           {(stale || new Date(prediction.valid_until) <= new Date()) && <p className="live-rain-error">Kết quả cũ hoặc đầu vào chưa cập nhật. Không dùng như dự báo mới.</p>}
           <p className="live-rain-model-hold">Dự báo thử nghiệm: Open-Meteo khác nguồn IMERG + GFS khi train; mốc chạy là giờ cập nhật hiện tại. Điểm chưa phải xác suất và không tự phát cảnh báo.</p>
-          <details><summary>Đất và độ dốc dùng cho ô này</summary><p className="live-gru-period">
+          <details><summary>Đất, độ cao và độ dốc dùng cho ô này</summary><p className="live-gru-period">
+            {Number.isFinite(prediction.static_values.elevation_m) && <>Cao {prediction.static_values.elevation_m.toFixed(0)} m · </>}
             Dốc {prediction.static_values.slope_deg.toFixed(1)}° · Sét {prediction.static_values.clay_pct.toFixed(1)}% · Cát {prediction.static_values.sand_pct.toFixed(1)}% · Khối lượng thể tích {prediction.static_values.bulk_density_g_cm3.toFixed(2)} g/cm³.
           </p></details>
         </section> : <p className="live-rain-model-hold">GRU chưa có kết quả: {prediction?.reason || 'đang chờ đầu vào và mô hình'}. Tác vụ sẽ tự thử lại; không tạo điểm giả.</p>}

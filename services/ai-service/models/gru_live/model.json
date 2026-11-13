@@ -51,35 +51,43 @@
     "train_rows": 7060,
     "features": [
       "slope_deg",
+      "elevation_m",
       "clay_pct",
       "sand_pct",
       "bulk_density_g_cm3"
     ],
     "mean": [
       26.62570526157249,
+      955.7331952938022,
       32.08178380089509,
       30.46285763263027,
       1.1127130788342008
     ],
     "std": [
       5.502561958497327,
+      544.096937568035,
       2.3381424085580234,
       2.0955835965717338,
       0.057093405535307555
     ],
     "weights": {
-      "slope_deg": 0.6677,
-      "clay_pct": 0.3274,
-      "sand_pct": 0.4854,
-      "bulk_density_g_cm3": -0.0078
+      "slope_deg": 0.6704,
+      "elevation_m": -0.0428,
+      "clay_pct": 0.3245,
+      "sand_pct": 0.4872,
+      "bulk_density_g_cm3": -0.0421
     },
-    "bias": -0.1151
+    "bias": -0.1149
   },
-  "model_id": "terrawatch-two-branch-gru-mil-v1",
+  "model_id": "terrawatch-gru-mil-elevation-demo-v2",
   "runtime": "numpy-float32-gru",
-  "source_checkpoint_sha256": "71101b315e540f7cf292efea82c103236260d790a9a74b56cf469c30addcad8e",
-  "weights_sha256": "19ce5daeb796ab33cb273ecdc103bdcb062472a3749bec2f001dd618e18e7482",
+  "source_checkpoint_sha256": "23e3e90d582e7aa8194cf00b47760b3ef31eaea7ad4a307576751de87cc0f6c0",
+  "weights_sha256": "4e8d812e2391d97d6768a2cc7a5162ba5cb1e242e08cc64bdb2325ec90f23a68",
+  "source_checkpoint_path": "gpu-training-kit/experiments/vietnam_1km_two_branch_gru/outputs_with_elevation/two_branch_gru_1km.pt",
   "trained_history_provider": "IMERG",
   "trained_forecast_provider": "GFS",
-  "calibrated_probability": false
+  "calibrated_probability": false,
+  "experimental": true,
+  "operational_alert": false,
+  "verified_next24h_training_ready": false
 }

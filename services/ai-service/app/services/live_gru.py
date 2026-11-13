@@ -47,7 +47,10 @@ class LiveGRU:
         dense = np.maximum(np.concatenate([h, summary], axis=1) @ w['head.0.weight'].T + w['head.0.bias'], 0)
         temporal = float(sigmoid(dense @ w['head.2.weight'].T + w['head.2.bias'])[0, 0])
         spatial = self.card['spatial_12dist_slope_soil']
-        values = np.asarray([static[f] for f in spatial['features']], dtype=np.float64)
+        try:
+            values = np.asarray([static[f] for f in spatial['features']], dtype=np.float64)
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError('Missing/nonfinite terrain or soil') from exc
         if not np.isfinite(values).all():
             raise ValueError('Missing/nonfinite terrain or soil')
         normalized = (values-np.asarray(spatial['mean']))/np.asarray(spatial['std'])

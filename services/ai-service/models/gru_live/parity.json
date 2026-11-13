@@ -1,10 +1,10 @@
 {
-  "cases": 24,
+  "cases": 51,
   "max_abs_error_vs_pytorch": {
-    "temporal_score": 2.384185791015625e-07,
-    "spatial_score": 0.0,
-    "hazard_score": 1.4699463490863707e-07
+    "temporal_score": 1.1920928955078125e-07,
+    "spatial_score": 1.1102230246251565e-16,
+    "hazard_score": 5.618412030061748e-08
   },
-  "checkpoint_sha256": "71101b315e540f7cf292efea82c103236260d790a9a74b56cf469c30addcad8e",
+  "checkpoint_sha256": "23e3e90d582e7aa8194cf00b47760b3ef31eaea7ad4a307576751de87cc0f6c0",
   "tolerance": 1e-05
 }
