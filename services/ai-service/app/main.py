@@ -37,6 +37,7 @@ def live_gru_model():
 
 class LiveStaticFeatures(BaseModel):
     slope_deg: float = Field(..., ge=0, le=90, allow_inf_nan=False)
+    elevation_m: Optional[float] = Field(None, allow_inf_nan=False)
     clay_pct: float = Field(..., ge=0, le=100, allow_inf_nan=False)
     sand_pct: float = Field(..., ge=0, le=100, allow_inf_nan=False)
     bulk_density_g_cm3: float = Field(..., gt=0, le=3, allow_inf_nan=False)

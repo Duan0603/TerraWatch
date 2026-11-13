@@ -1,0 +1,321 @@
+{
+  "cohort": {
+    "rows": 2693,
+    "rows_passing_label_and_clock_checks": 0,
+    "blocker_counts": {
+      "AVAILABLE_AT_MISSING_OR_INVALID": 2693,
+      "FORECAST_AVAILABLE_AT_MISSING_OR_INVALID": 2693,
+      "INPUT_HISTORICAL_AVAILABILITY_VERIFIED": 2693,
+      "SOURCE_UNIT_ASSIGNMENT_VERIFIED": 2693,
+      "TARGET_LABEL_VERIFIED": 2693,
+      "UNVERIFIED_24H_LABEL": 2693
+    },
+    "split_role_counts": [
+      {
+        "split": "test",
+        "role": "STORM_DAY_MAPPED_PRESENCE_PROXY",
+        "rows": 346
+      },
+      {
+        "split": "test",
+        "role": "STORM_DAY_SPATIAL_BACKGROUND_PROXY",
+        "rows": 725
+      },
+      {
+        "split": "test",
+        "role": "TEMPORAL_NON_EVENT_BACKGROUND_PROXY",
+        "rows": 1450
+      },
+      {
+        "split": "train",
+        "role": "STORM_DAY_MAPPED_PRESENCE_PROXY",
+        "rows": 41
+      },
+      {
+        "split": "train",
+        "role": "STORM_DAY_SPATIAL_BACKGROUND_PROXY",
+        "rows": 25
+      },
+      {
+        "split": "train",
+        "role": "TEMPORAL_NON_EVENT_BACKGROUND_PROXY",
+        "rows": 50
+      },
+      {
+        "split": "val",
+        "role": "STORM_DAY_MAPPED_PRESENCE_PROXY",
+        "rows": 38
+      },
+      {
+        "split": "val",
+        "role": "STORM_DAY_SPATIAL_BACKGROUND_PROXY",
+        "rows": 6
+      },
+      {
+        "split": "val",
+        "role": "TEMPORAL_NON_EVENT_BACKGROUND_PROXY",
+        "rows": 12
+      }
+    ],
+    "dates_by_split": {
+      "test": [
+        "2020-05-15",
+        "2020-09-15",
+        "2020-10-12",
+        "2020-10-18"
+      ],
+      "train": [
+        "2018-05-15",
+        "2018-07-15",
+        "2018-08-03"
+      ],
+      "val": [
+        "2018-11-05",
+        "2018-11-09",
+        "2018-11-18"
+      ]
+    },
+    "dependence_groups_crossing_splits": [],
+    "scope": "Label/clock inventory only; not full validation of inputs, splits or release readiness."
+  },
+  "candidate_features": {
+    "temporal_cohort": {
+      "rows": 2693,
+      "features": {
+        "slope_deg": {
+          "finite_rows": 2693,
+          "missing_or_nonfinite_rows": 0,
+          "min": 0.6997738994473591,
+          "max": 38.003770911026
+        },
+        "elevation_m": {
+          "finite_rows": 2693,
+          "missing_or_nonfinite_rows": 0,
+          "min": 2.2731055423170328,
+          "max": 2430.007691455078
+        },
+        "clay_pct": {
+          "finite_rows": 2693,
+          "missing_or_nonfinite_rows": 0,
+          "min": 27.71874988079071,
+          "max": 37.47500061988831
+        },
+        "sand_pct": {
+          "finite_rows": 2693,
+          "missing_or_nonfinite_rows": 0,
+          "min": 26.425000071525574,
+          "max": 43.53749990463257
+        },
+        "bulk_density_g_cm3": {
+          "finite_rows": 2693,
+          "missing_or_nonfinite_rows": 0,
+          "min": 0.9487499967217444,
+          "max": 1.3212500289082527
+        }
+      },
+      "notice": "Finite values only; does not certify coverage, labels or historical availability."
+    },
+    "spatial_training": {
+      "rows": 7060,
+      "features": {
+        "slope_deg": {
+          "finite_rows": 7060,
+          "missing_or_nonfinite_rows": 0,
+          "min": 1.5278198611384723,
+          "max": 44.6822117395401
+        },
+        "elevation_m": {
+          "finite_rows": 7060,
+          "missing_or_nonfinite_rows": 0,
+          "min": 85.07811517333984,
+          "max": 2770.8754520263674
+        },
+        "clay_pct": {
+          "finite_rows": 7060,
+          "missing_or_nonfinite_rows": 0,
+          "min": 23.762499928474423,
+          "max": 40.62499976158142
+        },
+        "sand_pct": {
+          "finite_rows": 7060,
+          "missing_or_nonfinite_rows": 0,
+          "min": 23.99375009536743,
+          "max": 38.34375
+        },
+        "bulk_density_g_cm3": {
+          "finite_rows": 7060,
+          "missing_or_nonfinite_rows": 0,
+          "min": 0.9375,
+          "max": 1.231875017285347
+        }
+      },
+      "notice": "Finite values only; does not certify coverage, labels or historical availability."
+    },
+    "spatial_feature_order": [
+      "slope_deg",
+      "elevation_m",
+      "clay_pct",
+      "sand_pct",
+      "bulk_density_g_cm3"
+    ],
+    "trainer_sha256": "e008ae62705936e54dda0e3f60224d667f117d29b106963427179d62faf892a5",
+    "trainer_feature_selection_verified": true
+  },
+  "forecast_archives": {
+    "local_day_gfs": {
+      "days": 23,
+      "historical_availability_verified": false,
+      "days_with_available_at": 0,
+      "days_with_run_before_target": 23
+    },
+    "background_gfs": {
+      "days": 6,
+      "historical_availability_verified": false,
+      "days_with_available_at": 0,
+      "days_with_run_before_target": 6
+    }
+  },
+  "negative_review": {
+    "rows": 299,
+    "verified_non_event": 0
+  },
+  "prior_audits": {
+    "label_decisions": {
+      "protocol_id": "SOURCE_EVIDENCE_LABEL_REVIEW_V1",
+      "candidate_rows_reviewed_by_rule": 7471,
+      "source_positive_unit_days": 449,
+      "source_positive_with_complete_input_coverage": 425,
+      "source_mapped_point_records": 1590,
+      "source_positive_dates": 4,
+      "remaining_unknown_unit_days": 7022,
+      "verified_next24h_labels_created": 0,
+      "verified_negatives_created": 0,
+      "training_ready_rows": 0,
+      "train_val_test_split_created": false,
+      "day_summary": [
+        {
+          "target_local_date": "2018-08-03",
+          "source_positive_units": 42,
+          "complete_input_coverage": 41,
+          "source_points": 301
+        },
+        {
+          "target_local_date": "2018-11-18",
+          "source_positive_units": 55,
+          "complete_input_coverage": 38,
+          "source_points": 202
+        },
+        {
+          "target_local_date": "2020-10-12",
+          "source_positive_units": 48,
+          "complete_input_coverage": 48,
+          "source_points": 116
+        },
+        {
+          "target_local_date": "2020-10-18",
+          "source_positive_units": 304,
+          "complete_input_coverage": 298,
+          "source_points": 971
+        }
+      ],
+      "decision": "Source-positive evidence separated from UNKNOWN. No automatic binary forecast export. Verified negatives and availability remain missing; no further broad source search performed.",
+      "source_sha256": {
+        "label_protocol_2017_2020.json": "c63be601db4361426381d2719d805024b624cb192f812103b822d0f1950af98d",
+        "data/processed/next24h_local_day_gfs_context/candidate_context_with_gfs.csv": "6933528c19f12f50541b3cf915bc03fe348475faf033514253bb323291aaf442",
+        "data/processed/next24h_local_day_gfs_context/summary.json": "c72a67ae562c7667009693c7f0418890df201180404cbadeb4131acbe82c7b46",
+        "data/processed/next24h_local_day_candidates/parent_window_relations.csv": "624f0c9bf73208b9334831959edad41356beb706e2b8ecd60f89bad32f25eedb",
+        "data/processed/grid_rain_research/window_source_relations.csv": "2d87814559388581436ad89af1746efd9f25cddfc5a97f7e61bf89d736323f6a",
+        "data/processed/label_audit/retrospective_candidates.csv": "10d39c01385d82edb19685eb77f0bb9931802a019cb8d854bb73ffcf745e917b",
+        "data/processed/assessment_grid/point_coordinate_cell_relations.csv": "d844b9283018bd5f9a530ac67929009b1cbd0d3cfa6a5865a77ff5044ec9e24b"
+      },
+      "output_sha256": {
+        "all_label_decisions.csv": "c6bb34a1b1bbde9267b0045762d2d85a6232c4d6c1fa41bc2959a884ee3a0558",
+        "source_positive_cohort.csv": "344120c00e464d88f1653186d275ecf5fada1945c2523b0b87a7f8f6db97ce41",
+        "source_positive_day_summary.csv": "844d195499c29427e4ce9cd895a38a8787572426282378bc85a8681017fc651b",
+        "source_positive_evidence_links.csv": "0154a427a67cee88cdbde8fa04e052abc07e6aa5004dcc926a8eef69aa59276c"
+      }
+    },
+    "readiness": {
+      "research_windows": 2956,
+      "feature_coverage_complete_windows": 2813,
+      "documented_checks_passed_windows": 0,
+      "blocker_counts": {
+        "CALENDAR_ANCHOR_NOT_VERIFIED_ISSUE_TIME": 2956,
+        "FIRST_DAY_GFS_COVERAGE_BELOW_95PCT": 11,
+        "HISTORICAL_INPUT_AVAILABILITY_UNVERIFIED": 2956,
+        "MULTIDAY_ASSOCIATION_NOT_ADJUDICATED_24H_TARGET": 2410,
+        "NO_AUDITED_SPLIT": 2956,
+        "RELATED_RIVERBANK_CONTEXT_NOT_EXACT_EVENT_CONFIRMATION": 1,
+        "REPUBLISHED_RELATIVE_DAY_NOT_SAFE_FOR_DATE_CORRECTION": 1,
+        "STATIC_COVERAGE_BELOW_95PCT": 138,
+        "UNADJUDICATED_TARGET_LABEL": 2956,
+        "UNIT_ASSIGNMENT_UNVERIFIED": 2956,
+        "UTC_CALENDAR_ANCHOR_AFTER_APPROXIMATE_LOCAL_CLOCK": 1
+      },
+      "review_queue_rows": 299,
+      "review_queue_rows_with_any_review_fields": 0,
+      "review_queue_rows_marked_verified_non_event": 0,
+      "report_candidate_rows": 17,
+      "report_candidate_location_accuracy_counts": {
+        "5km": 16,
+        "1km": 1
+      },
+      "pinned_supplemental_source_constraints": 3,
+      "policy": "Diagnostic hold table only, not label validation or train export. Related-location articles do not prove event identity. A supported local calendar day may suffice for an aligned 24h label without an exact minute, but unit, mechanism, observation completeness and as-issued inputs still need evidence.",
+      "source_sha256": {
+        "data/processed/grid_rain_research/unit_window_research_features.csv": "b83f9d557d40cb3da74bd90ef180684cf13f66453e2447c1951d021c83427a06",
+        "data/processed/grid_rain_research/window_source_relations.csv": "2d87814559388581436ad89af1746efd9f25cddfc5a97f7e61bf89d736323f6a",
+        "data/processed/non_event_review/review_queue.csv": "7d72827ef01a0e94646fd9f1da74755dcc3502ccf22925af1769f2b9e5e00af1",
+        "forecast_source_constraints.json": "18a27e1a56ed45fb407492094c1f2906154dcc77917bb90e3d375594a543138c",
+        "data/processed/label_audit/retrospective_candidates.csv": "10d39c01385d82edb19685eb77f0bb9931802a019cb8d854bb73ffcf745e917b",
+        "audit_forecast_readiness.py": "890abc268ce6e3109886e0603bbb22fb9942f803bf7f559da8368840b755a36b"
+      },
+      "output_sha256": "261053bd9a9a1c40579232f0a3aa47082e33cb5c53b470c7449ac34ad9c1e49a"
+    }
+  },
+  "sources": {
+    "cohort": {
+      "path": "gpu-training-kit/data/processed/footprint_two_branch_experiment/footprint_spatiotemporal_proxy_2693.csv",
+      "sha256": "61d132a450d5f50def69d78877e76f741e43edcc09835a920ab49653443c0fbd"
+    },
+    "local_day_gfs": {
+      "path": "gpu-training-kit/data/forecast_archive/local_day_gfs/manifest.json",
+      "sha256": "bdc96c7593adb1a6494e257631933900c66d8daa305b210f4ccd08ef161a5744"
+    },
+    "background_gfs": {
+      "path": "gpu-training-kit/data/forecast_archive/temporal_background_gfs/manifest.json",
+      "sha256": "35c51d836d532687f1ff3575a9d11b1cc60705606d2d7f959215c0e018c079fc"
+    },
+    "review_queue": {
+      "path": "gpu-training-kit/data/processed/non_event_review/review_queue.csv",
+      "sha256": "7d72827ef01a0e94646fd9f1da74755dcc3502ccf22925af1769f2b9e5e00af1"
+    },
+    "label_decisions": {
+      "path": "gpu-training-kit/data/processed/label_decisions_2017_2020/summary.json",
+      "sha256": "9fdcc293f41b0f8f389c9deeea633ea0625f91678c7bb64e29d144de754c30fe"
+    },
+    "readiness": {
+      "path": "gpu-training-kit/data/processed/forecast_readiness/summary.json",
+      "sha256": "b5f37921248482c82ec23879fc3380fb916b48be8508093234329e31dab6e97f"
+    },
+    "spatial_training": {
+      "path": "gpu-training-kit/data/processed/two_branch_gru_option_b/spatial_train_12districts_7052.csv",
+      "sha256": "96b7cc2dea05d2a1a736915f88dee6e7447a9768f8709b796c2653d3794cbc43"
+    }
+  },
+  "missing_training_modules": [],
+  "experimental_training_status": "Demo v2 trained separately; HOLD below applies to official training/release.",
+  "proxy_validation_curve": {
+    "path": "docs\\gru-proxy-validation-tradeoff.csv",
+    "rows": 53,
+    "source_sha256": "accc8c8cb1e89d2e4d11d166a41b71b654444fd02899a3e8473ef005a90c95a4",
+    "threshold_selected": null
+  },
+  "decision": "HOLD_OFFICIAL_TRAINING",
+  "recall_priority": true,
+  "acceptance_targets": null,
+  "reason": "No verified 24h training cohort or verified historical input availability; see blocker counts.",
+  "experimental": true,
+  "calibrated_probability": false,
+  "operational_alert": false
+}

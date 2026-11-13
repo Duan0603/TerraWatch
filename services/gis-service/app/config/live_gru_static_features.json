@@ -9,12 +9,14 @@
       "unit_id": "UTM48N_1km_405000_2415000",
       "values": {
         "slope_deg": 27.030586463308335,
+        "elevation_m": 1213.0295285217285,
         "clay_pct": 30.787500023841858,
         "sand_pct": 31.181249618530273,
         "bulk_density_g_cm3": 1.105624996125698
       },
       "coverage": {
         "slope_deg": 1.0,
+        "elevation_m": 1.0,
         "clay_pct": 1.0,
         "sand_pct": 1.0,
         "bulk_density_g_cm3": 1.0
@@ -30,12 +32,14 @@
       "unit_id": "UTM48N_1km_408000_2417000",
       "values": {
         "slope_deg": 28.414843946790697,
+        "elevation_m": 1447.6288762451172,
         "clay_pct": 30.96875035762787,
         "sand_pct": 32.137500405311584,
         "bulk_density_g_cm3": 1.0531249791383743
       },
       "coverage": {
         "slope_deg": 1.0,
+        "elevation_m": 1.0,
         "clay_pct": 1.0,
         "sand_pct": 1.0,
         "bulk_density_g_cm3": 1.0
@@ -51,12 +55,14 @@
       "unit_id": "UTM48N_1km_425000_2489000",
       "values": {
         "slope_deg": 26.1173522121191,
+        "elevation_m": 986.6237610656739,
         "clay_pct": 30.324999809265137,
         "sand_pct": 30.793749451637268,
         "bulk_density_g_cm3": 1.141874983906746
       },
       "coverage": {
         "slope_deg": 1.0,
+        "elevation_m": 1.0,
         "clay_pct": 1.0,
         "sand_pct": 1.0,
         "bulk_density_g_cm3": 1.0
@@ -72,12 +78,14 @@
       "unit_id": "UTM48N_1km_440000_2471000",
       "values": {
         "slope_deg": 28.66229303921461,
+        "elevation_m": 444.8431605178833,
         "clay_pct": 30.356249809265137,
         "sand_pct": 31.393749713897705,
         "bulk_density_g_cm3": 1.1493749767541885
       },
       "coverage": {
         "slope_deg": 1.0,
+        "elevation_m": 1.0,
         "clay_pct": 1.0,
         "sand_pct": 1.0,
         "bulk_density_g_cm3": 1.0
@@ -93,12 +101,14 @@
       "unit_id": "UTM48N_1km_382000_2491000",
       "values": {
         "slope_deg": 26.24285551096201,
+        "elevation_m": 612.0425905517578,
         "clay_pct": 31.18749988079071,
         "sand_pct": 32.57499945163727,
         "bulk_density_g_cm3": 1.1131250113248825
       },
       "coverage": {
         "slope_deg": 1.0,
+        "elevation_m": 1.0,
         "clay_pct": 1.0,
         "sand_pct": 1.0,
         "bulk_density_g_cm3": 1.0
@@ -114,12 +124,14 @@
       "unit_id": "UTM48N_1km_383000_2491000",
       "values": {
         "slope_deg": 28.00133337330818,
+        "elevation_m": 596.6392181488037,
         "clay_pct": 32.418750047683716,
         "sand_pct": 31.768749475479126,
         "bulk_density_g_cm3": 1.1274999976158142
       },
       "coverage": {
         "slope_deg": 1.0,
+        "elevation_m": 1.0,
         "clay_pct": 1.0,
         "sand_pct": 1.0,
         "bulk_density_g_cm3": 1.0
@@ -135,12 +147,14 @@
       "unit_id": "UTM48N_1km_381000_2490000",
       "values": {
         "slope_deg": 27.402275600719452,
+        "elevation_m": 968.084894744873,
         "clay_pct": 31.343749523162842,
         "sand_pct": 32.58125019073486,
         "bulk_density_g_cm3": 1.0549999549984932
       },
       "coverage": {
         "slope_deg": 1.0,
+        "elevation_m": 1.0,
         "clay_pct": 1.0,
         "sand_pct": 1.0,
         "bulk_density_g_cm3": 1.0
@@ -156,12 +170,14 @@
       "unit_id": "UTM48N_1km_379000_2495000",
       "values": {
         "slope_deg": 26.72284068698883,
+        "elevation_m": 667.8354049774169,
         "clay_pct": 31.143750071525574,
         "sand_pct": 30.93750011920929,
         "bulk_density_g_cm3": 1.125
       },
       "coverage": {
         "slope_deg": 1.0,
+        "elevation_m": 1.0,
         "clay_pct": 1.0,
         "sand_pct": 1.0,
         "bulk_density_g_cm3": 1.0
@@ -177,12 +193,14 @@
       "unit_id": "UTM48N_1km_376000_2498000",
       "values": {
         "slope_deg": 21.083490125098823,
+        "elevation_m": 529.2837796203613,
         "clay_pct": 32.27500021457672,
         "sand_pct": 31.993749499320984,
         "bulk_density_g_cm3": 1.153124988079071
       },
       "coverage": {
         "slope_deg": 1.0,
+        "elevation_m": 1.0,
         "clay_pct": 1.0,
         "sand_pct": 1.0,
         "bulk_density_g_cm3": 1.0
@@ -198,12 +216,14 @@
       "unit_id": "UTM48N_1km_384000_2468000",
       "values": {
         "slope_deg": 26.487515526676177,
+        "elevation_m": 1325.0020795776368,
         "clay_pct": 27.24999988079071,
         "sand_pct": 32.362499713897705,
         "bulk_density_g_cm3": 1.1043750196695328
       },
       "coverage": {
         "slope_deg": 1.0,
+        "elevation_m": 1.0,
         "clay_pct": 1.0,
         "sand_pct": 1.0,
         "bulk_density_g_cm3": 1.0
@@ -219,12 +239,14 @@
       "unit_id": "UTM48N_1km_374000_2472000",
       "values": {
         "slope_deg": 23.4390795699358,
+        "elevation_m": 1830.0692509155274,
         "clay_pct": 29.68125009536743,
         "sand_pct": 32.75625014305115,
         "bulk_density_g_cm3": 1.0299999713897705
       },
       "coverage": {
         "slope_deg": 1.0,
+        "elevation_m": 1.0,
         "clay_pct": 1.0,
         "sand_pct": 1.0,
         "bulk_density_g_cm3": 1.0
@@ -240,12 +262,14 @@
       "unit_id": "UTM48N_1km_380000_2478000",
       "values": {
         "slope_deg": 21.242920902991294,
+        "elevation_m": 1445.7186807373048,
         "clay_pct": 27.08750009536743,
         "sand_pct": 33.52500033378601,
         "bulk_density_g_cm3": 1.0637499690055847
       },
       "coverage": {
         "slope_deg": 1.0,
+        "elevation_m": 1.0,
         "clay_pct": 1.0,
         "sand_pct": 1.0,
         "bulk_density_g_cm3": 1.0
@@ -261,12 +285,14 @@
       "unit_id": "UTM48N_1km_387000_2466000",
       "values": {
         "slope_deg": 12.372767634707689,
+        "elevation_m": 1048.4136455932617,
         "clay_pct": 29.59999990463257,
         "sand_pct": 32.10000002384186,
         "bulk_density_g_cm3": 1.137499988079071
       },
       "coverage": {
         "slope_deg": 1.0,
+        "elevation_m": 1.0,
         "clay_pct": 1.0,
         "sand_pct": 1.0,
         "bulk_density_g_cm3": 1.0
@@ -282,12 +308,14 @@
       "unit_id": "UTM48N_1km_383000_2464000",
       "values": {
         "slope_deg": 26.67431381931901,
+        "elevation_m": 1612.8385907592774,
         "clay_pct": 28.712499856948853,
         "sand_pct": 31.518749833106995,
         "bulk_density_g_cm3": 1.0199999809265137
       },
       "coverage": {
         "slope_deg": 1.0,
+        "elevation_m": 1.0,
         "clay_pct": 1.0,
         "sand_pct": 1.0,
         "bulk_density_g_cm3": 1.0

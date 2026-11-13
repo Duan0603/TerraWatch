@@ -66,6 +66,13 @@ services/ai-service/scenes/
 !/gpu-training-kit/experiments/vietnam_1km_two_branch_gru/
 !/gpu-training-kit/experiments/vietnam_1km_two_branch_gru/outputs/
 !/gpu-training-kit/experiments/vietnam_1km_two_branch_gru/outputs/two_branch_gru_1km.pt
+!/gpu-training-kit/experiments/vietnam_1km_two_branch_gru/train.py
+!/gpu-training-kit/experiments/vietnam_1km_two_branch_gru/training_support.py
+!/gpu-training-kit/experiments/vietnam_1km_two_branch_gru/outputs_with_elevation/
+!/gpu-training-kit/experiments/vietnam_1km_two_branch_gru/outputs_with_elevation/two_branch_gru_1km.pt
+!/gpu-training-kit/experiments/vietnam_1km_two_branch_gru/outputs_with_elevation/metrics.json
+!/gpu-training-kit/experiments/vietnam_1km_two_branch_gru/outputs_with_elevation/history.json
+/services/ai-service/models/gru_live_candidate/
 
 # Firebase service account keys and other secrets (never commit)
 secrets/
