@@ -80,6 +80,17 @@ def live_weather(latitude: float = Query(..., ge=-90, le=90), longitude: float =
         raise HTTPException(status_code=404, detail="Điểm chưa có dữ liệu. Tác vụ tự động đang khởi tạo hoặc điểm chưa đăng ký theo dõi.")
     return {"success": True, **result}
 
+
+@app.get("/api/v1/gis/rainfall/live/history")
+def live_weather_history(latitude: float = Query(..., ge=-90, le=90), longitude: float = Query(..., ge=-180, le=180),
+                         days: int = Query(7, ge=1, le=90)):
+    """Hourly as-issued rainfall snapshots kept by the scheduler, oldest first. Reads the database only."""
+    try:
+        rows = live_rainfall.history(latitude, longitude, days)
+    except Exception:
+        raise HTTPException(status_code=503, detail="Kho dữ liệu mưa tạm thời chưa sẵn sàng. Vui lòng thử lại.")
+    return {"success": True, "source_kind": "WEATHER_MODEL_ESTIMATE", "experimental": True, "items": rows}
+
 # --- Request / Response Models ---
 class IngestRainfallRequest(BaseModel):
     area_id: Optional[int] = Field(None, example=1, description="Lọc theo mã khu vực giám sát (nếu có)")
