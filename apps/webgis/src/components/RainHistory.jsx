@@ -9,6 +9,7 @@ const VN = new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day:
 const vnParts = t => Object.fromEntries(VN.formatToParts(new Date(t)).map(p => [p.type, p.value]));
 const W = 312, X0 = 6, PLOT_W = 262, Y0 = 12, Y1 = 82;
 const mm = v => numberText(v, ' mm', 1);
+const ORIGIN_TEXT = { live: 'máy chủ lấy đúng giờ', github_archive: 'GitHub Actions lấy đúng giờ', backfill: 'bù sau từ lần lấy muộn hơn' };
 
 const CSV_COLUMNS = [
   { label: 'Giờ dữ liệu (UTC+7)', value: r => fmtVN(r.as_of) }, { label: 'Lấy lúc (UTC+7)', value: r => fmtVN(r.fetched_at) },
@@ -16,7 +17,7 @@ const CSV_COLUMNS = [
   { label: 'Mưa 72h (mm)', value: r => r.rain_72h_mm }, { label: 'Mưa 168h (mm)', value: r => r.rain_168h_mm },
   { label: 'Dự báo 24h (mm)', value: r => r.forecast_24h_mm }, { label: 'Chất lượng', value: r => r.quality },
   { label: 'Điểm GRU', value: r => r.hazard_score }, { label: 'Điểm mưa GRU', value: r => r.temporal_score },
-  { label: 'Mã mô hình', value: r => r.model_id }
+  { label: 'Mã mô hình', value: r => r.model_id }, { label: 'Nguồn ghi', value: r => ORIGIN_TEXT[r.origin] || r.origin }
 ];
 
 // Lịch sử mưa máy chủ đã ghi mỗi giờ. Công dân xem biểu đồ; cán bộ thêm điểm GRU, dự báo so với thực tế và CSV.
@@ -41,6 +42,7 @@ export default function RainHistory({ apiBase, latitude, longitude, showModel })
   if (!items.length) return <p className="live-rain-coverage">Điểm này chưa có giờ nào được ghi. Máy chủ ghi mỗi giờ một lần khi đang chạy.</p>;
 
   const slots = hourlySlots(items), n = slots.length, gaps = slots.filter(s => !s.row).length;
+  const filled = items.filter(r => r.origin === 'backfill').length;
   const peak = items.reduce((m, r) => r.rain_24h_mm != null && (!m || r.rain_24h_mm > m.rain_24h_mm) ? r : m, null);
   const top = Math.max(1, (th?.p99 || 0) * 1.15, peak?.rain_24h_mm || 0);
   const step = n > 1 ? PLOT_W / (n - 1) : 0;
@@ -57,7 +59,7 @@ export default function RainHistory({ apiBase, latitude, longitude, showModel })
 
   return <section className="rain-history" aria-label="Lịch sử mưa đã ghi">
     <p className="live-rain-coverage">
-      {n - gaps} giờ đã ghi từ {fmtVN(slots[0].t)}{gaps ? ` · ${gaps} giờ trống vì máy chủ không chạy` : ''}.<br />
+      {n - gaps} giờ đã ghi từ {fmtVN(slots[0].t)}{filled ? `, trong đó ${filled} giờ bù sau` : ''}{gaps ? ` · ${gaps} giờ trống vì máy chủ không chạy` : ''}.<br />
       Mưa 24h cao nhất: <strong>{mm(peak?.rain_24h_mm)}</strong>{peak && ` lúc ${fmtVN(peak.as_of)}`}.
     </p>
     <figure className="live-rain-chart"><figcaption>Mưa 24 giờ tích lũy · mm <span>Mỗi điểm là một lần ghi theo giờ{th ? ` · đường nét đứt: ngưỡng 95% và 99% của nơi này (${th.period})` : ''}</span></figcaption>
@@ -68,12 +70,12 @@ export default function RainHistory({ apiBase, latitude, longitude, showModel })
           <text x={X0 + PLOT_W + 4} y={y(th[k]) + 3}>{label} · {Math.round(th[k])}</text>
         </g>)}
         {linePaths(slots, r => r.rain_24h_mm, x, y).map(d => <path key={d} className="rain-history-line" d={d} />)}
-        {slots.map((s, i) => s.row?.rain_24h_mm != null && <circle key={s.t} className="rain-history-dot" cx={x(i)} cy={y(s.row.rain_24h_mm)} r={n > 48 ? 1 : 2}>
-          <title>{fmtVN(s.t)}: mưa 24h {mm(s.row.rain_24h_mm)}, dự báo 24h tới {mm(s.row.forecast_24h_mm)}</title></circle>)}
+        {slots.map((s, i) => s.row?.rain_24h_mm != null && <circle key={s.t} className={`rain-history-dot${s.row.origin === 'backfill' ? ' is-backfill' : ''}`} cx={x(i)} cy={y(s.row.rain_24h_mm)} r={n > 48 ? 1.2 : 2}>
+          <title>{fmtVN(s.t)}: mưa 24h {mm(s.row.rain_24h_mm)}, dự báo 24h tới {mm(s.row.forecast_24h_mm)} · {ORIGIN_TEXT[s.row.origin] || s.row.origin}</title></circle>)}
         <line className="rain-history-axis" x1={X0} x2={X0 + PLOT_W} y1={Y1} y2={Y1} />
         {ticks.map(([s, i, short]) => <text key={s.t} x={x(i)} y={Y1 + 13} textAnchor={i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'}>{tickText(s, short)}</text>)}
       </svg>
-      <div className="live-rain-chart-key"><span><i className="past" />Mưa 24h đã qua (Open-Meteo, lúc ghi)</span><span><i className="gap" />Máy chủ không chạy</span></div>
+      <div className="live-rain-chart-key"><span><i className="past" />Mưa 24h đã qua (Open-Meteo, lúc ghi)</span><span><i className="backfill" />Bù sau</span><span><i className="gap" />Không có dữ liệu</span></div>
     </figure>
 
     {showModel && <>

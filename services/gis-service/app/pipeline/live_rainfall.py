@@ -1,4 +1,5 @@
 """Scheduled, durable Open-Meteo weather estimates. Never labelled station observations."""
+import gzip
 import json
 import logging
 import math
@@ -134,6 +135,25 @@ def rain_anomaly(climate, payload):
             'forecast_24h': compare(payload['forecast_24h'], w['24'])}
 
 
+def backfill_payloads(payload, stored):
+    """Rain-only records for the hours missing since monitoring began (`stored` = hours already
+    recorded), up to 7 days back, rebuilt from the hourly past series this fetch already holds.
+    Forecast and GRU stay empty: what the system would have known at those hours is not recoverable."""
+    if not stored:
+        return []  # nothing stored yet: never invent history from before the point was monitored
+    series = {datetime.fromisoformat(h['interval_end']): h['mm'] for h in payload['hourly']}
+    as_of = datetime.fromisoformat(payload['as_of'])
+    def total(end, hours):
+        vals = [series.get(end - timedelta(hours=i)) for i in range(hours)]
+        return round(sum(vals), 3) if None not in vals else None
+    start = max(min(stored), as_of - timedelta(hours=167))
+    hours = (start + timedelta(hours=i) for i in range(int((as_of - start).total_seconds() // 3600)))
+    return [{'as_of': t.isoformat(), 'fetched_at': payload['fetched_at'], 'origin': 'backfill',
+             'provider': payload['provider'], 'source_kind': payload['source_kind'], 'quality': 'backfill',
+             'history': {str(h): {'mm': total(t, h)} for h in (1, 24, 72, 168)}, 'forecast_24h': {'mm': None}}
+            for t in hours if t not in stored]
+
+
 def load_climatology(key):
     path = Path(__file__).resolve().parents[1] / 'config/rain_climatology.json'
     try:
@@ -211,11 +231,34 @@ class LiveWeatherRepository:
                     (location['key'], location['name'], location['latitude'], location['longitude'],
                      Json(payload) if payload is not None else None, payload is not None, error))
                 if payload is not None:
-                    # Display-only weather is dropped; rainfall, forecast and GRU result are what backtests need.
-                    cur.execute('''INSERT INTO gis_schema.live_rainfall_history (location_key, as_of, fetched_at, payload)
-                        VALUES (%s,%s,%s,%s) ON CONFLICT (location_key, as_of) DO NOTHING''',
-                        (location['key'], payload['as_of'], payload['fetched_at'],
-                         Json({k: v for k, v in payload.items() if k != 'weather'})))
+                    cur.execute('SELECT as_of FROM gis_schema.live_rainfall_history WHERE location_key=%s', (location['key'],))
+                    stored = {r[0] for r in cur.fetchall()}
+                    for row in [*backfill_payloads(payload, stored), payload]:
+                        self.append_history(cur, location['key'], row)
+
+    @staticmethod
+    def append_history(cur, key, payload):
+        """First as-issued record of an hour wins; a backfilled hour gives way once a real record arrives.
+        Display-only weather is dropped: rainfall, forecast and GRU result are what backtests need."""
+        cur.execute('''INSERT INTO gis_schema.live_rainfall_history (location_key, as_of, fetched_at, payload)
+            VALUES (%s,%s,%s,%s) ON CONFLICT (location_key, as_of) DO UPDATE
+            SET fetched_at=EXCLUDED.fetched_at, payload=EXCLUDED.payload
+            WHERE live_rainfall_history.payload->>'origin' = 'backfill' AND EXCLUDED.payload->>'origin' IS DISTINCT FROM 'backfill' ''',
+            (key, payload['as_of'], payload['fetched_at'], Json({k: v for k, v in payload.items() if k != 'weather'})))
+        return cur.rowcount
+
+    def add_history(self, key, payload):
+        with self.connection() as conn:
+            with conn.cursor() as cur:
+                return self.append_history(cur, key, payload)
+
+    def recorded_hours(self):
+        """(location_key, as_of) of every real, non-backfilled record."""
+        with self.connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute('''SELECT location_key, as_of FROM gis_schema.live_rainfall_history
+                    WHERE coalesce(payload->>'origin', 'live') <> 'backfill' ''')
+                return set(cur.fetchall())
 
     def history(self, key, since):
         """As-issued snapshots, oldest first. rain_1h_mm per hour builds a rainfall record over time."""
@@ -227,7 +270,7 @@ class LiveWeatherRepository:
                         (payload->'history'->'72'->>'mm')::float AS rain_72h_mm,
                         (payload->'history'->'168'->>'mm')::float AS rain_168h_mm,
                         (payload->'forecast_24h'->>'mm')::float AS forecast_24h_mm,
-                        payload->>'quality' AS quality,
+                        payload->>'quality' AS quality, coalesce(payload->>'origin', 'live') AS origin,
                         (payload->'gru_inference'->>'hazard_score')::float AS hazard_score,
                         (payload->'gru_inference'->>'temporal_score')::float AS temporal_score,
                         payload->'gru_inference'->>'model_id' AS model_id
@@ -274,7 +317,8 @@ class LiveRainfallService:
         self.state = {'enabled': self.enabled, 'interval_seconds': self.interval, 'running': False,
                       'last_cycle_at': None, 'last_error': None, 'locations': 0}
 
-    def predict(self, location, data):
+    def predict(self, location, data, max_age=5400):
+        """max_age=None scores an archived snapshot as of its own hour (same inputs, same model)."""
         attempted = utc_now().isoformat()
         def held(reason):
             return {'ready': False, 'reason': reason, 'attempted_at': attempted, 'experimental': True}
@@ -282,7 +326,7 @@ class LiveRainfallService:
             return held('DISABLED')
         try:
             as_of = datetime.fromisoformat(data['as_of'])
-            if as_of.tzinfo is None or not 0 <= (utc_now()-as_of).total_seconds() <= 5400:
+            if as_of.tzinfo is None or (max_age is not None and not 0 <= (utc_now()-as_of).total_seconds() <= max_age):
                 return held('WEATHER_STALE')
             path = Path(__file__).resolve().parents[1] / 'config/live_gru_static_features.json'
             registry = json.loads(path.read_text(encoding='utf8'))
@@ -311,6 +355,26 @@ class LiveRainfallService:
         except Exception as exc:
             LOG.warning('Experimental GRU unavailable for %s: %s', location['key'], type(exc).__name__)
             return held('MODEL_UNAVAILABLE_OR_INVALID_INPUT')
+
+    def import_archive(self, root):
+        """Hourly Open-Meteo snapshots saved by GitHub Actions while this stack was off
+        (.github/workflows/rain-archive.yml). Each becomes a real as-issued record; hours already
+        recorded are skipped, backfilled ones are replaced."""
+        recorded, added = self.repo.recorded_hours(), 0
+        for path in sorted(Path(root).rglob('*.json.gz')):
+            run = json.loads(gzip.decompress(path.read_bytes()))
+            fetched = datetime.fromisoformat(run['fetched_at'])
+            for point in run['points']:
+                try:
+                    payload = normalize_weather(point['raw'], fetched)
+                except (ValueError, KeyError, TypeError):
+                    continue
+                if (point['key'], datetime.fromisoformat(payload['as_of'])) in recorded:
+                    continue
+                payload.update(origin='github_archive', rain_anomaly=rain_anomaly(load_climatology(point['key']), payload))
+                payload['gru_inference'] = self.predict(point, payload, max_age=None)
+                added += self.repo.add_history(point['key'], payload)
+        return added
 
     def locations(self):
         path = Path(__file__).resolve().parents[1] / 'config/live_rainfall_locations.json'
@@ -349,6 +413,12 @@ class LiveRainfallService:
                 cur.execute('SELECT pg_try_advisory_lock(%s)', (LOCK_ID,))
                 if not cur.fetchone()[0]:
                     return
+            archive = Path(os.getenv('RAIN_ARCHIVE_DIR', '/rain-archive'))
+            if archive.is_dir():
+                try:
+                    self.state['archive_imported'] = self.import_archive(archive)
+                except Exception as exc:
+                    LOG.warning('Rain archive import failed: %s', type(exc).__name__)
             locations = self.locations()
             self.state.update(running=True, locations=len(locations), last_cycle_at=utc_now().isoformat(), last_error=None)
             for location in locations:

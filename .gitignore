@@ -80,3 +80,6 @@ secrets/
 
 # Maven wrapper downloads this jar itself (wrapperUrl in maven-wrapper.properties)
 services/core-api/.mvn/wrapper/maven-wrapper.jar
+
+# Local worktree of the rain-archive branch (see .github/workflows/rain-archive.yml)
+/rain-archive/

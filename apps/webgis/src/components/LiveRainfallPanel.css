@@ -67,3 +67,5 @@ td.live-rain-level-heavy, td.live-rain-level-very-heavy { font-weight: 700; }
 .rain-history-score { fill: none; stroke: #b45b17; stroke-width: 1.2; }
 .rain-history-h { font-size: 12px; margin: 16px 0 6px; }
 .live-rain-panel .rain-history-csv { margin-top: 10px; gap: 6px; align-items: center; font-size: 11px; }
+.rain-history-dot.is-backfill { fill: var(--surface); stroke: #087b70; stroke-width: 1; }
+.live-rain-chart-key i.backfill { background: transparent; border: 1px solid #087b70; border-radius: 50%; }

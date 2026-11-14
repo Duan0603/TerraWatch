@@ -103,6 +103,8 @@ services:
       AI_SERVICE_URL: http://ai-service:8001
     volumes:
       - ./services/gis-service/app:/app/app
+      # Worktree of the rain-archive branch (hourly snapshots saved by GitHub Actions); imported each cycle.
+      - ./rain-archive:/rain-archive:ro
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8002", "--reload"]
     ports:
       - "127.0.0.1:8002:8002"
