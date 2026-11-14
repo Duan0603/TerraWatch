@@ -15,7 +15,7 @@ from app.pipeline.terrain_client import OpenMeteoElevationClient
 from app.pipeline.terrain_repository import TerrainRepository
 from app.pipeline.snapshot_processor import SnapshotProcessor
 from app.pipeline.snapshot_repository import SnapshotRepository
-from app.pipeline.live_rainfall import LiveRainfallService
+from app.pipeline.live_rainfall import LiveRainfallService, load_climatology, location_key
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("gis-service")
@@ -89,7 +89,10 @@ def live_weather_history(latitude: float = Query(..., ge=-90, le=90), longitude:
         rows = live_rainfall.history(latitude, longitude, days)
     except Exception:
         raise HTTPException(status_code=503, detail="Kho dữ liệu mưa tạm thời chưa sẵn sàng. Vui lòng thử lại.")
-    return {"success": True, "source_kind": "WEATHER_MODEL_ESTIMATE", "experimental": True, "items": rows}
+    climate = load_climatology(location_key(latitude, longitude))
+    thresholds = climate and {"period": climate["period"], **{k: climate["windows"]["24"][k] for k in ("p95", "p99")}}
+    return {"success": True, "source_kind": "WEATHER_MODEL_ESTIMATE", "experimental": True,
+            "thresholds_24h": thresholds, "items": rows}
 
 # --- Request / Response Models ---
 class IngestRainfallRequest(BaseModel):
