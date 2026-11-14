@@ -55,3 +55,15 @@ td.live-rain-level-heavy, td.live-rain-level-very-heavy { font-weight: 700; }
 .live-rain-chart-key i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
 .live-rain-chart-key i.past { background: #087b70; }
 .live-rain-chart-key i.forecast { background: #b45b17; }
+.live-rain-tabs { display: flex; gap: 6px; margin-top: 10px; }
+.live-rain-panel .live-rain-tabs button { flex: 1; justify-content: center; font-size: 11px; padding: 6px; }
+.live-rain-panel .live-rain-tabs button[aria-selected="true"] { background: var(--primary-dark); border-color: var(--primary-dark); color: #fff; }
+.rain-history-gap, .live-rain-chart-key i.gap { fill: #e3e8e6; background: #e3e8e6; }
+.rain-history-threshold line { stroke: #8a3b22; stroke-width: .8; stroke-dasharray: 3 3; }
+.live-rain-chart .rain-history-threshold text { fill: #8a3b22; }
+.rain-history-line { fill: none; stroke: #087b70; stroke-width: 1.5; }
+.rain-history-dot { fill: #087b70; }
+.rain-history-axis { stroke: #9cb9b0; }
+.rain-history-score { fill: none; stroke: #b45b17; stroke-width: 1.2; }
+.rain-history-h { font-size: 12px; margin: 16px 0 6px; }
+.live-rain-panel .rain-history-csv { margin-top: 10px; gap: 6px; align-items: center; font-size: 11px; }

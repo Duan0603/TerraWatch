@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { CloudRain, RefreshCw, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudLightning, Snowflake, HelpCircle } from 'lucide-react';
 import { weatherKind, dayLabel, numberText, rainLevel24h, hourLabel, scoreText } from '../utils/weather';
 import { fmtVN } from '../utils/time';
+import RainHistory from './RainHistory';
 import './LiveRainfallPanel.css';
 
 const WEATHER_ICONS = { clear: Sun, partly: CloudSun, cloudy: Cloud, fog: CloudFog, drizzle: CloudDrizzle, rain: CloudRain, snow: Snowflake, storm: CloudLightning, unknown: HelpCircle };
@@ -14,10 +15,13 @@ const valueText = value => value === null || value === undefined ? 'Chưa đủ 
 const timeText = value => value ? fmtVN(value) : 'Chưa có lần lấy thành công';
 
 const ANOMALY_TEXT = { p95: 'cao hơn 95% thời gian', p99: 'cao hơn 99% thời gian', p99_9: 'hiếm gặp, cao hơn 99,9% thời gian' };
+const apiBase = () => import.meta.env.VITE_API_BASE_URL || (['5173', '5174'].includes(window.location.port)
+  ? `${window.location.protocol}//${window.location.hostname}:8080` : window.location.origin);
 
 export default function LiveRainfallPanel({ selectedEvent, showModel = true }) {
   const [snapshot, setSnapshot] = useState(null), [error, setError] = useState('');
   const [loading, setLoading] = useState(true), [reload, setReload] = useState(0);
+  const [view, setView] = useState('now');
   const latitude = selectedEvent?.lat, longitude = selectedEvent?.lng;
   useEffect(() => {
     let controller;
@@ -26,11 +30,8 @@ export default function LiveRainfallPanel({ selectedEvent, showModel = true }) {
       controller?.abort(); controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 12000);
       try {
-        const configured = import.meta.env.VITE_API_BASE_URL;
-        const base = configured || (['5173', '5174'].includes(window.location.port)
-          ? `${window.location.protocol}//${window.location.hostname}:8080` : window.location.origin);
         const params = new URLSearchParams({ latitude, longitude });
-        const response = await fetch(`${base}/api/v1/gis/rainfall/live?${params}`, { signal: controller.signal });
+        const response = await fetch(`${apiBase()}/api/v1/gis/rainfall/live?${params}`, { signal: controller.signal });
         const body = await response.json();
         if (!response.ok) throw new Error(body.detail || 'Dịch vụ mưa chưa sẵn sàng.');
         if (active) { setSnapshot(body); setError(''); }
@@ -67,6 +68,11 @@ export default function LiveRainfallPanel({ selectedEvent, showModel = true }) {
     <div className="live-rain-body">
       <p className="live-rain-location">{selectedEvent.location}<br />{latitude?.toFixed(4)}°N, {longitude?.toFixed(4)}°E</p>
       <p className="live-rain-source">Open-Meteo · Ước tính từ mô hình khí tượng, không phải số đo trạm.</p>
+      <div className="live-rain-tabs" role="tablist" aria-label="Chế độ xem mưa">
+        {[['now', 'Hiện tại'], ['history', 'Lịch sử 7 ngày']].map(([id, label]) =>
+          <button key={id} type="button" role="tab" aria-selected={view === id} onClick={() => setView(id)}>{label}</button>)}
+      </div>
+      {view === 'history' ? <RainHistory apiBase={apiBase()} latitude={latitude} longitude={longitude} showModel={showModel} /> : <>
       <div className="live-rain-status" role="status">
         {loading ? 'Đang đọc dữ liệu cập nhật…' : data ? (stale ? 'Dữ liệu cũ / cập nhật chưa thành công' : data.quality === 'complete' ? 'Đã có dữ liệu cập nhật' : 'Dữ liệu chưa đủ giờ') : 'Chưa có dữ liệu mưa'}
       </div>
@@ -131,6 +137,7 @@ export default function LiveRainfallPanel({ selectedEvent, showModel = true }) {
           </table>
           <p className="live-rain-coverage">Ngày theo giờ Việt Nam; mưa "Hôm nay" gồm cả các giờ đã qua. Ngày thiếu giờ không cộng tổng. Nhiệt độ, gió và khả năng mưa là dự báo mô hình Open-Meteo, chỉ để tham khảo, không dùng để tự phát cảnh báo.</p>
         </section> : <p className="live-rain-coverage">Chưa có bảng thời tiết cho snapshot này; sẽ có sau lần lấy dữ liệu kế tiếp.</p>}
+      </>}
       </>}
       <footer><span>Lấy thành công: {timeText(snapshot?.last_success_at)}<br />Server tự lấy mỗi {Math.round((snapshot?.refresh_interval_seconds || 3600)/60)} phút; web kiểm tra mỗi phút.</span>
         <button type="button" onClick={() => { setLoading(true); setReload(n => n+1); }} aria-label="Đọc lại dữ liệu mưa đã lưu"><RefreshCw size={15} /></button>
