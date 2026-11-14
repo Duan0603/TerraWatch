@@ -17,6 +17,8 @@ for (const width of [1100, 1280, 1440, 1600, 1920]) {
     await page.setViewportSize({ width, height: 900 });
     await mockBackend(page, 'officer', ({ path }) => {
       if (path === '/landslides/active') return FC;
+      // Story 4.41: all map buttons present (GRU layer too), the longest row the bar can have
+      if (path === '/gis/rainfall/live/map') return { type: 'FeatureCollection', features: [{ type: 'Feature', geometry: { type: 'Point', coordinates: [104.5, 22.1] }, properties: { current: true } }] };
       if (path === '/forecasts/review-queue') return [forecastItem('run-l', 'Điểm bố cục E2E', 'high')];
     });
     await page.goto('/');

@@ -14,6 +14,7 @@ from psycopg2.extras import Json, RealDictCursor
 import requests
 
 from app.pipeline.rainfall_repository import RainfallRepository
+from app.pipeline.rain_warning import rain_warning
 
 LOG = logging.getLogger(__name__)
 UTC = timezone.utc
@@ -439,6 +440,7 @@ class LiveRainfallService:
                 try:
                     payload = self.fetch(location)
                     payload['rain_anomaly'] = rain_anomaly(load_climatology(location['key']), payload)
+                    payload['rain_warning'] = rain_warning(location['key'], payload)  # Story 4.41
                     payload['gru_inference'] = self.predict(location, payload)
                     self.repo.save(location, payload=payload)
                 except Exception as exc:

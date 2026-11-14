@@ -925,12 +925,22 @@ body.page-login {
 
 
 /* Story 4.40: the map overlays (info card top-left, controls top-right, popups) must never sit on top of each other.
-   The map area is a size container: below 1350 px its own width (not the window's) decides that the map buttons keep only their icon. */
+   The map area is a size container: below 1800 px its own width (not the window's) decides that the map buttons keep only their icon.
+   Story 4.41: with the GRU and rain-warning buttons the labelled row needs ~1750 px next to the info card. */
 .map-canvas-area { container-type: inline-size; container-name: mapcanvas; }
 .maplibregl-popup { z-index: 20; }
 .map-ctrl-count { min-width: 18px; padding: 0 5px; border-radius: 9px; background: rgba(0,0,0,0.18); font-size: 11px; line-height: 18px; text-align: center; }
-@container mapcanvas (max-width: 1350px) {
+/* Too narrow even for icons next to the info card: the buttons drop to a second row under it. */
+@container mapcanvas (max-width: 1000px) {
+  .map-floating-controls { top: 74px !important; }
+  .rain-warning-card { top: 120px !important; }
+}
+@container mapcanvas (max-width: 1800px) {
   .map-floating-controls .btn-text { display: none !important; }
   .map-floating-controls .map-ctrl-btn { padding: 7px !important; }
   .location-selector-label { display: none !important; }
 }
+
+/* Story 4.41: while the Làng Nủ rain card is open, the selected forecast zone's info box is unrelated: hide it. */
+.map-canvas-area:has(.rain-warning-card) .map-hud-overlay,
+.map-canvas-area:has(.rain-warning-card) .map-evidence-stack { display: none; }
