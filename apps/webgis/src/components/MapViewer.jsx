@@ -16,7 +16,8 @@ import {
   RotateCcw,
   Satellite,
   MapPinned,
-  FlaskConical
+  FlaskConical,
+  CloudRain
 } from 'lucide-react';
 import {
   STYLE_URL,
@@ -32,6 +33,9 @@ import { DEFAULT_LOCATION_ID } from '../data/mountainLocations';
 import LocationSelector from './LocationSelector';
 import { describeConfirmed, confirmedBounds, confirmedCentres } from '../utils/confirmedLandslides';
 import MapErrorBoundary from './MapErrorBoundary';
+import RainWarningCard from './RainWarningCard';
+import { LEVEL_INFO } from '../utils/rainWarning';
+import rainWarningApi from '../api/rainWarningApi';
 import { describeRisk, RISK_COLOR, RAIN_COLOR, usableCount } from '../utils/experimentalRisk';
 
 /**
@@ -100,6 +104,17 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
   const riskRef = useRef(experimentalRisk);
   const aoiFittedRef = useRef(false);
   const [showRisk, setShowRisk] = useState(false); // tắt sẵn: điểm thử nghiệm, chỉ bật khi cán bộ muốn xem
+  // Story 4.41: cảnh báo theo mưa Làng Nủ (cấu hình từ GIS, tải khi bật lần đầu)
+  const [showRain, setShowRain] = useState(false);
+  const [rainMeta, setRainMeta] = useState(null);
+  const [rainError, setRainError] = useState(null);
+  const showRainRef = useRef(false);
+  const rainMetaRef = useRef(null);
+  const [rainSiteKey, setRainSiteKey] = useState(null); // selected warning site
+  const [rainLevel, setRainLevel] = useState(null); // level the card is showing (live or replay hour)
+  const [siteLevels, setSiteLevels] = useState({}); // live level of every site, for the map dots
+  const [rainZoneGeom, setRainZoneGeom] = useState(null); // modelled extent for the rain being shown (Làng Nủ)
+  const rainStateRef = useRef({ siteKey: null, level: null, siteLevels: {}, zoneGeom: null });
   const showRiskRef = useRef(false);
   const [riskMode, setRiskMode] = useState('gru'); // 'gru' = điểm mô hình, 'rain' = mưa 24h tới theo QĐ 18
   const riskModeRef = useRef('gru');
@@ -358,6 +373,88 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
   };
 
   // Bật lớp thì bay tới các điểm (chúng thường nằm xa vùng đang xem); tắt thì chỉ ẩn lớp.
+  // Story 4.41: every warning site as a dot coloured by its live level, and the selected site's impact zone
+  // coloured by the level the card is showing (live now, or the replayed hour).
+  const levelColor = (k) => (LEVEL_INFO[k] || LEVEL_INFO.missing).color;
+  const ensureRainZoneLayer = (map) => {
+    const meta = rainMetaRef.current;
+    if (!map || !map.getStyle() || !meta?.sites) return;
+    const { siteKey, level, siteLevels: lv, zoneGeom } = rainStateRef.current;
+    const visibility = showRainRef.current ? 'visible' : 'none';
+    const site = meta.sites.find(x => x.key === siteKey);
+    const zone = site?.impact_zone;
+    const c = '#dc2626'; // one fixed colour: the extent itself (not the colour) shows how bad it is; the level is on the card
+    // colour travels in the data: with 3D terrain a paint-only change is not redrawn, a data change is
+    // modelled site: the extent for the current rain (level colour) + the real 2024 area as a black dashed outline;
+    // other sites: their mapped area coloured by level, as before
+    const zoneData = { type: 'FeatureCollection', features: site?.runout ? [
+      ...(zoneGeom ? [{ type: 'Feature', properties: { role: 'model', color: c }, geometry: zoneGeom }] : []),
+      ...(zone ? [{ type: 'Feature', properties: { role: 'truth', color: '#0f172a' }, geometry: zone.footprint.geometry }] : [])
+    ] : zone ? [
+      { type: 'Feature', properties: { role: 'buffer', color: c }, geometry: zone.buffer_100m.geometry },
+      { type: 'Feature', properties: { role: 'footprint', color: c }, geometry: zone.footprint.geometry }
+    ] : [] };
+    const dots = { type: 'FeatureCollection', features: meta.sites.map(x => ({
+      type: 'Feature', geometry: { type: 'Point', coordinates: [x.longitude, x.latitude] },
+      // the selected site shows the level of the card (live or the replayed hour), the others their live level
+      properties: { key: x.key, color: levelColor(x.key === siteKey && level ? level : lv[x.key] || 'missing'), selected: x.key === siteKey } })) };
+    if (map.getSource('rain-impact-zone')) {
+      map.getSource('rain-impact-zone').setData(zoneData);
+      map.getSource('rain-sites').setData(dots);
+    } else {
+      map.addSource('rain-impact-zone', { type: 'geojson', data: zoneData });
+      map.addSource('rain-sites', { type: 'geojson', data: dots });
+      map.addLayer({ id: 'rain-impact-fill', type: 'fill', source: 'rain-impact-zone', layout: { visibility },
+        filter: ['!=', ['get', 'role'], 'truth'],
+        paint: { 'fill-color': ['get', 'color'], 'fill-opacity': ['match', ['get', 'role'], 'buffer', 0.15, 0.45] } });
+      map.addLayer({ id: 'rain-impact-line', type: 'line', source: 'rain-impact-zone', layout: { visibility },
+        paint: { 'line-color': ['get', 'color'], 'line-width': 2, 'line-dasharray': [2, 1] } });
+      map.addLayer({ id: 'rain-sites-dot', type: 'circle', source: 'rain-sites', layout: { visibility }, paint: {
+        'circle-color': ['get', 'color'], 'circle-radius': ['case', ['get', 'selected'], 10, 7],
+        'circle-stroke-color': ['case', ['get', 'selected'], '#0f172a', '#ffffff'], 'circle-stroke-width': ['case', ['get', 'selected'], 3, 2] } });
+      map.on('click', 'rain-sites-dot', (e) => { const k = e.features?.[0]?.properties?.key; if (k) pickRainSiteRef.current?.(k); });
+      map.on('mouseenter', 'rain-sites-dot', () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'rain-sites-dot', () => { map.getCanvas().style.cursor = ''; });
+    }
+    ['rain-impact-fill', 'rain-impact-line', 'rain-sites-dot'].forEach(id => map.setLayoutProperty(id, 'visibility', visibility));
+  };
+
+  const flyToRainSite = (site) => {
+    if (!site || !mapRef.current) return;
+    // a modelled site: frame the whole gully (2024 area) from the scar to the village, leaving room for the card
+    const box = site.runout && site.impact_zone ? confirmedBounds({ features: [{ geometry: site.impact_zone.buffer_100m.geometry }] }) : null;
+    if (box) mapRef.current.fitBounds(box, { padding: { left: 400, right: 70, top: 80, bottom: 50 }, pitch: 40, bearing: 0, duration: 1500, maxZoom: 15 });
+    else mapRef.current.flyTo({ center: [site.longitude, site.latitude], zoom: site.impact_zone ? 13.2 : 11, duration: 1500 });
+  };
+  const pickRainSite = (key) => {
+    setRainSiteKey(key);
+    flyToRainSite(rainMetaRef.current?.sites?.find(x => x.key === key));
+  };
+  const pickRainSiteRef = useRef(pickRainSite);
+  pickRainSiteRef.current = pickRainSite;
+
+  const toggleRain = async () => {
+    if (showRain) { setShowRain(false); return; }
+    let meta = rainMeta;
+    if (!meta) {
+      try { meta = await rainWarningApi.getSites(); setRainMeta(meta); setRainError(null); }
+      catch { setRainError('Chưa tải được cấu hình cảnh báo theo mưa.'); return; }
+    }
+    // live level of every site for the map dots and the site list (a site without data shows grey)
+    Promise.allSettled(meta.sites.map(x => rainWarningApi.getLive(x.latitude, x.longitude))).then(rs => {
+      const lv = {};
+      rs.forEach((r, i) => {
+        const now = r.status === 'fulfilled' ? r.value?.data?.rain_warning?.now : null;
+        lv[meta.sites[i].key] = !now || now.complete === false ? 'missing' : now.level || 'none';
+      });
+      setSiteLevels(lv);
+    });
+    const key = rainSiteKey || meta.sites[0]?.key;
+    setRainSiteKey(key);
+    flyToRainSite(meta.sites.find(x => x.key === key));
+    setShowRain(true);
+  };
+
   const toggleConfirmed = () => {
     if (!showConfirmed) {
       const bounds = confirmedBounds(confirmedRef.current);
@@ -456,6 +553,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
         ensureLandslideLayers(map, eventsRef.current);
         ensureConfirmedLayer(map); // sau vùng dự báo để nằm trên: sạt lở thật không bị vùng dự báo che mờ
         ensureRiskLayer(map);
+        ensureRainZoneLayer(map);
         if (markersRef.current.length === 0) {
           renderCommunityReportMarkers(map);
         }
@@ -470,6 +568,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
         ensureLandslideLayers(map, eventsRef.current);
         ensureConfirmedLayer(map); // sau vùng dự báo để nằm trên: sạt lở thật không bị vùng dự báo che mờ
         ensureRiskLayer(map);
+        ensureRainZoneLayer(map);
         if (markersRef.current.length === 0) {
           renderCommunityReportMarkers(map);
         }
@@ -610,6 +709,15 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
     if (!mapRef.current || !mapLoaded) return;
     ensureRiskLayer(mapRef.current);
   }, [experimentalRisk, showRisk, riskMode, mapLoaded]);
+
+  // 1f. Vùng ảnh hưởng của cảnh báo theo mưa: cấu hình đến sau hoặc bật/tắt
+  useEffect(() => {
+    rainMetaRef.current = rainMeta;
+    showRainRef.current = showRain;
+    rainStateRef.current = { siteKey: rainSiteKey, level: rainLevel, siteLevels, zoneGeom: rainZoneGeom };
+    if (!mapRef.current || !mapLoaded) return;
+    ensureRainZoneLayer(mapRef.current);
+  }, [rainMeta, showRain, rainSiteKey, rainLevel, siteLevels, rainZoneGeom, mapLoaded]);
 
   // 2. Camera FlyTo mượt mà khi Cán bộ chọn sự cố từ hàng đợi (AC 1.5.5, FR-MAP-12)
   const prevSelectedEventIdRef = useRef(null);
@@ -905,6 +1013,25 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
             <span className="map-ctrl-count">{riskCount}/{experimentalRisk.features.length}</span>
           </button>
         )}
+
+        {/* Story 4.41: cảnh báo sạt lở theo mưa cho Làng Nủ */}
+        <button
+          onClick={toggleRain}
+          title={rainError || 'Cảnh báo sạt lở theo mưa tại Làng Nủ: mức hiện tại, 24 giờ tới, phát lại tháng 9/2024 và vùng ảnh hưởng'}
+          aria-label="Cảnh báo mưa Làng Nủ"
+          aria-pressed={showRain}
+          className="map-ctrl-btn"
+          style={{
+            background: showRain ? '#1d4ed8' : 'rgba(255,255,255,0.92)',
+            color: showRain ? '#fff' : '#172524',
+            border: '1px solid #DCE5E2', padding: '7px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)', backdropFilter: 'blur(4px)'
+          }}
+        >
+          <CloudRain size={14} />
+          <span className="btn-text">Cảnh báo mưa Làng Nủ</span>
+        </button>
       </div>
 
       {showRisk && experimentalRisk?.features?.length > 0 && (
@@ -935,6 +1062,12 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
           <div style={{ marginTop: 4 }}><span style={{ display: 'inline-block', width: 10, height: 10, background: '#9ca3af', borderRadius: 2, verticalAlign: -1, marginRight: 4 }} />Xám: chưa có số liệu hoặc số liệu cũ</div>
           <div style={{ marginTop: 4, color: '#64748b' }}>Chỉ để cán bộ tham khảo; không phải xác suất, không phải cảnh báo.</div>
         </div>
+      )}
+
+      {showRain && rainMeta?.sites?.[0] && (
+        <RainWarningCard site={rainMeta.sites.find(x => x.key === rainSiteKey) || rainMeta.sites[0]} meta={rainMeta}
+          sites={rainMeta.sites} siteLevels={siteLevels} onPickSite={pickRainSite} onLevel={setRainLevel} onZone={setRainZoneGeom}
+          onClose={() => setShowRain(false)} />
       )}
 
       {/* Chỉ báo trạng thái nạp & hiệu năng */}

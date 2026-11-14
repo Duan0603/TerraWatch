@@ -16,6 +16,7 @@ from app.pipeline.terrain_repository import TerrainRepository
 from app.pipeline.snapshot_processor import SnapshotProcessor
 from app.pipeline.snapshot_repository import SnapshotRepository
 from app.pipeline.live_rainfall import LiveRainfallService, load_climatology, location_key
+from app.pipeline import rain_warning
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("gis-service")
@@ -93,6 +94,23 @@ def live_weather_history(latitude: float = Query(..., ge=-90, le=90), longitude:
     thresholds = climate and {"period": climate["period"], **{k: climate["windows"]["24"][k] for k in ("p95", "p99")}}
     return {"success": True, "source_kind": "WEATHER_MODEL_ESTIMATE", "experimental": True,
             "thresholds_24h": thresholds, "items": rows}
+
+@app.get("/api/v1/gis/rainfall/warning/sites")
+def rain_warning_sites():
+    """Story 4.41: warning sites with thresholds, impact zone and replay list. Reads a config file only."""
+    data = rain_warning.sites()
+    if not data:
+        raise HTTPException(status_code=503, detail="Chưa có cấu hình cảnh báo theo mưa.")
+    return data
+
+
+@app.get("/api/v1/gis/rainfall/warning/replay/{replay_id}")
+def rain_warning_replay(replay_id: str):
+    """Story 4.41: hour-by-hour warning level through a recorded event (observed rain only)."""
+    data = rain_warning.replay(replay_id)
+    if not data:
+        raise HTTPException(status_code=404, detail="Không có dữ liệu phát lại này.")
+    return data
 
 # --- Request / Response Models ---
 class IngestRainfallRequest(BaseModel):
