@@ -1,8 +1,9 @@
 import unittest
 from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
+from pathlib import Path
 from app.pipeline.live_rainfall import (normalize_weather, location_key, LiveRainfallService, LiveWeatherRepository,
-                                        utc_now, map_feature, rain_anomaly, load_climatology)
+                                        utc_now, map_feature, rain_anomaly, load_climatology, backfill_payloads)
 
 
 class LiveRainfallTests(unittest.TestCase):
@@ -81,6 +82,8 @@ class LiveRainfallTests(unittest.TestCase):
         with self.assertRaises(ValueError): location_key(float('nan'), 104)
 
     def service(self):
+        archive = patch.dict('os.environ', {'RAIN_ARCHIVE_DIR': '/nonexistent-rain-archive'})
+        archive.start(); self.addCleanup(archive.stop)
         service = LiveRainfallService()
         service.repo = MagicMock()
         service.repo.connect.return_value.cursor.return_value.__enter__.return_value.fetchone.return_value = (True,)
@@ -175,10 +178,12 @@ class LiveRainfallTests(unittest.TestCase):
         repo.connect = MagicMock()
         cur = repo.connect.return_value.cursor.return_value.__enter__.return_value
         location = {'key': '22.5250,103.8650', 'name': 'Ô 002', 'latitude': 22.525, 'longitude': 103.865}
+        cur.fetchall.return_value = []  # first record for this point: nothing to backfill
         repo.save(location, payload=dict(normalize_weather(self.raw, self.now), weather={'daily': []}))
+        self.assertEqual(cur.execute.call_count, 3)  # snapshot, last stored hour, history
         sql, params = cur.execute.call_args_list[-1].args
         self.assertIn('live_rainfall_history', sql)
-        self.assertIn('DO NOTHING', sql)  # first fetch of an hour is kept, later ones cannot rewrite it
+        self.assertIn("payload->>'origin' = 'backfill'", sql)  # only a backfilled hour may be rewritten
         self.assertEqual(params[1], self.end.isoformat())
         self.assertNotIn('weather', params[3].adapted)
         self.assertEqual(params[3].adapted['history']['24']['mm'], 24)
@@ -186,6 +191,38 @@ class LiveRainfallTests(unittest.TestCase):
         repo.save(location, error='RuntimeError')
         self.assertEqual(cur.execute.call_count, 1)
         self.assertNotIn('live_rainfall_history', cur.execute.call_args.args[0])
+
+    def test_backfill_rebuilds_only_the_missing_hours_and_marks_them(self):
+        payload = normalize_weather(self.raw, self.now)  # 1 mm every hour
+        ago = lambda h: self.end - timedelta(hours=h)
+        rows = backfill_payloads(payload, {ago(5), ago(2)})  # monitored since 5 h ago, 4, 3 and 1 h ago missing
+        self.assertEqual([r['as_of'] for r in rows], [ago(h).isoformat() for h in (4, 3, 1)])
+        self.assertTrue(all(r['origin'] == 'backfill' and r['forecast_24h']['mm'] is None for r in rows))
+        self.assertEqual(rows[0]['history']['24']['mm'], 24)
+        self.assertIsNone(rows[0]['history']['168']['mm'])  # older than the series this fetch holds
+        self.assertEqual(backfill_payloads(payload, set()), [])  # never invent hours before monitoring began
+        self.assertEqual(backfill_payloads(payload, {ago(1)}), [])
+        self.assertEqual(len(backfill_payloads(payload, {ago(24 * 30)})), 167)  # capped to the series
+
+    def test_archive_import_adds_unrecorded_hours_as_real_records(self):
+        import gzip, json, tempfile
+        point = {'key': '22.5250,103.8650', 'name': 'Ô 002', 'latitude': 22.525, 'longitude': 103.865}
+        with tempfile.TemporaryDirectory() as root:
+            Path(root, '2026', '11').mkdir(parents=True)
+            Path(root, '2026', '11', '050825Z.json.gz').write_bytes(gzip.compress(json.dumps(
+                {'fetched_at': self.now.isoformat(), 'points': [dict(point, raw=self.raw)]}).encode()))
+            service = self.service()
+            service.predict = MagicMock(return_value={'ready': True})
+            service.repo.recorded_hours.return_value = set()
+            service.repo.add_history.return_value = 1
+            self.assertEqual(service.import_archive(root), 1)
+            key, payload = service.repo.add_history.call_args.args
+            self.assertEqual((key, payload['origin'], payload['as_of']), (point['key'], 'github_archive', self.end.isoformat()))
+            self.assertIsNone(service.predict.call_args.kwargs['max_age'])  # scored as of its own hour
+            service.repo.add_history.reset_mock()
+            service.repo.recorded_hours.return_value = {(point['key'], self.end)}
+            self.assertEqual(service.import_archive(root), 0)
+            service.repo.add_history.assert_not_called()
 
 
 if __name__ == '__main__': unittest.main()

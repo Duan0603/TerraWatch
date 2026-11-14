@@ -1,0 +1,48 @@
+# Hourly Open-Meteo snapshot for the monitored points, committed to the `rain-archive` branch,
+# so rainfall history keeps going while the local Docker stack is off. The GIS service imports
+# the files when it runs (see scripts/archive-open-meteo.py). Scheduled runs only happen from
+# the default branch, and GitHub may start them some minutes late.
+name: Rain archive
+
+on:
+  schedule:
+    - cron: '7 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rain-archive
+  cancel-in-progress: false
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check out the archive branch (created empty on first run)
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git fetch --depth=1 origin rain-archive; then
+            git worktree add archive FETCH_HEAD
+          else
+            git worktree add --detach archive "$(git commit-tree "$(git hash-object -t tree /dev/null)" -m 'Start rain archive')"
+          fi
+
+      - name: Save one snapshot
+        run: python3 scripts/archive-open-meteo.py --out archive
+
+      - name: Commit and push
+        working-directory: archive
+        run: |
+          git add -A
+          git commit -q -m "Rain snapshot $(date -u +%Y-%m-%dT%H:%MZ)"
+          for attempt in 1 2 3; do
+            git push origin HEAD:refs/heads/rain-archive && exit 0
+            git pull --rebase -q origin rain-archive || true
+          done
+          exit 1
