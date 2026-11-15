@@ -1,4 +1,5 @@
 import os
+import uuid
 import logging
 from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
@@ -160,7 +161,7 @@ def trigger_rainfall_ingestion(req: IngestRainfallRequest):
         units = rainfall_repo.get_assessment_units(area_id=req.area_id, unit_id=req.unit_id)
     except Exception as e:
         logger.error(f"Database error while querying assessment units: {e}")
-        raise HTTPException(status_code=500, detail=f"Database connection error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Database connection error.")
 
     if not units:
         raise HTTPException(status_code=404, detail="No active assessment units found for the specified filter.")
@@ -213,8 +214,9 @@ def trigger_rainfall_ingestion(req: IngestRainfallRequest):
             logger.error(f"Unexpected error processing unit {u_id}: {e}")
             unit_results.append({"unit_id": u_id, "status": "failed", "error": str(e)})
 
+    all_failed = bool(unit_results) and all(r["status"] == "failed" for r in unit_results)
     return {
-        "success": True,
+        "success": not all_failed,
         "total_units_evaluated": len(units),
         "total_observations_saved": total_obs_saved,
         "total_forecasts_saved": total_fcst_saved,
@@ -256,14 +258,17 @@ def get_rainfall_summary(unit_id: str):
         return {"success": True, "data": summary}
     except HTTPException:
         raise
+    except RainfallClientError as e:
+        logger.error(f"Weather provider error for {unit_id}: {e}")
+        raise HTTPException(status_code=502, detail="Weather provider unavailable.")
     except Exception as e:
         logger.error(f"Error fetching rainfall summary for {unit_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error.")
 
 @app.get("/api/v1/gis/rainfall/live-sample")
 def get_live_rainfall_sample(
-    lat: float = Query(22.525, description="Vĩ độ (Mặc định: Bát Xát, Lào Cai)"),
-    lon: float = Query(103.855, description="Kinh độ (Mặc định: Bát Xát, Lào Cai)")
+    lat: float = Query(22.525, ge=-90, le=90, description="Vĩ độ (Mặc định: Bát Xát, Lào Cai)"),
+    lon: float = Query(103.855, ge=-180, le=180, description="Kinh độ (Mặc định: Bát Xát, Lào Cai)")
 ):
     """
     Endpoint chẩn đoán: Gọi trực tiếp Open-Meteo và tính toán mẫu cho một tọa độ GPS bất kỳ.
@@ -277,7 +282,8 @@ def get_live_rainfall_sample(
             "summary": processed["summary"]
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("Live rainfall sample failed: %s", e)
+        raise HTTPException(status_code=500, detail="Internal server error.")
 
 # --- Terrain Endpoints (Story 2.2) ---
 
@@ -344,7 +350,7 @@ def extract_terrain(req: TerrainExtractRequest):
         raise
     except Exception as e:
         logger.error("Terrain extraction failed: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error.")
 
 
 @app.get("/api/v1/gis/terrain/{unit_id}")
@@ -365,7 +371,7 @@ def get_terrain_summary(unit_id: str):
         raise
     except Exception as e:
         logger.error("Error retrieving terrain summary for %s: %s", unit_id, e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error.")
 
 # --- Feature Snapshot Endpoints (Story 2.3) ---
 
@@ -381,7 +387,10 @@ def create_feature_snapshots(req: CreateSnapshotRequest):
         if not units:
             raise HTTPException(status_code=404, detail="No active assessment units found.")
 
-        as_of_dt = SnapshotProcessor.parse_iso_utc(req.as_of_time) if req.as_of_time else None
+        try:
+            as_of_dt = SnapshotProcessor.parse_iso_utc(req.as_of_time) if req.as_of_time else None
+        except ValueError:
+            raise HTTPException(status_code=422, detail="as_of_time is not a valid ISO-8601 timestamp.")
 
         created_snapshots = []
         for u in units:
@@ -423,7 +432,7 @@ def create_feature_snapshots(req: CreateSnapshotRequest):
         raise
     except Exception as e:
         logger.error("Error creating feature snapshots: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error.")
 
 
 @app.get("/api/v1/gis/snapshots/latest/{unit_id}")
@@ -444,7 +453,7 @@ def get_latest_feature_snapshot(unit_id: str):
         raise
     except Exception as e:
         logger.error("Error retrieving latest snapshot for %s: %s", unit_id, e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error.")
 
 
 @app.get("/api/v1/gis/snapshots/{snapshot_id}")
@@ -452,6 +461,10 @@ def get_feature_snapshot_by_id(snapshot_id: str):
     """
     Truy vấn bản ghi feature snapshot theo UUID định danh duy nhất.
     """
+    try:
+        uuid.UUID(snapshot_id)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="snapshot_id must be a UUID.")
     try:
         snapshot = snapshot_repo.get_snapshot_by_id(snapshot_id)
         if not snapshot:
@@ -465,7 +478,7 @@ def get_feature_snapshot_by_id(snapshot_id: str):
         raise
     except Exception as e:
         logger.error("Error retrieving snapshot %s: %s", snapshot_id, e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error.")
 
 # --- Legacy & Tiling Endpoints (Retained for Compatibility) ---
 

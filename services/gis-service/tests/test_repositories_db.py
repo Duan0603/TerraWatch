@@ -181,9 +181,6 @@ def test_summary_all_missing_returns_none_not_zero(db):
     assert RainfallRepository(db_url()).get_latest_rainfall_summary(u) is None
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: expected quality_flag/accumulation to expose that hours are missing; actual "
-                                       "rainfall_repository.py:146-155 drops 'missing' rows from SUM and reports "
-                                       "quality_flag='good' with an understated 24h total")
 def test_summary_partial_gap_is_not_reported_as_good(db):
     u = db.unit()
     _hourly(db, u, [30, 150, 270], mm=1.0)
@@ -192,8 +189,6 @@ def test_summary_partial_gap_is_not_reported_as_good(db):
     assert s["quality_flag"] != "good" or s["rain_24h_acc_mm"] is None
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: expected forecast issued after 'now' to be ignored (no look-ahead); actual "
-                                       "rainfall_repository.py:159-168 selects latest issued_at with no available_at/now filter")
 def test_summary_ignores_future_issued_forecast(db):
     u = db.unit()
     _hourly(db, u, [30])
@@ -244,9 +239,6 @@ def test_latest_forecast_as_of_excludes_later_available(db):
     assert repo.get_latest_forecast_as_of("NOPE_" + u, T0) is None
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: expected forecast with issued_at after as_of to be excluded; actual "
-                                       "snapshot_repository.py:104-108 filters only on available_at (issued_at "
-                                       "after as_of with earlier available_at leaks)")
 def test_latest_forecast_as_of_excludes_issued_after_as_of(db):
     u = db.unit()
     RainfallRepository(db_url()).save_rainfall_forecast(
@@ -293,9 +285,6 @@ def test_save_snapshot_same_key_returns_same_id(db):
     assert db.q("SELECT count(*) FROM gis_schema.feature_snapshots WHERE unit_id=%s", (u,)) == [(1,)]
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: expected existing snapshot for same key to be kept unchanged (immutable, "
-                                       "idempotent create); actual snapshot_repository.py:141-145 ON CONFLICT DO UPDATE "
-                                       "overwrites features/coverage_quality/source_references")
 def test_save_snapshot_does_not_overwrite_existing(db):
     u = db.unit()
     repo = SnapshotRepository(db_url())

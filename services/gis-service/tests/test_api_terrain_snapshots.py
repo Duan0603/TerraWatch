@@ -127,7 +127,6 @@ def test_extract_db_down_500(client, monkeypatch):
     assert client.post(EXTRACT, json={}).status_code == 500
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: 500 detail is raw str(exception); DB driver text leaks to client")
 def test_extract_db_down_does_not_leak_driver_text(client, monkeypatch):
     monkeypatch.setattr(main, "terrain_repo", FakeTerrainRepo(fail=True))
     assert "hunter2" not in client.post(EXTRACT, json={}).text
@@ -165,7 +164,6 @@ def test_terrain_summary_db_down_500(client, monkeypatch):
     assert client.get(TERRAIN + "U").status_code == 500
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: 500 detail is raw str(exception); DB driver text leaks to client")
 def test_terrain_summary_db_down_does_not_leak_driver_text(client, monkeypatch):
     monkeypatch.setattr(main, "terrain_repo", FakeTerrainRepo(fail=True))
     assert "hunter2" not in client.get(TERRAIN + "U").text
@@ -235,14 +233,11 @@ def test_create_snapshot_db_down_500_nothing_saved(client, snap_env):
     assert snap_env.saved == []
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: 500 detail is raw str(exception); DB driver text leaks to client")
 def test_create_snapshot_db_down_does_not_leak_driver_text(client, snap_env):
     snap_env.fail = True
     assert "hunter2" not in client.post(CREATE, json={"as_of_time": AS_OF}).text
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: unparseable as_of_time ('garbage') is client input error but yields 500 "
-                                       "(ValueError text echoed); expected 400/422")
 def test_create_snapshot_bad_as_of_time_is_client_error(client, snap_env):
     assert client.post(CREATE, json={"as_of_time": "garbage"}).status_code in (400, 422)
 
@@ -265,7 +260,6 @@ def test_latest_snapshot_db_down_500(client, monkeypatch):
     assert client.get(SNAP + "latest/U").status_code == 500
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: 500 detail is raw str(exception); DB driver text leaks to client")
 def test_latest_snapshot_db_down_does_not_leak_driver_text(client, monkeypatch):
     monkeypatch.setattr(main, "snapshot_repo", FakeSnapRepo(fail=True))
     assert "hunter2" not in client.get(SNAP + "latest/U").text
@@ -289,7 +283,6 @@ def test_snapshot_by_id_db_down_500(client, monkeypatch):
     assert client.get(SNAP + "22222222-2222-2222-2222-222222222222").status_code == 500
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: 500 detail is raw str(exception); DB driver text leaks to client")
 def test_snapshot_by_id_db_down_does_not_leak_driver_text(client, monkeypatch):
     monkeypatch.setattr(main, "snapshot_repo", FakeSnapRepo(fail=True))
     assert "hunter2" not in client.get(SNAP + "22222222-2222-2222-2222-222222222222").text
@@ -340,8 +333,6 @@ def test_db_snapshot_by_id_unknown_uuid_404(client, db):
     assert client.get(SNAP + "33333333-3333-3333-3333-333333333333").status_code == 404
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: non-UUID snapshot id reaches the uuid column -> psycopg2 DataError -> 500; "
-                                       "expected 404/422")
 def test_db_snapshot_by_id_malformed_uuid_is_client_error(client, db):
     assert client.get(SNAP + "not-a-uuid").status_code in (404, 422)
 

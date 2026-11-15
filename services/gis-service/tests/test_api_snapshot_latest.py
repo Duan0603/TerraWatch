@@ -50,7 +50,6 @@ def test_latest_repository_failure_500(client, repo):
     assert client.get(URL + "U1").status_code == 500
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: 500 detail is raw str(exception); DB driver text leaks to client")
 def test_latest_repository_failure_does_not_leak_driver_text(client, repo):
     repo.fail = True
     assert "10.0.0.9" not in client.get(URL + "U1").text

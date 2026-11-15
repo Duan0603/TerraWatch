@@ -228,8 +228,6 @@ def test_ingest_db_down_returns_500_and_stores_nothing(client, monkeypatch):
     assert cl.calls == []
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: 500 detail embeds raw str(exception) from the DB driver "
-                                       "(host/user/DSN fragments leak to the client); expected generic message")
 def test_ingest_db_down_does_not_leak_driver_text(client, monkeypatch):
     monkeypatch.setattr(main, "rainfall_repo", FakeRainRepo(fail=True))
     assert "hunter2" not in client.post(INGEST, json={}).text
@@ -274,8 +272,6 @@ def test_ingest_without_forecast_skips_forecast_save(client, monkeypatch):
     assert body["results"][0]["summary"]["quality_flag"] == "missing"
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: when every unit fails (provider down) the route still answers 200 with "
-                                       "success=true; expected success=false or a 502/503")
 def test_ingest_all_units_failed_not_reported_as_success(client, monkeypatch):
     monkeypatch.setattr(main, "rainfall_repo", FakeRainRepo())
     monkeypatch.setattr(main, "rainfall_client", FakeRainClient(exc=RainfallClientError("down")))
@@ -327,7 +323,7 @@ def test_summary_provider_error_500_no_data(client, monkeypatch):
     monkeypatch.setattr(main, "rainfall_repo", FakeRainRepo())
     monkeypatch.setattr(main, "rainfall_client", FakeRainClient(exc=RainfallClientError("down")))
     r = client.get(SUMMARY + BATXAT["unit_id"])
-    assert r.status_code == 500 and "data" not in r.json()
+    assert r.status_code == 502 and "data" not in r.json()
 
 
 def test_summary_db_down_500(client, monkeypatch):
@@ -335,14 +331,11 @@ def test_summary_db_down_500(client, monkeypatch):
     assert client.get(SUMMARY + "U").status_code == 500
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: 500 detail is raw str(exception); DB driver text leaks to client")
 def test_summary_db_down_does_not_leak_driver_text(client, monkeypatch):
     monkeypatch.setattr(main, "rainfall_repo", FakeRainRepo(fail=True))
     assert "hunter2" not in client.get(SUMMARY + "U").text
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: upstream (weather provider) outage surfaces as 500 'Internal'-style error "
-                                       "instead of 502/503 Bad Gateway/Unavailable")
 def test_summary_provider_down_is_gateway_error(client, monkeypatch):
     monkeypatch.setattr(main, "rainfall_repo", FakeRainRepo())
     monkeypatch.setattr(main, "rainfall_client", FakeRainClient(exc=RainfallClientError("down")))
@@ -383,8 +376,6 @@ def test_live_sample_provider_error_500_no_summary(client, monkeypatch):
     assert r.status_code == 500 and "summary" not in r.json()
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: lat/lon not range-validated (live route uses ge/le); lat=999 is forwarded "
-                                       "to the upstream provider and answered 200 instead of 422")
 def test_live_sample_out_of_range_coords_rejected(client, monkeypatch):
     monkeypatch.setattr(main, "rainfall_client", FakeRainClient())
     assert client.get(SAMPLE, params={"lat": 999, "lon": 999}).status_code == 422

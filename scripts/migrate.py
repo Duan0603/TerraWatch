@@ -112,7 +112,7 @@ def migrate_up():
     ensure_migration_table()
     applied = get_applied_migrations()
 
-    migration_files = sorted(glob.glob(os.path.join(MIGRATIONS_DIR, "V*__*.sql")))
+    migration_files = sorted(glob.glob(os.path.join(MIGRATIONS_DIR, "V*__*.sql")), key=lambda p: int(os.path.basename(p).split("__")[0][1:]))
     if not migration_files:
         print(f"No migration files found in {MIGRATIONS_DIR}")
         return
@@ -142,7 +142,7 @@ def migrate_up():
 def migrate_status():
     ensure_migration_table()
     applied = get_applied_migrations()
-    migration_files = sorted(glob.glob(os.path.join(MIGRATIONS_DIR, "V*__*.sql")))
+    migration_files = sorted(glob.glob(os.path.join(MIGRATIONS_DIR, "V*__*.sql")), key=lambda p: int(os.path.basename(p).split("__")[0][1:]))
 
     print("\n📊 [Database Migration Status]")
     print(f"{'Version':<10} | {'Status':<12} | {'Migration File'}")

@@ -84,8 +84,6 @@ def test_mismatched_array_lengths_passed_through_for_processor(monkeypatch):
     assert c.fetch_rainfall_series(1, 2) == payload
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: expected RainfallClientError for 'hourly': null; actual TypeError "
-                                       "('in' on None) escapes at rainfall_client.py:62")
 def test_null_hourly_object_gives_client_error(monkeypatch):
     c, _ = client_with(monkeypatch, FakeResponse({"hourly": None}))
     with pytest.raises(RainfallClientError):
