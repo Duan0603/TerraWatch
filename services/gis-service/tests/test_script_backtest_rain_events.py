@@ -22,9 +22,6 @@ def test_rolling_with_end_keeps_length():
     assert backtest.rolling_with_end(np.ones(6), 3).shape == (6,)
 
 
-@pytest.mark.xfail(strict=True, raises=ValueError,
-                   reason="BUG: series shorter than the window raises a numpy broadcast ValueError; "
-                          "rolling_sums (same maths) returns an empty array instead")
 def test_rolling_with_end_short_series_is_all_nan():
     r = backtest.rolling_with_end(np.ones(2), 3)
     assert r.shape == (2,) and np.isnan(r).all()
