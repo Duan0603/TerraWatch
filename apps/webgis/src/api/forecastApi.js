@@ -15,9 +15,11 @@ export const apiErrorMessage = (err, fallback) =>
   ERROR_BY_STATUS[err.response?.status] || `${fallback} (${err.message})`;
 
 // Lưu vùng giám sát: 400 ở đây là ranh giới không hợp lệ (hình nơ / GeoJSON hỏng), không phải thiếu lý do từ chối.
-const aoiSaveError = (err, fallback) => err.response?.status === 400
-  ? new Error('Ranh giới vùng không hợp lệ (tự cắt nhau hoặc sai định dạng). Hãy chỉnh lại các điểm.')
-  : new Error(apiErrorMessage(err, fallback));
+// 409 ở đây là trùng tên vùng (tên duy nhất từ migration V10), không phải dự báo đã được xử lý.
+const aoiSaveError = (err, fallback) => new Error(
+  err.response?.status === 400 ? 'Ranh giới vùng không hợp lệ (tự cắt nhau hoặc sai định dạng). Hãy chỉnh lại các điểm.'
+  : err.response?.status === 409 ? 'Đã có vùng giám sát mang tên này. Hãy đặt tên khác.'
+  : apiErrorMessage(err, fallback));
 
 // Chuyển một ForecastReviewItem của backend sang mô hình hiển thị dùng chung cho hàng đợi, bản đồ và panel bằng chứng.
 export const toForecastView = (item) => {
