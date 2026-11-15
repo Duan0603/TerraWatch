@@ -151,10 +151,18 @@ void main() {
       await tester.runAsync(() => LocalStorage.insertAlert(_a('keep').toMap()));
       final repo = AlertsRepository();
       await tester.pumpWidget(MaterialApp(home: AlertsScreen(repository: repo, clock: () => _now, notificationsEnabled: () async => true)));
-      await settleReal(tester, rounds: 4);
+      // The sqflite ffi isolate answers in real time; a fixed number of 30 ms rounds is not enough on a loaded CI
+      // runner (measured: the snackbar needs 1-4 rounds under load). Wait for what the test asserts, bounded.
+      Future<void> settleUntil(Finder f) async {
+        for (var i = 0; i < 300 && f.evaluate().isEmpty; i++) {
+          await settleReal(tester, rounds: 1);
+        }
+      }
+
+      await settleUntil(find.text('Cảnh báo keep'));
       expect(find.text('Cảnh báo keep'), findsOneWidget);
       await tester.tap(find.byTooltip('Xóa sạch lịch sử'));
-      await settleReal(tester, rounds: 4);
+      await settleUntil(find.text('Đã xóa sạch lịch sử cảnh báo.'));
       expect(find.text('Đã xóa sạch lịch sử cảnh báo.'), findsOneWidget);
       expect(find.text('Chưa có cảnh báo nào'), findsOneWidget);
       expect(await tester.runAsync(LocalStorage.getAlertHistory), isEmpty);
