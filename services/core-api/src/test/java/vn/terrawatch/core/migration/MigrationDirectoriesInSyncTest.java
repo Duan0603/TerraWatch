@@ -1,5 +1,6 @@
 package vn.terrawatch.core.migration;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -37,6 +38,22 @@ class MigrationDirectoriesInSyncTest {
     @Test
     void sameFileNameHasSameContentExceptKnownOnes() throws IOException {
         assertThat(problems(Set.of(), Set.of(KNOWN_DIFFERENT_CONTENT), false)).isEmpty();
+    }
+
+    @Test
+    @Disabled("BUG: expected both directories to hold the same files; actual V15__multi_phase_sms_broadcast.sql exists only in "
+        + "services/core-api/src/main/resources/db/migration, so scripts/migrate.py and the GIS CI never get the incident_phase / "
+        + "SMS columns on alert_broadcasts and alert_deliveries")
+    void noFileMissingFromEitherDirectory() throws IOException {
+        assertThat(problems(Set.of(), Set.of(), true)).isEmpty();
+    }
+
+    @Test
+    @Disabled("BUG: expected identical V3 in both directories; actual database/migrations copy has one extra comment line "
+        + "(\"-- Partial unique index handles NULL district/commune ...\" before idx_uq_user_subscription), "
+        + "which does not change the resulting schema")
+    void noFileHasDifferentContent() throws IOException {
+        assertThat(problems(Set.of(), Set.of(), false)).isEmpty();
     }
 
     /** One message per offending file; names the file. filesOnly: check existence, otherwise check content. */
