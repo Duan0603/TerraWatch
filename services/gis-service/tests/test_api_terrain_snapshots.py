@@ -333,8 +333,6 @@ def test_db_snapshot_by_id_unknown_uuid_404(client, db):
     assert client.get(SNAP + "33333333-3333-3333-3333-333333333333").status_code == 404
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: non-UUID snapshot id reaches the uuid column -> psycopg2 DataError -> 500; "
-                                       "expected 404/422")
 def test_db_snapshot_by_id_malformed_uuid_is_client_error(client, db):
     assert client.get(SNAP + "not-a-uuid").status_code in (404, 422)
 

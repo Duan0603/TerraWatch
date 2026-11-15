@@ -1,4 +1,5 @@
 import os
+import uuid
 import logging
 from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
@@ -460,6 +461,10 @@ def get_feature_snapshot_by_id(snapshot_id: str):
     """
     Truy vấn bản ghi feature snapshot theo UUID định danh duy nhất.
     """
+    try:
+        uuid.UUID(snapshot_id)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="snapshot_id must be a UUID.")
     try:
         snapshot = snapshot_repo.get_snapshot_by_id(snapshot_id)
         if not snapshot:
