@@ -169,10 +169,14 @@ class LandslidePredictor:
         thr = float(modes[mode])
         sha = self._sha256()
         ref_p, post_p, pre_p = self._resolve(ref_tif), self._resolve(post_tif), self._resolve(pre_tif)
-        with rasterio.open(ref_p) as src:
-            ot, crs = src.transform, src.crs
-            ref = src.read().astype("float32")
-        post, pre = read_aligned(post_p, ot), read_aligned(pre_p, ot)
+        try:
+            with rasterio.open(ref_p) as src:
+                ot, crs = src.transform, src.crs
+                ref = src.read().astype("float32")
+            post, pre = read_aligned(post_p, ot), read_aligned(pre_p, ot)
+        except rasterio.errors.RasterioIOError:
+            logger.exception("unreadable scene file")
+            raise ValueError("scene file is not a readable GeoTIFF")
         h, w = min(ref.shape[1], post.shape[1], pre.shape[1]), min(ref.shape[2], post.shape[2], pre.shape[2])
         ref, post, pre = ref[:, :h, :w], post[:, :h, :w], pre[:, :h, :w]
         slope = np.nan_to_num(ref[6], nan=float(np.nanmedian(ref[6])))

@@ -404,8 +404,6 @@ def test_scene_engine_failure_is_503(pred):
     assert client.post("/api/v1/inference/scene", json=SCENE).status_code == 503
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: corrupt/non-GeoTIFF file named *.tif raises rasterio error (OSError) -> unhandled 500; "
-                   "expected 4xx (422) for bad client scene, actual 500")
 def test_scene_corrupt_tif_is_client_error(pred):
     open(f"{pred.scene_dir}/post.tif", "wb").write(b"not a tif")
     r = client.post("/api/v1/inference/scene", json=SCENE)
