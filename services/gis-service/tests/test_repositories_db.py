@@ -244,9 +244,6 @@ def test_latest_forecast_as_of_excludes_later_available(db):
     assert repo.get_latest_forecast_as_of("NOPE_" + u, T0) is None
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: expected forecast with issued_at after as_of to be excluded; actual "
-                                       "snapshot_repository.py:104-108 filters only on available_at (issued_at "
-                                       "after as_of with earlier available_at leaks)")
 def test_latest_forecast_as_of_excludes_issued_after_as_of(db):
     u = db.unit()
     RainfallRepository(db_url()).save_rainfall_forecast(
