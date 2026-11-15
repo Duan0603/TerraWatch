@@ -22,6 +22,7 @@ import { testZoneLocation, testMonitoredPoints } from './test-zone-location.mjs'
 import { testExperimentalRisk } from './test-experimental-risk.mjs';
 import { testSnapshotContracts } from './test-snapshot-contracts.mjs';
 import { testRainWarning, testRainWarningChart, testRainWarningActions, testRainWarningOnset, testRainWarningRunout } from './test-rain-warning.mjs';
+import { testAuthApi } from './test-auth-api.mjs';
 
 async function runAllWebGisTests() {
   console.log('===============================================================');
@@ -59,6 +60,7 @@ async function runAllWebGisTests() {
     await testRainWarningActions();
     await testRainWarningOnset();
     await testRainWarningRunout();
+    await testAuthApi();
 
     const elapsed = Date.now() - startTime;
     console.log('===============================================================');
