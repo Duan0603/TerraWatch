@@ -213,8 +213,9 @@ def trigger_rainfall_ingestion(req: IngestRainfallRequest):
             logger.error(f"Unexpected error processing unit {u_id}: {e}")
             unit_results.append({"unit_id": u_id, "status": "failed", "error": str(e)})
 
+    all_failed = bool(unit_results) and all(r["status"] == "failed" for r in unit_results)
     return {
-        "success": True,
+        "success": not all_failed,
         "total_units_evaluated": len(units),
         "total_observations_saved": total_obs_saved,
         "total_forecasts_saved": total_fcst_saved,

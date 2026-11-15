@@ -272,8 +272,6 @@ def test_ingest_without_forecast_skips_forecast_save(client, monkeypatch):
     assert body["results"][0]["summary"]["quality_flag"] == "missing"
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: when every unit fails (provider down) the route still answers 200 with "
-                                       "success=true; expected success=false or a 502/503")
 def test_ingest_all_units_failed_not_reported_as_success(client, monkeypatch):
     monkeypatch.setattr(main, "rainfall_repo", FakeRainRepo())
     monkeypatch.setattr(main, "rainfall_client", FakeRainClient(exc=RainfallClientError("down")))
