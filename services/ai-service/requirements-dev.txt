@@ -1,0 +1,4 @@
+# Test-only dependencies; the runtime image installs requirements.txt only.
+pytest>=8.0
+# fastapi.testclient (starlette) needs an HTTP client; httpx is deprecated there.
+httpx2>=2.0.0
