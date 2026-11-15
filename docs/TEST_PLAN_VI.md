@@ -5,6 +5,7 @@
 | Phiên bản | 1.1 (bản nháp để nhóm rà soát; bổ sung yêu cầu phi chức năng theo chuẩn ngành) |
 | Ngày lập | 2026-11-13 |
 | Căn cứ mã nguồn | `main` tại commit `c5e1a6d` (2026-11-13) |
+| Cập nhật trạng thái tự động hóa | 2026-11-15, `main` tại `b182eae`: mục 4.1, GIS-12, SEC-01, SEC-02 và mục 12 (điểm 1–3). Các dòng khác giữ trạng thái ngày 2026-11-13 |
 | Phạm vi | Core API, GIS service, AI service, Gateway, WebGIS, Mobile (Android), cơ sở dữ liệu |
 
 Tài liệu này liệt kê **mọi chức năng đang có trong mã nguồn** và kịch bản kiểm thử tương ứng, kèm trạng thái tự động hóa hiện tại. Kỳ vọng lấy từ PRD v5, `SecurityConfig`, các DTO, migration và tên các test đang có. Những chỗ ghi **"cần xác minh"** là hành vi chưa có test nào khẳng định, hoặc tài liệu cũ từng ghi nhận lệch; người kiểm thử ghi lại hành vi thực tế rồi nhóm chốt kỳ vọng.
@@ -35,20 +36,20 @@ Tài liệu này liệt kê **mọi chức năng đang có trong mã nguồn** v
 
 ### 4.1 Cấp độ kiểm thử và tài sản đang có
 
-Kết quả ở cột cuối là lần chạy ngày 2026-11-13 trên commit `c5e1a6d`.
+Số lớp/file đếm trên `main` tại `b182eae` (2026-11-15). Cột cuối là lần chạy CI gần nhất trên `main` của từng workflow, kèm commit của lần chạy đó.
 
 | Ký hiệu | Cấp độ | Vị trí | Lệnh chạy | Kết quả |
 | --- | --- | --- | --- | --- |
-| C | Unit + API (JUnit, MockMvc) Core | `services/core-api/src/test` (27 lớp) | `mvn test` (JDK 17, cần PostGIS test) | 131/131 qua |
-| G | Unit GIS (pytest) | `services/gis-service/tests` (7 file) | `pytest` | 36 qua; 2 test DB cần PostGIS đã nạp `database/seed_v3_fixtures.sql` |
-| A | Unit AI (pytest) | `services/ai-service/tests` (3 file) | `pytest` | 15 qua, 1 skip |
-| W | Unit WebGIS (node) | `apps/webgis/tests` (22 file) | `npm test`, `npm run test:model-demo` | `npm test` qua |
-| E | E2E WebGIS (Playwright) | `apps/webgis/e2e` (9 spec) | `npm run e2e` (cần stack đang chạy) | chưa chạy trong đợt rà soát này |
-| M | Unit + widget Mobile | `apps/mobile/test` (18 file) | `flutter analyze`, `flutter test` | 108/108 qua |
+| C | Unit + API (JUnit, MockMvc) Core | `services/core-api/src/test` (40 lớp) | `mvn test` (JDK 17, cần PostGIS test) | CI `b182eae`: 1745 test, 0 lỗi, 22 bỏ qua |
+| G | Unit GIS (pytest) | `services/gis-service/tests` (14 file) | `pytest` | CI `d1a9027`: 327 qua, 19 xfail; CI tự nạp schema và fixture vào PostGIS |
+| A | Unit AI (pytest) | `services/ai-service/tests` (6 file) | `pytest` | CI `d1a9027`: **đỏ**, dừng khi thu thập `tests/test_api.py` (`starlette.testclient` thiếu gói HTTP client trên CI); chưa có lần chạy xanh nào trên CI |
+| W | Unit WebGIS (node) | `apps/webgis/tests` (25 file) | `npm test`, `npm run test:model-demo` | CI `c22fe73`: `npm test` qua |
+| E | E2E WebGIS (Playwright) | `apps/webgis/e2e` (10 spec) | `npm run e2e` (cần stack đang chạy) | chưa chạy trong đợt rà soát này |
+| M | Unit + widget Mobile | `apps/mobile/test` (25 file) | `flutter analyze`, `flutter test` | CI `33b6e26`: 245 qua, 10 bỏ qua; `flutter analyze` báo 3 vấn đề (không chặn) |
 | GW | Kiểm tra định tuyến gateway | `gateway/check-routes.sh` | `gateway/check-routes.sh [base-url]` | chưa chạy |
 | — | Thủ công | theo danh mục ở mục 7–9 | — | chưa thực hiện |
 
-Hiện CI chỉ chạy W và build; C, G, A, M, E, GW chưa chạy trên CI.
+CI chạy C, G, A, M, W trên pull request và khi push vào `main`. A đang đỏ (xem bảng). E và GW chưa chạy trên CI.
 
 ### 4.2 Loại kiểm thử
 
@@ -186,7 +187,7 @@ Cột **Tự động**: "Có" kèm nơi chứa test; "Một phần" là mới ph
 | GIS-09 | Tạo snapshot tại một thời điểm phát hành | Chỉ dùng dữ liệu có `available_at` không muộn hơn thời điểm đó; dự báo tương lai bị từ chối | P0 | Có (G: test_snapshots, test_snapshot_invariants) |
 | GIS-10 | Snapshot khi thiếu địa hình hoặc quan trắc hỏng | Chất lượng "stale" hoặc "missing"; không điền 0 | P0 | Có (G) |
 | GIS-11 | Tạo lại snapshot cùng khóa | **Cần xác minh:** yêu cầu là bất biến; tài liệu truy vết từng ghi nhận mã ghi đè | P1 | Chưa |
-| GIS-12 | 14 route HTTP của GIS: tham số sai, đơn vị không tồn tại, snapshot không tồn tại | 4xx đúng nghĩa, không 500 | P1 | Chưa (`app/main.py` chưa có test) |
+| GIS-12 | 17 route HTTP của GIS: tham số sai, đơn vị không tồn tại, snapshot không tồn tại | 4xx đúng nghĩa, không 500 | P1 | Một phần (G: test_api, test_api_terrain_snapshots; 4 route chưa có test: `rainfall/live/history`, `rainfall/warning/sites`, `rainfall/warning/replay/{id}`, `snapshots/latest/{unit_id}`) |
 | GIS-13 | `/health`, tiling, vector tile | Trả đúng định dạng | P2 | Chưa |
 
 ### 7.6 AI — Dịch vụ suy luận
@@ -504,8 +505,8 @@ Về NFR-C04: theo QĐ 18/2021/QĐ-TTg, bản tin do cơ quan có thẩm quyền
 
 | ID | Kịch bản | Kết quả mong đợi | P | Tự động |
 | --- | --- | --- | --- | --- |
-| SEC-01 | Gọi mọi route với bốn loại người dùng theo ma trận trên | Đúng từng ô | P0 | Một phần (C: rải ở nhiều lớp, chưa có test ma trận) |
-| SEC-02 | Thêm một route mới mà không khai báo quyền | Phải bị từ chối. Hiện `/api/v1/**` còn lại đang mở mặc định; kiểm mỗi khi thêm controller | P0 | Chưa |
+| SEC-01 | Gọi mọi route với bốn loại người dùng theo ma trận trên | Đúng từng ô | P0 | Có (C: AuthorizationMatrixTest) |
+| SEC-02 | Thêm một route mới mà không khai báo quyền | Phải bị từ chối. Hiện `/api/v1/**` còn lại đang mở mặc định; kiểm mỗi khi thêm controller | P0 | Một phần (C: `AuthorizationMatrixTest.routeTableMatchesMappedRoutes` báo đỏ khi có route chưa khai báo; `SecurityConfig` vẫn `permitAll` cho `/api/v1/**`) |
 | SEC-03 | Ký token bằng giá trị `JWT_SECRET` trong `.env.example` rồi gọi API trên môi trường demo | Bị từ chối, tức môi trường demo không dùng giá trị mẫu (NFR-S11) | P0 | Chưa |
 | SEC-04 | Truy cập chéo: ảnh đại diện, ảnh báo cáo, đăng ký vùng, báo cáo của người khác | Từ chối | P0 | Có (C) |
 | SEC-05 | Chèn ký tự đặc biệt vào bộ lọc người dùng, trạng thái, ranh giới GeoJSON, tên scene | 400, không lỗi SQL, không 500 | P0 | Một phần (C, A) |
@@ -636,9 +637,9 @@ Chạy trên stack đầy đủ sau `demo-seed`, với một thiết bị Androi
 
 ## 12. Khoảng trống tự động hóa, theo thứ tự nên làm
 
-1. Đưa các bộ test có sẵn lên CI: Core kèm PostGIS, AI, GIS, Mobile, `check-routes.sh`.
-2. Test HTTP cho 14 route của GIS và nạp sẵn dữ liệu mẫu cho test có DB (GIS-04, GIS-12).
-3. Một test ma trận quyền sinh từ danh sách route (SEC-01, SEC-02).
+1. Core kèm PostGIS, GIS, AI, Mobile đã chạy trên CI. Còn lại: sửa CI của AI đang đỏ, và đưa `check-routes.sh` lên CI.
+2. Test HTTP cho 4 route GIS còn thiếu (GIS-12). 13 route còn lại và việc nạp dữ liệu mẫu trên CI đã có.
+3. Ma trận quyền đã có (SEC-01). Còn lại: đổi mặc định `/api/v1/**` sang từ chối (SEC-02).
 4. Chạy Playwright trên CI bằng Chromium, rồi thêm kịch bản: quản trị người dùng, vẽ vùng giám sát, danh sách báo cáo, lịch sử và thu hồi lệnh, trang công dân, quên mật khẩu (USR-07, AOI-05, RPT-15, BRD-14, BRD-15, ALR-09, AUTH-13).
 5. Test giao diện mức component cho hộp thoại phát cảnh báo (BRD-03, BRD-05, BRD-16).
 6. Script E2E-01 chạy trên stack docker sau `demo-seed`, kèm bản `demo-seed` cho macOS và Linux.
