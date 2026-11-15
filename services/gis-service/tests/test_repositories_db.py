@@ -181,9 +181,6 @@ def test_summary_all_missing_returns_none_not_zero(db):
     assert RainfallRepository(db_url()).get_latest_rainfall_summary(u) is None
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: expected quality_flag/accumulation to expose that hours are missing; actual "
-                                       "rainfall_repository.py:146-155 drops 'missing' rows from SUM and reports "
-                                       "quality_flag='good' with an understated 24h total")
 def test_summary_partial_gap_is_not_reported_as_good(db):
     u = db.unit()
     _hourly(db, u, [30, 150, 270], mm=1.0)
