@@ -1,0 +1,40 @@
+name: CI - Gateway
+
+on:
+  push:
+    paths:
+      - 'gateway/**'
+      - '.github/workflows/ci-gateway.yml'
+    branches: [ main, develop ]
+  pull_request:
+    paths:
+      - 'gateway/**'
+      - '.github/workflows/ci-gateway.yml'
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  nginx-config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # nginx resolves upstream hostnames at load time, so `nginx -t` fails with
+      # "host not found" unless they resolve. Point them at loopback: this checks
+      # syntax only. gateway/check-routes.sh is NOT run here; it needs the full
+      # docker compose stack (core-api answers the 401 / open-route checks).
+      - name: nginx -t
+        run: |
+          docker run --rm \
+            --add-host core-api:127.0.0.1 \
+            --add-host ai-service:127.0.0.1 \
+            --add-host gis-service:127.0.0.1 \
+            --add-host webgis:127.0.0.1 \
+            -v "$PWD/gateway/nginx.conf:/etc/nginx/nginx.conf:ro" \
+            nginx:1.25-alpine nginx -t
