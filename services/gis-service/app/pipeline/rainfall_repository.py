@@ -164,6 +164,7 @@ class RainfallRepository:
                 provider_run_id
             FROM gis_schema.rainfall_forecasts
             WHERE unit_id = %s
+              AND issued_at <= NOW() AND available_at <= NOW()
             ORDER BY issued_at DESC
             LIMIT 1;
         """

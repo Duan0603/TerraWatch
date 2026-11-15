@@ -192,8 +192,6 @@ def test_summary_partial_gap_is_not_reported_as_good(db):
     assert s["quality_flag"] != "good" or s["rain_24h_acc_mm"] is None
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: expected forecast issued after 'now' to be ignored (no look-ahead); actual "
-                                       "rainfall_repository.py:159-168 selects latest issued_at with no available_at/now filter")
 def test_summary_ignores_future_issued_forecast(db):
     u = db.unit()
     _hourly(db, u, [30])
