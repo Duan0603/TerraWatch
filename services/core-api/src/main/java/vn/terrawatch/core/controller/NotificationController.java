@@ -36,7 +36,7 @@ public class NotificationController {
 
     @PostMapping("/broadcast")
     @Operation(summary = "FR3.3: Gửi cảnh báo khẩn cấp qua FCM tới người dân đăng ký vùng (SMS chưa có nhà cung cấp)")
-    public ResponseEntity<Map<String, Object>> broadcastAlert(Authentication authentication, @RequestBody BroadcastAlertRequest request) {
+    public ResponseEntity<Map<String, Object>> broadcastAlert(Authentication authentication, @jakarta.validation.Valid @RequestBody BroadcastAlertRequest request) {
         UUID adminId = (UUID) authentication.getPrincipal();
         Map<String, Object> result = notificationService.broadcastAlert(request, adminId);
         Object bid = result.get("broadcast_id");

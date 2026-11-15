@@ -263,15 +263,11 @@ class StaffValidationMatrixTest extends ValidationTestBase {
         return Stream.of(role(), status(), reportStatus(), forecastCreate(), forecastReview(), verify(), areaCreate(), areaUpdate(), broadcast()).flatMap(s -> s);
     }
 
-    @org.junit.jupiter.api.Disabled("BUG: expected 400 for geojson of type Point, actual unhandled PSQLException 'Geometry type (MultiPoint) does not match column type (MultiPolygon)' = HTTP 500 "
-        + "(MonitoringAreaService.createArea: validGeoJson() accepts any valid geometry, the INSERT then fails and is rethrown as RuntimeException)")
     @org.junit.jupiter.api.Test
     void bugAreaCreateWithPointGeometryIs500() throws Exception {
         run(new Case(AREA_CREATE, "geojson point instead of polygon", set("geojson", map("type", "Point", "coordinates", List.of(105.0, 21.0))), null, 400, null));
     }
 
-    @org.junit.jupiter.api.Disabled("BUG: expected 400 for isActive 7 (a number is not a boolean), actual 200 and the account is unlocked "
-        + "(UpdateUserStatusRequest.isActive is a Boolean read by Jackson with scalar coercion on; also a missing/null isActive silently means true = unlock, AdminUserController line 41)")
     @org.junit.jupiter.api.Test
     void bugUserStatusAcceptsNumberAsBoolean() throws Exception {
         run(new Case(STATUS, "isActive is a number", set("isActive", 7), null, 400, null));

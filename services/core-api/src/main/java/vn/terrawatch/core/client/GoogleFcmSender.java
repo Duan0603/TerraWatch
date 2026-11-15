@@ -87,7 +87,8 @@ public class GoogleFcmSender implements FcmSender {
                 }
             }
             String detail = "FCM " + response.statusCode() + ": " + abbreviate(response.body());
-            if (response.statusCode() == 404 || response.body().contains("UNREGISTERED")) return Result.unregisteredToken(detail);
+            if (response.statusCode() == 404 || response.body().contains("UNREGISTERED")
+                || response.statusCode() == 400 && response.body().contains("not a valid FCM registration token")) return Result.unregisteredToken(detail);
             return Result.failed(detail);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -112,8 +113,11 @@ public class GoogleFcmSender implements FcmSender {
             .POST(HttpRequest.BodyPublishers.ofString(form)).build(), HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() != 200) throw new IOException("FCM auth failed " + response.statusCode() + ": " + abbreviate(response.body()));
         JsonNode token = json.readTree(response.body());
-        accessToken = token.get("access_token").asText();
-        accessTokenExpiry = now.plusSeconds(token.path("expires_in").asLong(3600));
+        String fresh = token.path("access_token").asText();
+        long expiresIn = token.path("expires_in").asLong(3600);
+        if (fresh.isBlank() || expiresIn <= 0) throw new IOException("FCM auth reply has no usable access token");
+        accessToken = fresh;
+        accessTokenExpiry = now.plusSeconds(expiresIn);
         return accessToken;
     }
 

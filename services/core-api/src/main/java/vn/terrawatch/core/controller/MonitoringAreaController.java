@@ -31,14 +31,14 @@ public class MonitoringAreaController {
 
     @PostMapping
     @Operation(summary = "FR1.1 / UC01: Thêm mới vùng giám sát bằng GeoJSON MultiPolygon")
-    public ResponseEntity<Map<String, Object>> createArea(@RequestBody CreateAreaRequest request) {
+    public ResponseEntity<Map<String, Object>> createArea(@jakarta.validation.Valid @RequestBody CreateAreaRequest request) {
         return ResponseEntity.ok(areaService.createArea(request));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "FR1.1 / UC01: Cập nhật thông tin và ranh giới vùng giám sát")
-    public ResponseEntity<Map<String, Object>> updateArea(@PathVariable int id, @RequestBody UpdateAreaRequest request) {
+    public ResponseEntity<Map<String, Object>> updateArea(@PathVariable int id, @jakarta.validation.Valid @RequestBody UpdateAreaRequest request) {
         return ResponseEntity.ok(areaService.updateArea(id, request));
     }
 }

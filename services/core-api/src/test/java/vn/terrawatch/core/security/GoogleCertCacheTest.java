@@ -1,6 +1,5 @@
 package vn.terrawatch.core.security;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -192,9 +191,6 @@ class GoogleCertCacheTest {
     }
 
     @Test
-    @Disabled("BUG: expected a failed refresh to back off for MIN_REFETCH (60 s) as the comment on GoogleCertCache line 71 promises; actual line 40 "
-        + "'stale' ignores fetchedAt and expiresAt is not extended on failure, so every get() while Google is down re-calls Google inside the synchronized "
-        + "method (up to 5 s each), serialising all sign-in verifications")
     void aFailedRefreshBacksOffForTheMinimumIntervalInsteadOfHammeringGoogle() throws Exception {
         reply.set(certs("max-age=3600", Map.of("kid-a", CERT_A)));
         cache.get("kid-a");
@@ -243,8 +239,6 @@ class GoogleCertCacheTest {
     }
 
     @Test
-    @Disabled("BUG: expected max-age=0 / no-store to mean 'do not cache'; actual GoogleCertCache line 66 only reads max-age, so 'no-store' without "
-        + "max-age is cached for 3600 s")
     void noStoreIsNotCachedForAnHour() throws Exception {
         reply.set(certs("no-store", Map.of("kid-a", CERT_A)));
         cache.get("kid-a");
@@ -252,8 +246,6 @@ class GoogleCertCacheTest {
     }
 
     @Test
-    @Disabled("BUG: expected an astronomically large max-age to be handled; actual GoogleCertCache line 66 Long.parseLong/plusSeconds throws "
-        + "(max-age=99999999999999999999 -> NumberFormatException) inside the catch-all, so a good response is discarded as a failed fetch")
     void hugeMaxAgeDoesNotDiscardTheFetch() throws Exception {
         reply.set(certs("max-age=99999999999999999999", Map.of("kid-a", CERT_A)));
         assertThat(cache.get("kid-a")).isEqualTo(key(CERT_A));

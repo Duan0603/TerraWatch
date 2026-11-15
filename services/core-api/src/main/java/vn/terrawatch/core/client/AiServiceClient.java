@@ -38,7 +38,9 @@ public class AiServiceClient {
 
         log.info("Calling AI Service: {} for scene: {}", endpoint, sceneId);
         ResponseEntity<Map> response = restTemplate.postForEntity(endpoint, payload, Map.class);
-        return response.getBody();
+        // an empty 200 reply reads as unavailable, never as a null body
+        return response.getBody() != null ? response.getBody()
+            : fallbackPredict(sceneId, minLon, minLat, maxLon, maxLat, new IllegalStateException("empty response"));
     }
 
     /**
@@ -78,14 +80,18 @@ public class AiServiceClient {
     @CircuitBreaker(name = "aiService", fallbackMethod = "fallbackCard")
     @SuppressWarnings("unchecked")
     public Map<String, Object> segmentationCard() {
-        return restTemplate.getForObject(aiServiceUrl + "/api/v1/models/info", Map.class);
+        return orUnavailable(restTemplate.getForObject(aiServiceUrl + "/api/v1/models/info", Map.class));
     }
 
     /** Story 4.29: the GRU model card, exactly as the AI service reports it. */
     @CircuitBreaker(name = "aiService", fallbackMethod = "fallbackCard")
     @SuppressWarnings("unchecked")
     public Map<String, Object> gruCard() {
-        return restTemplate.getForObject(aiServiceUrl + "/api/v1/models/gru/info", Map.class);
+        return orUnavailable(restTemplate.getForObject(aiServiceUrl + "/api/v1/models/gru/info", Map.class));
+    }
+
+    private static Map<String, Object> orUnavailable(Map<String, Object> card) {
+        return card != null ? card : Map.of("ready", false);
     }
 
     /** Fallback: say the card is unavailable; never fill in numbers. */

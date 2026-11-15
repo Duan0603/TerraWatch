@@ -2,7 +2,6 @@ package vn.terrawatch.core.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import vn.terrawatch.core.testsupport.FakeHttpClient;
@@ -221,8 +220,6 @@ class GoogleFcmSenderGapsTest {
     }
 
     @Test
-    @Disabled("BUG: expected a 400 INVALID_ARGUMENT 'registration token is not a valid FCM registration token' to mean the token is dead and should be forgotten; "
-        + "actual GoogleFcmSender line 90 only treats 404 or the string UNREGISTERED as unregistered, so a malformed token stays in the DB and fails on every broadcast")
     void invalidRegistrationTokenIsForgotten() {
         fcmStatus = 400;
         fcmBody = "{\"error\":{\"status\":\"INVALID_ARGUMENT\",\"message\":\"The registration token is not a valid FCM registration token\"}}";
@@ -230,8 +227,6 @@ class GoogleFcmSenderGapsTest {
     }
 
     @Test
-    @Disabled("BUG: expected a token-exchange 200 with expires_in <= 0 to be treated as unusable; actual GoogleFcmSender line 116 accepts it and "
-        + "re-authenticates on every send (benign), and a 200 reply with an empty access_token string is sent as 'Bearer ' (line 115)")
     void emptyAccessTokenIsRejected() {
         http.respondWith(r -> Reply.of(200, "{\"access_token\":\"\",\"expires_in\":3600}"));
         assertThat(sender.send("a", msg()).ok()).isFalse();
