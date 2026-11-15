@@ -28,7 +28,8 @@ public class MonitoringAreaService {
     private String validGeoJson(Object geojson) {
         try {
             String geoJsonStr = objectMapper.writeValueAsString(geojson);
-            if (Boolean.TRUE.equals(spatialRepository.isValidGeometry(geoJsonStr))) {
+            String type = objectMapper.readTree(geoJsonStr).path("type").asText();
+            if (("Polygon".equals(type) || "MultiPolygon".equals(type)) && Boolean.TRUE.equals(spatialRepository.isValidGeometry(geoJsonStr))) {
                 return geoJsonStr;
             }
         } catch (Exception e) {

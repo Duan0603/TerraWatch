@@ -263,8 +263,6 @@ class StaffValidationMatrixTest extends ValidationTestBase {
         return Stream.of(role(), status(), reportStatus(), forecastCreate(), forecastReview(), verify(), areaCreate(), areaUpdate(), broadcast()).flatMap(s -> s);
     }
 
-    @org.junit.jupiter.api.Disabled("BUG: expected 400 for geojson of type Point, actual unhandled PSQLException 'Geometry type (MultiPoint) does not match column type (MultiPolygon)' = HTTP 500 "
-        + "(MonitoringAreaService.createArea: validGeoJson() accepts any valid geometry, the INSERT then fails and is rethrown as RuntimeException)")
     @org.junit.jupiter.api.Test
     void bugAreaCreateWithPointGeometryIs500() throws Exception {
         run(new Case(AREA_CREATE, "geojson point instead of polygon", set("geojson", map("type", "Point", "coordinates", List.of(105.0, 21.0))), null, 400, null));
