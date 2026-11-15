@@ -49,3 +49,14 @@ jobs:
         env:
           E2E_BROWSER: chromium
         run: npx playwright test --grep-invert "sign-in by role"
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            apps/webgis/e2e/.results
+            apps/webgis/playwright-report
+          if-no-files-found: ignore
+          retention-days: 7
