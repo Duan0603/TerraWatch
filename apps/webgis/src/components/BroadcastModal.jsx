@@ -79,6 +79,7 @@ export default function BroadcastModal({
   const [step, setStep] = useState(1);
   const [confirmInput, setConfirmInput] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [sendError, setSendError] = useState(null);
   const [sendResult, setSendResult] = useState(null);
   const [preview, setPreview] = useState(null);
   const [previewError, setPreviewError] = useState(null);
@@ -123,6 +124,7 @@ export default function BroadcastModal({
   const handleExecuteBroadcast = async () => {
     try {
       setIsSending(true);
+      setSendError(null);
       setStep(3);
 
       requestIdRef.current ??= crypto.randomUUID();
@@ -143,7 +145,7 @@ export default function BroadcastModal({
       }
     } catch (err) {
       if (err.retryWithNewKey) requestIdRef.current = null;
-      alert(`Lỗi khi phát lệnh cảnh báo: ${err.message}`);
+      setSendError(`Lỗi khi phát lệnh cảnh báo: ${err.message}`);
       setStep(2);
     } finally {
       setIsSending(false);
@@ -152,6 +154,7 @@ export default function BroadcastModal({
 
   const handleResetModal = () => {
     setStep(1);
+    setSendError(null);
     setConfirmInput('');
     setSendResult(null);
     requestIdRef.current = null;
@@ -429,6 +432,13 @@ export default function BroadcastModal({
               }}>
                 <ShieldAlert size={34} color="#ef4444" />
               </div>
+
+              {sendError && (
+                <div role="alert" style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.4)',
+                  borderRadius: 8, padding: 10, color: '#fca5a5', fontSize: 13, marginBottom: 16, textAlign: 'left' }}>
+                  {sendError}
+                </div>
+              )}
 
               <h3 style={{ fontSize: 18, fontWeight: 800, color: '#f87171', margin: '0 0 8px 0' }}>
                 XÁC NHẬN BÁO ĐỘNG ĐỎ KHẨN CẤP

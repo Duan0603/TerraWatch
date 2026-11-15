@@ -57,10 +57,11 @@ export default function FieldReportsModal({ isOpen, onClose, onSelectLocation })
   const handleUpdateStatus = async (reportId, newStatus) => {
     try {
       setUpdatingId(reportId);
+      setError(null);
       await forecastApi.updateFieldReportStatus(reportId, newStatus);
       setReports(prev => prev.map(r => r.id === reportId ? { ...r, status: newStatus } : r));
     } catch (err) {
-      alert(`Lỗi: ${err.message}`);
+      setError(`Không cập nhật được trạng thái báo cáo: ${err.message}`);
     } finally {
       setUpdatingId(null);
     }
@@ -220,8 +221,9 @@ export default function FieldReportsModal({ isOpen, onClose, onSelectLocation })
         {/* Content */}
         <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
           {error && (
-            <div style={{
-              background: 'rgba(239, 68, 68, 0.15)',
+            <div role="alert" style={{
+              position: 'sticky', top: 0, zIndex: 1, // vẫn thấy khi đang cuộn xuống thẻ báo cáo vừa bấm
+              background: 'rgba(60, 20, 24, 0.97)',
               border: '1px solid rgba(239, 68, 68, 0.3)',
               borderRadius: 8,
               padding: 12,
