@@ -9,7 +9,15 @@ on:
   pull_request:
     paths:
       - 'services/core-api/**'
+      - '.github/workflows/ci-core-api.yml'
     branches: [ main, develop ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -17,6 +25,27 @@ jobs:
     defaults:
       run:
         working-directory: services/core-api
+
+    services:
+      postgres:
+        image: postgis/postgis:15-3.3
+        env:
+          # Throwaway credentials for the CI-only service container.
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: terrawatch_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d terrawatch_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      AUTH_TEST_DATABASE_URL: jdbc:postgresql://localhost:5432/terrawatch_test
+      AUTH_TEST_DB_USER: postgres
+      AUTH_TEST_DB_PASSWORD: postgres
 
     steps:
       - uses: actions/checkout@v4
@@ -28,5 +57,13 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with Maven
-        run: mvn clean compile -B
+      - name: Test with Maven
+        run: mvn -B clean verify
+
+      - name: Upload surefire reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-api-surefire-reports
+          path: services/core-api/target/surefire-reports/
+          if-no-files-found: ignore
