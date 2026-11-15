@@ -26,6 +26,9 @@ def start_redis_listener():
                     data_str = message['data']
                     try:
                         event = json.loads(data_str)
+                        if not isinstance(event, dict):
+                            logger.warning(f"Ignoring event message that is not a JSON object: {data_str}")
+                            continue
                         event_type = event.get('eventType', 'UNKNOWN')
                         event_id = event.get('eventId', 'N/A')
                         payload = event.get('payload', {})
@@ -33,9 +36,12 @@ def start_redis_listener():
 
                         # If new satellite scene is ingested, trigger async preprocessing / batch inference
                         if event_type == "SATELLITE_SCENE_INGESTED":
+                            if not isinstance(payload, dict):
+                                logger.warning(f"Ignoring scene event with non-object payload: {event_id}")
+                                continue
                             logger.info(f"🚀 [Async Processing] Initiating automated landslide segmentation for scene: {payload.get('scene_id')}")
 
-                    except json.JSONDecodeError:
+                    except (ValueError, TypeError):  # JSONDecodeError is a ValueError; TypeError = non-string data
                         logger.warning(f"Failed to parse event message: {data_str}")
         except Exception as e:
             logger.warning(f"⚠️ [EventBus Warning] Redis not reachable at {REDIS_HOST}:{REDIS_PORT}: {e}")
