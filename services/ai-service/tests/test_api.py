@@ -370,8 +370,6 @@ def test_scene_file_missing_404(pred):
     assert r.status_code == 404 and "scene file not found" in r.json()["detail"] and "features" not in r.json()
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: 404 detail embeds the absolute server filesystem path (str(FileNotFoundError(path))); "
-                   "expected only the client-supplied name, actual leaks e.g. /tmp/.../scenes/missing.tif")
 def test_scene_file_missing_does_not_leak_server_path(pred):
     r = client.post("/api/v1/inference/scene", json={**SCENE, "post_tif": "missing.tif"})
     assert str(pred.scene_dir) not in r.json()["detail"]

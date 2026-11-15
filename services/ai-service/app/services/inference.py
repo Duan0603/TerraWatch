@@ -147,7 +147,8 @@ class LandslidePredictor:
         self._check_name(name)
         path = os.path.join(self.scene_dir, name)
         if not os.path.isfile(path):
-            raise FileNotFoundError(path)
+            logger.warning("scene file not found: %s", path)
+            raise FileNotFoundError(name)
         return path
 
     def predict_scene(self, ref_tif: str, post_tif: str, pre_tif: str, mode: str = "balanced",
