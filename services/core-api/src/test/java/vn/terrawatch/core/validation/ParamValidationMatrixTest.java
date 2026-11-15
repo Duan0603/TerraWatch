@@ -181,8 +181,6 @@ class ParamValidationMatrixTest extends ValidationTestBase {
         assertThat(count("core_schema.users")).as("no user may be created or dropped").isEqualTo(usersBefore);
     }
 
-    @org.junit.jupiter.api.Disabled("BUG: expected 400 for lon outside -180..180, lat outside -90..90, negative or NaN radius; actual 200 with an empty list "
-        + "(LandslideEventController.queryGeofence takes raw doubles with no range check; the same limits are enforced for POST /community-reports)")
     @DisplayName("geofence out-of-range values (BUG)")
     @ParameterizedTest(name = "{0}")
     @MethodSource("geofenceOutOfRange")
