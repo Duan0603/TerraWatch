@@ -38,6 +38,8 @@ class OpenMeteoElevationClient:
                 data = resp.json()
 
                 if "elevation" in data and isinstance(data["elevation"], list):
+                    if len(data["elevation"]) != len(lats):
+                        raise ValueError(f"Expected {len(lats)} elevations, got {len(data['elevation'])}")
                     return [float(e) if e is not None else -9999.0 for e in data["elevation"]]
 
                 raise ValueError(f"Malformed elevation response: {data}")
