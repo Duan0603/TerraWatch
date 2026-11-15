@@ -266,8 +266,8 @@ def get_rainfall_summary(unit_id: str):
 
 @app.get("/api/v1/gis/rainfall/live-sample")
 def get_live_rainfall_sample(
-    lat: float = Query(22.525, description="Vĩ độ (Mặc định: Bát Xát, Lào Cai)"),
-    lon: float = Query(103.855, description="Kinh độ (Mặc định: Bát Xát, Lào Cai)")
+    lat: float = Query(22.525, ge=-90, le=90, description="Vĩ độ (Mặc định: Bát Xát, Lào Cai)"),
+    lon: float = Query(103.855, ge=-180, le=180, description="Kinh độ (Mặc định: Bát Xát, Lào Cai)")
 ):
     """
     Endpoint chẩn đoán: Gọi trực tiếp Open-Meteo và tính toán mẫu cho một tọa độ GPS bất kỳ.

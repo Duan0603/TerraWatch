@@ -376,8 +376,6 @@ def test_live_sample_provider_error_500_no_summary(client, monkeypatch):
     assert r.status_code == 500 and "summary" not in r.json()
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: lat/lon not range-validated (live route uses ge/le); lat=999 is forwarded "
-                                       "to the upstream provider and answered 200 instead of 422")
 def test_live_sample_out_of_range_coords_rejected(client, monkeypatch):
     monkeypatch.setattr(main, "rainfall_client", FakeRainClient())
     assert client.get(SAMPLE, params={"lat": 999, "lon": 999}).status_code == 422
