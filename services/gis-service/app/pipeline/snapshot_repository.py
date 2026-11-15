@@ -140,9 +140,7 @@ class SnapshotRepository:
             )
             ON CONFLICT (unit_id, unit_version, as_of_time, schema_version)
             DO UPDATE SET
-                features = EXCLUDED.features,
-                coverage_quality = EXCLUDED.coverage_quality,
-                source_references = EXCLUDED.source_references
+                snapshot_id = feature_snapshots.snapshot_id
             RETURNING snapshot_id;
         """
         params = (

@@ -290,9 +290,6 @@ def test_save_snapshot_same_key_returns_same_id(db):
     assert db.q("SELECT count(*) FROM gis_schema.feature_snapshots WHERE unit_id=%s", (u,)) == [(1,)]
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: expected existing snapshot for same key to be kept unchanged (immutable, "
-                                       "idempotent create); actual snapshot_repository.py:141-145 ON CONFLICT DO UPDATE "
-                                       "overwrites features/coverage_quality/source_references")
 def test_save_snapshot_does_not_overwrite_existing(db):
     u = db.unit()
     repo = SnapshotRepository(db_url())
