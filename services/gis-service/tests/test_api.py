@@ -323,7 +323,7 @@ def test_summary_provider_error_500_no_data(client, monkeypatch):
     monkeypatch.setattr(main, "rainfall_repo", FakeRainRepo())
     monkeypatch.setattr(main, "rainfall_client", FakeRainClient(exc=RainfallClientError("down")))
     r = client.get(SUMMARY + BATXAT["unit_id"])
-    assert r.status_code == 500 and "data" not in r.json()
+    assert r.status_code == 502 and "data" not in r.json()
 
 
 def test_summary_db_down_500(client, monkeypatch):
@@ -336,8 +336,6 @@ def test_summary_db_down_does_not_leak_driver_text(client, monkeypatch):
     assert "hunter2" not in client.get(SUMMARY + "U").text
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: upstream (weather provider) outage surfaces as 500 'Internal'-style error "
-                                       "instead of 502/503 Bad Gateway/Unavailable")
 def test_summary_provider_down_is_gateway_error(client, monkeypatch):
     monkeypatch.setattr(main, "rainfall_repo", FakeRainRepo())
     monkeypatch.setattr(main, "rainfall_client", FakeRainClient(exc=RainfallClientError("down")))

@@ -257,6 +257,9 @@ def get_rainfall_summary(unit_id: str):
         return {"success": True, "data": summary}
     except HTTPException:
         raise
+    except RainfallClientError as e:
+        logger.error(f"Weather provider error for {unit_id}: {e}")
+        raise HTTPException(status_code=502, detail="Weather provider unavailable.")
     except Exception as e:
         logger.error(f"Error fetching rainfall summary for {unit_id}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error.")
