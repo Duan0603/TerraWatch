@@ -168,16 +168,14 @@ def test_migrate_up_applies_only_pending_and_records_each(mdir, monkeypatch, cap
     monkeypatch.setattr(mig, "get_applied_migrations", lambda: {"V1"})
     mig.migrate_up()
     applied_files = [s for s in ran if s.startswith("-- V")]
-    assert applied_files == ["-- V10__c.sql\n", "-- V2__b.sql\n"]  # plain sorted() order, V1 skipped
+    assert applied_files == ["-- V2__b.sql\n", "-- V10__c.sql\n"]  # numeric order, V1 skipped
     records = [s for s in ran if s.startswith("INSERT")]
-    assert records == ["INSERT INTO schema_migrations (version, name) VALUES ('V10', 'V10__c.sql');",
-                       "INSERT INTO schema_migrations (version, name) VALUES ('V2', 'V2__b.sql');"]
+    assert records == ["INSERT INTO schema_migrations (version, name) VALUES ('V2', 'V2__b.sql');",
+                       "INSERT INTO schema_migrations (version, name) VALUES ('V10', 'V10__c.sql');"]
     out = capsys.readouterr().out
     assert "2 migration(s) applied" in out and "Up to date: V1__a.sql" in out
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: migrate_up uses lexicographic sorted(), so V10 runs before V2 "
-                                       "(database/migrations already has V10-V14); expected numeric order")
 def test_migrate_up_orders_versions_numerically(mdir, monkeypatch):
     ran = []
     monkeypatch.setattr(mig, "run_sql", lambda sql: ran.append(sql) or True)
@@ -191,14 +189,14 @@ def test_migrate_up_stops_with_exit_1_on_failure_and_records_nothing(mdir, monke
 
     def run_sql(sql):
         ran.append(sql)
-        return not sql.startswith("-- V10")
+        return not sql.startswith("-- V2")
     monkeypatch.setattr(mig, "run_sql", run_sql)
-    monkeypatch.setattr(mig, "get_applied_migrations", lambda: set())
+    monkeypatch.setattr(mig, "get_applied_migrations", lambda: {"V1"})
     with pytest.raises(SystemExit) as e:
         mig.migrate_up()
     assert e.value.code == 1
     assert not any(s.startswith("INSERT") for s in ran)
-    assert not any(s.startswith("-- V2") for s in ran)  # later migrations are not attempted
+    assert not any(s.startswith("-- V10") for s in ran)  # later migrations are not attempted
 
 
 def test_migrate_up_with_no_files_reports(tmp_path, monkeypatch, capsys):
