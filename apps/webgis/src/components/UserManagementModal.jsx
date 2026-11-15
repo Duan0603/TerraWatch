@@ -29,6 +29,7 @@ export default function UserManagementModal({ isOpen, onClose }) {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [actionLoadingId, setActionLoadingId] = useState(null);
   const [feedbackMsg, setFeedbackMsg] = useState(null);
+  const [confirmAsk, setConfirmAsk] = useState(null); // { text, run }: hỏi lại ngay trong modal thay cho window.confirm
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -52,10 +53,11 @@ export default function UserManagementModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  const handleToggleStatus = async (user) => {
+  const handleToggleStatus = async (user, confirmed = false) => {
     const nextStatus = !user.isActive;
     const actionName = nextStatus ? 'mở khóa' : 'khóa';
-    if (!window.confirm(`Bạn có chắc chắn muốn ${actionName} tài khoản ${user.fullName || user.email}?`)) {
+    if (!confirmed) {
+      setConfirmAsk({ text: `Bạn có chắc chắn muốn ${actionName} tài khoản ${user.fullName || user.email}?`, run: () => handleToggleStatus(user, true) });
       return;
     }
 
@@ -107,8 +109,9 @@ export default function UserManagementModal({ isOpen, onClose }) {
     }
   };
 
-  const handleRejectOfficer = async (user) => {
-    if (!window.confirm(`Bạn có chắc muốn từ chối tài khoản cán bộ của ${user.fullName}?`)) {
+  const handleRejectOfficer = async (user, confirmed = false) => {
+    if (!confirmed) {
+      setConfirmAsk({ text: `Bạn có chắc muốn từ chối tài khoản cán bộ của ${user.fullName}?`, run: () => handleRejectOfficer(user, true) });
       return;
     }
     setActionLoadingId(user.userId);
@@ -282,6 +285,29 @@ export default function UserManagementModal({ isOpen, onClose }) {
             </button>
           </div>
         </div>
+
+        {confirmAsk && (
+          <div role="alertdialog" aria-label="Xác nhận thao tác" style={{
+            padding: '10px 20px', backgroundColor: 'rgba(234, 179, 8, 0.15)', borderBottom: '1px solid #1E293B',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
+            color: '#FACC15', fontSize: '13px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <AlertCircle size={16} />
+              <span>{confirmAsk.text}</span>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button type="button" onClick={() => setConfirmAsk(null)}
+                style={{ background: 'transparent', border: '1px solid #475569', color: '#CBD5E1', padding: '4px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}>
+                Hủy
+              </button>
+              <button type="button" autoFocus onClick={() => { const run = confirmAsk.run; setConfirmAsk(null); run(); }}
+                style={{ background: '#DC2626', border: 'none', color: '#fff', padding: '4px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                Xác nhận
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Feedback message banner */}
         {feedbackMsg && (

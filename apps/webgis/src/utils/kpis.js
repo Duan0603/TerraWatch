@@ -10,8 +10,11 @@ const DAY_MS = 24 * 3600 * 1000;
 export function buildKpis({ events, fieldReports, broadcasts, reviewMetrics = null, now = Date.now() }) {
   const live = events.filter(e => !e.expired && e.availability === 'available');
   const pending = events.filter(e => e.status === 'pending' && !e.expired).length;
-  const extreme = live.filter(e => e.risk === 'extreme').length;
-  const high = live.filter(e => e.risk === 'high').length;
+  // Hàng đợi là các lần chạy trong 7 ngày: một ô có nhiều lần. Dự báo đã bị từ chối/thay thế không còn là nguy cơ.
+  const units = new Set(events.map(e => e.unit?.unitId ?? e.id)).size;
+  const atRisk = live.filter(e => e.status !== 'rejected' && e.status !== 'superseded');
+  const extreme = atRisk.filter(e => e.risk === 'extreme').length;
+  const high = atRisk.filter(e => e.risk === 'high').length;
   const expiringSoon = live.filter(e => {
     const left = new Date(e.validUntil).getTime() - now;
     return e.status !== 'rejected' && left > 0 && left <= SOON_MS;
@@ -19,7 +22,7 @@ export function buildKpis({ events, fieldReports, broadcasts, reviewMetrics = nu
   const newReports = fieldReports.filter(r => r.status === 'submitted').length;
 
   const kpis = [
-    { key: 'units', label: 'Ô đánh giá', value: events.length, sub: `${live.length} còn hiệu lực`, tone: 'neutral' },
+    { key: 'units', label: 'Ô đánh giá', value: units, sub: `${events.length} lần dự báo · ${live.length} còn hiệu lực`, tone: 'neutral' },
     { key: 'pending', label: 'Chờ thẩm định', value: pending, sub: pending ? 'cần cán bộ xử lý' : 'đã xử lý hết', tone: pending ? 'warn' : 'ok' },
     { key: 'risk', label: 'Nguy cơ cao', value: extreme + high, sub: `${extreme} cực nguy hiểm · ${high} cao`, tone: extreme ? 'danger' : high ? 'warn' : 'ok' },
     { key: 'expiring', label: 'Sắp hết hạn', value: expiringSoon, sub: 'trong 6 giờ tới', tone: expiringSoon ? 'warn' : 'ok' },

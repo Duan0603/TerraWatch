@@ -142,16 +142,21 @@ export default function AoiManagementModal({ isOpen, onClose, onAoiUpdated }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
     if (!formName.trim()) {
-      alert('Vui lòng nhập tên vùng giám sát.');
+      setError('Vui lòng nhập tên vùng giám sát.');
+      return;
+    }
+    if (parseRing(formCoordsStr).length < 3) {
+      setError('Ranh giới cần ít nhất 3 điểm. Hãy bấm lên bản đồ để thêm điểm.');
       return;
     }
 
     let parsedCoords;
     try {
       parsedCoords = JSON.parse(formCoordsStr);
-      if (!Array.isArray(parsedCoords) || parsedCoords.length < 4) {
-        throw new Error('Tọa độ phải là danh sách ít nhất 4 điểm [kinh độ, vĩ độ].');
+      if (!Array.isArray(parsedCoords)) {
+        throw new Error('Tọa độ phải là danh sách các điểm [kinh độ, vĩ độ].');
       }
       // Ensure closed ring
       const first = parsedCoords[0];
@@ -160,12 +165,12 @@ export default function AoiManagementModal({ isOpen, onClose, onAoiUpdated }) {
         parsedCoords.push([...first]);
       }
     } catch (err) {
-      alert(`Định dạng tọa độ không hợp lệ: ${err.message}`);
+      setError(`Định dạng tọa độ không hợp lệ: ${err.message}`);
       return;
     }
 
     if (selfIntersects(parseRing(formCoordsStr))) {
-      alert('Ranh giới vùng tự cắt nhau (hình nơ) nên không hợp lệ. Hãy kéo các điểm cho ranh giới không giao nhau.');
+      setError('Ranh giới vùng tự cắt nhau (hình nơ) nên không hợp lệ. Hãy kéo các điểm cho ranh giới không giao nhau.');
       return;
     }
 
@@ -398,20 +403,6 @@ export default function AoiManagementModal({ isOpen, onClose, onAoiUpdated }) {
               )}
             </div>
 
-            {error && (
-              <div style={{
-                background: 'rgba(239, 68, 68, 0.15)',
-                border: '1px solid rgba(239, 68, 68, 0.3)',
-                borderRadius: 8,
-                padding: 10,
-                color: '#f87171',
-                fontSize: 12,
-                marginBottom: 16
-              }}>
-                {error}
-              </div>
-            )}
-
             {/* Presets Quick Picker */}
             {!selectedArea && (
               <div style={{ marginBottom: 18 }}>
@@ -535,6 +526,21 @@ export default function AoiManagementModal({ isOpen, onClose, onAoiUpdated }) {
                   }}
                 />
               </div>
+
+              {/* Ngay trên nút Lưu: người dùng đang nhìn ở đây khi bấm lưu */}
+              {error && (
+                <div role="alert" style={{
+                  background: 'rgba(239, 68, 68, 0.15)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  borderRadius: 8,
+                  padding: 10,
+                  color: '#f87171',
+                  fontSize: 12,
+                  marginTop: 10
+                }}>
+                  {error}
+                </div>
+              )}
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 10 }}>
                 {selectedArea && (
