@@ -182,11 +182,15 @@ class LandslidePredictor:
         slope = np.nan_to_num(ref[6], nan=float(np.nanmedian(ref[6])))
         img = np.stack([post[0], post[1], post[2], post[3], post[4], post[5], slope, post[6]])
         valid = np.isfinite(post[:7]).all(0) & (post[7] >= 1)
-        if self._session is None:
-            import onnxruntime as ort
-            prov = [p for p in ort.get_available_providers() if p in ("CUDAExecutionProvider", "CPUExecutionProvider")]
-            self._session = ort.InferenceSession(self.model_path, providers=prov)
-        prob = predict_onnx(self._session, img, valid, floor)
+        try:
+            if self._session is None:
+                import onnxruntime as ort
+                prov = [p for p in ort.get_available_providers() if p in ("CUDAExecutionProvider", "CPUExecutionProvider")]
+                self._session = ort.InferenceSession(self.model_path, providers=prov)
+            prob = predict_onnx(self._session, img, valid, floor)
+        except Exception:
+            logger.exception("inference engine failure")
+            raise RuntimeError("inference engine unavailable")
         ok = valid & np.isfinite(prob)
         pred = ok & (prob > thr)
         lab, n = ndimage.label(pred, structure=np.ones((3, 3)))

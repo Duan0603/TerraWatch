@@ -396,8 +396,6 @@ def test_scene_inference_session_error_is_not_a_fabricated_result(pred):
     assert r.status_code >= 500 and "features" not in r.json()
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: inference-engine failure (non-RuntimeError, e.g. ONNX InvalidArgument/ValueError-free exception) "
-                   "gives unhandled 500; expected 503 'unavailable' like the model-missing case, actual 500")
 def test_scene_engine_failure_is_503(pred):
     from tests.conftest import FakeSession
     pred._session = FakeSession(exc=Exception("onnx boom"))
