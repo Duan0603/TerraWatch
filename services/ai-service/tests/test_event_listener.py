@@ -153,8 +153,6 @@ def test_connection_lost_mid_stream_is_logged(run, caplog):
     assert "lost" in caplog.text
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: listener has no reconnect; expected a 2nd connection after ConnectionError mid-stream "
-                   "(docstring says retry loop), actual: worker logs warning and thread ends for good")
 def test_listener_reconnects_after_connection_error(run, caplog):
     caplog.set_level(logging.INFO, logger="ai_event_listener")
     fake, _ = run([[ConnectionError("lost")], [msg({"eventType": "A", "eventId": "again"})]])

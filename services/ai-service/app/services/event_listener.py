@@ -14,18 +14,24 @@ def start_redis_listener():
     def worker():
         # Retry loop to connect to Redis without blocking container startup
         time.sleep(2)
-        try:
-            import redis
-            r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
-            pubsub = r.pubsub()
-            pubsub.subscribe(CHANNEL_NAME)
-            logger.info(f"📡 [AI Service EventBus] Subscribed to channel '{CHANNEL_NAME}' at {REDIS_HOST}:{REDIS_PORT}")
+        subscribed = False
+        while True:
+            try:
+                import redis
+                r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+                pubsub = r.pubsub()
+                pubsub.subscribe(CHANNEL_NAME)
+                subscribed = True
+                logger.info(f"📡 [AI Service EventBus] Subscribed to channel '{CHANNEL_NAME}' at {REDIS_HOST}:{REDIS_PORT}")
 
-            for message in pubsub.listen():
-                if message and message['type'] == 'message':
-                    data_str = message['data']
-                    try:
-                        event = json.loads(data_str)
+                for message in pubsub.listen():
+                    if message and message['type'] == 'message':
+                        data_str = message['data']
+                        try:
+                            event = json.loads(data_str)
+                        except (ValueError, TypeError):
+                            logger.warning(f"Failed to parse event message: {data_str}")
+                            continue
                         if not isinstance(event, dict):
                             logger.warning(f"Ignoring event message that is not a JSON object: {data_str}")
                             continue
@@ -40,11 +46,13 @@ def start_redis_listener():
                                 logger.warning(f"Ignoring scene event with non-object payload: {event_id}")
                                 continue
                             logger.info(f"🚀 [Async Processing] Initiating automated landslide segmentation for scene: {payload.get('scene_id')}")
-
-                    except (ValueError, TypeError):  # JSONDecodeError is a ValueError; TypeError = non-string data
-                        logger.warning(f"Failed to parse event message: {data_str}")
-        except Exception as e:
-            logger.warning(f"⚠️ [EventBus Warning] Redis not reachable at {REDIS_HOST}:{REDIS_PORT}: {e}")
+                return
+            except Exception as e:
+                logger.warning(f"⚠️ [EventBus Warning] Redis not reachable at {REDIS_HOST}:{REDIS_PORT}: {e}")
+                # Retry only a stream that was live; a failed first connection still ends the worker.
+                if not (subscribed and isinstance(e, (ConnectionError, getattr(redis, "ConnectionError", ConnectionError)))):
+                    return
+                time.sleep(2)
 
     thread = threading.Thread(target=worker, daemon=True)
     thread.start()
