@@ -111,6 +111,7 @@ def test_run_sql_falls_back_to_local_psql_with_password_in_env(monkeypatch):
         calls.append((cmd, kw))
         return cp(stdout="") if cmd[0] == "docker" else cp(0)
     monkeypatch.setattr(mig.subprocess, "run", run)
+    monkeypatch.setattr(mig, "DB_PASS", "unique-test-pass")  # CI exports POSTGRES_PASSWORD=postgres, same as the user
     no_psycopg2(monkeypatch)
     assert mig.run_sql("SELECT 1;") is True
     cmd, kw = calls[-1]
