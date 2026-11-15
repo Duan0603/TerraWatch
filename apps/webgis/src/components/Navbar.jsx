@@ -115,15 +115,11 @@ export default function Navbar({
         {/* Phát cảnh báo — Admin only */}
         <button
           className="btn-danger"
-          onClick={() => {
-            if (isAdmin) {
-              onOpenBroadcast?.();
-            } else {
-              alert('Chỉ tài khoản Admin mới có quyền phát lệnh cảnh báo khẩn cấp.');
-            }
-          }}
+          onClick={() => onOpenBroadcast?.()}
+          disabled={!isAdmin}
           style={{ opacity: isAdmin ? 1 : 0.5, cursor: isAdmin ? 'pointer' : 'not-allowed' }}
-          aria-label="Phát cảnh báo" title={isAdmin ? 'Phát cảnh báo (SMS / App Push)' : 'Cần quyền Admin'}
+          aria-label="Phát cảnh báo"
+          title={isAdmin ? 'Phát cảnh báo (SMS / App Push)' : 'Chỉ tài khoản Admin mới có quyền phát lệnh cảnh báo khẩn cấp'}
         >
           <BellRing size={14} />
           <span className="btn-label">Phát cảnh báo</span>

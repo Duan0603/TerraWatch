@@ -45,7 +45,8 @@ export async function testAoiCsvKpi() {
   // --- KPI ---
   const now = new Date('2026-11-08T05:00:00Z').getTime();
   const hr = (h) => new Date(now + h * 3600000).toISOString();
-  const mk = (o) => ({ availability: 'available', expired: false, status: 'pending', risk: 'low', validUntil: hr(20), ...o });
+  let seq = 0;
+  const mk = (o) => ({ id: `run-${++seq}`, availability: 'available', expired: false, status: 'pending', risk: 'low', validUntil: hr(20), ...o });
   const events = [
     mk({ risk: 'extreme', validUntil: hr(3) }),            // sắp hết hạn
     mk({ risk: 'high', status: 'approved' }),
@@ -57,6 +58,14 @@ export async function testAoiCsvKpi() {
 
   const staff = buildKpis({ events, fieldReports: reports, broadcasts: null, now });
   assert.deepEqual(by(staff), { units: 4, pending: 2, risk: 2, expiring: 1, reports: 2 }); // không admin: không có ô phát lệnh
+
+  // Cùng một ô chạy 3 lần: đếm 1 ô; lần bị từ chối / bị thay thế không tính là nguy cơ cao.
+  const same = (o) => mk({ unit: { unitId: 'U1' }, ...o });
+  const runs = buildKpis({ events: [same({ risk: 'high', status: 'rejected' }), same({ risk: 'extreme', status: 'superseded' }), same({ risk: 'high' })],
+    fieldReports: [], broadcasts: null, now });
+  assert.equal(by(runs).units, 1);
+  assert.equal(by(runs).risk, 1);
+  assert.match(runs[0].sub, /^3 lần dự báo/);
 
   const bc = (o) => ({ status: 'ĐÃ GỬI', sentAt: hr(-2), deliveredCount: 3, ...o });
   const admin = buildKpis({ events, fieldReports: [], now,
