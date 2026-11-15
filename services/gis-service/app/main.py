@@ -386,7 +386,10 @@ def create_feature_snapshots(req: CreateSnapshotRequest):
         if not units:
             raise HTTPException(status_code=404, detail="No active assessment units found.")
 
-        as_of_dt = SnapshotProcessor.parse_iso_utc(req.as_of_time) if req.as_of_time else None
+        try:
+            as_of_dt = SnapshotProcessor.parse_iso_utc(req.as_of_time) if req.as_of_time else None
+        except ValueError:
+            raise HTTPException(status_code=422, detail="as_of_time is not a valid ISO-8601 timestamp.")
 
         created_snapshots = []
         for u in units:

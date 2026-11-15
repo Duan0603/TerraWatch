@@ -238,8 +238,6 @@ def test_create_snapshot_db_down_does_not_leak_driver_text(client, snap_env):
     assert "hunter2" not in client.post(CREATE, json={"as_of_time": AS_OF}).text
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: unparseable as_of_time ('garbage') is client input error but yields 500 "
-                                       "(ValueError text echoed); expected 400/422")
 def test_create_snapshot_bad_as_of_time_is_client_error(client, snap_env):
     assert client.post(CREATE, json={"as_of_time": "garbage"}).status_code in (400, 422)
 
