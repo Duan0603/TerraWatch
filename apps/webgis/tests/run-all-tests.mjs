@@ -25,6 +25,9 @@ import { testSnapshotContracts } from './test-snapshot-contracts.mjs';
 import { testRainWarningThresholds } from './test-rain-warning-thresholds.mjs';
 import { testRainWarningApiContracts } from './test-rain-warning-api-contracts.mjs';
 import { testRainWarning, testRainWarningChart, testRainWarningActions, testRainWarningOnset, testRainWarningRunout } from './test-rain-warning.mjs';
+import { testAuthApi } from './test-auth-api.mjs';
+import { testSmallApiClients } from './test-small-api-clients.mjs';
+import { testSound } from './test-sound.mjs';
 
 async function runAllWebGisTests() {
   console.log('===============================================================');
@@ -65,6 +68,9 @@ async function runAllWebGisTests() {
     await testRainWarningActions();
     await testRainWarningOnset();
     await testRainWarningRunout();
+    await testAuthApi();
+    await testSmallApiClients();
+    await testSound();
 
     const elapsed = Date.now() - startTime;
     console.log('===============================================================');
