@@ -34,6 +34,8 @@ async function openRegister(page, kind, { handler, sms = {}, stub = true } = {})
   }
   await page.getByRole('button', { name: kind === 'officer' ? /Yêu cầu tài khoản cán bộ/ : /Đăng ký công dân/ }).click();
   await expect(page.getByRole('heading', { name: kind === 'officer' ? 'Yêu cầu tài khoản cán bộ' : 'Đăng ký tài khoản công dân' })).toBeVisible();
+  // The panel moves focus to the first field 420 ms after it opens; wait for that so it cannot land later and steal focus from what a test does next.
+  await expect(page.locator('#rg-name')).toBeFocused();
   return { calls, sent, verified };
 }
 
