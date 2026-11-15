@@ -68,6 +68,7 @@ def predict_onnx(sess, img, valid, floor_mult, batch=16):
             x = np.nan_to_num(img[:, i:i + TILE, j:j + TILE])
             mu = np.array([x[c][vv].mean() for c in range(C)], "float32")[:, None, None]
             sd = np.maximum(np.array([x[c][vv].std() for c in range(C)], "float32"), floor)[:, None, None]
+            sd = np.where(sd > 0, sd, 1.0)  # constant tile and zero floor: z = 0 instead of 0/0
             z = (x - mu) / sd
             z[:, ~vv] = 0
             tiles.append(z.astype("float32"))
@@ -114,7 +115,12 @@ class LandslidePredictor:
         if not info["ready"]:
             info["detail"] = f"missing {self.model_path} or {self.card_path}"
             return info
-        card, modes, floor = load_card(self.card_path)
+        try:
+            card, modes, floor = load_card(self.card_path)
+        except (OSError, ValueError, KeyError, AssertionError):
+            logger.exception("model card unreadable or invalid: %s", self.card_path)
+            info.update(ready=False, detail="model card unreadable or invalid")
+            return info
         expected = (card.get("artifact") or {}).get("sha256") or card.get("sha256")
         info.update(name=card.get("name"), runtime="onnxruntime", std_floor_multiplier=floor, modes=modes,
                     default_mode="balanced", temporal_rule=CHANGE["rule"], schema_version=SCHEMA,
@@ -141,7 +147,8 @@ class LandslidePredictor:
         self._check_name(name)
         path = os.path.join(self.scene_dir, name)
         if not os.path.isfile(path):
-            raise FileNotFoundError(path)
+            logger.warning("scene file not found: %s", path)
+            raise FileNotFoundError(name)
         return path
 
     def predict_scene(self, ref_tif: str, post_tif: str, pre_tif: str, mode: str = "balanced",
@@ -162,20 +169,28 @@ class LandslidePredictor:
         thr = float(modes[mode])
         sha = self._sha256()
         ref_p, post_p, pre_p = self._resolve(ref_tif), self._resolve(post_tif), self._resolve(pre_tif)
-        with rasterio.open(ref_p) as src:
-            ot, crs = src.transform, src.crs
-            ref = src.read().astype("float32")
-        post, pre = read_aligned(post_p, ot), read_aligned(pre_p, ot)
+        try:
+            with rasterio.open(ref_p) as src:
+                ot, crs = src.transform, src.crs
+                ref = src.read().astype("float32")
+            post, pre = read_aligned(post_p, ot), read_aligned(pre_p, ot)
+        except rasterio.errors.RasterioIOError:
+            logger.exception("unreadable scene file")
+            raise ValueError("scene file is not a readable GeoTIFF")
         h, w = min(ref.shape[1], post.shape[1], pre.shape[1]), min(ref.shape[2], post.shape[2], pre.shape[2])
         ref, post, pre = ref[:, :h, :w], post[:, :h, :w], pre[:, :h, :w]
         slope = np.nan_to_num(ref[6], nan=float(np.nanmedian(ref[6])))
         img = np.stack([post[0], post[1], post[2], post[3], post[4], post[5], slope, post[6]])
         valid = np.isfinite(post[:7]).all(0) & (post[7] >= 1)
-        if self._session is None:
-            import onnxruntime as ort
-            prov = [p for p in ort.get_available_providers() if p in ("CUDAExecutionProvider", "CPUExecutionProvider")]
-            self._session = ort.InferenceSession(self.model_path, providers=prov)
-        prob = predict_onnx(self._session, img, valid, floor)
+        try:
+            if self._session is None:
+                import onnxruntime as ort
+                prov = [p for p in ort.get_available_providers() if p in ("CUDAExecutionProvider", "CPUExecutionProvider")]
+                self._session = ort.InferenceSession(self.model_path, providers=prov)
+            prob = predict_onnx(self._session, img, valid, floor)
+        except Exception:
+            logger.exception("inference engine failure")
+            raise RuntimeError("inference engine unavailable")
         ok = valid & np.isfinite(prob)
         pred = ok & (prob > thr)
         lab, n = ndimage.label(pred, structure=np.ones((3, 3)))
