@@ -68,6 +68,7 @@ def predict_onnx(sess, img, valid, floor_mult, batch=16):
             x = np.nan_to_num(img[:, i:i + TILE, j:j + TILE])
             mu = np.array([x[c][vv].mean() for c in range(C)], "float32")[:, None, None]
             sd = np.maximum(np.array([x[c][vv].std() for c in range(C)], "float32"), floor)[:, None, None]
+            sd = np.where(sd > 0, sd, 1.0)  # constant tile and zero floor: z = 0 instead of 0/0
             z = (x - mu) / sd
             z[:, ~vv] = 0
             tiles.append(z.astype("float32"))
