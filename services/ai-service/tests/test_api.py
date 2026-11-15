@@ -89,14 +89,11 @@ def test_model_info_detects_tampered_model(pred):
     assert client.get("/api/v1/models/info").json()["sha256_ok"] is False
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: model+card files present but card is corrupt JSON; expected 200 {ready:false} or 503, "
-                   "actual: unhandled exception -> 500")
 def test_model_info_corrupt_card_does_not_500(pred):
     open(pred.card_path, "w").write("{broken")
     assert client.get("/api/v1/models/info").status_code != 500
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: card lacks std_floor_multiplier; expected 200 {ready:false} or 503, actual: AssertionError -> 500")
 def test_model_info_incomplete_card_does_not_500(pred):
     import json
     c = pred.card; del c["input"]["preprocessing"]

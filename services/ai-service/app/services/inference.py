@@ -115,7 +115,12 @@ class LandslidePredictor:
         if not info["ready"]:
             info["detail"] = f"missing {self.model_path} or {self.card_path}"
             return info
-        card, modes, floor = load_card(self.card_path)
+        try:
+            card, modes, floor = load_card(self.card_path)
+        except (OSError, ValueError, KeyError, AssertionError):
+            logger.exception("model card unreadable or invalid: %s", self.card_path)
+            info.update(ready=False, detail="model card unreadable or invalid")
+            return info
         expected = (card.get("artifact") or {}).get("sha256") or card.get("sha256")
         info.update(name=card.get("name"), runtime="onnxruntime", std_floor_multiplier=floor, modes=modes,
                     default_mode="balanced", temporal_rule=CHANGE["rule"], schema_version=SCHEMA,
