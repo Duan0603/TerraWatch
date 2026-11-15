@@ -228,8 +228,6 @@ def test_ingest_db_down_returns_500_and_stores_nothing(client, monkeypatch):
     assert cl.calls == []
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: 500 detail embeds raw str(exception) from the DB driver "
-                                       "(host/user/DSN fragments leak to the client); expected generic message")
 def test_ingest_db_down_does_not_leak_driver_text(client, monkeypatch):
     monkeypatch.setattr(main, "rainfall_repo", FakeRainRepo(fail=True))
     assert "hunter2" not in client.post(INGEST, json={}).text
@@ -335,7 +333,6 @@ def test_summary_db_down_500(client, monkeypatch):
     assert client.get(SUMMARY + "U").status_code == 500
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: 500 detail is raw str(exception); DB driver text leaks to client")
 def test_summary_db_down_does_not_leak_driver_text(client, monkeypatch):
     monkeypatch.setattr(main, "rainfall_repo", FakeRainRepo(fail=True))
     assert "hunter2" not in client.get(SUMMARY + "U").text

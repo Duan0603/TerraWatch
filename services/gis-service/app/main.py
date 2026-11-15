@@ -160,7 +160,7 @@ def trigger_rainfall_ingestion(req: IngestRainfallRequest):
         units = rainfall_repo.get_assessment_units(area_id=req.area_id, unit_id=req.unit_id)
     except Exception as e:
         logger.error(f"Database error while querying assessment units: {e}")
-        raise HTTPException(status_code=500, detail=f"Database connection error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Database connection error.")
 
     if not units:
         raise HTTPException(status_code=404, detail="No active assessment units found for the specified filter.")
@@ -258,7 +258,7 @@ def get_rainfall_summary(unit_id: str):
         raise
     except Exception as e:
         logger.error(f"Error fetching rainfall summary for {unit_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error.")
 
 @app.get("/api/v1/gis/rainfall/live-sample")
 def get_live_rainfall_sample(
@@ -277,7 +277,8 @@ def get_live_rainfall_sample(
             "summary": processed["summary"]
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("Live rainfall sample failed: %s", e)
+        raise HTTPException(status_code=500, detail="Internal server error.")
 
 # --- Terrain Endpoints (Story 2.2) ---
 
@@ -344,7 +345,7 @@ def extract_terrain(req: TerrainExtractRequest):
         raise
     except Exception as e:
         logger.error("Terrain extraction failed: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error.")
 
 
 @app.get("/api/v1/gis/terrain/{unit_id}")
@@ -365,7 +366,7 @@ def get_terrain_summary(unit_id: str):
         raise
     except Exception as e:
         logger.error("Error retrieving terrain summary for %s: %s", unit_id, e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error.")
 
 # --- Feature Snapshot Endpoints (Story 2.3) ---
 
@@ -423,7 +424,7 @@ def create_feature_snapshots(req: CreateSnapshotRequest):
         raise
     except Exception as e:
         logger.error("Error creating feature snapshots: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error.")
 
 
 @app.get("/api/v1/gis/snapshots/latest/{unit_id}")
@@ -444,7 +445,7 @@ def get_latest_feature_snapshot(unit_id: str):
         raise
     except Exception as e:
         logger.error("Error retrieving latest snapshot for %s: %s", unit_id, e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error.")
 
 
 @app.get("/api/v1/gis/snapshots/{snapshot_id}")
@@ -465,7 +466,7 @@ def get_feature_snapshot_by_id(snapshot_id: str):
         raise
     except Exception as e:
         logger.error("Error retrieving snapshot %s: %s", snapshot_id, e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error.")
 
 # --- Legacy & Tiling Endpoints (Retained for Compatibility) ---
 

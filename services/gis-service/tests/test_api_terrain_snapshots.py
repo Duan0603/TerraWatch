@@ -127,7 +127,6 @@ def test_extract_db_down_500(client, monkeypatch):
     assert client.post(EXTRACT, json={}).status_code == 500
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: 500 detail is raw str(exception); DB driver text leaks to client")
 def test_extract_db_down_does_not_leak_driver_text(client, monkeypatch):
     monkeypatch.setattr(main, "terrain_repo", FakeTerrainRepo(fail=True))
     assert "hunter2" not in client.post(EXTRACT, json={}).text
@@ -165,7 +164,6 @@ def test_terrain_summary_db_down_500(client, monkeypatch):
     assert client.get(TERRAIN + "U").status_code == 500
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: 500 detail is raw str(exception); DB driver text leaks to client")
 def test_terrain_summary_db_down_does_not_leak_driver_text(client, monkeypatch):
     monkeypatch.setattr(main, "terrain_repo", FakeTerrainRepo(fail=True))
     assert "hunter2" not in client.get(TERRAIN + "U").text
@@ -235,7 +233,6 @@ def test_create_snapshot_db_down_500_nothing_saved(client, snap_env):
     assert snap_env.saved == []
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: 500 detail is raw str(exception); DB driver text leaks to client")
 def test_create_snapshot_db_down_does_not_leak_driver_text(client, snap_env):
     snap_env.fail = True
     assert "hunter2" not in client.post(CREATE, json={"as_of_time": AS_OF}).text
@@ -265,7 +262,6 @@ def test_latest_snapshot_db_down_500(client, monkeypatch):
     assert client.get(SNAP + "latest/U").status_code == 500
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: 500 detail is raw str(exception); DB driver text leaks to client")
 def test_latest_snapshot_db_down_does_not_leak_driver_text(client, monkeypatch):
     monkeypatch.setattr(main, "snapshot_repo", FakeSnapRepo(fail=True))
     assert "hunter2" not in client.get(SNAP + "latest/U").text
@@ -289,7 +285,6 @@ def test_snapshot_by_id_db_down_500(client, monkeypatch):
     assert client.get(SNAP + "22222222-2222-2222-2222-222222222222").status_code == 500
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: 500 detail is raw str(exception); DB driver text leaks to client")
 def test_snapshot_by_id_db_down_does_not_leak_driver_text(client, monkeypatch):
     monkeypatch.setattr(main, "snapshot_repo", FakeSnapRepo(fail=True))
     assert "hunter2" not in client.get(SNAP + "22222222-2222-2222-2222-222222222222").text
