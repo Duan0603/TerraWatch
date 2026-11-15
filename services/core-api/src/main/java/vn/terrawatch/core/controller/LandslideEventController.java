@@ -34,7 +34,7 @@ public class LandslideEventController {
     @Operation(summary = "FR3.2 / UC04: Cán bộ phê duyệt hoặc bác bỏ điểm cảnh báo")
     public ResponseEntity<Map<String, Object>> verifyEvent(
             @PathVariable("id") String eventId,
-            @RequestBody VerifyEventRequest request,
+            @jakarta.validation.Valid @RequestBody VerifyEventRequest request,
             Authentication authentication) {
         // Story 4.23: the reviewer is the signed-in officer/admin, never a value sent by the client.
         return ResponseEntity.ok(landslideService.verifyEvent(eventId, request, (UUID) authentication.getPrincipal()));
