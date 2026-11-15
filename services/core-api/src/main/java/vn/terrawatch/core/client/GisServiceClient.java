@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,12 +35,15 @@ public class GisServiceClient {
         Map<String, Object> payload = new HashMap<>();
         payload.put("bbox", new double[]{minLon, minLat, maxLon, maxLat});
         payload.put("max_cloud_coverage", 20.0);
-        payload.put("date_from", "2026-09-01");
-        payload.put("date_to", "2026-10-01");
+        LocalDate today = LocalDate.now();
+        payload.put("date_from", today.minusDays(30).toString());
+        payload.put("date_to", today.toString());
 
         log.info("Calling GIS Service: {}", endpoint);
         ResponseEntity<Map> response = restTemplate.postForEntity(endpoint, payload, Map.class);
-        return response.getBody();
+        // an empty 200 reply reads as unavailable, never as a null body
+        return response.getBody() != null ? response.getBody()
+            : fallbackQuerySatellite(minLon, minLat, maxLon, maxLat, new IllegalStateException("empty response"));
     }
 
     public Map<String, Object> fallbackQuerySatellite(double minLon, double minLat, double maxLon, double maxLat, Throwable throwable) {
@@ -47,7 +51,7 @@ public class GisServiceClient {
         Map<String, Object> fallback = new HashMap<>();
         fallback.put("success", false);
         fallback.put("status", "CIRCUIT_BREAKER_FALLBACK");
-        fallback.put("message", "GIS Data Service is currently unavailable. Using cached satellite catalog.");
+        fallback.put("message", "GIS Data Service is currently unavailable.");
         fallback.put("scenes_found", Collections.emptyList());
         return fallback;
     }
