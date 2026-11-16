@@ -290,8 +290,8 @@ export default function LoginPage() {
         document.getElementById('rg-email')?.focus();
         return;
       }
-      // Gửi mã OTP SMS qua Firebase Phone Auth
-      const res = await authApi.sendSmsOtp(cleanPhone, 'recaptcha-container');
+      // Gửi mã OTP SMS (máy chủ tự gửi, Story 4.44)
+      const res = await authApi.sendSmsOtp(cleanPhone);
       setFormattedPhone(res.formattedPhone || cleanPhone);
       setOtpCode('');
       setOtpCountdown(60);
@@ -311,7 +311,7 @@ export default function LoginPage() {
       setOtpLoading(true);
       setOtpError('');
       const cleanPhone = regPhone.replace(/\s+/g, '');
-      const res = await authApi.sendSmsOtp(cleanPhone, 'recaptcha-container');
+      const res = await authApi.sendSmsOtp(cleanPhone);
       setFormattedPhone(res.formattedPhone || cleanPhone);
       setOtpCountdown(60);
     } catch (err) {
@@ -671,8 +671,6 @@ export default function LoginPage() {
         </div>
       )}
 
-      {/* Phần tử container gắn reCAPTCHA ẩn cho Firebase */}
-      <div id="recaptcha-container"></div>
     </div>
   );
 }

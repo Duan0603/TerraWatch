@@ -44,6 +44,7 @@ export async function mockBackend(page, role, handler) {
     const call = {
       method: req.method(),
       path: new URL(req.url()).pathname.replace('/api/v1', ''),
+      query: Object.fromEntries(new URL(req.url()).searchParams),
       body: req.postData() ? JSON.parse(req.postData()) : null
     };
     calls.push(call);

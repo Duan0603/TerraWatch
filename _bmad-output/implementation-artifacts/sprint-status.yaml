@@ -75,6 +75,9 @@ development_status:
   4-41-rain-warning-lang-nu: review
   4-30-demo-seed-availability: review
   4-39-core-multi-phase-sms-alert-system: review
+  4-42-webgis-citizen-alert-subscriptions: review
+  4-43-citizen-today-status-and-profile: review
+  4-44-phone-otp-via-own-sms: review
   epic-4-retrospective: optional
 
   epic-5: backlog

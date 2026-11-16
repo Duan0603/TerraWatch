@@ -51,7 +51,7 @@ export default function LiveRainfallPanel({ selectedEvent, showModel = true }) {
   const prediction = data?.gru_inference;
   const weather = data?.weather, now = weather?.current;
   const stale = error || snapshot?.stale;
-  const chart = data?.hourly.filter(h => {
+  const chart = data?.hourly?.filter(h => {
     const delta = (new Date(h.interval_end)-new Date(data.as_of))/3600000;
     return delta > -12 && delta <= 12;
   }) || [];

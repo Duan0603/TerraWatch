@@ -36,7 +36,7 @@ class EsmsSenderTest {
         assertThat(r.providerMessageId()).isEqualTo("sms-9");
         var req = http.sent.get(0);
         assertThat(req.request().method()).isEqualTo("POST");
-        assertThat(req.request().uri().toString()).isEqualTo("http://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_post_json/");
+        assertThat(req.request().uri().toString()).isEqualTo("https://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_post_json/");
         assertThat(req.header("Content-Type")).isEqualTo("application/json");
         assertThat(req.request().timeout()).hasValue(Duration.ofSeconds(10));
         JsonNode body = json.readTree(req.body());
@@ -170,6 +170,25 @@ class EsmsSenderTest {
     }
 
     @Test
+    void emptyBrandnameSendsFromTheFixedNumberWithTheTextUntouched() throws Exception {
+        EsmsSender s = sender(false, "");
+        FakeHttpClient http = ok(s);
+        s.send("0912345678", "[TERRAWATCH-KHAN CAP] SO TAN NGAY!");
+        JsonNode body = json.readTree(http.sent.get(0).body());
+        assertThat(body.get("SmsType").asText()).isEqualTo("8");
+        assertThat(body.has("Brandname")).isFalse();
+        assertThat(body.get("Content").asText()).isEqualTo("[TERRAWATCH-KHAN CAP] SO TAN NGAY!");
+    }
+
+    @Test
+    void aBrandnameSendsCustomerCareType2() throws Exception {
+        EsmsSender s = sender(true, "Brand");
+        FakeHttpClient http = ok(s);
+        s.send("0912345678", "x");
+        assertThat(json.readTree(http.sent.get(0).body()).get("SmsType").asText()).isEqualTo("2");
+    }
+
+    @Test
     void localPhoneNormalisation() {
         assertThat(EsmsSender.normalizeLocal("+84912345678")).isEqualTo("0912345678");
         assertThat(EsmsSender.normalizeLocal("84912345678")).isEqualTo("0912345678");
@@ -194,8 +213,6 @@ class EsmsSenderTest {
     }
 
     @Test
-    @Disabled("BUG: expected API key and secret key not sent over cleartext HTTP; actual EsmsSender line 24 ENDPOINT is http://rest.esms.vn and "
-        + "line 58 puts ApiKey/SecretKey in the request body")
     void endpointIsHttps() {
         EsmsSender s = sender(true, "B");
         FakeHttpClient http = ok(s);

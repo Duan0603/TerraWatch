@@ -17,11 +17,11 @@ test('admin previews recipients and reaches the confirmation, without sending', 
   const dialog = page.getByRole('dialog');
   await expect(dialog).toContainText('PHÁT LỆNH CẢNH BÁO THIÊN TAI KHẨN CẤP');
   await dialog.locator('select').selectOption({ label: 'Khu E2E Yên Bái' });
-  await expect(dialog).toContainText('Người nhận dự kiến: 3 người đăng ký Push, 5 thiết bị.');
+  await expect(dialog).toContainText('Người nhận dự kiến: 3 người đăng ký Push, 5 thiết bị; 0 người nhận SMS.');
 
   await dialog.getByRole('button', { name: /Tiếp Tục Xác Nhận Phát Lệnh/ }).click();
   await expect(dialog).toContainText('XÁC NHẬN BÁO ĐỘNG ĐỎ KHẨN CẤP');
-  await expect(dialog).toContainText('Sẽ gửi tới 5 thiết bị của 3 người đăng ký.');
+  await expect(dialog).toContainText('Sẽ gửi tới 5 thiết bị nhận Push.');
 
   // Two-step safety: the send button needs the typed phrase. We unlock it, then stop.
   const send = dialog.getByRole('button', { name: /XÁC NHẬN PHÁT LỆNH NGAY/ });

@@ -23,22 +23,24 @@ public class AuthService {
     private final BCryptPasswordEncoder passwords;
     private final JwtTokenProvider tokens;
     private final FirebaseIdTokenVerifier firebaseVerifier;
+    private final PhoneOtpService phoneOtp;
     private static final java.time.LocalDate MIN_BIRTH_DATE = java.time.LocalDate.of(1900, 1, 1);
 
     private final String dummyHash;
 
     @org.springframework.beans.factory.annotation.Autowired
     public AuthService(UserRepository users, BCryptPasswordEncoder passwords, JwtTokenProvider tokens,
-                       FirebaseIdTokenVerifier firebaseVerifier) {
+                       FirebaseIdTokenVerifier firebaseVerifier, PhoneOtpService phoneOtp) {
         this.users = users;
         this.passwords = passwords;
         this.tokens = tokens;
         this.firebaseVerifier = firebaseVerifier;
+        this.phoneOtp = phoneOtp;
         this.dummyHash = passwords.encode("unused-login-timing-check");
     }
 
     public AuthService(UserRepository users, BCryptPasswordEncoder passwords, JwtTokenProvider tokens) {
-        this(users, passwords, tokens, null);
+        this(users, passwords, tokens, null, null);
     }
 
     public AuthResponse register(RegisterRequest request) {
@@ -75,21 +77,28 @@ public class AuthService {
             "Hồ sơ đã được gửi. Tài khoản chỉ đăng nhập được sau khi Quản trị viên phê duyệt.");
     }
 
-    /** Phone numbers are accepted only with a Firebase phone token for the same number (Story 4.6). */
+    /** Phone numbers are accepted only with a phone token (ours or Firebase's) for the same number (Stories 4.6, 4.44). */
     private String verifiedPhone(String phone, String phoneToken) {
         if (phone == null || phone.isBlank()) return null;
         if (phoneToken == null || phoneToken.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "Phone number must be verified via OTP before registration");
         }
-        if (firebaseVerifier != null) {
-            String tokenPhone = firebaseVerifier.verifyPhoneToken(phoneToken);
+        if (firebaseVerifier != null || phoneOtp != null) {
+            String tokenPhone = tokenPhone(phoneToken);
             if (!phonesMatch(tokenPhone, phone)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Phone number in verification token does not match registered phone number");
             }
         }
         return phone.trim();
+    }
+
+    /** Phone proved by a one-time token from our SMS code (Story 4.44), else by a Firebase phone ID token. */
+    private String tokenPhone(String phoneToken) {
+        String ours = phoneOtp == null ? null : phoneOtp.consume(phoneToken);
+        if (ours != null) return ours;
+        return firebaseVerifier == null ? null : firebaseVerifier.verifyPhoneToken(phoneToken);
     }
 
     private User saveNewUser(User user, String email) {
@@ -124,8 +133,7 @@ public class AuthService {
             "Email hoặc số điện thoại không khớp với tài khoản nào");
         User user = users.findByEmail(normalizeEmail(request.email())).orElseThrow(() -> mismatch);
         if (!resettable(user, request.phoneNumber())) throw mismatch;
-        String tokenPhone = firebaseVerifier == null ? null : firebaseVerifier.verifyPhoneToken(request.phoneToken());
-        if (!phonesMatch(tokenPhone, request.phoneNumber())) throw mismatch;
+        if (!phonesMatch(tokenPhone(request.phoneToken()), request.phoneNumber())) throw mismatch;
         user.setPasswordHash(passwords.encode(request.newPassword()));
         user.setUpdatedAt(OffsetDateTime.now());
         users.save(user);

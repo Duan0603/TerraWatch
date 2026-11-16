@@ -21,6 +21,8 @@ import { testReportExport } from './test-report-export.mjs';
 import { testZoneLocation, testMonitoredPoints } from './test-zone-location.mjs';
 import { testExperimentalRisk } from './test-experimental-risk.mjs';
 import { testSnapshotContracts } from './test-snapshot-contracts.mjs';
+import { testCitizenStatus } from './test-citizen-status.mjs';
+import { testAlertSubscriptions, testBroadcastReach, testSendResultText } from './test-alert-subscriptions.mjs';
 import { testRainWarning, testRainWarningChart, testRainWarningActions, testRainWarningOnset, testRainWarningRunout } from './test-rain-warning.mjs';
 
 async function runAllWebGisTests() {
@@ -59,6 +61,10 @@ async function runAllWebGisTests() {
     await testRainWarningActions();
     await testRainWarningOnset();
     await testRainWarningRunout();
+    await testAlertSubscriptions();
+    await testBroadcastReach();
+    await testSendResultText();
+    await testCitizenStatus();
 
     const elapsed = Date.now() - startTime;
     console.log('===============================================================');
