@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describeRisk, usableCount } from '../src/utils/experimentalRisk.js';
+import { describeRisk, usableCount, simulatedCollection } from '../src/utils/experimentalRisk.js';
 
 // Lớp GRU thử nghiệm của cán bộ: điểm hiện tại mới được đọc như hiện tại; điểm cũ / thiếu nói rõ lý do;
 // luôn nói điểm do phần nào quyết định, để ô tím đậm không bị hiểu là "mưa nhiều".
@@ -38,4 +38,23 @@ export async function testExperimentalRisk() {
   assert.equal(usableCount(features, 'rain'), 2);
   assert.equal(usableCount(null, 'gru'), 0);
   console.log('  ✓ đếm điểm dùng được theo từng chế độ tô màu');
+
+  // Demo mô phỏng mưa: điểm mô phỏng thay điểm thật cùng key, dùng lại hình ô thật; tắt mưa thật thì chỉ còn nó.
+  const cell = { type: 'Polygon', coordinates: [[[1, 1], [2, 1], [2, 2], [1, 1]]] };
+  const live = { features: [{ geometry: cell, properties: { key: 'a', hazard_score: 0.01 } }, { geometry: null, properties: { key: 'b' } }] };
+  const sim = { key: 'a', name: 'A', latitude: 21, longitude: 104, past_7d_mm: 300, next_24h_mm: 80,
+    result: { hazard_score: 0.47, temporal_score: 0.98, spatial_score: 0.48, unit_id: 'u' } };
+  const mixed = simulatedCollection(sim, live, false);
+  assert.deepEqual(mixed.features.map(f => f.properties.key), ['b', 'a']);
+  const shown = mixed.features[1];
+  assert.equal(shown.geometry, cell);
+  assert.equal(shown.properties.hazard_score, 0.47);
+  assert.ok(shown.properties.simulated && shown.properties.current);
+  assert.ok(Math.abs(shown.properties.rain_24h_mm - 300 / 7) < 1e-9);
+  assert.deepEqual(mixed.center, [104, 21]);
+  const alone = simulatedCollection({ ...sim, key: 'z' }, live, true);
+  assert.equal(alone.features.length, 1);
+  assert.deepEqual(alone.features[0].geometry, { type: 'Point', coordinates: [104, 21] });
+  assert.match(describeRisk(shown.properties).lines[0], /^MÔ PHỎNG/);
+  console.log('  ✓ mô phỏng mưa: thay điểm thật, giữ hình ô, tắt mưa thật thì chỉ còn điểm mô phỏng');
 }

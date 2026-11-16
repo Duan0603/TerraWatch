@@ -710,6 +710,14 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
     ensureRiskLayer(mapRef.current);
   }, [experimentalRisk, showRisk, riskMode, mapLoaded]);
 
+  // 1e'. Demo mô phỏng mưa: bật lớp GRU và bay tới điểm khi đổi điểm mô phỏng
+  const simCenter = experimentalRisk?.simulated ? experimentalRisk.center.join() : '';
+  useEffect(() => {
+    if (!simCenter) return;
+    setShowRisk(true); setRiskMode('gru');
+    if (mapRef.current && mapLoaded) mapRef.current.flyTo({ center: simCenter.split(',').map(Number), zoom: 11, duration: 1500 });
+  }, [simCenter, mapLoaded]);
+
   // 1f. Vùng ảnh hưởng của cảnh báo theo mưa: cấu hình đến sau hoặc bật/tắt
   useEffect(() => {
     rainMetaRef.current = rainMeta;

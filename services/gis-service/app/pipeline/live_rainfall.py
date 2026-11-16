@@ -357,6 +357,20 @@ class LiveRainfallService:
             LOG.warning('Experimental GRU unavailable for %s: %s', location['key'], type(exc).__name__)
             return held('MODEL_UNAVAILABLE_OR_INVALID_INPUT')
 
+    def simulate(self, key, past_7d_mm, next_24h_mm):
+        """Demo only: an evenly spread synthetic 168 h series through the same GRU call as live data.
+        Nothing is stored and nothing is broadcast; the caller labels the result as a simulation."""
+        as_of = utc_now().replace(minute=0, second=0, microsecond=0)
+        hourly = [{'interval_end': (as_of-timedelta(hours=h)).isoformat(), 'mm': past_7d_mm/168} for h in range(168)]
+        data = {'as_of': as_of.isoformat(), 'hourly': hourly, 'forecast_24h': {'mm': next_24h_mm, 'valid_hours': 24}}
+        return self.predict({'key': key}, data, max_age=None)
+
+    @staticmethod
+    def simulation_locations():
+        path = Path(__file__).resolve().parents[1] / 'config/live_gru_static_features.json'
+        registry = json.loads(path.read_text(encoding='utf8'))['locations']
+        return [{k: s[k] for k in ('key', 'name', 'latitude', 'longitude')} for s in registry.values() if s.get('ready')]
+
     def import_archive(self, root):
         """Hourly Open-Meteo snapshots saved by GitHub Actions while this stack was off
         (.github/workflows/rain-archive.yml). Each becomes a real as-issued record; hours already

@@ -83,6 +83,24 @@ def live_weather(latitude: float = Query(..., ge=-90, le=90), longitude: float =
     return {"success": True, **result}
 
 
+@app.get("/api/v1/gis/rainfall/simulate/locations")
+def rain_simulation_locations():
+    """Points the demo rain simulator can score (terrain/soil ready). Reads a config file only."""
+    return {"success": True, "items": live_rainfall.simulation_locations()}
+
+
+@app.get("/api/v1/gis/rainfall/simulate")
+def rain_simulation(key: str = Query(..., max_length=40), past_7d_mm: float = Query(..., ge=0, le=2000),
+                    next_24h_mm: float = Query(..., ge=0, le=1000)):
+    """Demo: synthetic rain through the real GRU. GET because it stores nothing (the gateway only passes GET)."""
+    result = live_rainfall.simulate(key, past_7d_mm, next_24h_mm)
+    if not result.get("ready"):
+        status = 404 if result.get("reason") == "STATIC_FEATURES_UNAVAILABLE" else 503
+        raise HTTPException(status_code=status, detail="Không mô phỏng được cho điểm này." if status == 404
+                            else "Mô hình chưa trả kết quả. Vui lòng thử lại.")
+    return {"success": True, "simulated": True, "past_7d_mm": past_7d_mm, "next_24h_mm": next_24h_mm, **result}
+
+
 @app.get("/api/v1/gis/rainfall/live/history")
 def live_weather_history(latitude: float = Query(..., ge=-90, le=90), longitude: float = Query(..., ge=-180, le=180),
                          days: int = Query(7, ge=1, le=90)):

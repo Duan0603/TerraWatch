@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, LogOut, BellRing, History, Volume2, VolumeX, FileCheck2, Radio, Download, Cpu, Wrench } from 'lucide-react';
+import { ShieldCheck, LogOut, BellRing, History, Volume2, VolumeX, FileCheck2, Radio, Download, Cpu, Wrench, CloudRain } from 'lucide-react';
 import AdminMenu from './AdminMenu';
 import NavMenu from './NavMenu';
 import { useAuth } from '../context/AuthContext';
@@ -35,6 +35,7 @@ export default function Navbar({
   onOpenAdminAudit,
   onOpenHealth,
   onOpenModelCard,
+  onOpenSimulator,
   onExportReport,
   lastLoadedAt,      // Date | null – thời điểm loadEvents() thành công gần nhất
   loadError,          // string | null – lỗi kết nối API
@@ -56,7 +57,8 @@ export default function Navbar({
     { icon: History, label: 'Lịch sử lệnh', hint: 'Nhật ký phát lệnh cảnh báo SMS / FCM', run: onOpenHistory },
     { icon: FileCheck2, label: 'Nhật ký thẩm định', hint: 'Ai duyệt dự báo, lý do', run: onOpenAuditLog },
     { icon: Radio, label: 'Báo cáo hiện trường', hint: 'Báo cáo và hình ảnh từ người dân', run: onOpenFieldReports },
-    { icon: Cpu, label: 'Thẻ mô hình', hint: 'Mô hình AI là gì, đã kiểm tra thế nào, giới hạn ra sao', run: onOpenModelCard }
+    { icon: Cpu, label: 'Thẻ mô hình', hint: 'Mô hình AI là gì, đã kiểm tra thế nào, giới hạn ra sao', run: onOpenModelCard },
+    { icon: CloudRain, label: 'Mô phỏng mưa', hint: 'Kéo mức mưa giả lập, xem mô hình GRU thật phản ứng (demo, không gửi tin)', run: onOpenSimulator }
   ];
 
   const handleSoundToggle = () => {
