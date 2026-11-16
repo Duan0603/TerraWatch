@@ -34,7 +34,7 @@ export default function DashboardPage() {
 
   const {
     events, selectedEventId, setSelectedEventId, loadError, fieldReports, aoi, broadcasts,
-    reviewMetrics, confirmed, experimentalRisk, lastLoadedAt, liveConnected, loadEvents, refreshAoi
+    reviewMetrics, confirmed, experimentalRisk, lastLoadedAt, liveConnected, loadEvents, refreshAoi, areaFollowers
   } = useDashboardData(isAdmin);
 
   const [soundEnabled, setSoundEnabled] = useState(false);
@@ -129,6 +129,7 @@ export default function DashboardPage() {
           onSelectEvent={(id) => { setSelectedEventId(id); setMobileTab('map'); }}
           onReviewEvent={handleReviewRequest}
           onRefresh={loadEvents}
+          areaFollowers={areaFollowers}
           className={mobileTab === 'map' ? 'mobile-hidden' : ''}
         />
 
@@ -159,6 +160,7 @@ export default function DashboardPage() {
         isOpen={!!dialogs.broadcast}
         onClose={() => hide('broadcast')}
         event={broadcastTargetEvent}
+        allEvents={events}
         currentUser={user}
       />
 

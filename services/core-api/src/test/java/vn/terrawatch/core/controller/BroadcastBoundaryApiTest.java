@@ -149,8 +149,8 @@ class BroadcastBoundaryApiTest extends FlowTestBase {
     // ---- BL-BRD-010/012: recipients ----
 
     @Test
-    void aSubscriberWithoutAnyDeviceIsNoRecipientAndNoOrderIsCreated() throws Exception {
-        // BL-BRD-010
+    void aSubscriberWithoutAnyDeviceGetsTheOrderInTheWebInboxWithoutAnyPush() throws Exception {
+        // BL-BRD-010, revised: an app subscriber without a phone still reads the alert on the web
         Acct admin = account("admin");
         Acct citizen = account("citizen");
         int area = seedArea();
@@ -159,10 +159,12 @@ class BroadcastBoundaryApiTest extends FlowTestBase {
         call(HttpMethod.GET, BROADCAST + "/preview?areaId=" + area, admin, null)
             .andExpect(jsonPath("$.subscribers").value(1)).andExpect(jsonPath("$.devices").value(0));
         call(HttpMethod.POST, BROADCAST, admin, Map.of("riskLevel", "high", "areaId", area))
-            .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("NO_RECIPIENTS")).andExpect(jsonPath("$.recipients_estimated").value(0));
+            .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("DISPATCHED"))
+            .andExpect(jsonPath("$.recipients_estimated").value(0)).andExpect(jsonPath("$.app_subscribers").value(1));
 
-        assertThat(count("SELECT count(*) FROM core_schema.alert_broadcasts WHERE area_id = ?", area)).isZero();
+        assertThat(count("SELECT count(*) FROM core_schema.alert_broadcasts WHERE area_id = ?", area)).isEqualTo(1);
         verifyNoInteractions(fcm, sms);
+        call(HttpMethod.GET, "/api/v1/alerts/broadcasts", citizen, null).andExpect(jsonPath("$.length()").value(1));
     }
 
     @Test

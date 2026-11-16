@@ -7,6 +7,16 @@
 --   VN_LC_BATXAT_0001  pending,  medium  -> officers only (review queue)
 --   VN_LC_BATXAT_0002  pending,  high    -> approving it opens the admin's broadcast prompt
 --   VN_LC_SAPA_0004    pending,  low     -> a case to reject (reason required)
+-- Ô 002 is also its own monitoring area, so a citizen can follow just that cell: only its card then counts them and
+-- a broadcast cited on it reaches only them. Subscriptions are per area, so this is data, not a code change.
+INSERT INTO gis_schema.monitoring_areas (name, geom, description)
+SELECT 'Vùng trọng điểm 5: Suối Ngòi Phát - Ô 002 (Lào Cai)', ST_Multi(geom), 'Demo: một ô đánh giá làm vùng riêng'
+FROM gis_schema.spatial_assessment_units WHERE unit_id = 'VN_LC_BATXAT_0002'
+ON CONFLICT (name) DO UPDATE SET geom = EXCLUDED.geom, is_active = TRUE;
+UPDATE gis_schema.spatial_assessment_units
+SET area_id = (SELECT area_id FROM gis_schema.monitoring_areas WHERE name = 'Vùng trọng điểm 5: Suối Ngòi Phát - Ô 002 (Lào Cai)')
+WHERE unit_id = 'VN_LC_BATXAT_0002';
+
 -- Re-running refreshes the 24 h validity. job_status 'completed' keeps ForecastRecoveryPoller from resending the
 -- rows to the AI service and marking them "unavailable".
 INSERT INTO core_schema.forecast_runs (run_id, unit_id, issued_at, valid_from, valid_until, probability, hazard_level,

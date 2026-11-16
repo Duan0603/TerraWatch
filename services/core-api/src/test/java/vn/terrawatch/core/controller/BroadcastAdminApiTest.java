@@ -76,12 +76,14 @@ class BroadcastAdminApiTest {
     }
 
     @Test
-    void historyAndPreviewAreAdminOnly() throws Exception {
+    void historyIsAdminOnlyAndThePreviewCountsAreForStaff() throws Exception {
         String officer = withRole("officer@history-test.example", "officer");
         for (String path : List.of("/api/v1/notifications/broadcasts", "/api/v1/notifications/broadcast/preview?areaId=1")) {
             call(HttpMethod.GET, path, null, null).andExpect(status().isUnauthorized());
-            call(HttpMethod.GET, path, officer, null).andExpect(status().isForbidden());
         }
+        call(HttpMethod.GET, "/api/v1/notifications/broadcasts", officer, null).andExpect(status().isForbidden());
+        // officers see how many citizens follow an area they review (counts only)
+        call(HttpMethod.GET, "/api/v1/notifications/broadcast/preview?areaId=1", officer, null).andExpect(status().isOk());
     }
 
     @Test

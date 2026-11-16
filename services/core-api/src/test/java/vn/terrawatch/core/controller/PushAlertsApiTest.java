@@ -221,6 +221,28 @@ class PushAlertsApiTest {
     }
 
     @Test
+    void aWebOnlySubscriberIsARecipientAndSeesTheAlertInTheInboxUntilTheyUnfollow() throws Exception {
+        String webOnly = register("webonly@push-test.example"); // follows area 1 in the app, no phone registered
+        String sub = json.readTree(call(HttpMethod.POST, "/api/v1/alerts/subscriptions", webOnly, Map.of("areaId", 1, "alertChannels", List.of("PUSH")))
+            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString()).get("subscriptionId").asText();
+
+        JsonNode result = broadcast(admin(), Map.of("riskLevel", "high", "areaId", 1, "message", "Web inbox"));
+
+        assertEquals("DISPATCHED", result.get("status").asText());
+        assertEquals(1, result.get("app_subscribers").asInt());
+        assertEquals(0, result.get("devices").asInt());
+        verifyNoInteractions(fcm);
+        call(HttpMethod.GET, "/api/v1/alerts/broadcasts", webOnly, null)
+            .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1))
+            .andExpect(jsonPath("$[0].broadcastId").value(result.get("broadcast_id").asText()))
+            .andExpect(jsonPath("$[0].message").value("Web inbox"));
+
+        call(HttpMethod.DELETE, "/api/v1/alerts/subscriptions/" + sub, webOnly, null).andExpect(status().isNoContent());
+        entityManager.flush(); // one test transaction: write the JPA delete before the JDBC inbox query reads it
+        call(HttpMethod.GET, "/api/v1/alerts/broadcasts", webOnly, null).andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
     void resyncShowsOwnBroadcastsWithValidityRevocationAndExpiry() throws Exception {
         when(fcm.send(anyString(), any())).thenReturn(FcmSender.Result.sent());
         String user = citizen("sync@push-test.example", "t-sync", 1, List.of("PUSH"));

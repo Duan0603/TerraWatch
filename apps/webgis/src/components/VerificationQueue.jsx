@@ -8,6 +8,7 @@ export default function VerificationQueue({
   onSelectEvent,
   onReviewEvent,
   onRefresh,
+  areaFollowers = {},
   className = '',
 }) {
   const [filter, setFilter] = useState('pending');
@@ -85,6 +86,7 @@ export default function VerificationQueue({
               isSelected={selectedEventId === event.id}
               onSelect={onSelectEvent}
               onReview={onReviewEvent}
+              followers={areaFollowers[event.unit?.areaId]}
             />
           ))
         )}
