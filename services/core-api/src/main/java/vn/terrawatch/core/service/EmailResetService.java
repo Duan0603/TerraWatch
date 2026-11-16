@@ -110,7 +110,7 @@ public class EmailResetService {
         return email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
     }
 
-    private static String sha256(String text) {
+    static String sha256(String text) {
         try {
             return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(text.getBytes(StandardCharsets.UTF_8)));
         } catch (java.security.NoSuchAlgorithmException impossible) {

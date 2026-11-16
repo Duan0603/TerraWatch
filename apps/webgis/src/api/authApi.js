@@ -1,9 +1,10 @@
 import axiosClient from './axiosClient';
 import { registerErrorMessage, resetErrorMessage } from './registerError';
-import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
-import { auth } from '../config/firebase';
-
-let confirmationResult = null;
+// Story 4.44: the phone code is made and texted by our own server (SMS Gateway on a phone), not Firebase:
+// no reCAPTCHA and no Firebase billing. The last right code is remembered so a retry after a failed sign-up
+// (e.g. weak password) does not need a new SMS.
+let lastVerified = null;
+const otpError = (err, fallback) => err.response?.data?.message || (err.response ? fallback : 'Không kết nối được máy chủ. Thử lại sau.');
 
 // Chuyển đổi định dạng số điện thoại Việt Nam sang chuẩn quốc tế E.164 (+84...)
 export const formatToE164 = (phone) => {
@@ -14,45 +15,6 @@ export const formatToE164 = (phone) => {
     cleaned = '+84' + cleaned;
   }
   return cleaned;
-};
-
-// Khởi tạo reCAPTCHA ẩn cho Firebase Phone Auth
-export const getOrCreateRecaptcha = async (containerId = 'recaptcha-container') => {
-  let host = document.getElementById(containerId);
-  if (!host) {
-    host = document.createElement('div');
-    host.id = containerId;
-    host.style.position = 'fixed';
-    host.style.bottom = '0';
-    host.style.left = '0';
-    host.style.zIndex = '-1';
-    document.body.appendChild(host);
-  }
-
-  if (window.recaptchaVerifier) {
-    try {
-      window.recaptchaVerifier.clear();
-    } catch (e) {
-      // bỏ qua lỗi nếu đã giải phóng
-    }
-    window.recaptchaVerifier = null;
-  }
-
-  // reCAPTCHA chỉ render được một lần vào mỗi phần tử: mỗi lần gửi (gửi lại) dùng một phần tử mới,
-  // nếu không lần thứ hai báo "reCAPTCHA has already been rendered in this element".
-  host.replaceChildren();
-  const element = document.createElement('div');
-  host.appendChild(element);
-
-  window.recaptchaVerifier = new RecaptchaVerifier(auth, element, {
-    size: 'invisible',
-    callback: () => {
-      // reCAPTCHA hoàn tất tự động
-    }
-  });
-
-  await window.recaptchaVerifier.render();
-  return window.recaptchaVerifier;
 };
 
 export const authApi = {
@@ -83,67 +45,29 @@ export const authApi = {
     }
   },
 
-  // Gửi mã OTP xác thực số điện thoại THẬT qua Firebase Phone Auth
-  async sendSmsOtp(phoneNumber, containerId = 'recaptcha-container') {
+  // Gửi mã OTP 6 số tới số điện thoại thật (Story 4.44: máy chủ tự gửi SMS)
+  async sendSmsOtp(phoneNumber) {
     const formatted = formatToE164(phoneNumber);
-    if (!auth) {
-      throw new Error('Xác thực số điện thoại chưa được cấu hình cho web (thiếu VITE_FIREBASE_*). Chưa có mã OTP nào được gửi.');
-    }
     try {
-      const verifier = await getOrCreateRecaptcha(containerId);
-      const conf = await signInWithPhoneNumber(auth, formatted, verifier);
-      confirmationResult = conf;
-      window.confirmationResult = conf;
-
-      return {
-        success: true,
-        isRealSms: true,
-        formattedPhone: formatted,
-        message: `Mã OTP đã được Google Firebase gửi về số điện thoại thực tế: ${formatted}`
-      };
+      await axiosClient.post('/auth/phone-otp/request', { phoneNumber: formatted });
     } catch (err) {
-      console.error('Firebase Phone Auth báo lỗi chi tiết:', err);
-      let humanMsg = err.message;
-      if (err.code === 'auth/invalid-phone-number') {
-        humanMsg = 'Số điện thoại không đúng định dạng quốc tế (VD: 0865396352).';
-      } else if (err.code === 'auth/too-many-requests') {
-        humanMsg = 'Đã đạt hạn mức SMS tối đa trong ngày của Firebase (10 SMS/ngày).';
-      } else if (err.code === 'auth/quota-exceeded') {
-        humanMsg = 'Dự án đã sử dụng hết hạn mức SMS.';
-      } else if (err.code === 'auth/billing-not-enabled') {
-        humanMsg = 'Dự án Firebase chưa bật thanh toán (gói Blaze) nên chưa gửi được SMS tới số điện thoại thật. Hãy dùng số thử +84 900 000 001 (mã 123456) hoặc nhờ quản trị dự án bật thanh toán.';
-      } else if (err.code === 'auth/argument-error') {
-        humanMsg = 'Lỗi cấu hình phần tử reCAPTCHA: ' + err.message;
-      }
-
-      // Không có mã OTP dự phòng: một mã hiện trên màn hình thì không xác thực được số điện thoại nào.
-      throw new Error(humanMsg);
+      throw new Error(otpError(err, 'Chưa gửi được mã xác thực.'));
     }
+    lastVerified = null;
+    return { success: true, isRealSms: true, formattedPhone: formatted, message: `Mã xác thực đã được gửi tới ${formatted}` };
   },
 
-  // Xác thực mã OTP bằng Firebase; chỉ mã trong tin nhắn SMS thật mới hợp lệ.
+  // Kiểm tra mã trong SMS; đúng thì máy chủ trả phoneToken dùng một lần để đăng ký / đặt lại mật khẩu.
   async verifySmsOtp(phoneNumber, otpCode) {
-    const conf = confirmationResult || window.confirmationResult;
-    if (!conf) {
-      throw new Error('Chưa có mã OTP nào được gửi tới số này. Vui lòng bấm gửi lại mã.');
-    }
+    const phone = formatToE164(phoneNumber);
+    const code = String(otpCode || '').trim();
+    if (lastVerified?.phone === phone && lastVerified.code === code) return { success: true, idToken: lastVerified.token };
     try {
-      const res = await conf.confirm(otpCode);
-      const idToken = await res.user?.getIdToken?.();
-      return {
-        success: true,
-        user: res.user,
-        idToken,
-        isRealSms: true,
-        message: 'Xác thực số điện thoại thật qua SMS Firebase thành công!'
-      };
+      const res = await axiosClient.post('/auth/phone-otp/verify', { phoneNumber: phone, code });
+      lastVerified = { phone, code, token: res.phoneToken };
+      return { success: true, idToken: res.phoneToken, message: 'Đã xác thực số điện thoại.' };
     } catch (err) {
-      if (err.code === 'auth/invalid-verification-code') {
-        throw new Error('Mã OTP không đúng với tin nhắn SMS gửi về điện thoại của bạn.');
-      } else if (err.code === 'auth/code-expired') {
-        throw new Error('Mã OTP trong tin nhắn SMS đã hết hạn. Vui lòng bấm gửi lại mã mới.');
-      }
-      throw new Error(err.message || 'Mã OTP không chính xác.');
+      throw new Error(otpError(err, 'Mã OTP không chính xác hoặc đã hết hạn.'));
     }
   },
 

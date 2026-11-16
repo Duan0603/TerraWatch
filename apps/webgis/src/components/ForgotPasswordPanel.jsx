@@ -5,7 +5,7 @@ import FormSteps from './FormSteps';
 import OtpBoxes from './OtpBoxes';
 
 // Quên mật khẩu: chứng minh là chủ tài khoản bằng mã 6 số gửi qua EMAIL (Story 4.21, mặc định, miễn phí)
-// hoặc qua SMS tới số đã đăng ký (Story 4.20, cần Firebase Blaze cho số thật).
+// hoặc qua SMS tới số đã đăng ký (Story 4.20; mã do máy chủ tự gửi SMS, Story 4.44).
 // Thứ tự: 1 tài khoản -> 2 nhập mã (đúng rồi mới sang bước sau) -> 3 đặt mật khẩu mới -> 4 xong.
 export default function ForgotPasswordPanel({ initialEmail, onBack }) {
   const [step, setStep] = useState('form'); // form | otp | newpw | done
@@ -47,7 +47,7 @@ export default function ForgotPasswordPanel({ initialEmail, onBack }) {
           setError('Email và số điện thoại này không khớp với tài khoản nào có thể đặt lại mật khẩu. Hãy nhập đúng số đã dùng khi đăng ký.');
           return;
         }
-        const res = await authApi.sendSmsOtp(cleanPhone, 'recaptcha-container');
+        const res = await authApi.sendSmsOtp(cleanPhone);
         setSentTo(res.formattedPhone || cleanPhone);
       }
       setOtp('');
@@ -68,7 +68,7 @@ export default function ForgotPasswordPanel({ initialEmail, onBack }) {
       if (method === 'email') {
         await authApi.requestEmailCode(email);
       } else {
-        const res = await authApi.sendSmsOtp(phone.replace(/\s+/g, ''), 'recaptcha-container');
+        const res = await authApi.sendSmsOtp(phone.replace(/\s+/g, ''));
         setSentTo(res.formattedPhone || phone);
       }
       setCountdown(60);

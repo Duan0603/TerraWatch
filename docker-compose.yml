@@ -54,6 +54,20 @@ services:
       GIS_SERVICE_URL: http://gis-service:8002
       # Firebase service account key for sending push (Story 5.1); the file is optional, without it pushes are not sent
       FIREBASE_SERVICE_ACCOUNT_FILE: /secrets/firebase-service-account.json
+      # SMS gateway (Story 4.39); keys in the git-ignored .env. Older .env files name them SMS_API_KEY / SMS_SECRET_KEY / SMS_BRANDNAME.
+      # Sandbox (no SMS sent, nothing charged) unless ESMS_SANDBOX=0 is set.
+      SMS_PROVIDER: ${SMS_PROVIDER:-}
+      SMS_HOTLINE: ${SMS_HOTLINE:-112}
+      ESMS_API_KEY: ${ESMS_API_KEY:-${SMS_API_KEY:-}}
+      ESMS_SECRET_KEY: ${ESMS_SECRET_KEY:-${SMS_SECRET_KEY:-}}
+      ESMS_BRANDNAME: ${ESMS_BRANDNAME-${SMS_BRANDNAME:-Baotrixemay}}  # set but empty = eSMS fixed number
+      ESMS_SANDBOX: ${ESMS_SANDBOX:-1}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_FROM_NUMBER: ${TWILIO_FROM_NUMBER:-}
+      # SMS_PROVIDER=smsgate: an Android phone running SMS Gateway for Android sends from its own SIM
+      SMSGATE_USERNAME: ${SMSGATE_USERNAME:-}
+      SMSGATE_PASSWORD: ${SMSGATE_PASSWORD:-}
     volumes:
       - ./secrets:/secrets:ro
     ports:

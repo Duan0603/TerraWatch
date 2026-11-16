@@ -9,7 +9,7 @@ const TABS = [['issue', 'Lúc phát hành dự báo'], ['now', 'Hiện tại & 7
 
 // citizen: the review evidence and the experimental GRU score are staff tools, not public information.
 // weatherPoint: with no warning selected, still show live rain/weather for a monitored point (citizen page).
-export default function DetailPanel({ selectedEvent, events, onSelectEvent, fieldReports, aoi, confirmed, experimentalRisk, className = '', citizen = false, weatherPoint = null }) {
+export default function DetailPanel({ selectedEvent, events, onSelectEvent, fieldReports, aoi, confirmed, experimentalRisk, className = '', citizen = false, weatherPoint = null, focus = null, rainRequest = null, myPosition = null }) {
   const tabs = citizen ? TABS.slice(1) : TABS;
   const panelTarget = selectedEvent || weatherPoint;
   const [tab, setTab] = useState(tabs[0][0]);
@@ -50,6 +50,9 @@ export default function DetailPanel({ selectedEvent, events, onSelectEvent, fiel
         aoi={aoi}
         confirmed={confirmed}
         experimentalRisk={citizen ? null : experimentalRisk}
+        focus={focus}
+        rainRequest={rainRequest}
+        myPosition={myPosition}
       />
 
       {/* Hai góc nhìn cùng khu vực: ảnh chụp lúc phát hành (cố định) và mưa/thời tiết hiện tại (cập nhật mỗi giờ) */}

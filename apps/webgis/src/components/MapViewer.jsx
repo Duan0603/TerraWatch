@@ -75,7 +75,9 @@ const CONFIRMED_COLOR = ['match', ['get', 'risk_level'], 'extreme', '#b91c1c', '
  * Component MapViewer - Bản đồ viễn thám giám sát trượt lở 3D thời gian thực (Story 1.1, 1.2, 1.3)
  * @param {MapViewerProps} props
  */
-export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldReports = [], aoi = null, confirmed = null, experimentalRisk = null }) {
+// Story 4.43 (citizen page): aoi features may carry { mine, color } to paint the citizen's own areas by today's level;
+// focus = { geometry, n } frames one area; rainRequest = { key, n } opens the rain-warning card on that site.
+export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldReports = [], aoi = null, confirmed = null, experimentalRisk = null, focus = null, rainRequest = null, myPosition = null }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
@@ -248,12 +250,19 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
       return;
     }
     map.addSource('aoi-boundaries', { type: 'geojson', data });
+    const mine = ['boolean', ['get', 'mine'], false];
     map.addLayer({
       id: 'aoi-boundaries-line',
       type: 'line',
       source: 'aoi-boundaries',
+      filter: ['!', mine],
       paint: { 'line-color': '#087B70', 'line-width': 2, 'line-dasharray': [3, 2] }
     });
+    // the citizen's own areas: filled and outlined in today's level colour (colour rides the data: see the rain layer note)
+    map.addLayer({ id: 'aoi-mine-fill', type: 'fill', source: 'aoi-boundaries', filter: mine,
+      paint: { 'fill-color': ['coalesce', ['get', 'color'], '#087B70'], 'fill-opacity': 0.14 } });
+    map.addLayer({ id: 'aoi-mine-line', type: 'line', source: 'aoi-boundaries', filter: mine,
+      paint: { 'line-color': ['coalesce', ['get', 'color'], '#087B70'], 'line-width': 3 } });
   };
 
   // Story 4.38: sạt lở đã được cán bộ xác nhận (phát hiện từ ảnh vệ tinh) - lớp riêng, bật/tắt được
@@ -435,6 +444,9 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
 
   const toggleRain = async () => {
     if (showRain) { setShowRain(false); return; }
+    openRain();
+  };
+  const openRain = async (wantedKey) => {
     let meta = rainMeta;
     if (!meta) {
       try { meta = await rainWarningApi.getSites(); setRainMeta(meta); setRainError(null); }
@@ -449,7 +461,7 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
       });
       setSiteLevels(lv);
     });
-    const key = rainSiteKey || meta.sites[0]?.key;
+    const key = (wantedKey && meta.sites.some(x => x.key === wantedKey) ? wantedKey : null) || rainSiteKey || meta.sites[0]?.key;
     setRainSiteKey(key);
     flyToRainSite(meta.sites.find(x => x.key === key));
     setShowRain(true);
@@ -686,9 +698,12 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
     ensureAoiLayer(mapRef.current);
     renderCommunityReportMarkers(mapRef.current);
     // Nothing selected (e.g. no active warning): frame the monitored areas once instead of the wide default view.
-    const bounds = !selectedEvent && !aoiFittedRef.current && confirmedBounds(aoi);
+    // frame the citizen's own areas (again whenever that set changes), else all monitored areas once
+    const own = (aoi?.features || []).filter(f => f.properties?.mine);
+    const fitKey = own.length ? own.map(f => f.properties.area_id).join(',') : 'all';
+    const bounds = !selectedEvent && aoiFittedRef.current !== fitKey && confirmedBounds(own.length ? { features: own } : aoi);
     if (bounds) {
-      aoiFittedRef.current = true;
+      aoiFittedRef.current = fitKey;
       mapRef.current.fitBounds(bounds, { padding: 60, maxZoom: 10, duration: 1200 });
     }
   }, [aoi, fieldReports, mapLoaded]);
@@ -726,6 +741,29 @@ export default function MapViewer({ events, selectedEvent, onSelectEvent, fieldR
     if (!mapRef.current || !mapLoaded) return;
     ensureRainZoneLayer(mapRef.current);
   }, [rainMeta, showRain, rainSiteKey, rainLevel, siteLevels, rainZoneGeom, mapLoaded]);
+
+  // 1g. Story 4.43: the citizen page asks to frame one area, or to open the rain card of a site
+  useEffect(() => {
+    const box = focus?.geometry && mapLoaded && confirmedBounds({ features: [{ geometry: focus.geometry }] });
+    if (box) mapRef.current.fitBounds(box, { padding: { left: 60, right: 60, top: 80, bottom: 60 }, maxZoom: 13, duration: 1200 });
+  }, [focus?.n, mapLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (rainRequest?.key && mapLoaded) openRain(rainRequest.key);
+  }, [rainRequest?.n, mapLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 1h. Story 4.43: "you are here" dot for the citizen's own position
+  const myMarkerRef = useRef(null);
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    if (!myPosition) { myMarkerRef.current?.remove(); myMarkerRef.current = null; return; }
+    if (!myMarkerRef.current) {
+      const el = document.createElement('div');
+      el.setAttribute('aria-label', 'Vị trí của bạn');
+      el.title = 'Vị trí của bạn';
+      el.style.cssText = 'width:16px;height:16px;border-radius:50%;background:#2563eb;border:3px solid #fff;box-shadow:0 0 0 6px rgba(37,99,235,0.25),0 1px 4px rgba(0,0,0,0.4);';
+      myMarkerRef.current = new maplibregl.Marker({ element: el }).setLngLat(myPosition).addTo(mapRef.current);
+    } else myMarkerRef.current.setLngLat(myPosition);
+  }, [myPosition?.[0], myPosition?.[1], mapLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 2. Camera FlyTo mượt mà khi Cán bộ chọn sự cố từ hàng đợi (AC 1.5.5, FR-MAP-12)
   const prevSelectedEventIdRef = useRef(null);

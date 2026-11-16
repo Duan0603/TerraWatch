@@ -76,6 +76,8 @@ class AuthorizationMatrixTest {
         r("POST", "/api/v1/auth/password-reset/email/complete", Tier.PUBLIC),
         r("POST", "/api/v1/auth/password-reset/email/request", Tier.PUBLIC),
         r("POST", "/api/v1/auth/password-reset/email/verify", Tier.PUBLIC),
+        r("POST", "/api/v1/auth/phone-otp/request", Tier.PUBLIC),
+        r("POST", "/api/v1/auth/phone-otp/verify", Tier.PUBLIC),
         r("POST", "/api/v1/auth/register", Tier.PUBLIC),
         r("GET", "/api/v1/landslides/active", Tier.PUBLIC),
         r("GET", "/api/v1/landslides/geofence", Tier.PUBLIC),

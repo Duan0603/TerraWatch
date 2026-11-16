@@ -49,6 +49,8 @@ export async function mockBackend(page, role, handler) {
       path: new URL(req.url()).pathname.replace('/api/v1', ''),
       body: req.postData() ? JSON.parse(req.postData()) : null
     };
+    // readable by handlers, but not enumerable: specs that compare calls with toEqual stay as they were
+    Object.defineProperty(call, 'query', { value: Object.fromEntries(new URL(req.url()).searchParams) });
     calls.push(call);
     const out = handler(call) ?? [];
     const [status, body] = Array.isArray(out) && out.length === 2 && typeof out[0] === 'number' ? out : [200, out];

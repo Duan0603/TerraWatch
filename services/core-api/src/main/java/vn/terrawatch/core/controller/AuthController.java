@@ -10,6 +10,7 @@ import vn.terrawatch.core.dto.*;
 import vn.terrawatch.core.service.EmailResetService;
 import vn.terrawatch.core.service.AuthService;
 import vn.terrawatch.core.service.GoogleAuthService;
+import vn.terrawatch.core.service.PhoneOtpService;
 
 import java.util.Map;
 import java.util.UUID;
@@ -21,11 +22,13 @@ public class AuthController {
     private final AuthService auth;
     private final GoogleAuthService googleAuth;
     private final EmailResetService emailReset;
+    private final PhoneOtpService phoneOtp;
 
-    public AuthController(AuthService auth, GoogleAuthService googleAuth, EmailResetService emailReset) {
+    public AuthController(AuthService auth, GoogleAuthService googleAuth, EmailResetService emailReset, PhoneOtpService phoneOtp) {
         this.auth = auth;
         this.googleAuth = googleAuth;
         this.emailReset = emailReset;
+        this.phoneOtp = phoneOtp;
     }
 
     @PostMapping("/google")
@@ -72,6 +75,19 @@ public class AuthController {
     @Operation(summary = "Set the new password with the one-time reset token")
     public void emailResetComplete(@Valid @RequestBody EmailResetComplete request) {
         emailReset.complete(request.email(), request.resetToken(), request.newPassword());
+    }
+
+    @PostMapping("/phone-otp/request")
+    @Operation(summary = "Text a 6-digit code to a VN phone number (Story 4.44; 60 s between codes, 5 per number per hour)")
+    public Map<String, Boolean> phoneOtpRequest(@Valid @RequestBody PhoneOtpRequest request) {
+        phoneOtp.request(request.phoneNumber());
+        return Map.of("sent", true);
+    }
+
+    @PostMapping("/phone-otp/verify")
+    @Operation(summary = "Check the texted code; a right code returns a one-time phoneToken for register / officer request / reset")
+    public Map<String, String> phoneOtpVerify(@Valid @RequestBody PhoneOtpRequest request) {
+        return Map.of("phoneToken", phoneOtp.verify(request.phoneNumber(), request.code()));
     }
 
     @PostMapping("/password-reset/check")

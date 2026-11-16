@@ -10,6 +10,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,7 +22,7 @@ import java.util.regex.Pattern;
 public class EsmsSender implements SmsSender {
     private static final Logger log = LoggerFactory.getLogger(EsmsSender.class);
     private static final Duration TIMEOUT = Duration.ofSeconds(10);
-    private static final URI ENDPOINT = URI.create("http://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_post_json/");
+    private static final URI ENDPOINT = URI.create("https://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_post_json/");
     private static final Pattern PATTERN_AREA = Pattern.compile("tai\\s+(?:Vung trong diem \\d+:\\s*)?([^.,]+)");
     private static final Pattern PATTERN_RISK = Pattern.compile("muc\\s+([A-Z]+)");
 
@@ -42,6 +43,7 @@ public class EsmsSender implements SmsSender {
 
     @Override
     public Result send(String phoneNumber, String body) {
+        if (apiKey == null || apiKey.isBlank() || secretKey == null || secretKey.isBlank()) return Result.failed("eSMS credentials missing");
         String phone = normalizeLocal(phoneNumber);
         if (phone.isEmpty()) return Result.failed("eSMS: phone number is blank");
         // For test Brandname Baotrixemay in live mode (sandbox=0), Telco carriers (Viettel/Mobi/Vina)
@@ -55,16 +57,7 @@ public class EsmsSender implements SmsSender {
 
     private Result doSend(String phone, String content) {
         try {
-            String payload = json.writeValueAsString(Map.of(
-                    "ApiKey", apiKey,
-                    "SecretKey", secretKey,
-                    "Phone", phone,
-                    "Content", content,
-                    "Brandname", brandname,
-                    "SmsType", "2",
-                    "IsUnicode", "0",
-                    "Sandbox", sandbox ? "1" : "0"
-            ));
+            String payload = json.writeValueAsString(request(apiKey, secretKey, brandname, sandbox, phone, content));
 
             HttpRequest req = HttpRequest.newBuilder(ENDPOINT).timeout(TIMEOUT)
                     .header("Content-Type", "application/json")
@@ -93,6 +86,24 @@ public class EsmsSender implements SmsSender {
      * "Xe {P2,70} da hoan thanh. Kinh moi {P2,50} den nhan xe. Tran trong."
      * Parameter 1 must be strictly <= 60 chars and contain no ellipsis to guarantee carrier delivery.
      */
+    /** No brandname = eSMS fixed number (SmsType 8): free text, needs no registered brandname; otherwise brandname customer care (SmsType 2). */
+    static boolean fixedNumber(String brandname) {
+        return brandname == null || brandname.isBlank();
+    }
+
+    static Map<String, String> request(String apiKey, String secretKey, String brandname, boolean sandbox, String phone, String content) {
+        Map<String, String> m = new LinkedHashMap<>();
+        m.put("ApiKey", apiKey);
+        m.put("SecretKey", secretKey);
+        m.put("Phone", phone);
+        m.put("Content", content);
+        m.put("SmsType", fixedNumber(brandname) ? "8" : "2");
+        if (!fixedNumber(brandname)) m.put("Brandname", brandname);
+        m.put("IsUnicode", "0");
+        m.put("Sandbox", sandbox ? "1" : "0");
+        return m;
+    }
+
     static String toCarrierTemplate(String body) {
         if (body == null || body.isBlank()) {
             return "Xe [TERRAWATCH] Canh bao sat lo da hoan thanh. Kinh moi 112 (Cuu ho khan cap) den nhan xe. Tran trong.";

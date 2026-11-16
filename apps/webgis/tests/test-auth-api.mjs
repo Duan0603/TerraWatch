@@ -11,18 +11,9 @@ const http = (status, message) => Object.assign(new Error(`HTTP ${status}`), { r
 const netErr = () => new Error('Network Error');
 const rejects = async (fn, check) => { try { await fn(); } catch (e) { return check(e), e; } assert.fail('expected rejection'); };
 
-// Minimal DOM for the reCAPTCHA host element.
-function fakeDom() {
-  const byId = new Map();
-  const el = (tag) => ({ tag, id: '', style: {}, children: [], appendChild(c) { this.children.push(c); if (c.id) byId.set(c.id, c); return c; }, replaceChildren() { this.children = []; } });
-  const body = el('body');
-  return { byId, body, document: { body, getElementById: (id) => byId.get(id) || null, createElement: el } };
-}
-
 export async function testAuthApi() {
   console.log('\n▶ testAuthApi');
-  const { authApi, formatToE164, getOrCreateRecaptcha } = await importSrc('api/authApi.js', { fresh: true });
-  const fb = await import('tw-stub:config-firebase');
+  const { authApi, formatToE164 } = await importSrc('api/authApi.js', { fresh: true });
   const restore = [];
   const origErr = console.error; console.error = () => {};
   try {
@@ -138,91 +129,39 @@ export async function testAuthApi() {
     assert.deepEqual(store.keys(), ['other']);
     console.log('  ✓ logout: chỉ xoá terrawatch_token và terrawatch_user');
 
-    // --- sendSmsOtp ---
-    assert.equal(fb.auth, null);
-    await rejects(() => authApi.sendSmsOtp('0865396352'), (e) => assert.match(e.message, /chưa được cấu hình.*Chưa có mã OTP nào được gửi/));
-    console.log('  ✓ sendSmsOtp: chưa cấu hình Firebase -> báo lỗi, không gửi gì');
-
-    const dom = fakeDom();
-    const win = {};
-    restore.push(setGlobal('document', dom.document), setGlobal('window', win));
-    const fakeAuth = { name: 'fake-auth' };
-    fb.__setAuth(fakeAuth);
-    const verifiers = [];
-    const sent = [];
-    globalThis.__tw = {
-      makeVerifier: (a, element, opts) => { const v = { a, element, opts, cleared: 0, rendered: 0, async render() { this.rendered++; }, clear() { this.cleared++; } }; verifiers.push(v); return v; },
-      signInWithPhoneNumber: async (a, phone, verifier) => { sent.push({ a, phone, verifier }); return { confirm: async () => ({}) }; }
-    };
-    const res = await authApi.sendSmsOtp('0865396352');
+    // --- sendSmsOtp / verifySmsOtp (Story 4.44: mã do máy chủ tự gửi SMS, không qua Firebase) ---
+    calls = recorder(async () => ({ sent: true }));
+    const res = await authApi.sendSmsOtp(' 0865 396 352 ');
+    assert.deepEqual(calls, [{ method: 'post', url: '/auth/phone-otp/request', args: [{ phoneNumber: '+84865396352' }] }]);
     assert.equal(res.success, true);
-    assert.equal(res.isRealSms, true);
     assert.equal(res.formattedPhone, '+84865396352');
     assert.match(res.message, /\+84865396352/);
-    assert.equal(sent.length, 1);
-    assert.equal(sent[0].a, fakeAuth);
-    assert.equal(sent[0].phone, '+84865396352');
-    assert.equal(sent[0].verifier, verifiers[0]);
-    assert.equal(verifiers[0].opts.size, 'invisible');
-    assert.equal(verifiers[0].rendered, 1);
-    assert.equal(win.recaptchaVerifier, verifiers[0]);
-    assert.equal(win.confirmationResult !== undefined, true);
-    const host = dom.byId.get('recaptcha-container');
-    assert.ok(host && dom.body.children.includes(host), 'host attached to body');
-    assert.equal(host.children.length, 1);
-    console.log('  ✓ sendSmsOtp: chuẩn hoá số, tạo reCAPTCHA ẩn, gọi Firebase, trả kết quả');
+    const sendFails = (err) => { recorder(async () => { throw err; }); return rejects(() => authApi.sendSmsOtp('0865396352'), () => {}); };
+    assert.equal((await sendFails(http(429, 'Vui lòng đợi 60 giây rồi mới gửi lại mã.'))).message, 'Vui lòng đợi 60 giây rồi mới gửi lại mã.');
+    assert.match((await sendFails(http(503, 'Máy chủ chưa bật gửi SMS nên chưa gửi được mã.'))).message, /chưa bật gửi SMS/);
+    assert.equal((await sendFails(http(500))).message, 'Chưa gửi được mã xác thực.');
+    assert.match((await sendFails(netErr())).message, /Không kết nối được máy chủ/);
+    console.log('  ✓ sendSmsOtp: POST /auth/phone-otp/request với số +84, lỗi giữ thông điệp máy chủ (429/503), 5xx/mạng có câu riêng');
 
-    // gửi lại: dọn verifier cũ, dùng phần tử mới, không tạo thêm host
-    const firstElement = host.children[0];
-    await authApi.sendSmsOtp('0865396352');
-    assert.equal(verifiers[0].cleared, 1);
-    assert.equal(verifiers.length, 2);
-    assert.equal(dom.body.children.length, 1);
-    assert.equal(host.children.length, 1);
-    assert.notEqual(host.children[0], firstElement);
-    win.recaptchaVerifier = { clear() { throw new Error('already disposed'); } };
-    await getOrCreateRecaptcha('recaptcha-container'); // clear() ném lỗi thì bị bỏ qua
-    console.log('  ✓ gửi lại: clear verifier cũ (lỗi clear bị nuốt), phần tử mới, dùng lại host');
-
-    // map lỗi Firebase
-    const fbErr = async (code, message = 'raw firebase message') => {
-      globalThis.__tw.signInWithPhoneNumber = async () => { throw Object.assign(new Error(message), { code }); };
-      return rejects(() => authApi.sendSmsOtp('0865396352'), () => {});
-    };
-    assert.match((await fbErr('auth/invalid-phone-number')).message, /không đúng định dạng quốc tế/);
-    assert.match((await fbErr('auth/too-many-requests')).message, /hạn mức SMS tối đa trong ngày/);
-    assert.match((await fbErr('auth/quota-exceeded')).message, /hết hạn mức SMS/);
-    assert.match((await fbErr('auth/billing-not-enabled')).message, /chưa bật thanh toán/);
-    assert.equal((await fbErr('auth/argument-error', 'bad el')).message, 'Lỗi cấu hình phần tử reCAPTCHA: bad el');
-    assert.equal((await fbErr('auth/something-else')).message, 'raw firebase message');
-    console.log('  ✓ sendSmsOtp: ánh xạ 5 mã lỗi Firebase, mã lạ giữ nguyên thông điệp');
-
-    // --- verifySmsOtp ---
-    // fresh module: chưa có confirmationResult nào
-    const fresh = await importSrc('api/authApi.js', { fresh: true });
-    delete win.confirmationResult;
-    await rejects(() => fresh.authApi.verifySmsOtp('0865396352', '123456'), (e) => assert.match(e.message, /Chưa có mã OTP nào được gửi/));
-    const codes = [];
-    win.confirmationResult = { confirm: async (c) => { codes.push(c); return { user: { uid: 'u1', getIdToken: async () => 'id-token' } }; } };
-    const ok = await fresh.authApi.verifySmsOtp('0865396352', '123456');
-    assert.deepEqual(codes, ['123456']);
+    calls = recorder(async () => ({ phoneToken: 'pt-1' }));
+    const ok = await authApi.verifySmsOtp('0865396352', ' 123456 ');
+    assert.deepEqual(calls, [{ method: 'post', url: '/auth/phone-otp/verify', args: [{ phoneNumber: '+84865396352', code: '123456' }] }]);
     assert.equal(ok.success, true);
-    assert.equal(ok.idToken, 'id-token');
-    assert.equal(ok.user.uid, 'u1');
-    win.confirmationResult = { confirm: async () => ({ user: { uid: 'u2' } }) }; // không có getIdToken
-    assert.equal((await fresh.authApi.verifySmsOtp('x', '1')).idToken, undefined);
-    const confirmFails = async (code, message) => {
-      win.confirmationResult = { confirm: async () => { throw Object.assign(new Error(message), { code }); } };
-      return rejects(() => fresh.authApi.verifySmsOtp('x', '1'), () => {});
-    };
-    assert.match((await confirmFails('auth/invalid-verification-code')).message, /Mã OTP không đúng/);
-    assert.match((await confirmFails('auth/code-expired')).message, /đã hết hạn/);
-    assert.equal((await confirmFails('auth/other', 'boom')).message, 'boom');
-    assert.equal((await confirmFails('auth/other', '')).message, 'Mã OTP không chính xác.');
-    console.log('  ✓ verifySmsOtp: chưa gửi mã -> lỗi, trả idToken, ánh xạ lỗi mã sai/hết hạn/khác');
+    assert.equal(ok.idToken, 'pt-1');
+    assert.equal((await authApi.verifySmsOtp('+84865396352', '123456')).idToken, 'pt-1');
+    assert.equal(calls.length, 1, 'đúng mã vừa xác thực: dùng lại token, không gọi máy chủ lần nữa');
+    recorder(async () => ({ sent: true }));
+    await authApi.sendSmsOtp('0865396352');
+    calls = recorder(async () => ({ phoneToken: 'pt-2' }));
+    assert.equal((await authApi.verifySmsOtp('0865396352', '123456')).idToken, 'pt-2');
+    assert.equal(calls.length, 1, 'gửi mã mới thì bỏ token cũ');
+    const verifyFails = (err) => { recorder(async () => { throw err; }); return rejects(() => authApi.verifySmsOtp('0865396352', '000000'), () => {}); };
+    assert.equal((await verifyFails(http(400, 'Mã xác thực không đúng hoặc đã hết hạn'))).message, 'Mã xác thực không đúng hoặc đã hết hạn');
+    assert.equal((await verifyFails(http(400))).message, 'Mã OTP không chính xác hoặc đã hết hạn.');
+    assert.match((await verifyFails(netErr())).message, /Không kết nối được máy chủ/);
+    console.log('  ✓ verifySmsOtp: POST /auth/phone-otp/verify, trả phoneToken, nhớ mã đúng gần nhất, lỗi đổi sang tiếng Việt');
   } finally {
     console.error = origErr;
-    fb.__setAuth(null);
     restore.reverse().forEach((r) => r());
     delete globalThis.__tw;
   }

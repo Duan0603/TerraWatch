@@ -135,15 +135,19 @@ class TwilioSmsSenderTest {
 
     @Test
     void unconfiguredProviderFailsViaTheConfigFallbackWithoutAnyHttp() {
-        SmsSender none = new SmsConfig().smsSender("", "", "", "", "", "", "Baotrixemay", "0", json);
+        SmsSender none = new SmsConfig().smsSender("", "", "", "", "", "", "Baotrixemay", "0", "", "", json);
         assertThat(none.send("0912345678", "x")).isEqualTo(SmsSender.Result.failed("SMS not configured"));
         // incomplete Twilio settings must not build a real sender
-        assertThat(new SmsConfig().smsSender("twilio", "AC1", "", "+1", "", "", "B", "0", json)).isNotInstanceOf(TwilioSmsSender.class);
+        assertThat(new SmsConfig().smsSender("twilio", "AC1", "", "+1", "", "", "B", "0", "", "", json)).isNotInstanceOf(TwilioSmsSender.class);
         // incomplete eSMS settings (key but no secret) must not build a real sender
-        assertThat(new SmsConfig().smsSender("esms", "", "", "", "key", "", "B", "0", json)).isNotInstanceOf(EsmsSender.class);
-        assertThat(new SmsConfig().smsSender("esms", "", "", "", "key", "sec", "B", "true", json)).isInstanceOf(EsmsSender.class);
-        assertThat(new SmsConfig().smsSender("", "AC1", "t", "+1", "", "", "B", "0", json)).isInstanceOf(TwilioSmsSender.class);
-        assertThat(new SmsConfig().smsSender("  TWILIO ", "AC1", "t", "+1", "k", "s", "B", "0", json)).isInstanceOf(TwilioSmsSender.class);
+        assertThat(new SmsConfig().smsSender("esms", "", "", "", "key", "", "B", "0", "", "", json)).isNotInstanceOf(EsmsSender.class);
+        assertThat(new SmsConfig().smsSender("esms", "", "", "", "key", "sec", "B", "true", "", "", json)).isInstanceOf(EsmsSender.class);
+        assertThat(new SmsConfig().smsSender("", "AC1", "t", "+1", "", "", "B", "0", "", "", json)).isInstanceOf(TwilioSmsSender.class);
+        assertThat(new SmsConfig().smsSender("  TWILIO ", "AC1", "t", "+1", "k", "s", "B", "0", "", "", json)).isInstanceOf(TwilioSmsSender.class);
+        // phone gateway needs both credentials, and only when chosen explicitly
+        assertThat(new SmsConfig().smsSender("smsgate", "", "", "", "", "", "B", "0", "u", "p", json)).isInstanceOf(SmsGateSender.class);
+        assertThat(new SmsConfig().smsSender("smsgate", "", "", "", "", "", "B", "0", "u", "", json)).isNotInstanceOf(SmsGateSender.class);
+        assertThat(new SmsConfig().smsSender("", "", "", "", "", "", "B", "0", "u", "p", json)).isNotInstanceOf(SmsGateSender.class);
     }
 
     @Test

@@ -105,6 +105,9 @@ esms:
   secret-key: ${ESMS_SECRET_KEY:}
   brandname: ${ESMS_BRANDNAME:Baotrixemay}
   sandbox: ${ESMS_SANDBOX:0}
+smsgate:
+  username: ${SMSGATE_USERNAME:}
+  password: ${SMSGATE_PASSWORD:}
 twilio:
   account-sid: ${TWILIO_ACCOUNT_SID:}
   auth-token: ${TWILIO_AUTH_TOKEN:}

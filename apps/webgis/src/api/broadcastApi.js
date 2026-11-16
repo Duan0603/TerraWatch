@@ -75,13 +75,14 @@ export const broadcastApi = {
       severity: urgency
     });
 
-    if (res.status === 'FAILED') {
+    if (res.status === 'FAILED' && !(res.sms_sent > 0)) { // push all failed and no SMS went out either
       // Không thiết bị nào nhận được: backend đã dùng mã chống trùng này, nên gửi lại phải dùng mã mới.
       throw Object.assign(
         new Error(`Gửi thất bại tới toàn bộ ${res.recipients_estimated} thiết bị${res.first_error ? ` (${res.first_error})` : ''}.`),
         { retryWithNewKey: true });
     }
-    return { broadcastId: entry.id, data: entry, sent: res.sent, failed: res.failed, total: res.recipients_estimated, status: res.status };
+    return { broadcastId: entry.id, data: entry, sent: res.sent, failed: res.failed, total: res.recipients_estimated, status: res.status,
+      smsRecipients: res.sms_recipients || 0, smsSent: res.sms_sent || 0, smsFailed: res.sms_failed || 0, smsError: res.sms_first_error || null };
   },
 
   // GET /notifications/broadcast/{id}/deliveries - Chi tiết từng người nhận và trạng thái chuyển phát

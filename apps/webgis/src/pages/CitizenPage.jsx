@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, LogOut, MapPin, LocateFixed, CheckCircle2, Phone } from 'lucide-react';
+import { ShieldCheck, LogOut, MapPin, CheckCircle2, Phone, AlertTriangle, UserRound } from 'lucide-react';
 import { rankZones, monitoredPoints, nearestPoint } from '../utils/zoneLocation';
 import DetailPanel from '../components/DetailPanel';
+import TodayStatusCard, { useAreaStatuses, usePositionStatus } from '../components/TodayStatusCard';
+import CitizenProfileModal from '../components/CitizenProfileModal';
+import alertSubscriptionApi from '../api/alertSubscriptionApi';
+import { LEVEL_INFO } from '../utils/rainWarning';
+import { RANK, worse, nearestArea, ADVICE, locateArea, centroid } from '../utils/citizenStatus';
+import { shortAreaName } from '../utils/alertSubscriptions';
 import MobileTabBar from '../components/MobileTabBar';
 import { RISK_LABELS } from '../components/EventCard';
 import { fmtVN } from '../utils/time';
@@ -15,7 +21,7 @@ const REFRESH_MS = 60000;
 const VN_TIME = new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', hour12: false });
 const card = { margin: '0 12px 10px', padding: '10px 12px', borderRadius: 10, background: '#F5F8F7', border: '1px solid #DCE5E2', fontSize: 12 };
 const muted = { marginTop: 4, fontSize: 11, color: '#64748b', lineHeight: 1.5 };
-const chip = { padding: '2px 8px', borderRadius: 999, background: '#E4F4F1', color: '#065F57', fontSize: 11, fontWeight: 600 };
+const callBtn = (bg) => ({ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 12px', borderRadius: 8, background: bg, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: 12 });
 
 export default function CitizenPage() {
   const { user, logout } = useAuth();
@@ -30,6 +36,17 @@ export default function CitizenPage() {
   const [aoi, setAoi] = useState(null); // ranh giới vùng trọng điểm (công khai)
   const [lastUpdated, setLastUpdated] = useState(null);
   const [chosenKey, setChosenKey] = useState('');
+  // Story 4.43: the areas the citizen follows drive the status card, the map colours and the action banner
+  const [subs, setSubs] = useState([]);
+  const [me, setMe] = useState(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [profileAtAreas, setProfileAtAreas] = useState(false);
+  const [focus, setFocus] = useState(null);
+  const [rainRequest, setRainRequest] = useState(null);
+  useEffect(() => {
+    alertSubscriptionApi.list().then((l) => setSubs(l || [])).catch(() => {});
+    alertSubscriptionApi.me().then(setMe).catch(() => {});
+  }, []);
 
   // Vùng cảnh báo đã duyệt và còn hiệu lực (cùng nguồn với bộ nhớ ngoại tuyến của ứng dụng di động),
   // tải lại mỗi phút để vùng mới duyệt hiện ra; lỗi tạm thời giữ nguyên danh sách đang có.
@@ -39,7 +56,8 @@ export default function CitizenPage() {
       forecastApi.getApprovedZones()
         .then((data) => { if (active) { setZones(data); setLoadError(null); setLastUpdated(new Date()); } })
         .catch((err) => active && setLoadError(apiErrorMessage(err, 'Không cập nhật được vùng cảnh báo')));
-      forecastApi.getMonitoredPoints().then((d) => active && setPoints(monitoredPoints(d))).catch(() => {});
+      // demo/test points are staff data, not places a citizen lives
+      forecastApi.getMonitoredPoints().then((d) => active && setPoints(monitoredPoints(d).filter((p) => !/^demo zone/i.test(p.name)))).catch(() => {});
       forecastApi.getMyAlerts()
         .then((data) => { if (active) { setReceived(data); setReceivedError(null); } })
         .catch((err) => active && setReceivedError(apiErrorMessage(err, 'Không tải được cảnh báo đã nhận')));
@@ -66,13 +84,47 @@ export default function CitizenPage() {
   const list = position ? rankZones(events, position) : events;
   const insideZone = list.find((z) => z.inside);
   // No warning to show: weather of the chosen monitored point, else of the one nearest the user.
-  const near = position ? nearestPoint(points, position) : null;
+  // a rain point 800 km away says nothing about where the citizen is: only within 30 km
+  const nearest = position ? nearestPoint(points, position) : null;
+  const near = nearest && nearest.distanceKm <= 30 ? nearest : null;
   const wp = points.find((p) => p.key === chosenKey) || near;
   const weatherPoint = wp && {
-    location: wp === near && !chosenKey ? `Điểm theo dõi gần bạn nhất: ${wp.name} (cách khoảng ${Math.round(near.distanceKm)} km)` : `Điểm theo dõi: ${wp.name}`,
+    location: wp === near && !chosenKey ? `Điểm đo mưa gần bạn nhất: ${wp.name} (cách khoảng ${Math.round(near.distanceKm)} km)` : `Điểm đo mưa: ${wp.name}`,
     lat: wp.lat, lng: wp.lng,
   };
-  const areaNames = (aoi?.features || []).map((f) => String(f.properties?.name || '').replace(/^Vùng trọng điểm \d+:\s*/, '')).filter(Boolean);
+  const allAreas = aoi?.features || [];
+  const myIds = subs.map((x) => x.areaId);
+  const myAreas = allAreas.filter((f) => myIds.includes(f.properties.area_id));
+  const statuses = useAreaStatuses(myAreas, points);
+  const overall = myAreas.reduce((lv, f) => worse(lv, statuses[f.properties.area_id]?.worst || 'missing'), 'missing');
+  const urgent = myAreas.filter((f) => (RANK[statuses[f.properties.area_id]?.worst] ?? -1) >= RANK.warning);
+  const urgentLevel = urgent.reduce((lv, f) => worse(lv, statuses[f.properties.area_id].worst), 'none');
+  const mapAoi = aoi && { ...aoi, features: allAreas.map((f) => (myIds.includes(f.properties.area_id)
+    ? { ...f, properties: { ...f.properties, mine: true, color: (LEVEL_INFO[statuses[f.properties.area_id]?.worst] || LEVEL_INFO.missing).color } }
+    : f)) };
+  const here = usePositionStatus(position, points);
+  // after locating: frame the area the citizen is in, else the citizen and the nearest area together
+  useEffect(() => {
+    const where = locateArea(allAreas, position);
+    if (!where) return;
+    const geometry = where.inside ? where.feature.geometry : { type: 'MultiPoint', coordinates: [position, centroid(where.feature.geometry)] };
+    setFocus({ geometry, n: Date.now() });
+  }, [position?.[0], position?.[1], allAreas.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [followMsg, setFollowMsg] = useState('');
+  // follow the area the citizen stands in (or the nearest): SMS too when the profile has a phone
+  const follow = async (areaId) => {
+    setFollowMsg('');
+    try {
+      const saved = await alertSubscriptionApi.subscribe(areaId, me?.phoneNumber ? ['PUSH', 'SMS'] : ['PUSH']);
+      setSubs((prev) => [...prev.filter((x) => x.areaId !== areaId), saved]);
+      if (!me?.phoneNumber) setFollowMsg('Đã theo dõi (thông báo app). Thêm số điện thoại trong hồ sơ để nhận cả SMS.');
+    } catch (e) {
+      setFollowMsg(apiErrorMessage(e, 'Không theo dõi được khu vực này'));
+    }
+  };
+  const openProfile = (atAreas) => { setProfileAtAreas(atAreas); setProfileOpen(true); };
+  const focusArea = (f) => { setFocus({ geometry: f.geometry, n: Date.now() }); setMobileTab('map'); };
+  const openRain = (key) => { setRainRequest({ key, n: Date.now() }); setMobileTab('map'); };
 
   const locate = () => {
     if (!navigator.geolocation) { setGeoMsg('Trình duyệt không hỗ trợ định vị.'); return; }
@@ -106,19 +158,20 @@ export default function CitizenPage() {
         </div>
 
         <div className="nav-right">
-          <div className="status-chip">
-            Vùng cảnh báo đã duyệt, còn hiệu lực
+          <div className="status-chip" aria-label="Tình trạng khu vực của bạn" style={myAreas.length ? { color: (LEVEL_INFO[overall] || LEVEL_INFO.missing).color, background: (LEVEL_INFO[overall] || LEVEL_INFO.missing).bg } : undefined}>
+            {myAreas.length ? `Khu vực của bạn hôm nay: ${(LEVEL_INFO[overall] || LEVEL_INFO.missing).label}` : 'Chưa chọn khu vực của bạn'}
           </div>
 
-          <div className="nav-user">
+          <button type="button" className="nav-user" onClick={() => openProfile(false)} title="Hồ sơ của tôi" aria-label="Mở hồ sơ của tôi"
+            style={{ border: 'none', background: 'none', cursor: 'pointer', font: 'inherit', textAlign: 'left' }}>
             <div className="nav-avatar">
               {(user?.fullName || 'CD').split(' ').slice(-2).map((w) => w[0]).join('').toUpperCase()}
             </div>
             <div className="nav-user-info">
               <div className="nav-user-name">{user?.fullName || 'Công dân'}</div>
-              <div className="nav-user-role">Tài khoản công dân</div>
+              <div className="nav-user-role"><UserRound size={10} style={{ verticalAlign: -1 }} /> Hồ sơ của tôi</div>
             </div>
-          </div>
+          </button>
 
           <button className="btn-ghost" onClick={logout} title="Đăng xuất">
             <LogOut size={14} />
@@ -130,18 +183,29 @@ export default function CitizenPage() {
         {/* Danh sách chỉ đọc các vùng đã được cán bộ phê duyệt và còn hiệu lực — không có nút thẩm định.
             Đây là mọi vùng đang hiệu lực, chưa lọc theo khu vực người dân đăng ký (backend chưa trả khu vực của ô). */}
         <aside className={`sidebar citizen-list${mobileTab === 'map' ? ' mobile-hidden' : ''}`}>
-          <div style={{ padding: '14px 16px 10px' }}>
-            <div style={{ fontWeight: 700, fontSize: 14 }}>Cảnh báo đang hiệu lực ({events.length})</div>
+          <div style={{ height: 12 }} />
+          {urgent.length > 0 && (
+            <div role="alert" aria-label="Cần hành động ngay" style={{ margin: '0 12px 10px', padding: '12px 14px', borderRadius: 10, background: '#FEF2F2', border: '2px solid #DC2626', fontSize: 12, color: '#7F1D1D', lineHeight: 1.5 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 800, fontSize: 14, color: '#B91C1C' }}>
+                <AlertTriangle size={17} /> {LEVEL_INFO[urgentLevel].label}: {urgent.map((f) => shortAreaName(f.properties.name)).join(', ')}
+              </div>
+              <div style={{ marginTop: 4 }}>{ADVICE[urgentLevel]}</div>
+              <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+                <a href="tel:112" style={callBtn('#B91C1C')}><Phone size={13} /> Gọi 112</a>
+                {me?.emergencyContactPhone && <a href={`tel:${me.emergencyContactPhone}`} style={callBtn('#0f766e')}><Phone size={13} /> Gọi {me.emergencyContactName || 'người thân'}{me.emergencyContactRelation ? ` (${me.emergencyContactRelation})` : ''}</a>}
+              </div>
+            </div>
+          )}
+          <TodayStatusCard features={myAreas} statuses={statuses} suggestion={nearestArea(allAreas, position)}
+            onChoose={() => openProfile(true)} onFocus={focusArea} onOpenRain={openRain}
+            allFeatures={allAreas} position={position} here={here} onLocate={locate} geoMsg={geoMsg} onFollow={follow} followMsg={followMsg} />
+
+          <div style={{ padding: '6px 16px 10px' }}>
+            <div style={{ fontWeight: 700, fontSize: 14 }}>Cảnh báo chính thức từ cán bộ ({events.length})</div>
             <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
               {lastUpdated ? `Cập nhật lúc ${VN_TIME.format(lastUpdated)} · tự cập nhật mỗi phút` : 'Đang tải…'}
             </div>
           </div>
-          <div style={{ padding: '0 16px 10px' }}>
-            <button type="button" className="btn-ghost" onClick={locate} style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6, fontSize: 12 }}>
-              <LocateFixed size={14} /> Kiểm tra vị trí của tôi
-            </button>
-          </div>
-          {geoMsg && <div role="status" style={{ padding: '0 16px 10px', fontSize: 12, color: '#64748b' }}>{geoMsg}</div>}
           {position && events.length > 0 && (
             <div role="status" style={{ margin: '0 12px 10px', padding: '10px 12px', borderRadius: 8, fontSize: 12, lineHeight: 1.6,
               background: insideZone ? '#FEF2F2' : '#F0FDF4', color: insideZone ? '#991B1B' : '#166534', border: `1px solid ${insideZone ? '#FECACA' : '#BBF7D0'}` }}>
@@ -180,28 +244,20 @@ export default function CitizenPage() {
           {events.length === 0 && !loadError && (
             <div style={card}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, fontSize: 13, color: '#166534' }}>
-                <CheckCircle2 size={15} /> Không có cảnh báo đang hiệu lực
+                <CheckCircle2 size={15} /> Chưa có cảnh báo chính thức nào
               </div>
-              <div style={muted}>Không phải xác nhận an toàn: vẫn theo dõi thông báo của địa phương.</div>
-              {areaNames.length > 0 && (
-                <div style={{ marginTop: 8 }}>
-                  <div style={{ ...muted, marginTop: 0, marginBottom: 4 }}>Đang theo dõi</div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                    {areaNames.map((n) => <span key={n} style={chip}>{n}</span>)}
-                  </div>
-                </div>
-              )}
+              <div style={muted}>Cán bộ chưa phát cảnh báo sạt lở nào còn hiệu lực. Mức nguy cơ theo mưa hằng ngày ở khu vực của bạn xem ở mục "Hôm nay" phía trên.</div>
             </div>
           )}
           {events.length === 0 && points.length > 0 && (
             <div style={card}>
-              <label htmlFor="weather-point" style={{ fontWeight: 700, fontSize: 13, color: '#172524' }}>Thời tiết tại điểm theo dõi</label>
+              <label htmlFor="weather-point" style={{ fontWeight: 700, fontSize: 13, color: '#172524' }}>Xem mưa tại một điểm đo khác</label>
               <select id="weather-point" value={chosenKey} onChange={(e) => { setChosenKey(e.target.value); if (e.target.value) setMobileTab('map'); }}
                 style={{ width: '100%', marginTop: 6, padding: '7px 8px', borderRadius: 6, border: '1px solid #DCE5E2', fontSize: 12, background: '#fff' }}>
                 <option value="">{near ? `Gần bạn nhất: ${near.name} (~${Math.round(near.distanceKm)} km)` : 'Chọn một điểm…'}</option>
                 {points.map((p) => <option key={p.key} value={p.key}>{p.name}</option>)}
               </select>
-              <div style={muted}>Số liệu của điểm theo dõi, không phải vị trí của bạn.</div>
+              <div style={muted}>Số liệu tại điểm đo mưa, không phải đúng vị trí nhà bạn.</div>
             </div>
           )}
 
@@ -234,9 +290,18 @@ export default function CitizenPage() {
             <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Phone size={14} /> Cứu nạn khẩn cấp</span>
             <span style={{ fontSize: 18, fontWeight: 800 }}>112</span>
           </a>
+          {me?.emergencyContactPhone
+            ? <a href={`tel:${me.emergencyContactPhone}`} style={{ margin: '0 12px 8px', padding: '9px 14px', borderRadius: 10, background: '#F0FDFA', border: '1px solid #99F6E4',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#115E59', textDecoration: 'none', fontSize: 12, fontWeight: 600 }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Phone size={14} /> Gọi {me.emergencyContactName || 'người thân'}{me.emergencyContactRelation ? ` (${me.emergencyContactRelation})` : ''}</span>
+                <span>{me.emergencyContactPhone}</span>
+              </a>
+            : <button type="button" onClick={() => openProfile(false)} style={{ margin: '0 12px 8px', padding: '8px 14px', borderRadius: 10, background: '#fff', border: '1px dashed #99F6E4', color: '#115E59', fontSize: 12, fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}>
+                + Thêm người liên hệ khẩn cấp (hiện nút gọi nhanh khi có nguy hiểm)
+              </button>}
 
           {/* Tóm tắt từ hướng dẫn của Cục Quản lý đê điều và PCTT; không tự đặt thêm khuyến cáo. Mở sẵn khi đang có cảnh báo. */}
-          <details key={events.length > 0 ? 'warn' : 'calm'} open={events.length > 0}
+          <details key={events.length > 0 || urgent.length > 0 ? 'warn' : 'calm'} open={events.length > 0 || urgent.length > 0}
             style={{ margin: '0 12px 16px', padding: '10px 14px', borderRadius: 10, background: '#F5F8F7', border: '1px solid #DCE5E2', fontSize: 12, lineHeight: 1.6, color: '#334155' }}>
             <summary style={{ fontWeight: 700, fontSize: 13, color: '#172524', cursor: 'pointer' }}>Cần làm gì khi có cảnh báo sạt lở?</summary>
             <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
@@ -258,13 +323,18 @@ export default function CitizenPage() {
           events={events}
           onSelectEvent={setSelectedEventId}
           className={mobileTab === 'list' ? 'mobile-hidden' : ''}
-          aoi={aoi}
+          aoi={mapAoi}
           weatherPoint={weatherPoint}
           citizen
+          focus={focus}
+          rainRequest={rainRequest}
+          myPosition={position}
         />
       </div>
 
       <MobileTabBar active={mobileTab} onChange={setMobileTab} />
+      <CitizenProfileModal open={profileOpen} focusAreas={profileAtAreas} onClose={() => setProfileOpen(false)}
+        onSaved={setMe} onSubsChange={setSubs} />
     </div>
   );
 }

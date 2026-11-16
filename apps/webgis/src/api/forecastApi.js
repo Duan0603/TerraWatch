@@ -176,7 +176,7 @@ export const forecastApi = {
       type: 'FeatureCollection',
       features: rows.filter(a => a.is_active && a.geometry_geojson).map(a => ({
         type: 'Feature',
-        properties: { name: a.name },
+        properties: { name: a.name, area_id: a.area_id },
         geometry: JSON.parse(a.geometry_geojson)
       }))
     };

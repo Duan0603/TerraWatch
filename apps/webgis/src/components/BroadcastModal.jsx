@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { broadcastReach, sendResultText } from '../utils/broadcastReach';
 import { 
   AlertOctagon, 
   Send, 
@@ -115,10 +116,11 @@ export default function BroadcastModal({
       .catch(() => setAreasError('Không tải được danh sách khu vực. Không thể phát lệnh lúc này.'));
   }, []);
 
-  // Giới hạn 160 ký tự của tin cảnh báo (FR4); SMS chưa kết nối nên không đếm số tin SMS
+  // Giới hạn 160 ký tự của tin cảnh báo (FR4): một tin SMS không dấu
   const charCount = message.length;
   const isOverLimit = charCount > 160;
-  const canConfirm = confirmInput.trim().toUpperCase() === 'XAC NHAN' && preview?.devices > 0;
+  const reach = broadcastReach(preview);
+  const canConfirm = confirmInput.trim().toUpperCase() === 'XAC NHAN' && !!reach?.canSend;
 
   // Thực hiện phát lệnh
   const handleExecuteBroadcast = async () => {
@@ -281,7 +283,7 @@ export default function BroadcastModal({
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#64748b', marginTop: 6 }}>
                   <MessageSquare size={14} />
-                  <span>SMS chưa khả dụng (chưa kết nối nhà cung cấp SMS) — sẽ không có tin SMS nào được gửi.</span>
+                  <span>Tin nhắn <strong>SMS</strong> tới người dân bật nhận SMS cho khu vực (không cần cài app; cước khoảng 450 đ/tin).</span>
                 </div>
               </div>
 
@@ -362,7 +364,7 @@ export default function BroadcastModal({
                   <div style={{ fontSize: 11, color: previewError ? '#f87171' : '#94a3b8', marginTop: 6 }}>
                     {previewError
                       || (preview
-                        ? `Người nhận dự kiến: ${preview.subscribers} người đăng ký Push, ${preview.devices} thiết bị.`
+                        ? reach.summary
                         : 'Đang đếm người nhận…')}
                   </div>
                 )}
@@ -450,16 +452,14 @@ export default function BroadcastModal({
                   toàn bộ người dân đã đăng ký khu vực
                 </strong>{' '}
                 <strong>{area?.name}</strong> qua kênh{' '}
-                <strong>[FCM APP PUSH]</strong>.
+                <strong>[{reach?.channels.length ? reach.channels.join(' + ') : 'FCM APP PUSH + SMS'}]</strong>.
               </p>
 
-              <p role="status" style={{ fontSize: 13, color: preview?.devices > 0 ? '#fbbf24' : '#f87171', margin: '0 auto 16px', fontWeight: 700 }}>
+              <p role="status" style={{ fontSize: 13, color: reach?.canSend ? '#fbbf24' : '#f87171', margin: '0 auto 16px', fontWeight: 700 }}>
                 {previewError
                   || (!preview
                     ? 'Đang đếm người nhận…'
-                    : preview.devices > 0
-                      ? `Sẽ gửi tới ${preview.devices} thiết bị của ${preview.subscribers} người đăng ký.`
-                      : `Khu vực này chưa có thiết bị nào nhận Push (${preview.subscribers} người đăng ký). Không thể phát lệnh.`)}
+                    : reach.sendText)}
               </p>
 
               <div style={{
@@ -593,8 +593,7 @@ export default function BroadcastModal({
                 color: '#94a3b8',
                 marginBottom: 20
               }}>
-                Đã gửi tới {sendResult.sent}/{sendResult.total} thiết bị
-                {sendResult.failed > 0 && ` — ${sendResult.failed} thiết bị lỗi`}. SMS: không gửi.
+                {sendResultText(sendResult)}
               </div>
 
               <div>

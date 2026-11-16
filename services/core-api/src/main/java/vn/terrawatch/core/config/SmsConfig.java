@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import vn.terrawatch.core.client.EsmsSender;
+import vn.terrawatch.core.client.SmsGateSender;
 import vn.terrawatch.core.client.SmsSender;
 import vn.terrawatch.core.client.TwilioSmsSender;
 
@@ -23,14 +24,22 @@ public class SmsConfig {
                                @Value("${esms.secret-key:}") String esmsSecretKey,
                                @Value("${esms.brandname:Baotrixemay}") String esmsBrandname,
                                @Value("${esms.sandbox:0}") String esmsSandbox,
+                               @Value("${smsgate.username:}") String smsgateUser,
+                               @Value("${smsgate.password:}") String smsgatePassword,
                                ObjectMapper json) {
         String prov = provider == null ? "" : provider.trim().toLowerCase();
+
+        // 0. Android phone as gateway (SMS Gateway for Android, cloud): its own SIM sends, text untouched (Story 4.42)
+        if ("smsgate".equals(prov) && !smsgateUser.isBlank() && !smsgatePassword.isBlank()) {
+            log.info("SMS enabled via SMS Gateway for Android (phone SIM, cloud user {})", smsgateUser);
+            return new SmsGateSender(smsgateUser, smsgatePassword, json);
+        }
 
         // 1. eSMS.vn Gateway (Domestic VN SMS)
         if ("esms".equals(prov) || (prov.isBlank() && !esmsApiKey.isBlank())) {
             if (!esmsApiKey.isBlank() && !esmsSecretKey.isBlank()) {
                 boolean sandbox = "1".equals(esmsSandbox.trim()) || "true".equalsIgnoreCase(esmsSandbox.trim());
-                log.info("SMS enabled via eSMS (brandname: {}, sandbox: {})", esmsBrandname, sandbox);
+                log.info("SMS enabled via eSMS (brandname: {}, sandbox: {})", esmsBrandname.isBlank() ? "none, fixed number" : esmsBrandname, sandbox);
                 return new EsmsSender(esmsApiKey, esmsSecretKey, esmsBrandname, sandbox, json);
             }
         }
