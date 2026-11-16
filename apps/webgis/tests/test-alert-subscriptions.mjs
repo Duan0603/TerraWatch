@@ -44,10 +44,14 @@ export async function testBroadcastReach() {
   const both = broadcastReach({ subscribers: 3, devices: 5, smsSubscribers: 2 });
   assert.deepEqual(both.channels, ['FCM APP PUSH', 'SMS']);
   assert.equal(both.sendText, 'Sẽ gửi tới 5 thiết bị nhận Push và 2 người nhận SMS.');
-  const none = broadcastReach({ subscribers: 1, devices: 0 });
-  assert.equal(none.canSend, false, 'a subscriber without device or SMS reaches nobody');
+  const webOnly = broadcastReach({ subscribers: 1, devices: 0 });
+  assert.equal(webOnly.canSend, true, 'an app subscriber without a phone still reads it on the web/app inbox');
+  assert.deepEqual(webOnly.channels, ['THÔNG BÁO TRÊN WEB / APP']);
+  assert.equal(webOnly.sendText, 'Sẽ hiện trên trang web/app của 1 người đã đăng ký (chưa có điện thoại nhận Push).');
+  const none = broadcastReach({ subscribers: 0, devices: 0, smsSubscribers: 0 });
+  assert.equal(none.canSend, false, 'nobody following the area blocks the send');
   assert.ok(none.sendText.includes('Không thể phát lệnh'));
-  console.log('  ✓ push or SMS is enough; nobody reachable blocks the send');
+  console.log('  ✓ push, SMS or a web/app follower is enough; nobody reachable blocks the send');
 }
 
 export async function testSendResultText() {
@@ -58,5 +62,7 @@ export async function testSendResultText() {
   assert.equal(sendResultText({ total: 5, sent: 4, failed: 1, smsRecipients: 2, smsSent: 1, smsFailed: 1, smsError: 'eSMS 103' }),
     'Thông báo app: 4/5 thiết bị (1 lỗi). SMS: 1/2 tin (1 lỗi: eSMS 103).');
   assert.equal(sendResultText({ total: 3, sent: 3, failed: 0, smsRecipients: 0 }), 'Thông báo app: 3/3 thiết bị. SMS: không có người đăng ký.');
+  assert.equal(sendResultText({ appSubscribers: 1, total: 0, sent: 0, failed: 0, smsRecipients: 0 }),
+    'Trang web/app: 1 người đăng ký. Thông báo app: không có thiết bị. SMS: không có người đăng ký.');
   console.log('  ✓ result line shows push and SMS counts');
 }
