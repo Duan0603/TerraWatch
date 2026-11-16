@@ -102,3 +102,24 @@ export async function openAdminTool(page, name) {
   await page.getByRole('button', { name: 'Quản trị' }).click();
   await page.getByRole('menuitem', { name: new RegExp(name) }).click();
 }
+
+const CORS_ANY = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' };
+
+/**
+ * Holds the answer to one GET endpoint until `release()` is called, so a test can look at the loading state.
+ * Call it after mockBackend (the later route wins). Returns { release, seen } - `seen` lists every GET url that reached the route
+ * (page.on('request') sees requests even while they are held), and `hold = false` lets later calls through at once.
+ */
+export async function holdGet(page, glob, body) {
+  const state = { hold: true, seen: [] };
+  let open;
+  const gate = new Promise((r) => { open = r; });
+  state.release = () => { state.hold = false; open(); };
+  page.on('request', (r) => { if (r.method() === 'GET' && new URL(r.url()).pathname.endsWith(glob)) state.seen.push(r.url()); });
+  await page.route(`**/api/v1${glob}**`, async (route) => {
+    if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers: CORS_ANY });
+    if (state.hold) await gate;
+    await route.fulfill({ status: 200, headers: CORS_ANY, contentType: 'application/json', body: JSON.stringify(body) });
+  });
+  return state;
+}
