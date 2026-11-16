@@ -76,6 +76,8 @@ public class NotificationService {
         List<Integer> areaIds = areas.stream().map(Area::id).toList();
         List<Recipient> pushRecipients = areas.isEmpty() ? List.of() : broadcasts.recipients(areaIds);
         List<SmsRecipient> smsRecipients = areas.isEmpty() ? List.of() : broadcasts.smsRecipients(areaIds);
+        // App subscribers see the alert in the web/app inbox (GET /alerts/broadcasts) even without a registered phone.
+        int appSubscribers = areas.isEmpty() ? 0 : broadcasts.audience(areaIds)[0];
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("event_id", req.eventId());
@@ -83,7 +85,7 @@ public class NotificationService {
         result.put("incident_phase", phase);
         result.put("timestamp", java.time.Instant.now().toString());
 
-        if (pushRecipients.isEmpty() && smsRecipients.isEmpty()) {
+        if (pushRecipients.isEmpty() && smsRecipients.isEmpty() && appSubscribers == 0) {
             result.put("recipients_estimated", 0);
             result.put("status", "NO_RECIPIENTS");
             return result;
@@ -144,6 +146,7 @@ public class NotificationService {
         result.put("sent", pushSent);
         result.put("failed", pushRecipients.size() - pushSent);
         if (!pushErrors.isEmpty()) result.put("first_error", pushErrors.get(0));
+        result.put("app_subscribers", appSubscribers);
         result.put("sms_recipients", smsRecipients.size());
         result.put("sms_sent", smsSent);
         result.put("sms_failed", smsRecipients.size() - smsSent);

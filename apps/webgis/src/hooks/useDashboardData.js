@@ -19,6 +19,7 @@ export function useDashboardData(isAdmin) {
   const [aoi, setAoi] = useState(null);
   const [broadcasts, setBroadcasts] = useState(null); // chỉ admin xem được lịch sử phát lệnh
   const [reviewMetrics, setReviewMetrics] = useState(null);
+  const [areaFollowers, setAreaFollowers] = useState({}); // areaId -> số công dân đăng ký nhận cảnh báo
   const [confirmed, setConfirmed] = useState(null); // sạt lở đã xác nhận (GeoJSON), lớp bản đồ phụ
   const [experimentalRisk, setExperimentalRisk] = useState(null); // điểm GRU thử nghiệm (GeoJSON), chỉ cán bộ
   const [lastLoadedAt, setLastLoadedAt] = useState(null); // thời điểm tải dữ liệu thành công gần nhất
@@ -46,6 +47,10 @@ export function useDashboardData(isAdmin) {
       // Lần đầu sau đăng nhập: dùng kết quả đã tải sẵn ở trang login (Story 4.22), không có thì gọi thật.
       const data = await takePrefetched('queue', () => forecastApi.getReviewQueue('all'));
       setEvents(data);
+      // Số công dân theo dõi vùng của mỗi ô (chỉ đếm, không tên/số): vài vùng, mỗi vùng một lần gọi.
+      const areaIds = [...new Set(data.map(e => e.unit?.areaId).filter(id => id != null))];
+      Promise.all(areaIds.map(id => broadcastApi.getPreview(id).then(p => [id, p?.subscribers || 0]).catch(() => null)))
+        .then(rows => setAreaFollowers(Object.fromEntries(rows.filter(Boolean))));
       setLoadError(null);
       setLastLoadedAt(new Date());
       setSelectedEventId(prev => (data.some(e => e.id === prev) ? prev : data[0]?.id ?? null));
@@ -83,6 +88,6 @@ export function useDashboardData(isAdmin) {
 
   return {
     events, selectedEventId, setSelectedEventId, loadError, fieldReports, aoi, broadcasts,
-    reviewMetrics, confirmed, experimentalRisk, lastLoadedAt, liveConnected, loadEvents, refreshAoi
+    reviewMetrics, confirmed, experimentalRisk, lastLoadedAt, liveConnected, loadEvents, refreshAoi, areaFollowers
   };
 }

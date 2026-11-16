@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, CheckCircle, XCircle, AlertTriangle, Clock } from 'lucide-react';
+import { MapPin, CheckCircle, XCircle, AlertTriangle, Clock, Users } from 'lucide-react';
 import { fmtVN, relativeToNow } from '../utils/time';
 
 export const RISK_LABELS = {
@@ -19,7 +19,7 @@ const STATUS_LABELS = {
 
 const fmtNum = (v, unit = '', digits = 0) => (v == null ? '—' : `${Number(v).toFixed(digits)}${unit}`);
 
-export default function EventCard({ event, isSelected, onSelect, onReview }) {
+export default function EventCard({ event, isSelected, onSelect, onReview, followers }) {
   // Chỉ duyệt được đề xuất còn hiệu lực và thật sự có dự báo (backend kiểm tra lại).
   const canReview = event.status === 'pending' && !event.expired && event.availability === 'available';
 
@@ -52,6 +52,12 @@ export default function EventCard({ event, isSelected, onSelect, onReview }) {
         <Clock size={11} />
         {event.expired ? 'Đã hết hạn' : 'Hiệu lực'}: {relativeToNow(event.validUntil)}
       </div>
+      {followers != null && (
+        <div aria-label="Công dân đăng ký vùng" style={{ fontSize: 11, marginTop: 4, color: followers ? '#0f766e' : 'var(--text-2)', fontWeight: followers ? 700 : 400, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <Users size={11} />
+          {followers ? `${followers} người dân đăng ký nhận cảnh báo vùng này` : 'Chưa có người dân đăng ký vùng này'}
+        </div>
+      )}
       {event.availability !== 'available' && (
         <div style={{ fontSize: 11, color: '#92400E', marginTop: 4 }}>
           Không có dự báo: {event.unavailabilityReason || 'thiếu dữ liệu đầu vào'}

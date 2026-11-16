@@ -90,7 +90,9 @@ switch ($Command.ToLower()) {
 
         Write-Host "3/4 Ingesting as-of rainfall for area 2..." -ForegroundColor Cyan
         $rain = Invoke-RestMethod -Method Post -Uri "$gis/rainfall/ingest" -ContentType 'application/json' -Body '{"area_id":2,"past_days":7,"forecast_days":2}'
-        $failed = @($rain.results | Where-Object { $_.status -ne 'success' })
+        # Ô 002 moves to its own area in step 4, so on re-runs area 2 no longer covers it: ingest it by id too
+        $rain002 = Invoke-RestMethod -Method Post -Uri "$gis/rainfall/ingest" -ContentType 'application/json' -Body '{"unit_id":"VN_LC_BATXAT_0002","past_days":7,"forecast_days":2}'
+        $failed = @(@($rain.results) + @($rain002.results) | Where-Object { $_.status -ne 'success' })
         if ($failed.Count -gt 0) { Write-Host "   WARNING: rainfall failed for $($failed.Count) unit(s)." -ForegroundColor Yellow }
 
         Write-Host "4/4 Creating demo forecast runs (valid 24 h)..." -ForegroundColor Cyan

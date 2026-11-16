@@ -58,6 +58,7 @@ class NotificationServiceTest {
     @BeforeEach
     void stubs() {
         when(broadcasts.activeAreas()).thenReturn(List.of(new Area(1, "Mu Cang Chai"), new Area(2, "Sa Pa")));
+        when(broadcasts.audience(any())).thenReturn(new int[]{0, 0, 0}); // no web/app-only followers unless a test says so
         when(broadcasts.insert(any(), anyString(), anyString(), anyString(), anyInt(), any(), anyInt(), any(), any(), anyString()))
             .thenReturn(new Stored(broadcastId, Instant.parse("2026-01-01T00:00:00Z")));
     }

@@ -110,7 +110,10 @@ public class BroadcastRepository {
             """, pushSent, pushFailed, totalSms, sentSms, failedSms, broadcastId);
     }
 
-    /** Broadcasts addressed to the user in the last 7 days, newest first, whether or not the push arrived. */
+    /**
+     * Broadcasts addressed to the user in the last 7 days, newest first, whether or not the push arrived: sent to one
+     * of their phones or numbers, or to an area they follow in the app (the web/app inbox, no phone needed).
+     */
     public List<AlertBroadcastResponse> forUser(UUID userId) {
         Instant now = Instant.now();
         return jdbc.query("""
@@ -119,14 +122,16 @@ public class BroadcastRepository {
             FROM core_schema.alert_broadcasts b
             LEFT JOIN gis_schema.monitoring_areas a ON a.area_id = b.area_id
             WHERE b.broadcast_time > CURRENT_TIMESTAMP - INTERVAL '7 days'
-              AND EXISTS (SELECT 1 FROM core_schema.alert_deliveries d WHERE d.broadcast_id = b.broadcast_id AND d.user_id = ?)
+              AND (EXISTS (SELECT 1 FROM core_schema.alert_deliveries d WHERE d.broadcast_id = b.broadcast_id AND d.user_id = ?)
+                OR EXISTS (SELECT 1 FROM core_schema.alert_subscriptions s WHERE s.user_id = ? AND s.area_id = b.area_id
+                           AND s.is_active AND s.channel_push))
             ORDER BY b.broadcast_time DESC
             """, (rs, i) -> {
                 OffsetDateTime until = rs.getObject("valid_until", OffsetDateTime.class);
                 return new AlertBroadcastResponse(rs.getString("broadcast_id"), rs.getString("title"), rs.getString("message"),
                     rs.getString("severity"), rs.getString("area_name"), rs.getObject("broadcast_time", OffsetDateTime.class).toInstant(),
                     until == null ? null : until.toInstant(), rs.getString("status"), until != null && !until.toInstant().isAfter(now));
-            }, userId);
+            }, userId, userId);
     }
 
     /** Admin history, newest first. */

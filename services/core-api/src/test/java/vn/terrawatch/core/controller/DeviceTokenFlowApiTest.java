@@ -73,7 +73,8 @@ class DeviceTokenFlowApiTest extends FlowTestBase {
         verify(fcm, times(1)).send(eq("tok-shared"), any());
         assertThat(count("SELECT count(*) FROM core_schema.alert_deliveries WHERE user_id = ?", current.id())).isEqualTo(1);
         assertThat(count("SELECT count(*) FROM core_schema.alert_deliveries WHERE user_id = ?", previous.id())).isZero();
-        call(HttpMethod.GET, "/api/v1/alerts/broadcasts", previous, null).andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.length()").value(0));
+        // the phone only alerts the latest account; the previous one still follows the area, so its web/app inbox lists it
+        call(HttpMethod.GET, "/api/v1/alerts/broadcasts", previous, null).andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.length()").value(1));
     }
 
     @Test
@@ -102,7 +103,9 @@ class DeviceTokenFlowApiTest extends FlowTestBase {
         broadcast(admin, area);
 
         verifyNoInteractions(fcm);
-        assertThat(count("SELECT count(*) FROM core_schema.alert_broadcasts WHERE area_id = ?", area)).as("no recipients, no broadcast row").isZero();
+        // no phone is pushed, but the citizen still follows the area, so the order is kept for their web/app inbox
+        assertThat(count("SELECT count(*) FROM core_schema.alert_deliveries d JOIN core_schema.alert_broadcasts b USING (broadcast_id) WHERE b.area_id = ?", area))
+            .as("no push delivery").isZero();
         verify(fcm, never()).send(any(), any());
     }
 }

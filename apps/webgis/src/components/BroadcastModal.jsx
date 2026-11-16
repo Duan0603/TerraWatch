@@ -16,6 +16,8 @@ import {
   Info
 } from 'lucide-react';
 import broadcastApi from '../api/broadcastApi';
+import { RISK_LABELS } from './EventCard';
+import { fmtVN } from '../utils/time';
 
 const TEMPLATES = [
   {
@@ -59,8 +61,13 @@ export default function BroadcastModal({
 }) {
   if (!isOpen) return null;
 
+  // Căn cứ phát lệnh: chỉ dự báo cán bộ đã duyệt, còn hiệu lực và có dữ liệu (backend kiểm tra lại, sai thì 409).
+  const approved = allEvents.filter(e => e.status === 'approved' && !e.expired && e.risk !== 'unavailable');
+  const [basisId, setBasisId] = useState(() => (event && approved.some(e => e.id === event.id) ? event.id : ''));
+  const basis = approved.find(e => e.id === basisId) || null;
+
   // Trọng tâm khu vực phát lệnh
-  const activeEvent = event || (allEvents.length > 0 ? allEvents[0] : null);
+  const activeEvent = basis || event;
   const locationName = activeEvent ? activeEvent.location : 'Vùng Tây Bắc (Yên Bái - Lào Cai)';
 
   // Form states
@@ -97,12 +104,21 @@ export default function BroadcastModal({
   }, [areaId]);
 
   // Cập nhật nội dung khi thay đổi template hoặc sự cố
-  const handleSelectTemplate = (tplId) => {
+  const handleSelectTemplate = (tplId, location = locationName) => {
     setSelectedTemplate(tplId);
     const tpl = TEMPLATES.find(t => t.id === tplId);
     if (tpl) {
-      setMessage(tpl.text.replace('{location}', locationName));
+      setMessage(tpl.text.replace('{location}', location));
     }
+  };
+
+  // Chọn ô đã duyệt: điền sẵn vùng chứa ô và nạp lại mẫu tin theo tên ô (admin vẫn sửa được).
+  const handleSelectBasis = (id) => {
+    setBasisId(id);
+    const next = approved.find(e => e.id === id);
+    if (!next) return;
+    if (areas.some(a => a.id === next.unit?.areaId)) setAreaId(String(next.unit.areaId));
+    handleSelectTemplate(selectedTemplate, next.location);
   };
 
   useEffect(() => {
@@ -110,7 +126,7 @@ export default function BroadcastModal({
       .then((list) => {
         setAreas(list);
         // Điền sẵn khu vực của dự báo đang chọn (nếu có); admin vẫn đổi được.
-        const preset = event?.unit?.areaId;
+        const preset = activeEvent?.unit?.areaId;
         if (preset != null && list.some(a => a.id === preset)) setAreaId(String(preset));
       })
       .catch(() => setAreasError('Không tải được danh sách khu vực. Không thể phát lệnh lúc này.'));
@@ -134,7 +150,7 @@ export default function BroadcastModal({
         requestId: requestIdRef.current,
         areaId: area.id,
         areaName: area.name,
-        runId: event?.status === 'approved' && !event.expired ? event.id : null,
+        runId: basis ? basis.id : null,
         message,
         issuedBy: currentUser?.fullName || 'Admin',
         urgency: activeEvent?.risk === 'extreme' ? 'EXTREME' : 'HIGH'
@@ -256,12 +272,40 @@ export default function BroadcastModal({
           {/* STEP 1: SOẠN THẢO VÀ CẤU HÌNH PHÁT SÓNG */}
           {step === 1 && (
             <div>
+              {/* Căn cứ: ô cán bộ đã duyệt (không bắt buộc: lệnh thủ công khi chưa có dự báo vẫn được, và vẫn ghi nhật ký) */}
+              <div style={{ marginBottom: 18 }}>
+                <label htmlFor="broadcast-basis" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 }}>
+                  <CheckCircle2 size={14} color="#4ade80" /> CĂN CỨ PHÁT LỆNH: Ô ĐÃ ĐƯỢC CÁN BỘ DUYỆT
+                </label>
+                <select
+                  id="broadcast-basis"
+                  value={basisId}
+                  onChange={(e) => handleSelectBasis(e.target.value)}
+                  style={{ width: '100%', background: 'rgba(6, 9, 17, 0.95)', color: '#fff', border: '1px solid rgba(74, 222, 128, 0.4)', borderRadius: 8, padding: '10px 12px', fontSize: 13 }}
+                >
+                  <option value="">-- Không gắn dự báo (phát lệnh thủ công) --</option>
+                  {approved.map(e => (
+                    <option key={e.id} value={e.id}>
+                      {e.location} · {RISK_LABELS[e.risk] || e.risk} · hiệu lực đến {fmtVN(e.validUntil)}
+                    </option>
+                  ))}
+                </select>
+                <div style={{ fontSize: 11, color: '#64748b', marginTop: 6 }}>
+                  {approved.length === 0
+                    ? 'Chưa có ô nào được duyệt và còn hiệu lực.'
+                    : basis
+                      ? 'Lệnh sẽ lưu dự báo này làm căn cứ và có hiệu lực theo dự báo. Chọn ô sẽ điền sẵn vùng chứa ô và nội dung tin.'
+                      : `${approved.length} ô đã duyệt còn hiệu lực. Không gắn dự báo thì lệnh vẫn được ghi nhật ký nhưng không có căn cứ đính kèm.`}
+                </div>
+              </div>
+
               {/* 1. Khu vực phát lệnh (người nhận = thuê bao đăng ký khu vực này) */}
               <div style={{ marginBottom: 18 }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 }}>
                   <Radio size={14} color="#38bdf8" /> 1. KHU VỰC PHÁT CẢNH BÁO:
                 </label>
                 <select
+                  aria-label="Khu vực phát cảnh báo"
                   value={areaId}
                   onChange={(e) => setAreaId(e.target.value)}
                   style={{ width: '100%', background: 'rgba(6, 9, 17, 0.95)', color: '#fff', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: 8, padding: '10px 12px', fontSize: 13 }}
@@ -453,6 +497,12 @@ export default function BroadcastModal({
                 </strong>{' '}
                 <strong>{area?.name}</strong> qua kênh{' '}
                 <strong>[{reach?.channels.length ? reach.channels.join(' + ') : 'FCM APP PUSH + SMS'}]</strong>.
+              </p>
+
+              <p style={{ fontSize: 12, color: basis ? '#4ade80' : '#94a3b8', margin: '0 auto 16px' }}>
+                {basis
+                  ? `Căn cứ: dự báo đã duyệt ${basis.location} (${RISK_LABELS[basis.risk] || basis.risk}), hiệu lực đến ${fmtVN(basis.validUntil)}.`
+                  : 'Căn cứ: không gắn dự báo (lệnh thủ công).'}
               </p>
 
               <p role="status" style={{ fontSize: 13, color: reach?.canSend ? '#fbbf24' : '#f87171', margin: '0 auto 16px', fontWeight: 700 }}>

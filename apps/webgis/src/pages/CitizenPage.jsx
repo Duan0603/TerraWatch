@@ -11,6 +11,7 @@ import { shortAreaName } from '../utils/alertSubscriptions';
 import MobileTabBar from '../components/MobileTabBar';
 import { RISK_LABELS } from '../components/EventCard';
 import { fmtVN } from '../utils/time';
+import { playAlertSiren } from '../utils/sound';
 import forecastApi, { apiErrorMessage } from '../api/forecastApi';
 import { useAuth } from '../context/AuthContext';
 
@@ -18,6 +19,7 @@ import { useAuth } from '../context/AuthContext';
 // (đã duyệt, còn hiệu lực) cùng bằng chứng mưa/địa hình — không có nút thẩm định/phát
 // cảnh báo nào (những thao tác đó chỉ dành cho officer/admin trên DashboardPage).
 const REFRESH_MS = 60000;
+const ALERT_MS = 15000;
 const VN_TIME = new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', hour12: false });
 const card = { margin: '0 12px 10px', padding: '10px 12px', borderRadius: 10, background: '#F5F8F7', border: '1px solid #DCE5E2', fontSize: 12 };
 const muted = { marginTop: 4, fontSize: 11, color: '#64748b', lineHeight: 1.5 };
@@ -58,14 +60,33 @@ export default function CitizenPage() {
         .catch((err) => active && setLoadError(apiErrorMessage(err, 'Không cập nhật được vùng cảnh báo')));
       // demo/test points are staff data, not places a citizen lives
       forecastApi.getMonitoredPoints().then((d) => active && setPoints(monitoredPoints(d).filter((p) => !/^demo zone/i.test(p.name)))).catch(() => {});
-      forecastApi.getMyAlerts()
-        .then((data) => { if (active) { setReceived(data); setReceivedError(null); } })
-        .catch((err) => active && setReceivedError(apiErrorMessage(err, 'Không tải được cảnh báo đã nhận')));
     };
     load();
     const timer = setInterval(load, REFRESH_MS);
     return () => { active = false; clearInterval(timer); };
   }, []);
+
+  // Lệnh cảnh báo của admin: hỏi dày hơn (15 s) để người chỉ dùng web cũng thấy gần như ngay.
+  useEffect(() => {
+    let active = true;
+    const load = () => forecastApi.getMyAlerts()
+      .then((data) => { if (active) { setReceived(data); setReceivedError(null); } })
+      .catch((err) => active && setReceivedError(apiErrorMessage(err, 'Không tải được cảnh báo đã nhận')));
+    load();
+    const timer = setInterval(load, ALERT_MS);
+    return () => { active = false; clearInterval(timer); };
+  }, []);
+
+  // Lệnh còn hiệu lực mà người dân chưa bấm "Tôi đã biết" thì bật hộp cảnh báo che màn hình, kèm còi.
+  const seenKey = `terrawatch_seen_alerts_${user?.email || ''}`;
+  const [seen, setSeen] = useState(() => { try { return JSON.parse(localStorage.getItem(seenKey) || '[]'); } catch { return []; } });
+  const popup = received.find((a) => a.status !== 'revoked' && !a.expired && !seen.includes(a.broadcastId));
+  useEffect(() => { if (popup) { try { playAlertSiren(); } catch { /* trình duyệt chặn âm thanh: hộp cảnh báo vẫn hiện */ } } }, [popup?.broadcastId]); // eslint-disable-line react-hooks/exhaustive-deps
+  const acknowledge = () => {
+    const next = [...seen, popup.broadcastId];
+    setSeen(next);
+    try { localStorage.setItem(seenKey, JSON.stringify(next)); } catch { /* chỉ là ghi nhớ đã đọc */ }
+  };
 
   // Ranh giới vùng trọng điểm: ít khi đổi, tải một lần.
   useEffect(() => { forecastApi.getAoiCollection().then(setAoi).catch(() => {}); }, []);
@@ -335,6 +356,31 @@ export default function CitizenPage() {
       <MobileTabBar active={mobileTab} onChange={setMobileTab} />
       <CitizenProfileModal open={profileOpen} focusAreas={profileAtAreas} onClose={() => setProfileOpen(false)}
         onSaved={setMe} onSubsChange={setSubs} />
+
+      {popup && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(127, 29, 29, 0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div role="alertdialog" aria-modal="true" aria-labelledby="citizen-alert-title" aria-describedby="citizen-alert-message"
+            style={{ width: 'min(460px, 100%)', background: '#fff', borderRadius: 14, border: '3px solid #DC2626', boxShadow: '0 20px 50px rgba(0,0,0,0.35)', overflow: 'hidden' }}>
+            <div style={{ background: '#DC2626', color: '#fff', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <AlertTriangle size={26} />
+              <div>
+                <div id="citizen-alert-title" style={{ fontSize: 17, fontWeight: 800 }}>CẢNH BÁO SẠT LỞ KHẨN CẤP</div>
+                <div style={{ fontSize: 12, opacity: 0.9 }}>{popup.areaName || popup.title}</div>
+              </div>
+            </div>
+            <div style={{ padding: '14px 18px', fontSize: 14, lineHeight: 1.55, color: '#172524' }}>
+              <p id="citizen-alert-message" style={{ margin: 0, fontWeight: 600 }}>{popup.message}</p>
+              <div style={{ marginTop: 8, fontSize: 12, color: '#475569' }}>
+                Mức {RISK_LABELS[popup.severity] || popup.severity} · Gửi lúc {fmtVN(popup.issuedAt)}{popup.validUntil && ` · Hiệu lực đến ${fmtVN(popup.validUntil)}`}
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+                <a href="tel:112" style={{ ...callBtn('#B91C1C'), flex: 1, justifyContent: 'center' }}><Phone size={14} /> Gọi 112</a>
+                <button type="button" onClick={acknowledge} autoFocus className="btn-primary" style={{ flex: 1, justifyContent: 'center' }}>Tôi đã biết</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

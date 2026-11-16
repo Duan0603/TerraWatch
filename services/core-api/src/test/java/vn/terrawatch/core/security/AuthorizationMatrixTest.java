@@ -129,7 +129,7 @@ class AuthorizationMatrixTest {
         r("POST", "/api/v1/monitoring-areas", Tier.ADMIN),
         r("PUT", "/api/v1/monitoring-areas/{id}", Tier.ADMIN),
         r("POST", "/api/v1/notifications/broadcast", Tier.ADMIN),
-        r("GET", "/api/v1/notifications/broadcast/preview", Tier.ADMIN),
+        r("GET", "/api/v1/notifications/broadcast/preview", Tier.STAFF),
         r("GET", "/api/v1/notifications/broadcast/{id}/deliveries", Tier.ADMIN),
         r("POST", "/api/v1/notifications/broadcast/{id}/revoke", Tier.ADMIN),
         r("GET", "/api/v1/notifications/broadcasts", Tier.ADMIN));
