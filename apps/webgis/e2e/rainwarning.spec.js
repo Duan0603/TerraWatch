@@ -57,7 +57,7 @@ test('rain warning card: level, the three facts, people in the zone, and the Yag
 });
 
 test('a missing warning config does not break the map', async ({ page }) => {
-  await mockBackend(page, 'officer', ({ path }) => {
+  await mockBackend(page, 'admin', ({ path }) => {
     if (path === '/gis/rainfall/warning/sites') return [503, { detail: 'x' }];
   });
   await page.goto('/');
