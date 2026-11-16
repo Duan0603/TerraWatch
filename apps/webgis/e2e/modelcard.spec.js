@@ -22,7 +22,7 @@ test('officer reads the model card: experimental banner, mode thresholds, GRU no
   await expect(dialog).toContainText('e2e-seg-model');
   await expect(dialog).toContainText('Cân bằng (mặc định)');
   await expect(dialog).toContainText('Khớp với thẻ');
-  await expect(dialog).toContainText('Điểm GRU chưa được hiệu chuẩn thành xác suất.');
+  await expect(dialog).toContainText('Chưa hiệu chuẩn xác suất');
 });
 
 test('when the AI service is down the card shows no numbers', async ({ page }) => {

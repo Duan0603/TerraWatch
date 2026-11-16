@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import broadcastApi from '../api/broadcastApi';
 import { exportReport, HISTORY_COLUMNS } from '../utils/reportExport';
+import EmptyState from './EmptyState';
 
 export default function BroadcastHistoryModal({ isOpen, onClose, onOpenNewBroadcast }) {
   const [history, setHistory] = useState([]);
@@ -275,9 +276,18 @@ export default function BroadcastHistoryModal({ isOpen, onClose, onOpenNewBroadc
           {/* Cột trái: Danh sách các lệnh */}
           <div style={{ width: '45%', borderRight: '1px solid rgba(255, 255, 255, 0.08)', overflowY: 'auto', padding: 12 }}>
             {filteredHistory.length === 0 ? (
-              <div role={loadError ? 'alert' : undefined} style={{ textAlign: 'center', padding: 30, color: loadError ? '#f87171' : '#64748b', fontSize: 12 }}>
-                {loadError || (loading ? 'Đang tải lịch sử từ máy chủ…' : 'Không tìm thấy đợt phát lệnh nào.')}
-              </div>
+              loadError ? (
+                <EmptyState icon={AlertTriangle} tone="#f87171" title="Không tải được lịch sử lệnh">
+                  <div role="alert" style={{ fontSize: 12, lineHeight: 1.6, color: '#fca5a5', maxWidth: 380 }}>{loadError}</div>
+                </EmptyState>
+              ) : loading ? (
+                <EmptyState icon={RefreshCw} title="Đang tải lịch sử từ máy chủ…" />
+              ) : history.length ? (
+                <EmptyState icon={Search} title="Không có lệnh nào khớp từ khóa" hint="Thử tìm theo tên xã, huyện hoặc mã lệnh khác." />
+              ) : (
+                <EmptyState icon={Radio} tone="#f87171" title="Chưa phát lệnh cảnh báo nào"
+                  hint="Lệnh chỉ được phát sau khi Lãnh đạo phê duyệt một dự báo nguy cơ cao. Mỗi lệnh lưu khu vực, nội dung SMS/FCM, số người nhận và kết quả gửi để đối chiếu sau này." />
+              )
             ) : (
               filteredHistory.map((item) => {
                 const isSelected = selectedEntry?.id === item.id;
@@ -643,9 +653,8 @@ export default function BroadcastHistoryModal({ isOpen, onClose, onOpenNewBroadc
                 </div>
               </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: 40, color: '#64748b' }}>
-                Chọn một lệnh cảnh báo bên trái để xem chi tiết.
-              </div>
+              <EmptyState icon={MessageSquare} title={history.length ? 'Chọn một lệnh để xem chi tiết' : 'Chi tiết lệnh sẽ hiện ở đây'}
+                hint="Nội dung tin nhắn, kênh gửi, danh sách người nhận và trạng thái giao từng tin." />
             )}
           </div>
         </div>
