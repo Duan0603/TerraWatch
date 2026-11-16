@@ -44,13 +44,13 @@ test('decision filter and search narrow the list', async ({ page }) => {
   await expect(page.getByText('unit-muc')).toBeVisible();
   await expect(page.getByText('unit-sapa')).toHaveCount(0);
   await page.getByPlaceholder(/Tìm theo mã ô đánh giá/).fill('không-khớp-gì');
-  await expect(page.getByText('Không có dữ liệu thẩm định nào phù hợp với bộ lọc.')).toBeVisible();
+  await expect(page.getByText('Không có quyết định nào khớp bộ lọc')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Xuất CSV' })).toBeDisabled();
 });
 
 test('empty log shows the empty state and disables CSV export', async ({ page }) => {
   await openAudit(page, { log: [] });
-  await expect(page.getByText('Không có dữ liệu thẩm định nào phù hợp với bộ lọc.')).toBeVisible();
+  await expect(page.getByText('Chưa có quyết định thẩm định nào')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Xuất CSV' })).toBeDisabled();
 });
 

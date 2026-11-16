@@ -17,6 +17,7 @@ import forecastApi from '../api/forecastApi';
 import { fmtVN } from '../utils/time';
 import { exportReport, AUDIT_COLUMNS } from '../utils/reportExport';
 import { reviewSummaryRows } from '../utils/reviewKpi';
+import EmptyState from './EmptyState';
 
 export default function ReviewAuditModal({ isOpen, onClose }) {
   const [logs, setLogs] = useState([]);
@@ -276,9 +277,12 @@ export default function ReviewAuditModal({ isOpen, onClose }) {
               Đang tải lịch sử thẩm định từ máy chủ...
             </div>
           ) : filteredLogs.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 50, color: '#64748b', fontSize: 13 }}>
-              Không có dữ liệu thẩm định nào phù hợp với bộ lọc.
-            </div>
+            logs.length ? (
+              <EmptyState icon={Search} title="Không có quyết định nào khớp bộ lọc" hint="Đổi bộ lọc quyết định hoặc từ khóa tìm kiếm." />
+            ) : !error && (
+              <EmptyState icon={ClipboardList} title="Chưa có quyết định thẩm định nào"
+                hint="Khi cán bộ bấm Duyệt hoặc Từ chối một dự báo trong hàng đợi, quyết định được ghi lại tại đây kèm người duyệt, thời điểm và lý do." />
+            )
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {filteredLogs.map((item) => {

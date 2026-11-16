@@ -106,7 +106,7 @@ test('search narrows by area, code and message; no match shows the empty text an
   await expect(page.locator('code')).toHaveCount(1);
   await expect(page.locator('code', { hasText: 'BC-aaaaaaaa' })).toBeVisible();
   await search.fill('không-khớp-gì');
-  await expect(page.getByText('Không tìm thấy đợt phát lệnh nào.')).toBeVisible();
+  await expect(page.getByText('Không có lệnh nào khớp từ khóa')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Xuất CSV' })).toBeDisabled();
 });
 
@@ -123,8 +123,8 @@ test('CSV export downloads only the rows currently shown', async ({ page }) => {
 
 test('empty history: empty text, nothing selected, CSV disabled', async ({ page }) => {
   await openHistory(page, { history: [] });
-  await expect(page.getByText('Không tìm thấy đợt phát lệnh nào.')).toBeVisible();
-  await expect(page.getByText('Chọn một lệnh cảnh báo bên trái để xem chi tiết.')).toBeVisible();
+  await expect(page.getByText('Chưa phát lệnh cảnh báo nào')).toBeVisible();
+  await expect(page.getByText('Chi tiết lệnh sẽ hiện ở đây')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Xuất CSV' })).toBeDisabled();
 });
 
