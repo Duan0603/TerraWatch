@@ -10,7 +10,7 @@ SET search_path TO core_schema, gis_schema, public;
 INSERT INTO core_schema.users (user_id, full_name, email, password_hash, role, phone_number)
 VALUES 
     ('11111111-1111-1111-1111-111111111111', 'Ban Chỉ Đạo Quốc Gia PCTT', 'admin@terrawatch.vn', '$2b$10$w0M/44Z6F4Yw8YgJ22Jd.OTJjYp4EKnSvy/3o1sVepvI7fL50d2tq', 'admin', '0901234567'),
-    ('22222222-2222-2222-2222-222222222222', 'Cán bộ Thẩm định Yên Bái', 'officer.yenbai@terrawatch.vn', '$2b$10$w0M/44Z6F4Yw8YgJ22Jd.OTJjYp4EKnSvy/3o1sVepvI7fL50d2tq', 'officer', '0912345678'),
+    ('22222222-2222-2222-2222-222222222222', 'Cán bộ Thẩm định', 'officer.yenbai@terrawatch.vn', '$2b$10$w0M/44Z6F4Yw8YgJ22Jd.OTJjYp4EKnSvy/3o1sVepvI7fL50d2tq', 'officer', '0912345678'),
     ('33333333-3333-3333-3333-333333333333', 'Hoàng Văn Dũng (Bản Lìm Mông)', 'citizen.limmong@terrawatch.vn', '$2b$10$w0M/44Z6F4Yw8YgJ22Jd.OTJjYp4EKnSvy/3o1sVepvI7fL50d2tq', 'citizen', '0854346968')
 ON CONFLICT (email) DO NOTHING;
 
