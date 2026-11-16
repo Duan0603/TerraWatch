@@ -1,68 +1,239 @@
-# GeoSentry API — existing prototype and target forecast contract
+# GeoSentry API — implemented routes and target forecast contract
 
-**Updated:** 2026-10-13. New forecast endpoints below are **planned, not implemented**. The pivot does not silently change existing runtime requests.
+**Updated:** 2026-11-16. Checked against `main` at commit `9ef3db73b89a42d07046af0f253ed19b5804249d`. The sections Core API, GIS service and AI service list every route mapped in code at that commit (61, 17 and 7 routes). Forecast items under Planned endpoints and the sections after it are **planned or target**, not implemented. Where tests mark a known bug (strict xfail, or Disabled with a reason starting with BUG) the row gives what `main` does today and says **known defect**. `not verified` means the detail could not be established from code or tests.
 
-## 1. Existing prototype
+## Conventions
 
-| Service | Route | Current meaning |
-| --- | --- | --- |
-| Core :3000 | GET /api/v1/landslides/queue | Pending incident records from PostGIS. |
-| Core | PATCH /api/v1/landslides/{id}/verify | Change an incident's review state. |
-| Core | GET /api/v1/landslides/active | Incident GeoJSON. |
-| Core | GET /api/v1/landslides/geofence | Server-side spatial query; not the target continuous citizen tracking flow. |
-| Core | GET /api/v1/landslides/offline-sync | Legacy incident export without the new forecast contract. |
-| Core signed-in | POST /api/v1/alerts/devices/register | **Implemented (Story 5.1).** Body `{fcmToken, deviceType}`; 204. A token held by another account moves to the caller. |
-| Core signed-in | DELETE /api/v1/alerts/devices | **Implemented (Story 5.1).** Body `{fcmToken}`; removes the caller's own token (logout). |
-| Core signed-in | GET /api/v1/alerts/broadcasts | **Implemented (Story 5.1).** Resync: broadcasts delivered to the caller in the last 7 days with `issuedAt`, `validUntil`, `status` (active/revoked), `expired`. |
-| Core admin | POST /api/v1/notifications/broadcast | **Implemented (Story 5.1).** Sends FCM push to push-subscribers of the area (`areaId`, else `targetArea` name match); response `status` DISPATCHED / PARTIAL / FAILED / NO_RECIPIENTS with real counts. SMS is not sent (no provider). Needs `FIREBASE_SERVICE_ACCOUNT_FILE`, otherwise deliveries are stored as failed. |
-| Core admin | POST /api/v1/notifications/broadcast/{id}/revoke | **Implemented (Story 5.1).** Marks a broadcast revoked; phones see it on the next resync. |
-| AI :8001 | POST /api/v1/inference | Legacy bbox call. A bbox carries no imagery, so it returns `status: no_imagery` and no polygon (the old simulation was removed). |
-| AI | POST /api/v1/inference/scene | Landslide candidates (GeoJSON schema 2.0) from post/pre GeoTIFFs inside `SCENE_DIR`, model v1.0 ONNX. Candidates need human verification; not 24h forecasting. |
-| AI | GET /api/v1/models/info | Reads `model_card.json` (modes, std floor, metrics) and checks the ONNX sha256. `ready: false` until the model files are installed. |
-| GIS :8002 | POST /api/v1/gis/query-satellite | Fixed sample scene response. |
-| GIS | POST /api/v1/gis/tiling | Geographic grid generation, not rainfall feature engineering. |
-| GIS | GET /api/v1/gis/mvt/{z}/{x}/{y}.pbf | Empty tile prototype. |
+| Service | Direct address (dev) | Gateway path (port 8080) | Gateway rule |
+| --- | --- | --- | --- |
+| Core API | 127.0.0.1:3000 | `/api/v1/auth`, `/admin`, `/landslides`, `/monitoring-areas`, `/community-reports`, `/forecasts`, `/stream`, `/model-card`, `/alerts`, `/notifications`, `/diagnostic`; also `/api/v1/core/{path}` which maps to `/api/v1/{path}` | Passed through. Rate limit 50 requests/s per client IP, burst 20; status over the limit is the nginx default, not set in the config (not verified). |
+| GIS service | 127.0.0.1:8002 | `/api/v1/gis/*` (same path on the service) | Only GET and HEAD pass; other methods are denied (403). `/health` of the service is not routed. |
+| AI service | 127.0.0.1:8001 | `/api/v1/ai/*` | Always 403 `{"message":"Forbidden"}`. Core and GIS call the AI service directly over the Docker network. |
 
-Auth and FCM push are implemented (section 1b); SMS is not connected to a provider. Existing Swagger is served by each service; the target contract below must be implemented and tested before clients depend on it.
+**Core callers.** `Public`: no token. `Signed-in`: any valid role. `Staff`: role `officer` or `admin`. `Admin`: role `admin`. A token is a Bearer JWT; on every request the account is re-read from the database and the role stored there is used, so a locked, pending, rejected, deleted or demoted account loses access at once. Source of the caller column: `SecurityConfig` and `AuthorizationMatrixTest` (the two agree on all 61 routes).
+
+**GIS and AI callers.** The services have no authentication; any caller that can reach the port can use every route. Access control is the gateway rule above and the network.
+
+**Core errors.** Body is `{"message": "..."}`.
+
+| Status | Meaning |
+| --- | --- |
+| 401 `Unauthorized` | No token, malformed, expired or foreign-signed token, or the account may not sign in. Also returned by sign-in-required routes for anonymous callers. |
+| 403 `Forbidden` | Valid account, role not allowed. |
+| 400 `Invalid request` | Called **invalid body** in the tables: malformed or missing JSON, missing required field, wrong field type (a JSON number sent to a Boolean field is refused), a null entry in a list that forbids it, or a limit in the table exceeded. The same body is returned for a missing or unparsable query parameter, a value rejected by a query-parameter range check, and a malformed UUID or number in the path. |
+| 415 | Body route called with a non-JSON Content-Type (`DELETE /api/v1/alerts/devices` answers 400 `Invalid request` instead). |
+| 404, 409, other 4xx and 503 with `message` | Raised by the service; listed per route. Message texts are mixed Vietnamese and English; match on status, not on text. |
+| 500 | Unhandled error (several are listed per route as known defects). |
+
+Routes that return raw database maps (`/landslides/*`, `GET /community-reports`, `/monitoring-areas`) use the SQL column names as keys; the JSON format of timestamps and numeric types is not verified.
+
+**GIS and AI errors.** FastAPI shape `{"detail": ...}`. 422 from request validation has `detail` as a list of `{loc, msg, type}`; some 422 from route code have a string `detail`. Wrong method on a known path is 405.
+
+Not listed as routes: Core `/api-docs/**`, `/swagger-ui/**` and `/swagger-ui.html` (public, generated by springdoc), and the FastAPI-generated `/docs`, `/redoc` and `/openapi.json`.
+
+## 1. Core API (Spring Boot, :3000)
+
+Paths are relative to `/api/v1`. Profile object `UserProfile` = `{userId, fullName, email, role, phoneNumber, authProvider, dateOfBirth (yyyy-MM-dd), gender, province, district, commune, addressLine, emergencyContactName, emergencyContactPhone, emergencyContactRelation, hasAvatar}`. `AuthResponse` = `{token, role, user: UserProfile}`; token lifetime is `JWT_EXPIRATION_MS` (default 86,400,000 ms). "Phone token" = Firebase phone-auth ID token for the same number; if Firebase signing keys cannot be fetched the route answers 503 `Cannot verify Google sign-in right now`.
+
+### 1.1 Authentication
+
+| Route | Caller | Request | Success | Errors |
+| --- | --- | --- | --- | --- |
+| POST /auth/register | Public | Body: `fullName` string, required, max 100; `email` string, required, valid e-mail, max 150, stored trimmed lower-case; `password` string, required, 8-72 characters and at most 72 UTF-8 bytes; `phoneNumber` string, optional, max 20 (alias `phone_number`); `phoneToken` string, required when `phoneNumber` is given (aliases `phone_token`, `id_token`, `idToken`, `otp`, `otp_code`, `otpCode`). A `role` field is ignored: account is always `citizen`. | 201 `AuthResponse` | 400 invalid body; 400 `Password exceeds 72 UTF-8 bytes`; 400 `Phone number must be verified via OTP before registration` (number without token); 400 `Phone number in verification token does not match registered phone number`; 400 `Invalid or expired phone verification token` / `Token is not a valid phone verification token`; 409 `Email already exists`; 503 Firebase keys unavailable. |
+| POST /auth/officer-requests | Public | Body, all required: `fullName` max 100; `email` valid e-mail, max 150; `password` 8-72 (and 72 bytes); `phoneNumber` max 20 (alias `phone_number`); `phoneToken` (aliases `phone_token`, `id_token`, `idToken`); `departmentUnit` max 150 (alias `department_unit`, stored trimmed). | 201 `{requestId (new user id), approvalStatus: "pending", message}`. Account role is `officer`; it cannot sign in until an admin approves it. | Same 400, 409 and 503 as register; a missing phone or token is a plain 400 invalid body here. |
+| GET /auth/email-exists | Public | Query: `email` string, required (blank is accepted and answers `exists: false`; compared trimmed, lower-case). | 200 `{exists: boolean}` | 400 `Invalid request` when `email` is missing. |
+| POST /auth/password-reset/check | Public | Body: `email` required, max 150; `phoneNumber` required, max 20 (alias `phone_number`). | 200 `{eligible: boolean}`; true only for an active password account whose registered phone matches. | 400 invalid body. |
+| POST /auth/password-reset | Public | Body: `email` max 150, `phoneNumber` max 20, `phoneToken`, all required; `newPassword` required, 8-72 characters and 72 bytes. | 204 | 400 `Email hoặc số điện thoại không khớp với tài khoản nào` (unknown account, wrong phone or token for another phone; one message for all); 400 phone-token messages as register; 400 `Password exceeds 72 UTF-8 bytes`; 400 invalid body; 503 Firebase keys unavailable. |
+| POST /auth/password-reset/email/request | Public | Body: `email` required, max 150 (no e-mail format check). | 200 `{sent: true}`, same answer for an unknown e-mail. A 6-digit code valid 10 minutes is mailed only to an active password account; no new code within 60 s of the last or after 5 codes in the last hour (silent). | 400 invalid body; 503 mail not configured (`MAIL_USERNAME` / `MAIL_PASSWORD`) or send failed. |
+| POST /auth/password-reset/email/verify | Public | Body: `email` required, max 150; `code` required, max 12 (trimmed). | 200 `{resetToken}`, one-time, valid 10 minutes. | 400 `Mã xác nhận không đúng hoặc đã hết hạn` for wrong, expired, used or unknown; 5 wrong attempts lock the code; 400 invalid body. |
+| POST /auth/password-reset/email/complete | Public | Body: `email` max 150, `resetToken` max 200, `newPassword` 8-72 (and 72 bytes), all required. | 204 | 400 `Mã xác nhận không đúng hoặc đã hết hạn`; 400 `Password exceeds 72 UTF-8 bytes`; 400 invalid body. |
+| POST /auth/login | Public | Body: `email` required, valid e-mail, max 150; `password` required, max 72 (no minimum). | 200 `AuthResponse` | 400 invalid body; 400 `Password exceeds 72 UTF-8 bytes`; 401 `Invalid credentials` (unknown e-mail or wrong password); 403 locked (`Tài khoản đã bị tạm khóa bởi Quản trị viên`), pending (`... đang chờ Quản trị viên phê duyệt`) or rejected (`... đã bị từ chối phê duyệt`) account. |
+| POST /auth/google | Public | Body: `idToken` string, required, max 4096 (Firebase ID token, provider google.com, e-mail verified). A new citizen is created on first sign-in. | 200 `AuthResponse` | 400 invalid body; 401 `Invalid Google sign-in`; 403 the e-mail belongs to an officer or admin (`Google sign-in is only available for citizen accounts`) or the account is locked; 503 Firebase keys unavailable. |
+
+### 1.2 Profile, password and avatar (signed-in, any role)
+
+| Route | Caller | Request | Success | Errors |
+| --- | --- | --- | --- | --- |
+| GET /auth/me | Signed-in | none | 200 `UserProfile` | 401. |
+| PUT /auth/me | Signed-in | Body replaces every field; null or blank clears an optional one. `fullName` required, max 100; `phoneNumber` and `emergencyContactPhone` optional, `+` optional then 9-15 digits (alias `phone_number` for `phoneNumber`); `dateOfBirth` optional, yyyy-MM-dd, strictly in the past and not before 1900-01-01; `gender` optional, `male`, `female` or `other`; `province`, `district`, `commune` max 100; `addressLine` max 200; `emergencyContactName` max 100; `emergencyContactRelation` max 50. | 200 `UserProfile` | 400 invalid body; 400 `Date of birth is out of range` (before 1900-01-01). |
+| PUT /auth/password | Signed-in | Body: `currentPassword` required, max 72; `newPassword` required, 8-72 characters and 72 bytes. | 204 | 400 invalid body; 400 `Current password is incorrect`; 400 `This account signs in with Google and has no password`; 400 `Password exceeds 72 UTF-8 bytes`. A wrong current password is 400, not 401, so clients do not sign the user out. |
+| GET /auth/me/avatar | Signed-in | none | 200 `{imageBase64}` | 404 `No avatar`. |
+| PUT /auth/me/avatar | Signed-in | Body: `imageBase64` required, plain base64 without `data:` prefix, max 300,000 characters, decoded at most 200,000 bytes, JPEG or PNG by file signature. | 200 `UserProfile` (`hasAvatar` true; the image is not returned) | 400 invalid body; 400 `Image is not valid base64`; 400 `Image is larger than 200 KB`; 400 `Image must be JPEG or PNG`. A rejected upload keeps the old avatar. |
+| DELETE /auth/me/avatar | Signed-in | none | 204, also when no avatar exists | 401. |
+
+### 1.3 User management (admin)
+
+`AdminUser` = `{userId, fullName, email, role, phoneNumber, isActive, approvalStatus, departmentUnit, createdAt, updatedAt}`. Each successful change writes a row to the admin audit log (`GET /admin/audit`). `{id}` is a user UUID: unknown id is 404, malformed id is 400.
+
+| Route | Caller | Request | Success | Errors |
+| --- | --- | --- | --- | --- |
+| GET /admin/users | Admin | Query, all optional: `search` (case-insensitive substring of name, e-mail or phone); `role`; `approvalStatus`; `isActive` boolean (`true`, `false`, `1`, `0`, `yes`, `no`, `on`, `off`; empty means not given). Filters are free text and never an error. | 200 `[AdminUser]`, newest account first | 400 `Invalid request` when `isActive` is not a boolean. |
+| PATCH /admin/users/{id}/status | Admin | Body: `isActive` boolean (aliases `is_active`, `active`). A missing or null value means true (unlock). | 200 `AdminUser` | 400 `Quản trị viên không thể tự khóa tài khoản của chính mình`; 404 `Không tìm thấy người dùng`; 400 invalid body, including a JSON number such as `7` for `isActive`. |
+| PATCH /admin/users/{id}/role | Admin | Body: `role` required, `admin`, `officer` or `citizen` (trimmed, case-insensitive). Also sets `approvalStatus` to `approved`. | 200 `AdminUser` | 400 `Quản trị viên không thể tự đổi vai trò của chính mình`; 400 `Vai trò không hợp lệ: <value>`; 400 invalid body; 404. |
+| POST /admin/users/{id}/approve | Admin | none. Sets role `officer` and `approvalStatus` `approved`. | 200 `AdminUser` | 404; 409 `Tài khoản này không có yêu cầu đang chờ duyệt` (not pending). |
+| POST /admin/users/{id}/reject | Admin | none. Sets `approvalStatus` `rejected`. | 200 `AdminUser` | 404; 409 as approve. |
 
 
-## 1b. Implemented in Core since 2026-11 (Stories 4.5 to 4.23)
+### 1.4 Alerts: subscriptions, devices, received broadcasts (signed-in, any role)
 
-All through the gateway at `/api/v1/...`. "Public" needs no token; roles are checked from the user stored in the database on every request.
+`Subscription` = `{subscriptionId, areaId, areaName, alertChannels: ["PUSH"|"SMS"], subscribedAt}`.
 
-| Access | Route | Meaning |
-| --- | --- | --- |
-| Public | POST /auth/register | Citizen sign-up; a phone number needs a Firebase phone token (`phoneToken`); a `role` in the body is ignored. |
-| Public | POST /auth/officer-requests | Officer account request (verified phone + unit); account is `pending` until an admin approves. |
-| Public | GET /auth/email-exists?email= | `{exists}`; lets the sign-up form warn before an OTP is sent. |
-| Public | POST /auth/password-reset/check, POST /auth/password-reset | Forgot password with the phone registered on the account (Firebase OTP token). |
-| Public | POST /auth/password-reset/email/request, /verify, /complete | Forgot password with a 6-digit code e-mailed through Gmail SMTP (`MAIL_USERNAME` / `MAIL_PASSWORD`). |
-| Public | POST /auth/login, POST /auth/google | Locked, pending and rejected accounts get 403. |
-| Admin | GET /admin/users, PATCH /admin/users/{id}/status, PATCH /admin/users/{id}/role, POST /admin/users/{id}/approve, POST /admin/users/{id}/reject | User management; an admin cannot lock or re-role themselves; approve/reject only answer a pending request. |
-| Admin | POST /monitoring-areas, PUT /monitoring-areas/{id} | Monitoring areas (AOI); `GET /monitoring-areas` is public. |
-| Admin | GET /notifications/broadcasts, GET /notifications/broadcast/preview?areaId=, GET /notifications/broadcast/{id}/deliveries | Broadcast history, recipient preview, per-recipient results (no FCM tokens). |
-| Officer/admin | GET /forecasts/review-queue, GET /forecasts/reviews/audit, PATCH /forecasts/{id}/review | Review queue, audit log, decision. |
-| Officer/admin | GET /community-reports, GET /community-reports/photos/{id}, PATCH /community-reports/{id}/status | Field reports with phones and GPS (staff only); status `submitted`/`processed`/`archived`. |
-| Officer/admin | GET /landslides/queue, PATCH /landslides/{id}/verify | Legacy incident review; the reviewer is the signed-in user. |
-| Admin | /diagnostic/** | Circuit-breaker and event-bus demos. |
+| Route | Caller | Request | Success | Errors |
+| --- | --- | --- | --- | --- |
+| GET /alerts/subscriptions | Signed-in | none | 200 `[Subscription]`, active only, newest first | 401. |
+| POST /alerts/subscriptions | Signed-in | Body: `areaId` integer, required; `alertChannels` non-empty list of `PUSH` and/or `SMS` (upper case only), required; `phoneNumber` optional, `+` optional then 9-15 digits (saved to the profile when given). Subscribing again to the same area updates its channels. | 200 `Subscription` | 400 invalid body (also a `null` entry in `alertChannels`); 400 `A phone number is required for SMS alerts` (no number in request or profile); 404 `Monitoring area not found` (unknown or inactive area). |
+| DELETE /alerts/subscriptions/{id} | Signed-in | Path: subscription UUID | 204 | 404 `Subscription not found` (unknown id or another user's id); 400 `Invalid request` malformed id. |
+| POST /alerts/devices/register | Signed-in | Body: `fcmToken` string, required, not blank, max 4096; `deviceType` string, optional, default `android`, stored lower-case, max 20. A token held by another account moves to the caller. | 204 | 400 invalid body (also `deviceType` over 20 or `fcmToken` over 4096). |
+| DELETE /alerts/devices | Signed-in | Body: `fcmToken` required, not blank, max 4096; `deviceType` optional, max 20, ignored. Removes only the caller's own token. | 204, also for an unknown token | 400 invalid body, also for a non-JSON Content-Type. |
+| GET /alerts/broadcasts | Signed-in | none | 200 `[{broadcastId, title, message, severity, areaName, issuedAt, validUntil, status: "active"\|"revoked", expired: boolean}]` for broadcasts delivered to the caller in the last 7 days, newest first. | 401. |
 
-## 2. Planned endpoints
+### 1.5 Field reports (community reports)
 
-| Access | Route | Purpose |
-| --- | --- | --- |
-| Internal GIS | POST /api/v1/gis/feature-snapshots | Build an immutable as-of rainfall/terrain snapshot for a unit. |
-| Internal AI | POST /api/v1/forecasts | Evaluate a validated snapshot for the next 24h. |
-| Core officer/admin | POST /api/v1/forecasts | Persist a job to compute/recompute an eligible forecast. |
-| Core officer/admin | GET /api/v1/forecasts/queue | Review forecast proposals with quality/validity. |
-| Core officer/admin | PATCH /api/v1/forecasts/{id}/review | Approve/reject a warning proposal, not an event occurrence. |
-| Core authorized clients | GET /api/v1/forecasts/active | Published, approved and currently valid forecast geometries. |
-| Core authorized clients | GET /api/v1/forecasts/offline-sync | **Implemented (Story 5.3).** Signed-in users; full snapshot `{serverTime, items[]}` of approved, active, available, unexpired runs with Polygon geometry and UTC validity. A run no longer listed was revoked or superseded: clients replace their cache. |
+`FieldReport` = `{reportId: integer, clientReportId, status: "submitted"|"processed"|"archived", reportedAt (server receive time), observedAt, observedUntil, description, imageUrl, latitude, longitude}`.
 
-The AI and Core share a route name on different hosts. Public /api/v1/forecasts targets Core. If internal AI routing uses the current gateway prefix rewrite, /api/v1/ai/forecasts maps to AI /api/v1/forecasts; service authentication/network restriction is required. The gateway now routes /api/v1/forecasts to Core (added with offline-sync).
+| Route | Caller | Request | Success | Errors |
+| --- | --- | --- | --- | --- |
+| POST /community-reports/photos | Signed-in | Body: `imageBase64` required, plain base64, max 1,000,000 characters, decoded at most 700,000 bytes, JPEG or PNG by file signature. | 200 `{photoId, imageUrl}` | 400 invalid body; 400 `Image is not valid base64`; 400 `Image is larger than 700 KB`; 400 `Image must be JPEG or PNG`. |
+| POST /community-reports | Signed-in | Body: `clientReportId` UUID, required (app-generated, makes retries idempotent per user); `longitude` -180..180, required; `latitude` -90..90, required; `accuracyM` number >= 0, optional; `description` string, optional, max 2000; `photoId` UUID of a photo uploaded by the caller, optional; `observedAt` ISO-8601 with offset, required, at most 5 minutes in the future; `observedUntil` ISO-8601 with offset, optional, not before `observedAt`. A report needs a photo or a non-blank description. | 201 `FieldReport` when new; 200 `FieldReport` when this `clientReportId` was already stored. | 400 invalid body; 400 `observedAt is in the future`; 400 `observedUntil is before observedAt`; 400 `A report needs a photo or a description`; 400 `Photo not found for this user`. |
+| GET /community-reports/mine | Signed-in | none | 200 `[FieldReport]`, newest first | 401. |
+| GET /community-reports | Staff | none | 200 list of objects `{report_id, report_time, image_url, description, status, observed_at, longitude, latitude, submitter_name, submitter_phone}`, newest first, no paging. Contains names, phones and exact GPS. | 401, 403. |
+| GET /community-reports/photos/{photoId} | Staff | Path: photo UUID | 200 image bytes, `image/jpeg` or `image/png`, `Cache-Control: private, max-age=3600` | 404 `Photo not found`; 400 `Invalid request` malformed id. |
+| PATCH /community-reports/{id}/status | Staff | Path: report id, integer. Body: `status` string, `submitted`, `processed` or `archived` (trimmed, case-insensitive). | 200 `{reportId, status}` | 400 `Invalid status: must be submitted, processed, or archived` (missing, empty or other value); 400 `Invalid request` (body not an object or `status` not a scalar); 404 `Report not found with id: <id>`; 400 `Invalid request` non-integer id. |
 
-Existing auth, reports, subscriptions/device and alert capabilities remain required; see PRD/epics for implementation status. Forecast/incident coexistence is intentional.
+### 1.6 Forecasts
 
-## 3. Snapshot and time requirements
+`ForecastJob` = `{runId, jobStatus: "pending"|"running"|"completed"|"failed"|"unavailable", idempotencyKey, createdAt}`. Hazard level and review status values are strings; their value sets are not verified from code.
+
+| Route | Caller | Request | Success | Errors |
+| --- | --- | --- | --- | --- |
+| GET /forecasts/offline-sync | Signed-in | none | 200 `{serverTime, items: [Zone]}`. `Zone` = `{runId, unitId, unitVersion, hazardLevel, probability, issuedAt, validFrom, validUntil, modelVersion, geometry (GeoJSON), unitName, centroidLat, centroidLng}` for runs that are approved, active, available and not expired, on an active unit, ordered by `validUntil`. A full snapshot: a run no longer listed was revoked or superseded and clients replace their cache. All instants UTC. | 401. |
+| GET /forecasts/active | Signed-in | none | 200 `[ForecastJob]` for runs approved, active, available and not expired, ordered by `validUntil`. Returns job summaries only, no geometry or validity; zones with geometry come from `offline-sync`. | 401. |
+| POST /forecasts | Staff | Body: `unitId` string, required, not blank, max 50; `unitVersion` string, optional, default `v1`, max 20; `snapshotId` UUID, optional; `modelVersion` string, required, not blank, max 50; `thresholdVersion` string, required, not blank, max 50. Creates a `pending` job valid 24 h from the current hour. Idempotent: same `unitId`, `unitVersion`, `modelVersion`, snapshot and issue hour returns the existing job. The route does not run the model; a background step calls the AI service. | 202 `ForecastJob`, also when the job already existed | 400 invalid body (also `snapshotId` not a UUID, or a value over its limit: `unitId`, `modelVersion`, `thresholdVersion` 50, `unitVersion` 20). Unknown `unitId`: not verified (the column references the assessment units table; no test). |
+| GET /forecasts/queue | Staff | none | 200 `[ForecastJob]` with `jobStatus` pending or running, newest first | 401, 403. |
+| GET /forecasts/review-queue | Staff | Query: `status` `pending` (default, also when empty), `approved`, `rejected` or `all`; case-sensitive. | 200 `[ReviewItem]`, at most 100, ordered by `validUntil` descending; active runs on active units; non-pending only if issued in the last 7 days. | 400 `Invalid status`. |
+| GET /forecasts/reviews/audit | Staff | Query: `limit` integer, default 100, clamped to 1..500. | 200 `[{reviewId, runId, unitId, hazardLevel, reviewerId, reviewerName, reviewerEmail, reviewerRole, decision, reasonNotes, reviewedAt}]`, newest first | 400 `Invalid request` non-integer `limit`. |
+| GET /forecasts/reviews/metrics | Staff | Query: `days` integer, default 7, clamped to 1..90. | 200 `{windowDays, approved, rejected, avgMinutes, medianMinutes, expiredUnreviewed}`; minutes are issue-to-decision and null when nothing was decided in the window. | 400 `Invalid request` non-integer `days`. |
+| PATCH /forecasts/{id}/review | Staff | Path: run UUID. Body: `decision` `approved` or `rejected` (lower case), required; `reasonNotes` string, optional, max 2000, required and not blank when `rejected`. The reviewer is the signed-in user. | 200 `{runId, reviewStatus}` | 404 with an empty body (unknown run); 400 `Invalid request` malformed id; 400 invalid body (also `reasonNotes` over 2000); 400 `A reason is required to reject a forecast`; 409 `Forecast already <status>`; 409 `Forecast expired; request a new run`; 409 `Superseded by a newer forecast for this unit`; 409 `Unavailable forecast cannot be approved`. |
+
+`ReviewItem` = `{runId, hazardLevel, probability, experimentalScore, issuedAt, validFrom, validUntil, horizonHours, availability, unavailabilityReason, reviewStatus, expired, modelVersion, thresholdVersion, contributingFactors, inputQuality, unit, observedRain, forecastRain, priorRuns}`. `unit` = `{unitId, unitVersion, name, province, district, commune, slopeAvg, slopeMax, elevationAvg, reliefM, effectiveResolutionM, centroidLng, centroidLat, geometry, areaId}`. `observedRain` = `[{intervalStart, intervalEnd, mm (null when missing), quality, source}]`, the 24 h before issue, only data available at issue time. `forecastRain` = up to 5 of `{providerRunId, provider, issuedAt, validFrom, validUntil, mm24h, quality}`. `priorRuns` = up to 5 of `{runId, issuedAt, hazardLevel, probability, reviewStatus}`. `expired` is computed at read time.
+
+### 1.7 Legacy incident routes (landslide events)
+
+Incident rows come from AI scene detection; these routes use SQL column names as keys. `{id}` is an event UUID.
+
+| Route | Caller | Request | Success | Errors |
+| --- | --- | --- | --- | --- |
+| GET /landslides/queue | Staff | none | 200 list of `{event_id, detection_date, risk_level, status, confidence_score, slope_degrees, ndvi_drop, affected_area_m2, satellite_scene_id, geometry_geojson, centroid_geojson}` with status `pending`, by `confidence_score` then `detection_date`, both descending. The two geojson values are strings. | 401, 403. |
+| PATCH /landslides/{id}/verify | Staff | Body: `status` required, `pending`, `verified`, `rejected` or `false_alarm`; `riskLevel` optional, `low`, `medium`, `high` or `extreme` (null or missing keeps the old level); `officerNote` optional text, max 2000. `status` and `riskLevel` are case-sensitive. `officerId` in the body is ignored: the reviewer is the signed-in user. Publishes `LANDSLIDE_VERIFIED` to the Redis bus, best effort. | 200 `{event_id, status, risk_level, affected_area_m2, verified_at}` | 400 `Invalid event id`; 400 `status must be pending, verified, rejected or false_alarm`; 400 `riskLevel must be low, medium, high or extreme`; 400 invalid body (also `officerNote` over 2000); 404 `Incident not found: <id>`. |
+| GET /landslides/active | Public | none | 200 GeoJSON `FeatureCollection` of `verified` events; feature `id` and `properties.event_id`, plus `risk_level`, `confidence`, `area_m2`, `slope`, `verified_at`, `scene_id`. | none expected. |
+| GET /landslides/geofence | Public | Query: `lon` number -180..180, required; `lat` number -90..90, required; `radius` meters >= 0, optional, default 500 (empty also means 500). | 200 `[{event_id, risk_level, affected_area_m2, distance_meters}]` verified events inside the radius, nearest first | 400 `Invalid request` for a missing, non-numeric or out-of-range value (also `NaN`, `Infinity`, `1e999`). |
+| GET /landslides/offline-sync | Public | none | 200 GeoJSON `FeatureCollection` of `verified` events; feature `id`, `geometry`, `properties: {event_id, risk_level}`. | none expected. |
+
+### 1.8 Monitoring areas
+
+| Route | Caller | Request | Success | Errors |
+| --- | --- | --- | --- | --- |
+| GET /monitoring-areas | Public | none | 200 list of `{area_id, name, description, is_active, geometry_geojson (string), created_at}`, inactive areas included, ordered by `area_id` | none expected. |
+| POST /monitoring-areas | Admin | Body: `name` string (unique), max 255; `description` string, optional, max 2000; `geojson` GeoJSON geometry object, required, type `Polygon` or `MultiPolygon` and valid in PostGIS, stored as MultiPolygon. A missing `name`: not verified. | 200 (not 201) `{area_id, name, description, is_active, created_at}` | 400 `Monitoring area boundary is not a valid polygon (it may cross itself)` (missing, not GeoJSON, any other type such as `Point`, unclosed or self-crossing ring); 409 `A monitoring area with this name already exists`; 400 invalid body (also `name` over 255, `description` over 2000). |
+| PUT /monitoring-areas/{id} | Admin | Path: area id, integer. Body, all optional, omitted or null keeps the value: `name` max 255, `description` max 2000, `isActive` boolean, `geojson` (as above). | 200 `{area_id, name, description, is_active, created_at, geometry_geojson}` | 400 invalid geometry (same message); 404 `Monitoring area not found with id: <id>`; 409 duplicate name; 400 `Invalid request` non-integer id or invalid body (also over-long `name` or `description`). |
+
+### 1.9 Emergency broadcasts (admin)
+
+Push goes through FCM and needs `FIREBASE_SERVICE_ACCOUNT_FILE`; without it every delivery is stored as failed (`FCM not configured`). SMS goes through eSMS or Twilio when one is configured, otherwise each SMS delivery is stored as failed (`SMS not configured`). Send, revoke and the audit rows are written after the action succeeds.
+
+| Route | Caller | Request | Success | Errors |
+| --- | --- | --- | --- | --- |
+| POST /notifications/broadcast | Admin | Body: `riskLevel` required, `low`, `medium`, `high` or `extreme` (case-insensitive); `areaId` integer, optional, wins over `targetArea`; `targetArea` string, optional, matched to active area names (exact, then substring); `message` string, optional, max 1000, blank uses a default text; `runId` UUID string, optional, must be an approved, available, unexpired forecast run (its validity becomes the broadcast validity, else 24 h); `incidentPhase` `pre_incident`, `during_incident` (default, also when blank) or `post_incident`, lower case; `eventId` string, optional, max 100, idempotency key (a repeat is 409). | 200 object. No recipient: `{event_id, risk_level, incident_phase, timestamp, recipients_estimated: 0, status: "NO_RECIPIENTS"}` (also for an unknown `areaId`). Otherwise also `{channels, broadcast_id, recipients_estimated, devices, sent, failed, first_error?, sms_recipients, sms_sent, sms_failed, sms_first_error?, status, payload: {title, body, sms_body}}`; `status` is `DISPATCHED`, `PARTIAL` or `FAILED` and describes push only. | 400 `Invalid riskLevel`; 400 `Invalid incidentPhase`; 400 `Invalid runId`; 409 `Forecast is not approved, available and unexpired`; 409 `Duplicate alert broadcast: event_id already processed`; 400 invalid body (also `eventId` over 100 or `message` over 1000). |
+| GET /notifications/broadcasts | Admin | Query: `limit` integer, default 100, clamped to 1..500. | 200 `[{broadcastId, sentAt, areaId, areaName, severity, message, senderName, runId, recipients, sent, failed, status, validUntil, revokedAt}]`, newest first | 400 `Invalid request` non-integer `limit`. |
+| GET /notifications/broadcast/preview | Admin | Query: `areaId` integer, required. | 200 `{areaId, areaName, subscribers, devices, smsSubscribers}` | 404 `No active monitoring area with that id`; 400 `Invalid request` missing or non-integer `areaId`. |
+| POST /notifications/broadcast/{id}/revoke | Admin | Path: broadcast UUID | 204. Devices see `revoked` on the next `GET /alerts/broadcasts`. | 404 `No active broadcast with that id` (unknown or already revoked); 400 `Invalid request` malformed id. |
+| GET /notifications/broadcast/{id}/deliveries | Admin | Path: broadcast UUID | 200 `[{deliveryId, userId, recipientName, phoneNumber, status, errorMessage, sentAt}]`; no FCM tokens; an unknown id gives an empty list. | 400 `Invalid request` malformed id. |
+
+### 1.10 Admin console, model cards, live stream, diagnostics
+
+| Route | Caller | Request | Success | Errors |
+| --- | --- | --- | --- | --- |
+| GET /admin/audit | Admin | Query: `limit` integer, default 200, clamped to 1..500. | 200 `[{id, actor (e-mail), action, targetType, targetId, targetLabel, detail, at}]`, newest first. `action` is one of `USER_LOCK`, `USER_UNLOCK`, `USER_ROLE`, `OFFICER_APPROVE`, `OFFICER_REJECT`, `BROADCAST_SEND`, `BROADCAST_REVOKE`. | 400 `Invalid request` non-integer `limit`. |
+| GET /admin/system-health | Admin | none | 200 `{checkedAt, components: [{key: "db"\|"redis"\|"ai"\|"gis", label, status: "ok"\|"degraded"\|"down", detail, latencyMs}], freshness: [{key: "rainObserved"\|"rainForecast"\|"snapshot"\|"forecastRun", label, latest, ageMinutes}]}`. A failing component is reported inside the body, not as an error status. `degraded` means the AI service answers but `model_ready` is false. | 401, 403 only. |
+| GET /model-card | Staff | none | 200 `{segmentation, gru}`: the bodies of AI `GET /api/v1/models/info` and `GET /api/v1/models/gru/info`. When the AI service is unreachable, the circuit is open or the AI service answers 200 with an empty body, that part is `{ready: false}`. | 401, 403. |
+| GET /stream | Staff | none | 200 `text/event-stream`. First event `hello` (data `{}`, retry 5000 ms), then event `update` with data `{"type": "queue"\|"field_reports"\|"broadcasts"}` when the review queue, field reports or broadcasts change; a `ping` comment every 25 s; the stream ends after 30 minutes and the client reconnects. Events carry no data; clients reload through the normal routes. In memory, so it works for one Core instance only. | 401, 403. |
+| GET /diagnostic/circuit-breaker/ai | Admin | none | 200 body of AI `POST /api/v1/inference` for a fixed test scene and bbox, or on failure or an empty AI reply `{success: false, status: "CIRCUIT_BREAKER_FALLBACK", scene_id, message, detected_polygons: []}` | 401, 403. |
+| GET /diagnostic/circuit-breaker/gis | Admin | none | Calls GIS `POST /api/v1/gis/query-satellite`, a route that does not exist in the GIS service on `main`, so the answer is the fallback `{success: false, status: "CIRCUIT_BREAKER_FALLBACK", message, scenes_found: []}`. The request body it sends has the last 30 days as the date window. | 401, 403. |
+| POST /diagnostic/event-bus/publish | Admin | Query, optional: `eventType` default `TEST_EVENT`; `message` default text. Free text, no limits. | 200 `{success: true, channel: "terrawatch:events", eventType, message}`; a Redis failure is logged and still answers 200 | 401, 403. |
+
+## 2. GIS service (FastAPI, :8002)
+
+All paths are on the service itself. Through the gateway only GET and HEAD under `/api/v1/gis/` pass, so the POST routes below are reachable only inside the Docker network. No route has authentication. Routes marked "DB" need PostGIS; a DB failure is 500 with a fixed `detail` (`Internal server error.`, or `Database connection error.` on `rainfall/ingest`), never the driver text. Routes marked "cache" read only data the scheduler stored (hourly job, `RAINFALL_AUTO_ENABLED`, `RAINFALL_REFRESH_SECONDS`, default 3600, minimum 900) and never call the weather provider.
+
+`POST /api/v1/gis/query-satellite`, listed as "fixed sample scene response" in the previous version, is not mapped on `main`. Core's `GET /diagnostic/circuit-breaker/gis` still calls it. The gateway path `/api/v1/tiles/` proxies to GIS `/api/v1/tiles/`, which no route serves.
+
+### 2.1 Health and live rainfall cache
+
+| Route | Request | Success | Errors |
+| --- | --- | --- | --- |
+| GET /health | none | 200 `{status: "ok", service: "gis-service", version: "2.0.0", supported_providers: ["OPEN_METEO", "SRTM_30M"]}` | none. |
+| GET /api/v1/gis/rainfall/live/status | none | 200 `{success: true, enabled, interval_seconds, running, last_cycle_at, last_error (exception class name or null), locations, archive_imported?}` | none. |
+| GET /api/v1/gis/rainfall/live/map | none (cache) | 200 GeoJSON `{type: "FeatureCollection", experimental: true, calibrated_probability: false, operational_alert: false, generated_at, features}`. Feature = Point or area geometry with `properties: {key, name, current, stale, expired, reason, hazard_score, temporal_score, spatial_score, issue_time, valid_until, cell_id, rain_24h_mm, forecast_24h_mm}`. `current` is false for stale weather, an expired or missing score. | 503 `Kho dữ liệu mưa tạm thời chưa sẵn sàng. Vui lòng thử lại.` (store unreadable; no driver text). |
+| GET /api/v1/gis/rainfall/live | Query: `latitude` float -90..90, required; `longitude` float -180..180, required. The point must match a monitored location to 4 decimals (key `lat,lon`). (cache) | 200 `{success: true, location_name, latitude, longitude, data, last_success_at, last_attempt_at, last_error, stale, refresh_interval_seconds}`. `data` = `{weather, provider: "OPEN_METEO", source_kind: "WEATHER_MODEL_ESTIMATE", source_url, as_of, fetched_at, provider_run_issued_at, model_selection, history: {"1","24","72","168": {mm, valid_hours, expected_hours, start, end}}, forecast_24h, provider_grid, quality: "complete"\|"partial", hourly: [{interval_end, mm, kind: "past_estimate"\|"forecast"}], gru_inference, rain_anomaly, rain_warning}`; `mm` is null when an hour is missing, never 0. `stale` is true after 1.5 refresh intervals or when the last cycle failed. | 404 `Điểm chưa có dữ liệu. Tác vụ tự động đang khởi tạo hoặc điểm chưa đăng ký theo dõi.`; 422 out-of-range, missing or non-numeric value; 503 as above. |
+| GET /api/v1/gis/rainfall/live/history | Query: `latitude`, `longitude` as above, required; `days` integer 1..90, default 7. (DB only) | 200 `{success: true, source_kind: "WEATHER_MODEL_ESTIMATE", experimental: true, thresholds_24h: {period, p95, p99} \| null, items: [{as_of, fetched_at, rain_1h_mm, rain_24h_mm, rain_72h_mm, rain_168h_mm, forecast_24h_mm, quality, origin, hazard_score, temporal_score, model_id}]}`, hourly as-issued snapshots oldest first; an unmonitored point gives `items: []`, not 404. | 422 missing, non-numeric or out-of-range `latitude`, `longitude` or `days`; 503 as above (any repository failure). |
+| GET /api/v1/gis/rainfall/warning/sites | none (reads `rain_warning_sites.json`) | 200 `{period, source, method, hit_rates, hit_rate_sites, people_source, footprint_source, buildings_source, replays: [{replay_id, label, site_key}], sites: [{key, name, latitude, longitude, thresholds, last_event_at_level, impact_zone, runout}]}`. A rain-only warning, never a landslide probability. | 503 `Chưa có cấu hình cảnh báo theo mưa.` (file missing or unreadable). |
+| GET /api/v1/gis/rainfall/warning/replay/{replay_id} | Path: `replay_id` string from `warning/sites` | 200 `{replay_id, label, site_key, site_name, event_utc, event_label, event_end_utc, event_precision, thresholds_mm, hit_rates, hours: [{interval_end, mm, totals_mm, level, percent_days_below}]}`; observed rain only. `level` is null, `watch`, `warning` or `danger`. | 404 `Không có dữ liệu phát lại này.` (unknown id or config missing). |
+
+### 2.2 Rainfall per assessment unit (DB, provider)
+
+| Route | Request | Success | Errors |
+| --- | --- | --- | --- |
+| POST /api/v1/gis/rainfall/ingest | Body, all optional: `area_id` integer; `unit_id` string; `past_days` integer 1..14, default 7; `forecast_days` integer 1..3, default 2. Fetches Open-Meteo for each matching active unit and stores observations and the 24 h forecast; repeats are idempotent. Units without centroid are skipped silently (counted in `total_units_evaluated`, absent from `results`). | 200 `{success (false when every evaluated unit failed), total_units_evaluated, total_observations_saved, total_forecasts_saved, results: [{unit_id, unit_name, status: "success", observations_stored, summary}] \| [{unit_id, status: "failed", error}]}`. A provider failure for one unit is reported inside `results`. | 404 `No active assessment units found for the specified filter.`; 422 invalid body; 500 `Database connection error.` (units query). When every evaluated unit fails the answer is still 200, with `success: false`. `error` in a failed `results` entry carries the exception text of that unit. |
+| GET /api/v1/gis/rainfall/summary/{unit_id} | Path: unit id string. If nothing is stored the route calls the provider and stores the result, so a GET can write. | 200 `{success: true, data: {unit_id, rain_1h_mm, rain_24h_acc_mm, rain_72h_acc_mm, rain_7d_acc_mm, forecast_next_24h_mm, forecast_valid_until, quality_flag, latest_observation_time}}` from the database; after a fresh fetch `data` has `as_of` instead of `forecast_valid_until` and `latest_observation_time`. Values are null when missing, never 0. `quality_flag` is `missing` when any of the last 24 hours is missing. A forecast issued or available after now is ignored. | 404 `Assessment unit '<id>' not found.`; 400 `Assessment unit '<id>' has missing centroid coordinates.`; 502 `Weather provider unavailable.` (provider failure on the fresh fetch); 500 `Internal server error.` (DB failure or any other error). |
+| GET /api/v1/gis/rainfall/live-sample | Query: `lat` float -90..90, default 22.525; `lon` float -180..180, default 103.855. Calls the provider directly (diagnostic). | 200 `{success: true, coordinates: {lat, lon}, summary}` | 422 non-numeric or out of range (`lat` -90..90, `lon` -180..180); 500 `Internal server error.` (provider failure). |
+
+### 2.3 Terrain and feature snapshots (DB)
+
+| Route | Request | Success | Errors |
+| --- | --- | --- | --- |
+| POST /api/v1/gis/terrain/extract | Body, all optional: `area_id` integer; `unit_ids` list of strings; `grid_size` integer 3..11, default 5; `step_deg` float, default 0.0003, no bounds declared; `dem_source` string, default `COPERNICUS_GLO_30`. Writes slope, elevation and relief to each matching unit. Units without centroid are skipped. | 200 `{success: true, message, total_processed, units: [{unit_id, unit_name, success, elevation_avg, slope_avg, slope_max, relief_m, dem_source}]}`; `success: false` for a unit whose row could not be updated. | 404 `No active assessment units found matching criteria.`; 422; 500 `Internal server error.` (DB failure, or a grid with only no-data values; nothing is persisted). **Known defect:** when the elevation provider is down, or answers with a different number of elevations than points, the route answers 200 with a synthetic grid, stored and labelled `dem_source: "FALLBACK_SYNTHETIC"` (expected an error). |
+| GET /api/v1/gis/terrain/{unit_id} | Path: unit id | 200 `{success: true, data: {unit_id, unit_name, admin_province, admin_district, admin_commune, slope_avg, slope_max, elevation_avg, relief_m, dem_source, dem_resolution_m, effective_resolution_m, centroid_lat, centroid_lon, updated_at}}` | 404 `Assessment unit '<id>' not found.`; 500 `Internal server error.` `GET /api/v1/gis/terrain/extract` is read as unit id `extract` and gives 404. |
+| POST /api/v1/gis/snapshots/create | Body, all optional: `unit_ids` list of strings; `area_id` integer; `as_of_time` ISO-8601 string (naive means UTC, offsets are converted to UTC; default is the start of the current UTC hour); `schema_version` string, default `rainfall-terrain-24h.v1`. One snapshot per matching unit from rainfall available at `as_of_time` (7 days back), the latest forecast and terrain. The same unit, version, `as_of_time` and schema returns the same `snapshot_id`. | 200 `{success: true, message, total_created, snapshots: [{snapshot_id (UUID), unit_id, as_of_time, coverage_quality: "good"\|"stale"\|"missing", features: {rain_1h_mm, rain_24h_acc_mm, rain_72h_acc_mm, rain_7d_acc_mm, forecast_next_24h_mm, slope_avg, slope_max, elevation_avg, relief_m}}]}` | 404 `No active assessment units found.`; 422 wrong types or `as_of_time` not an ISO-8601 timestamp (`as_of_time is not a valid ISO-8601 timestamp.`); 500 `Internal server error.` A repeat of the same unit, version, `as_of_time` and schema keeps the first stored snapshot. A forecast issued after `as_of_time` is not used. |
+| GET /api/v1/gis/snapshots/latest/{unit_id} | Path: unit id | 200 `{success: true, data: {snapshot_id, schema_version, unit_id, unit_version, as_of_time, features, coverage_quality, source_references, created_at}}` for the latest `as_of_time` | 404 `No feature snapshot found for unit '<id>'.`; 500 `Internal server error.` |
+| GET /api/v1/gis/snapshots/{snapshot_id} | Path: snapshot UUID | 200 same `data` shape | 404 `Feature snapshot '<id>' not found.`; 422 `snapshot_id must be a UUID.`; 500 `Internal server error.` |
+
+### 2.4 Legacy tiling and tiles
+
+| Route | Request | Success | Errors |
+| --- | --- | --- | --- |
+| POST /api/v1/gis/tiling | Body: `area_id` integer, required; `bbox` list of 4 floats `[min_lon, min_lat, max_lon, max_lat]`, required; `patch_size_km` float, default 2.0. Grid generation, not rainfall feature engineering. Ordering and range of `bbox` are not checked; behaviour for `patch_size_km` <= 0: not verified. | 200 `{success: true, area_id, total_tiles, tiles: [{tile_id: "tile_0001", bbox, size_km, status: "ready_for_inference"}]}`; tiles stay inside the bbox. | 400 `bbox must have 4 coordinates`; 422 missing field or wrong type. |
+| GET /api/v1/gis/mvt/{z}/{x}/{y}.pbf | Path: `z`, `x`, `y` integers | 200 empty body, `Content-Type: application/vnd.mapbox-vector-tile` (prototype, no tile data) | 422 non-integer coordinate. |
+
+## 3. AI service (FastAPI, :8001)
+
+Not reachable through the gateway. Callers: Core (`/inference`, `/forecasts`, both model-info routes) and GIS (`/inference/gru/live`). No authentication. Core reaches the model cards through `GET /api/v1/model-card`.
+
+| Route | Request | Success | Errors |
+| --- | --- | --- | --- |
+| GET /health | none | 200 `{status: "ok", service: "ai-service", version: "1.0.0", model_ready: boolean}` | none. |
+| GET /api/v1/models/info | none. Reads the ONNX model and `model_card.json` (`ONNX_MODEL_PATH`, `MODEL_CARD_PATH`). | 200 ready: `{ready: true, note, name, runtime: "onnxruntime", std_floor_multiplier, modes, default_mode: "balanced", temporal_rule, schema_version: "2.0", sha256_ok, metrics, metrics_note, version, status, trained_on, input_channels}`; `sha256_ok` false when the model file differs from the card. Not ready: `{ready: false, note, detail}` with `detail` `missing <model path> or <card path>` (a file is absent) or `model card unreadable or invalid` (corrupt JSON, no `modes`, or no `input.preprocessing.std_floor_multiplier`); no identity fields. | none: a corrupt or incomplete card answers 200 with `ready: false`. |
+| GET /api/v1/models/gru/info | none | 200 ready: `{ready: true, model_id, checkpoint_sha256, experimental_only: true, runtime, trained_history_provider, trained_forecast_provider, calibrated_probability}`. Artifact missing or invalid: 200 `{ready: false, reason: "GRU_ARTIFACT_UNAVAILABLE_OR_INVALID"}`. | none. |
+| POST /api/v1/inference/gru/live | Body: `unit_id` string 1..100, required; `history` list of exactly 168 finite floats >= 0 (hourly mm, oldest first), required; `forecast_24h_mm` float >= 0 and finite, required; `static` object, required: `slope_deg` 0..90, `clay_pct` 0..100, `sand_pct` 0..100, `bulk_density_g_cm3` >0..3, all required, finite; `elevation_m` finite, optional in the schema but the model needs it; `issue_time` ISO-8601 with timezone, required; `weather_source` must be `OPEN_METEO`, required. Experimental, not calibrated. | 200 `{temporal_score, spatial_score, hazard_score (= temporal x spatial), model_id, checkpoint_sha256, calibrated_probability: false, operational_alert: false, unit_id, issue_time (echoed with its offset), valid_until (issue_time + 24 h), weather_source, experimental_source_shift: true, experimental_rolling_clock: true, notice}`. All scores in 0..1; no `probability` or `hazard_level`. | 422 field validation (`detail` is a list; includes `NaN`/`Infinity`, wrong type, empty or non-JSON body); 422 `issue_time requires a timezone`; 422 model input text, e.g. `Missing/nonfinite terrain or soil` (no `elevation_m`) or `Expected exactly 168 finite, nonnegative rainfall hours`; 503 `GRU artifact unavailable` (files missing); 500 unexpected error, no score. **Known defect:** a failed weight-integrity check gives 422 with the raw message (expected 503). |
+| POST /api/v1/forecasts | Body (`rainfall-terrain-24h.v1`): `schema_version` must be `rainfall-terrain-24h.v1`, required; `assessment_unit_id` string 1..100, required; `issued_at` ISO-8601 with timezone, required; `horizon_hours` must be 24, required; `snapshot_id` string, optional, default empty; `assessment_unit_version` string, optional; `model_version` string, optional. Implemented as a stub: it never returns a score because no 24 h model is released. | 200 `{assessment_unit_id, assessment_unit_version, issued_at, valid_from (= issued_at), valid_until (+24 h), horizon_hours: 24, availability: "unavailable", reason_codes: ["SNAPSHOT_MISSING"?, "MODEL_NOT_RELEASED"], unavailability_reason (codes joined by ", "), probability: null, experimental_score: null, hazard_level: null, model_version: null, threshold_version: null, input_quality: {status: "not_evaluated"}, factors: []}`. `SNAPSHOT_MISSING` appears when `snapshot_id` is blank. | 422 validation (wrong schema, horizon, id length, missing field); 422 `issued_at requires a timezone`. |
+| POST /api/v1/inference | Legacy bbox call. Body: `satellite_scene_id` string, required; `bbox` list of 4 floats, required; `slope_avg`, `ndvi_drop` optional floats, ignored. A bbox carries no imagery, so no polygon is produced. | 200 `{success: true, satellite_scene_id, detection: {status: "no_imagery", candidates: [], bbox, detail, note}}` | 400 `bbox must contain exactly 4 coordinates [min_lon, min_lat, max_lon, max_lat]`; 422 missing field or wrong type. **Known defects:** a bbox out of range or with min > max is accepted (200, echoed); `NaN` in the bbox is accepted and echoed as null. |
+| POST /api/v1/inference/scene | Body: `ref_tif`, `post_tif`, `pre_tif` strings, required: file names (no path, no `\`, ending `.tif` or `.tiff`) inside `SCENE_DIR`; `mode` `sensitive`, `balanced` (default) or `conservative`; `image_source`, `image_period` strings, default empty. `ref_tif` is the 8-band reference image; `post_tif` and `pre_tif` are composites of the same season. Candidates need human verification. | 200 GeoJSON `FeatureCollection` (schema 2.0). Feature geometry is Polygon or MultiPolygon in EPSG:4326; `properties: {id, area_ha, conf_mean, conf_max, mode, threshold, preprocessing_std_floor, model, model_sha256 (12 characters), image_source, image_period, n_obs_median, quality_flag: "ok"\|"low_obs", temporal_check: "change_detected"\|"no_change"\|"not_assessable", change_fraction, pre_valid_fraction, temporal_rule, review_status: "ai_suggested", reviewed_by: null, review_note: null, severity: null, schema_version}`. `metadata: {schema_version, model, model_sha256, mode, threshold, std_floor, note, image_source, image_period}`; `summary: {n_regions, area_ha, n_change_detected, area_change_detected_ha, n_not_assessable, valid_fraction}`. `conf_*` is not a probability. | 400 `mode must be one of ...`; 400 `invalid scene file name: '<name>'` (checked before the model state); 400 `scene file is not a readable GeoTIFF` (a named file is not a readable raster); 404 `scene file not found: <file name>`; 422 misaligned grids (`not aligned`, `starts inside` in the text); 422 missing field or wrong type; 503 `model files are not installed`; 503 `inference engine unavailable` (any failure while loading or running the ONNX session). **Known defect:** the text of any `RuntimeError` raised on the route is returned verbatim in the 503. |
+
+## 4. Planned endpoints (target contract, status against `main`)
+
+Planned routes that are now implemented were moved into sections 1 to 3: Core `POST /forecasts`, `GET /forecasts/queue`, `PATCH /forecasts/{id}/review`, `GET /forecasts/offline-sync` (section 1.6) and AI `POST /api/v1/forecasts` (section 3). `queue` lists pending and running jobs; proposals for review are `GET /forecasts/review-queue`. Still open against the target contract:
+
+| Access | Route | Purpose | Status on `main` |
+| --- | --- | --- | --- |
+| Internal GIS | POST /api/v1/gis/feature-snapshots | Build an immutable as-of rainfall/terrain snapshot for a unit. | **Not implemented under this name.** Implemented as `POST /api/v1/gis/snapshots/create` (section 2.3): a repeat of the same unit, version, `as_of_time` and schema keeps the first stored snapshot. The source-record and quality fields of section 5 are only partly present (`coverage_quality`, `source_references`; exact coverage not verified). |
+| Internal AI | POST /api/v1/forecasts | Evaluate a validated snapshot for the next 24h. | **Stub only:** validates the request and always answers `availability: "unavailable"` with `MODEL_NOT_RELEASED`. It does not resolve the snapshot. |
+| Core authorized clients | GET /api/v1/forecasts/active | Published, approved and currently valid forecast geometries. | **Partly implemented:** the route answers job summaries without geometry or validity; geometries come from `GET /api/v1/forecasts/offline-sync`. |
+| Core authorized clients | GET /api/v1/forecasts/offline-sync | Full snapshot with `generated_at`, `sync_id` and `revocations` (section 8). | **Implemented without those fields:** the response has `serverTime` and `items`. |
+
+The AI and Core share a route name on different hosts. Public /api/v1/forecasts targets Core. The gateway routes /api/v1/forecasts to Core and answers 403 for /api/v1/ai/*, so AI /api/v1/forecasts is internal only (Core reaches it directly).
+
+Existing auth, reports, subscriptions/device and alert capabilities are implemented (section 1); see PRD/epics for story status. Forecast/incident coexistence is intentional.
+
+## 5. Snapshot and time requirements
 
 GIS snapshot fields: snapshot_id, schema_version, assessment_unit_id, assessment_unit_version, as_of, source records/revisions, terrain version, required feature values/units, coverage, quality and effective resolution.
 
@@ -70,7 +241,7 @@ Each observation records interval_start/end, available_at and ingested_at. Each 
 
 The model manifest identifies its required feature schema. The endpoint consumes a snapshot reference; services resolve it through authenticated internal access. Clients do not supply arbitrary probabilities or identity fields.
 
-## 4. AI request (illustrative contract)
+## 6. AI request (illustrative contract)
 
 ```json
 {
@@ -86,7 +257,7 @@ The model manifest identifies its required feature schema. The endpoint consumes
 
 All identifiers and values here are examples, not deployed records. The horizon is fixed at 24; valid_from equals issued_at and valid_until is 24h later.
 
-## 5. Result envelope
+## 7. Result envelope
 
 ```json
 {
@@ -121,7 +292,7 @@ For an available result, provide factors with names, values and units plus actua
 
 Availability, review state and expiry are separate: an available historical result can be expired. Core attaches assessed unit geometry as GeoJSON; geometry does not represent an observed landslide footprint. Exposure/priority is a separate optional object and cannot modify occurrence probability.
 
-## 6. Review, alerts and offline synchronization
+## 8. Review, alerts and offline synchronization
 
 - Review body: decision (approved/rejected), reason. Authenticated identity is server-derived; reject stale/superseded/nonreviewable records with conflict.
 - Existing incident verification stays distinct. A forecast-based warning references forecast_id/unit version and valid interval; a manually authored warning records its own justification/validity.
@@ -130,7 +301,7 @@ Availability, review state and expiry are separate: an available historical resu
 - Features include run/unit/window/quality, review/publication state and geometry. Expired data is stale, never automatically safe.
 - Delivery acceptance, provider response and actual delivery confirmation are distinct states.
 
-## 7. Errors and validation (target)
+## 9. Errors and validation (target)
 
 | Condition | Contract |
 | --- | --- |
