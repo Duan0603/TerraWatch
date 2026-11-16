@@ -126,7 +126,7 @@ export default function LiveRainfallPanel({ selectedEvent, showModel = true }) {
               Độ ẩm {numberText(now.relative_humidity_2m, '%')} · Gió {numberText(now.wind_speed_10m, ' km/h')} · Khả năng mưa {numberText(now.precipitation_probability, '%')}</p>
           </div>}
           <table className="live-weather-days" aria-label="Dự báo theo ngày">
-            <thead><tr><th scope="col">Ngày</th><th scope="col">Trời</th><th scope="col">Nhiệt độ</th><th scope="col">Mưa</th><th scope="col">Khả năng</th></tr></thead>
+            <thead><tr><th scope="col">Ngày</th><th scope="col">Trời</th><th scope="col">Nhiệt độ</th><th scope="col">Lượng mưa</th><th scope="col">Khả năng mưa*</th></tr></thead>
             <tbody>{weather.daily.map((d, i) => <tr key={d.date}>
               <th scope="row">{dayLabel(d.date, i)}</th>
               <td><WeatherIcon code={d.weather_code} /></td>
@@ -135,6 +135,8 @@ export default function LiveRainfallPanel({ selectedEvent, showModel = true }) {
               <td>{numberText(d.precip_probability_max_pct, '%')}</td>
             </tr>)}</tbody>
           </table>
+          {/* Open-Meteo: precipitation_probability = P(> 0.1 mm in the hour) from 0.25° ensembles; amount comes from the best-match model. */}
+          <p className="live-rain-coverage">* Khả năng mưa: xác suất có mưa trên 0,1 mm trong giờ cao nhất của ngày, theo bộ mô hình tổ hợp (ensemble). Lượng mưa là dự báo của mô hình chính, nên có thể 0 mm mà khả năng mưa vẫn vài phần trăm; khả năng cao cũng không có nghĩa là mưa to.</p>
           <p className="live-rain-coverage">Ngày theo giờ Việt Nam; mưa "Hôm nay" gồm cả các giờ đã qua. Ngày thiếu giờ không cộng tổng. Nhiệt độ, gió và khả năng mưa là dự báo mô hình Open-Meteo, chỉ để tham khảo, không dùng để tự phát cảnh báo.</p>
         </section> : <p className="live-rain-coverage">Chưa có bảng thời tiết cho snapshot này; sẽ có sau lần lấy dữ liệu kế tiếp.</p>}
       </>}
