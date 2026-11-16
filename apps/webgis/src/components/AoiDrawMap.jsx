@@ -4,16 +4,13 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { Undo2, Trash2 } from 'lucide-react';
 import { areaKm2, parseRing, ringToJson, selfIntersects } from '../utils/aoiRing';
+import { STYLE_URL } from '../config/mapConfig';
 
 if (typeof maplibregl.setWorkerUrl === 'function') maplibregl.setWorkerUrl(workerUrl);
 
-// Nền raster tự chứa: không cần tải style JSON, nên polygon vẫn vẽ được khi mạng chập chờn.
-const BASEMAP = {
-  version: 8,
-  sources: { osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, maxzoom: 19,
-    attribution: '© OpenStreetMap contributors' } },
-  layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#1e293b' } }, { id: 'osm', type: 'raster', source: 'osm' }]
-};
+// Nền giống bản đồ chính (tile.openstreetmap.org chặn ứng dụng gọi thẳng nên nền trống).
+// Không tải được style thì rơi về nền tối tự chứa: vẫn vẽ được ranh giới.
+const FALLBACK_STYLE = { version: 8, sources: {}, layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#1e293b' } }] };
 
 const outline = (pts) => ({
   type: 'FeatureCollection',
@@ -40,11 +37,14 @@ export default function AoiDrawMap({ value, onChange, others }) {
   emitRef.current = emit;
 
   useEffect(() => {
-    const map = new maplibregl.Map({ container: host.current, style: BASEMAP, center: [104.0, 21.9], zoom: 7,
+    const map = new maplibregl.Map({ container: host.current, style: STYLE_URL, center: [104.0, 21.9], zoom: 7,
       attributionControl: { compact: true }, doubleClickZoom: false }); // bấm đúp dùng để xóa điểm
     mapRef.current = map;
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
-    map.on('style.load', () => { // style nhúng sẵn: không phải đợi tải ô bản đồ nền
+    let styled = false, fellBack = false; // chỉ dự phòng khi chính style lỗi, không phải khi một ô nền lỗi
+    map.on('error', () => { if (!styled && !fellBack) { fellBack = true; map.setStyle(FALLBACK_STYLE); } });
+    map.on('style.load', () => { // chạy lại sau setStyle dự phòng: thêm lại lớp vùng
+      styled = true;
       map.addSource('others', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } }); // các vùng khác, làm mốc
       map.addLayer({ id: 'others-fill', type: 'fill', source: 'others', paint: { 'fill-color': '#64748b', 'fill-opacity': 0.18 } });
       map.addLayer({ id: 'others-line', type: 'line', source: 'others', paint: { 'line-color': '#94a3b8', 'line-width': 1.2, 'line-dasharray': [2, 2] } });

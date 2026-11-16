@@ -45,6 +45,7 @@ public class EsmsSender implements SmsSender {
     public Result send(String phoneNumber, String body) {
         if (apiKey == null || apiKey.isBlank() || secretKey == null || secretKey.isBlank()) return Result.failed("eSMS credentials missing");
         String phone = normalizeLocal(phoneNumber);
+        if (phone.isEmpty()) return Result.failed("eSMS: phone number is blank");
         // For test Brandname Baotrixemay in live mode (sandbox=0), Telco carriers (Viettel/Mobi/Vina)
         // require pre-approved carrier templates. Adapt body so SMS lands on real phones.
         String content = (!sandbox && "Baotrixemay".equalsIgnoreCase(brandname))
@@ -70,6 +71,7 @@ public class EsmsSender implements SmsSender {
                 return Result.sent(node.path("SMSID").asText());
             }
             String err = node.path("ErrorMessage").asText();
+            if (code.isBlank()) return Result.failed("eSMS reply has no CodeResult" + (err.isBlank() ? "" : ": " + err));
             return Result.failed("eSMS " + code + (err.isBlank() ? "" : ": " + err));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

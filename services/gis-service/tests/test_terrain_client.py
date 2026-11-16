@@ -102,8 +102,6 @@ def test_grid_outage_must_not_fabricate_elevations(monkeypatch, sleeps):
         OpenMeteoElevationClient(max_retries=1).fetch_grid_around_point(22.3, 103.8, grid_size=3)
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: expected error when provider returns fewer elevations than points; actual "
-                                       "terrain_client.py:40-41 returns the short list unchecked")
 def test_batch_short_response_rejected(monkeypatch, sleeps):
     patch_get(monkeypatch, FakeResponse({"elevation": [1.0]}))
     with pytest.raises(RuntimeError):

@@ -59,7 +59,7 @@ class OpenMeteoRainfallClient:
             response.raise_for_status()
             data = response.json()
             
-            if "hourly" not in data or "precipitation" not in data["hourly"]:
+            if not isinstance(data, dict) or not isinstance(data.get("hourly"), dict) or "precipitation" not in data["hourly"]:
                 raise RainfallClientError(f"Open-Meteo response missing hourly precipitation: {data}")
                 
             return data

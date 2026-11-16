@@ -1,7 +1,6 @@
 package vn.terrawatch.core.client;
 
 import io.github.resilience4j.springboot3.circuitbreaker.autoconfigure.CircuitBreakerAutoConfiguration;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
@@ -93,8 +92,6 @@ class GisServiceClientTest {
     }
 
     @Test
-    @Disabled("BUG: expected date range derived from today; actual GisServiceClient lines 38-39 hardcode date_from=2026-09-01 / date_to=2026-10-01, "
-        + "so the catalog query never moves forward in time")
     void queryWindowFollowsTheCurrentDate() {
         server.expect(requestTo(BASE + "/api/v1/gis/query-satellite"))
             .andExpect(jsonPath("$.date_to").value(LocalDate.now().toString()))
@@ -104,14 +101,12 @@ class GisServiceClientTest {
     }
 
     @Test
-    @Disabled("BUG: expected 200/empty body to read as unavailable; actual querySatelliteScenes returns null, which DiagnosticController line 48 serves as HTTP 200 empty")
     void emptyBodyIsNotNull() {
         server.expect(requestTo(BASE + "/api/v1/gis/query-satellite")).andRespond(withSuccess());
         assertThat(client.querySatelliteScenes(1, 2, 3, 4)).isNotNull();
     }
 
     @Test
-    @Disabled("BUG: expected fallback message not to claim a cached catalog exists; actual fallbackQuerySatellite says 'Using cached satellite catalog' but returns no scenes")
     void fallbackMessageDoesNotClaimACache() {
         assertThat(client.fallbackQuerySatellite(1, 2, 3, 4, new RuntimeException()).get("message").toString()).doesNotContain("cached");
     }

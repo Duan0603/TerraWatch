@@ -32,6 +32,8 @@ MIN_POINTS = 10
 def rolling_with_end(series, hours):
     """Totals of complete windows, indexed by the window's last hour (NaN where incomplete)."""
     valid = np.isfinite(series)
+    if len(series) < hours:
+        return np.full(series.shape, np.nan)
     total = np.convolve(np.where(valid, series, 0.0), np.ones(hours), 'valid')
     full = np.convolve(valid.astype(np.int64), np.ones(hours, dtype=np.int64), 'valid') == hours
     out = np.full(series.shape, np.nan)

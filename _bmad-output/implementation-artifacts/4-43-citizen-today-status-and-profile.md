@@ -28,12 +28,12 @@ Làng Nủ also carries the Open-Meteo rain-threshold warning (`rain_warning`, S
    "Xem trên bản đồ" focuses one area; for Làng Nủ, "Xem dòng bùn đá" opens the rain-warning card.
 5. Level Cảnh báo or higher in a followed area: a red action banner on top with what to do, call 112, and call the emergency contact.
 6. Plain wording: official officer warnings are labeled as such, no internal terms (Open-Meteo, điểm theo dõi) in citizen text.
-7. Làng Nủ becomes monitoring area 4 so citizens can follow it (Flyway V16).
+7. Làng Nủ becomes monitoring area 4 so citizens can follow it (Flyway V17; renumbered from V16 when main added V16__rename_demo_officer).
 8. Tests: unit tests for the status logic, e2e for: levels shown per area, danger banner with calls, onboarding without areas, profile save.
 
 ## Tasks
 
-- [x] V16 migration: Làng Nủ monitoring area
+- [x] V17 migration: Làng Nủ monitoring area
 - [x] `utils/citizenStatus.js` (+ unit tests)
 - [x] `TodayStatusCard`, `CitizenProfileModal` (reuses `AlertSubscriptionsCard`), action banner, header chip
 - [x] MapViewer: per-area colour/legend, `focus` and `rainRequest` props (citizen map links)

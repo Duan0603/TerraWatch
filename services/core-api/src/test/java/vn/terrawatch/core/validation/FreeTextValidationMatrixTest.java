@@ -116,9 +116,6 @@ class FreeTextValidationMatrixTest extends ValidationTestBase {
             new Case(CitizenValidationMatrixTest.DEVICE_REGISTER, "deviceType 21 chars (varchar 20)", set("deviceType", a(21)), null, 400, null));
     }
 
-    @org.junit.jupiter.api.Disabled("BUG: expected 400, actual 200/204 and the 10,000-char text is stored. No @Size and no column limit: "
-        + "CreateAreaRequest.description, UpdateAreaRequest.description, BroadcastAlertRequest.message, ReviewForecastRequest.reasonNotes, "
-        + "VerifyEventRequest.officerNote, DeviceTokenRequest.fcmToken (TEXT columns)")
     @DisplayName("10,000 characters in a TEXT field with no declared limit (BUG)")
     @ParameterizedTest(name = "{0}")
     @MethodSource("tenThousandAccepted")
@@ -126,9 +123,6 @@ class FreeTextValidationMatrixTest extends ValidationTestBase {
         run(c);
     }
 
-    @org.junit.jupiter.api.Disabled("BUG: expected 400, actual 500 (unhandled PSQLException 'value too long for type character varying(N)'). The DTOs declare no @Size, "
-        + "so an over-long value reaches the INSERT/UPDATE: CreateAreaRequest.name, UpdateAreaRequest.name, BroadcastAlertRequest.eventId (idempotency_key 100), "
-        + "CreateForecastJobRequest.unitVersion/modelVersion/thresholdVersion/unitId, DeviceTokenRequest.deviceType")
     @DisplayName("value longer than its VARCHAR column and no declared limit (BUG)")
     @ParameterizedTest(name = "{0}")
     @MethodSource("dbLimitOnly")

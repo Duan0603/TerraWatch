@@ -15,6 +15,7 @@ import { testConfirmedLandslides } from './test-confirmed-landslides.mjs';
 import { testTerrainAssessmentContracts } from './test-terrain-assessment-contracts.mjs';
 import { testWeather } from './test-weather.mjs';
 import { testRainHistory } from './test-rain-history.mjs';
+import { testRainHistoryGaps } from './test-rain-history-gaps.mjs';
 import { testForecastStatus } from './test-forecast-status.mjs';
 import { testTimeFormatting } from './test-time-formatting.mjs';
 import { testReportExport } from './test-report-export.mjs';
@@ -23,7 +24,12 @@ import { testExperimentalRisk } from './test-experimental-risk.mjs';
 import { testSnapshotContracts } from './test-snapshot-contracts.mjs';
 import { testCitizenStatus } from './test-citizen-status.mjs';
 import { testAlertSubscriptions, testBroadcastReach, testSendResultText } from './test-alert-subscriptions.mjs';
+import { testRainWarningThresholds } from './test-rain-warning-thresholds.mjs';
+import { testRainWarningApiContracts } from './test-rain-warning-api-contracts.mjs';
 import { testRainWarning, testRainWarningChart, testRainWarningActions, testRainWarningOnset, testRainWarningRunout } from './test-rain-warning.mjs';
+import { testAuthApi } from './test-auth-api.mjs';
+import { testSmallApiClients } from './test-small-api-clients.mjs';
+import { testSound } from './test-sound.mjs';
 
 async function runAllWebGisTests() {
   console.log('===============================================================');
@@ -49,6 +55,7 @@ async function runAllWebGisTests() {
     await testTerrainAssessmentContracts();
     await testWeather();
     await testRainHistory();
+    await testRainHistoryGaps();
     await testForecastStatus();
     await testTimeFormatting();
     await testReportExport();
@@ -56,6 +63,8 @@ async function runAllWebGisTests() {
     await testMonitoredPoints();
     await testExperimentalRisk();
     await testSnapshotContracts();
+    await testRainWarningThresholds();
+    await testRainWarningApiContracts();
     await testRainWarning();
     await testRainWarningChart();
     await testRainWarningActions();
@@ -65,6 +74,9 @@ async function runAllWebGisTests() {
     await testBroadcastReach();
     await testSendResultText();
     await testCitizenStatus();
+    await testAuthApi();
+    await testSmallApiClients();
+    await testSound();
 
     const elapsed = Date.now() - startTime;
     console.log('===============================================================');

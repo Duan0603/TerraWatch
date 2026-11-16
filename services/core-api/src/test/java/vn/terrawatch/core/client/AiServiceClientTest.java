@@ -1,7 +1,6 @@
 package vn.terrawatch.core.client;
 
 import io.github.resilience4j.springboot3.circuitbreaker.autoconfigure.CircuitBreakerAutoConfiguration;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
@@ -169,16 +168,12 @@ class AiServiceClientTest {
     }
 
     @Test
-    @Disabled("BUG: expected empty-body model card to read as unavailable {ready:false}; actual segmentationCard() returns null, "
-        + "and ModelCardController line 27 Map.of(\"segmentation\", null) then throws NullPointerException -> HTTP 500")
     void emptyBodyModelCardIsNotNull() {
         server.expect(requestTo(BASE + "/api/v1/models/info")).andRespond(withSuccess());
         assertThat(client.segmentationCard()).isEqualTo(Map.of("ready", false));
     }
 
     @Test
-    @Disabled("BUG: expected predictLandslide on 200/empty body to read as unavailable (success=false); actual returns null, "
-        + "which DiagnosticController line 40 serves as HTTP 200 with an empty body")
     void emptyBodyPredictIsNotNull() {
         server.expect(requestTo(BASE + "/api/v1/inference")).andRespond(withSuccess());
         assertThat(client.predictLandslide("S", 1, 2, 3, 4)).isNotNull();

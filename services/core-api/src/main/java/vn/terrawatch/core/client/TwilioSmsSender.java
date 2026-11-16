@@ -48,9 +48,15 @@ public class TwilioSmsSender implements SmsSender {
                     .POST(HttpRequest.BodyPublishers.ofString(form))
                     .build();
             HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
-            JsonNode node = json.readTree(resp.body());
+            JsonNode node;
+            try {
+                node = json.readTree(resp.body());
+            } catch (Exception notJson) {
+                node = json.missingNode(); // keep the HTTP status in the error below
+            }
             if (resp.statusCode() == 201) {
-                return Result.sent(node.path("sid").asText());
+                String sid = node.path("sid").asText();
+                return sid.isBlank() ? Result.failed("Twilio 201 without a message sid") : Result.sent(sid);
             }
             return Result.failed("Twilio " + resp.statusCode() + ": " + node.path("message").asText(resp.body()));
         } catch (InterruptedException e) {

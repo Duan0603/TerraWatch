@@ -168,8 +168,6 @@ def test_predict_onnx_std_floor_limits_amplification():
     assert flat, "flat tile must stay flat (floor stops noise amplification)"
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: constant valid image with std floor 0 divides by zero; expected finite tile input, "
-                   "actual NaN/inf fed to the model (RuntimeWarning)")
 def test_predict_onnx_zero_variance_input_stays_finite():
     s = FakeSession()
     predict_onnx(s, np.ones((8, T, T), "float32"), valid_all(T, T), 0.0)

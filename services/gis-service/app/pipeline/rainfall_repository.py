@@ -143,16 +143,16 @@ class RainfallRepository:
         """
         obs_query = """
             SELECT
-                SUM(rainfall_mm) FILTER (WHERE interval_end >= NOW() - INTERVAL '1 hour')  AS rain_1h_mm,
-                SUM(rainfall_mm) FILTER (WHERE interval_end >= NOW() - INTERVAL '24 hours') AS rain_24h_acc_mm,
-                SUM(rainfall_mm) FILTER (WHERE interval_end >= NOW() - INTERVAL '72 hours') AS rain_72h_acc_mm,
-                SUM(rainfall_mm) FILTER (WHERE interval_end >= NOW() - INTERVAL '7 days')   AS rain_7d_acc_mm,
-                MAX(quality_flag) AS quality_flag,
-                MAX(interval_end) AS latest_observation_time,
-                COUNT(*) FILTER (WHERE interval_end >= NOW() - INTERVAL '24 hours') AS obs_count_24h
+                SUM(rainfall_mm) FILTER (WHERE interval_end >= NOW() - INTERVAL '1 hour' AND quality_flag != 'missing')  AS rain_1h_mm,
+                SUM(rainfall_mm) FILTER (WHERE interval_end >= NOW() - INTERVAL '24 hours' AND quality_flag != 'missing') AS rain_24h_acc_mm,
+                SUM(rainfall_mm) FILTER (WHERE interval_end >= NOW() - INTERVAL '72 hours' AND quality_flag != 'missing') AS rain_72h_acc_mm,
+                SUM(rainfall_mm) FILTER (WHERE interval_end >= NOW() - INTERVAL '7 days' AND quality_flag != 'missing')   AS rain_7d_acc_mm,
+                MAX(quality_flag) FILTER (WHERE quality_flag != 'missing') AS quality_flag,
+                MAX(interval_end) FILTER (WHERE quality_flag != 'missing') AS latest_observation_time,
+                COUNT(*) FILTER (WHERE interval_end >= NOW() - INTERVAL '24 hours' AND quality_flag != 'missing') AS obs_count_24h,
+                COUNT(*) FILTER (WHERE interval_end >= NOW() - INTERVAL '24 hours' AND quality_flag = 'missing') AS missing_count_24h
             FROM gis_schema.rainfall_observations
-            WHERE unit_id = %s AND interval_end >= NOW() - INTERVAL '7 days'
-              AND quality_flag != 'missing';
+            WHERE unit_id = %s AND interval_end >= NOW() - INTERVAL '7 days';
         """
 
         fcst_query = """
@@ -164,6 +164,7 @@ class RainfallRepository:
                 provider_run_id
             FROM gis_schema.rainfall_forecasts
             WHERE unit_id = %s
+              AND issued_at <= NOW() AND available_at <= NOW()
             ORDER BY issued_at DESC
             LIMIT 1;
         """
@@ -190,6 +191,6 @@ class RainfallRepository:
             "rain_7d_acc_mm": _round_or_none(obs_row["rain_7d_acc_mm"]),
             "forecast_next_24h_mm": round(float(fcst_row["predicted_rain_24h_mm"]), 2) if fcst_row else None,
             "forecast_valid_until": fcst_row["valid_until"].isoformat() if fcst_row else None,
-            "quality_flag": obs_row.get("quality_flag", "good"),
+            "quality_flag": "missing" if obs_row["missing_count_24h"] else obs_row.get("quality_flag", "good"),
             "latest_observation_time": obs_row["latest_observation_time"].isoformat() if obs_row.get("latest_observation_time") else None
         }

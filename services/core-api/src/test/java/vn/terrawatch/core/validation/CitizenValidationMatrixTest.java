@@ -258,8 +258,6 @@ class CitizenValidationMatrixTest extends ValidationTestBase {
         return c.stream();
     }
 
-    @org.junit.jupiter.api.Disabled("BUG: expected 400 for alertChannels [null], actual 200 and a subscription with NO channel is stored "
-        + "(SubscriptionRequest: @NotEmpty accepts [null], @Pattern treats null as valid; AlertSubscriptionService.subscribe saves push=false sms=false)")
     @org.junit.jupiter.api.Test
     void bugSubscriptionWithNullChannelIsStored() throws Exception {
         run(new Case(SUBSCRIBE, "alertChannels [null]", set("alertChannels", java.util.Collections.singletonList(null)), null, 400, Matrix.INVALID));

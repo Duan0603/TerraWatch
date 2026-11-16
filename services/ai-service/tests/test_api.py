@@ -89,14 +89,11 @@ def test_model_info_detects_tampered_model(pred):
     assert client.get("/api/v1/models/info").json()["sha256_ok"] is False
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: model+card files present but card is corrupt JSON; expected 200 {ready:false} or 503, "
-                   "actual: unhandled exception -> 500")
 def test_model_info_corrupt_card_does_not_500(pred):
     open(pred.card_path, "w").write("{broken")
     assert client.get("/api/v1/models/info").status_code != 500
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: card lacks std_floor_multiplier; expected 200 {ready:false} or 503, actual: AssertionError -> 500")
 def test_model_info_incomplete_card_does_not_500(pred):
     import json
     c = pred.card; del c["input"]["preprocessing"]
@@ -373,8 +370,6 @@ def test_scene_file_missing_404(pred):
     assert r.status_code == 404 and "scene file not found" in r.json()["detail"] and "features" not in r.json()
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: 404 detail embeds the absolute server filesystem path (str(FileNotFoundError(path))); "
-                   "expected only the client-supplied name, actual leaks e.g. /tmp/.../scenes/missing.tif")
 def test_scene_file_missing_does_not_leak_server_path(pred):
     r = client.post("/api/v1/inference/scene", json={**SCENE, "post_tif": "missing.tif"})
     assert str(pred.scene_dir) not in r.json()["detail"]
@@ -401,16 +396,12 @@ def test_scene_inference_session_error_is_not_a_fabricated_result(pred):
     assert r.status_code >= 500 and "features" not in r.json()
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: inference-engine failure (non-RuntimeError, e.g. ONNX InvalidArgument/ValueError-free exception) "
-                   "gives unhandled 500; expected 503 'unavailable' like the model-missing case, actual 500")
 def test_scene_engine_failure_is_503(pred):
     from tests.conftest import FakeSession
     pred._session = FakeSession(exc=Exception("onnx boom"))
     assert client.post("/api/v1/inference/scene", json=SCENE).status_code == 503
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: corrupt/non-GeoTIFF file named *.tif raises rasterio error (OSError) -> unhandled 500; "
-                   "expected 4xx (422) for bad client scene, actual 500")
 def test_scene_corrupt_tif_is_client_error(pred):
     open(f"{pred.scene_dir}/post.tif", "wb").write(b"not a tif")
     r = client.post("/api/v1/inference/scene", json=SCENE)

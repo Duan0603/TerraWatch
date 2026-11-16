@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import VerificationQueue from '../components/VerificationQueue';
@@ -15,13 +15,15 @@ import SystemHealthModal from '../components/SystemHealthModal';
 import ModelCardModal from '../components/ModelCardModal';
 import ReviewDialog from '../components/ReviewDialog';
 import KpiStrip from '../components/KpiStrip';
+import RainSimulatorPanel from '../components/RainSimulatorPanel';
+import { simulatedCollection } from '../utils/experimentalRisk';
 import MobileTabBar from '../components/MobileTabBar';
 import forecastApi from '../api/forecastApi';
 import { exportReport, FORECAST_COLUMNS } from '../utils/reportExport';
 import { useAuth } from '../context/AuthContext';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
-import { playAlertBeep } from '../utils/sound';
+import { playAlertSiren } from '../utils/sound';
 
 // Thứ tự Escape đóng hộp thoại: cái đầu danh sách đóng trước.
 const DIALOG_ORDER = ['broadcast', 'history', 'audit', 'fieldReports', 'aoi', 'users', 'adminAudit', 'health', 'modelCard'];
@@ -41,6 +43,10 @@ export default function DashboardPage() {
   const [reviewTarget, setReviewTarget] = useState(null); // { event, decision }
   const [broadcastTargetEvent, setBroadcastTargetEvent] = useState(null);
   const [dialogs, setDialogs] = useState({}); // { broadcast: true, ... } - hộp thoại nào đang mở
+  const [sim, setSim] = useState(null); // kết quả mô phỏng mưa (demo), null = mưa thật
+  const [hideLive, setHideLive] = useState(true);
+  const riskShown = useMemo(() => (sim ? simulatedCollection(sim, experimentalRisk, hideLive) : experimentalRisk), [sim, experimentalRisk, hideLive]);
+  const closeSimulator = () => { hide('simulator'); setSim(null); };
   const show = (name) => setDialogs(d => ({ ...d, [name]: true }));
   const hide = (name) => setDialogs(d => ({ ...d, [name]: false }));
 
@@ -73,7 +79,7 @@ export default function DashboardPage() {
     await loadEvents();
     if (decision === 'approved' && (event.risk === 'extreme' || event.risk === 'high')) {
       setAlertPromptEvent({ ...event, status: 'approved' }); // bản trong state là bản trước khi duyệt
-      if (soundEnabled) playAlertBeep();
+      if (soundEnabled) playAlertSiren();
     }
   };
 
@@ -100,6 +106,7 @@ export default function DashboardPage() {
         onOpenAdminAudit={() => show('adminAudit')}
         onOpenHealth={() => show('health')}
         onOpenModelCard={() => show('modelCard')}
+        onOpenSimulator={() => show('simulator')}
         onExportReport={() => exportReport('du-bao', FORECAST_COLUMNS, events)}
         lastLoadedAt={lastLoadedAt}
         loadError={loadError}
@@ -132,7 +139,7 @@ export default function DashboardPage() {
           fieldReports={fieldReports}
           aoi={aoi}
           confirmed={confirmed}
-          experimentalRisk={experimentalRisk}
+          experimentalRisk={riskShown}
           className={mobileTab === 'list' ? 'mobile-hidden' : ''}
         />
       </div>
@@ -168,6 +175,8 @@ export default function DashboardPage() {
       <AdminAuditModal isOpen={!!dialogs.adminAudit} onClose={() => hide('adminAudit')} />
       <SystemHealthModal isOpen={!!dialogs.health} onClose={() => hide('health')} />
       <ModelCardModal isOpen={!!dialogs.modelCard} onClose={() => hide('modelCard')} />
+      {dialogs.simulator && <RainSimulatorPanel onResult={setSim} onClose={closeSimulator}
+        hideLive={hideLive} setHideLive={setHideLive} soundEnabled={soundEnabled} />}
     </div>
   );
 }

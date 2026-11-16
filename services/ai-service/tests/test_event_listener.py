@@ -153,32 +153,24 @@ def test_connection_lost_mid_stream_is_logged(run, caplog):
     assert "lost" in caplog.text
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: listener has no reconnect; expected a 2nd connection after ConnectionError mid-stream "
-                   "(docstring says retry loop), actual: worker logs warning and thread ends for good")
 def test_listener_reconnects_after_connection_error(run, caplog):
     caplog.set_level(logging.INFO, logger="ai_event_listener")
     fake, _ = run([[ConnectionError("lost")], [msg({"eventType": "A", "eventId": "again"})]])
     assert len(fake.connections) >= 2 and "again" in caplog.text
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: valid JSON that is not an object (e.g. '[1]') makes event.get raise AttributeError; "
-                   "expected: skip message and keep consuming, actual: outer except ends the listener, later events are lost")
 def test_non_object_json_does_not_kill_listener(run, caplog):
     caplog.set_level(logging.INFO, logger="ai_event_listener")
     run([[msg("[1]"), msg({"eventType": "A", "eventId": "later"})]])
     assert "later" in caplog.text
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: SATELLITE_SCENE_INGESTED with non-object payload raises AttributeError on payload.get; "
-                   "expected: skip message and keep consuming, actual: listener dies and later events are lost")
 def test_bad_payload_type_does_not_kill_listener(run, caplog):
     caplog.set_level(logging.INFO, logger="ai_event_listener")
     run([[msg({"eventType": "SATELLITE_SCENE_INGESTED", "payload": "oops"}), msg({"eventType": "A", "eventId": "later"})]])
     assert "later" in caplog.text
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: message with non-string data (None) makes json.loads raise TypeError (not JSONDecodeError); "
-                   "expected: skip message and keep consuming, actual: listener dies")
 def test_null_data_does_not_kill_listener(run, caplog):
     caplog.set_level(logging.INFO, logger="ai_event_listener")
     run([[{"type": "message", "data": None}, msg({"eventType": "A", "eventId": "later"})]])

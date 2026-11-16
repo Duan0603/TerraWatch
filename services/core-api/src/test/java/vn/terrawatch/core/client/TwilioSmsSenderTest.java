@@ -1,7 +1,6 @@
 package vn.terrawatch.core.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import vn.terrawatch.core.config.SmsConfig;
 import vn.terrawatch.core.testsupport.FakeHttpClient;
@@ -177,8 +176,6 @@ class TwilioSmsSenderTest {
     }
 
     @Test
-    @Disabled("BUG: expected a 201 reply without a sid to be treated as failure (no message id to track); actual TwilioSmsSender line 53 "
-        + "returns Result.sent(\"\") for body {} / empty")
     void a201WithoutSidIsNotSent() {
         TwilioSmsSender s = sender();
         FakeHttpClient.inject(s, r -> Reply.of(201, "{}"));
@@ -186,8 +183,6 @@ class TwilioSmsSenderTest {
     }
 
     @Test
-    @Disabled("BUG: expected non-JSON 5xx to keep the HTTP status in the error; actual TwilioSmsSender line 51 json.readTree throws first, error becomes "
-        + "'SMS unreachable: Unrecognized token ...' and the status code 502 is lost")
     void nonJsonErrorKeepsTheStatus() {
         TwilioSmsSender s = sender();
         FakeHttpClient.inject(s, r -> Reply.of(502, "<html>Bad Gateway</html>"));

@@ -105,12 +105,13 @@ class SnapshotRepository:
             FROM gis_schema.rainfall_forecasts
             WHERE unit_id = %s
               AND available_at <= %s
+              AND issued_at <= %s
             ORDER BY issued_at DESC
             LIMIT 1;
         """
         with self._get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute(query, (unit_id, as_of_time))
+                cur.execute(query, (unit_id, as_of_time, as_of_time))
                 row = cur.fetchone()
                 if not row:
                     return None
@@ -139,9 +140,7 @@ class SnapshotRepository:
             )
             ON CONFLICT (unit_id, unit_version, as_of_time, schema_version)
             DO UPDATE SET
-                features = EXCLUDED.features,
-                coverage_quality = EXCLUDED.coverage_quality,
-                source_references = EXCLUDED.source_references
+                snapshot_id = feature_snapshots.snapshot_id
             RETURNING snapshot_id;
         """
         params = (

@@ -221,7 +221,6 @@ class EsmsSenderTest {
     }
 
     @Test
-    @Disabled("BUG: expected blank phone to fail locally without calling the provider; actual EsmsSender.send line 45 normalises to \"\" and posts Phone=\"\"")
     void blankPhoneMakesNoHttpCall() {
         EsmsSender s = sender(true, "B");
         FakeHttpClient http = ok(s);
@@ -230,7 +229,6 @@ class EsmsSenderTest {
     }
 
     @Test
-    @Disabled("BUG: expected a 200-with-garbage reply 'CodeResult' missing to say so; actual error is just 'eSMS ' (EsmsSender line 80), no detail for the operator")
     void missingCodeResultErrorIsDescriptive() {
         EsmsSender s = sender(true, "B");
         FakeHttpClient.inject(s, r -> Reply.of(200, "{}"));

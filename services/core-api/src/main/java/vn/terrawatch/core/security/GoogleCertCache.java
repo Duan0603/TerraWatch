@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 class GoogleCertCache {
     private static final URI CERTS_URL = URI.create(
         "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com");
-    private static final Pattern MAX_AGE = Pattern.compile("max-age=(\\d+)");
+    private static final Pattern MAX_AGE = Pattern.compile("max-age=(\\d{1,9})");
     private static final Duration MIN_REFETCH = Duration.ofSeconds(60);
 
     private final HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
@@ -63,12 +63,15 @@ class GoogleCertCache {
             keys = fresh;
             fetchedAt = Instant.now();
             Matcher maxAge = MAX_AGE.matcher(response.headers().firstValue("cache-control").orElse(""));
-            expiresAt = fetchedAt.plusSeconds(maxAge.find() ? Long.parseLong(maxAge.group(1)) : 3600);
+            String cacheControl = response.headers().firstValue("cache-control").orElse("");
+            long ttl = maxAge.find() ? Math.min(Long.parseLong(maxAge.group(1)), 86_400) : cacheControl.contains("no-store") ? 0 : 3600;
+            expiresAt = fetchedAt.plusSeconds(ttl);
         } catch (Exception error) {
             if (keys.isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Cannot verify Google sign-in right now");
             }
             fetchedAt = Instant.now(); // keep serving the last known keys, retry after MIN_REFETCH
+            expiresAt = fetchedAt.plus(MIN_REFETCH);
         }
     }
 }

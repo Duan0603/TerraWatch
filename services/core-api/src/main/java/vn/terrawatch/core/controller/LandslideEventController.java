@@ -34,7 +34,7 @@ public class LandslideEventController {
     @Operation(summary = "FR3.2 / UC04: Cán bộ phê duyệt hoặc bác bỏ điểm cảnh báo")
     public ResponseEntity<Map<String, Object>> verifyEvent(
             @PathVariable("id") String eventId,
-            @RequestBody VerifyEventRequest request,
+            @jakarta.validation.Valid @RequestBody VerifyEventRequest request,
             Authentication authentication) {
         // Story 4.23: the reviewer is the signed-in officer/admin, never a value sent by the client.
         return ResponseEntity.ok(landslideService.verifyEvent(eventId, request, (UUID) authentication.getPrincipal()));
@@ -49,9 +49,9 @@ public class LandslideEventController {
     @GetMapping("/geofence")
     @Operation(summary = "UC08 / NFR2: Truy vấn Geofencing tìm điểm sạt lở nguy hiểm trong bán kính")
     public ResponseEntity<List<Map<String, Object>>> queryGeofence(
-            @RequestParam("lon") double lon,
-            @RequestParam("lat") double lat,
-            @RequestParam(value = "radius", defaultValue = "500") double radius) {
+            @RequestParam("lon") @jakarta.validation.constraints.DecimalMin("-180") @jakarta.validation.constraints.DecimalMax("180") double lon,
+            @RequestParam("lat") @jakarta.validation.constraints.DecimalMin("-90") @jakarta.validation.constraints.DecimalMax("90") double lat,
+            @RequestParam(value = "radius", defaultValue = "500") @jakarta.validation.constraints.DecimalMin("0") double radius) {
         return ResponseEntity.ok(landslideService.queryGeofence(lon, lat, radius));
     }
 

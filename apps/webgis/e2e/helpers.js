@@ -32,10 +32,13 @@ const CORS = {
  */
 export async function mockBackend(page, role, handler) {
   const calls = [];
-  await page.addInitScript((r) => {
-    localStorage.setItem('terrawatch_token', 'e2e-fake-token');
-    localStorage.setItem('terrawatch_user', JSON.stringify({ fullName: `E2E ${r}`, role: r }));
-  }, role);
+  // role = null: stay signed out (login page flows), only the API is faked.
+  if (role) {
+    await page.addInitScript((r) => {
+      localStorage.setItem('terrawatch_token', 'e2e-fake-token');
+      localStorage.setItem('terrawatch_user', JSON.stringify({ fullName: `E2E ${r}`, role: r }));
+    }, role);
+  }
   // Map tiles, fonts and style live on other hosts; fail them fast so the tests do not wait on the internet.
   await page.route((url) => !['localhost', '127.0.0.1'].includes(url.hostname), (route) => route.abort());
   await page.route('**/api/v1/**', async (route) => {
@@ -93,4 +96,10 @@ export function forecastItem(runId, name, hazardLevel, extra = {}) {
 export async function openTool(page, name) {
   await page.getByRole('button', { name: 'Công cụ' }).click();
   await page.getByRole('menuitem', { name }).click();
+}
+
+/** Admin tools live in the "Quản trị" menu. */
+export async function openAdminTool(page, name) {
+  await page.getByRole('button', { name: 'Quản trị' }).click();
+  await page.getByRole('menuitem', { name: new RegExp(name) }).click();
 }

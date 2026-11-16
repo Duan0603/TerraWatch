@@ -33,7 +33,7 @@ phone, `SMS_PROVIDER=smsgate`, proven on 15/11). Same pattern as the e-mailed re
 
 ## Tasks
 
-- [x] V17 migration `core_schema.phone_otp_codes`
+- [x] V18 migration `core_schema.phone_otp_codes`
 - [x] `PhoneOtpRepository` + `PhoneOtpService` (request / verify / consume), endpoints, public in SecurityConfig
 - [x] `AuthService.verifiedPhone` + `resetPassword` take our one-time token, else a Firebase phone token
 - [x] `authApi.sendSmsOtp/verifySmsOtp` call the backend, drop reCAPTCHA
@@ -48,12 +48,12 @@ phone, `SMS_PROVIDER=smsgate`, proven on 15/11). Same pattern as the e-mailed re
 
 ## Dev Agent Record
 
-- Backend: V17 `phone_otp_codes`, `PhoneOtpRepository`, `PhoneOtpService`, `POST /auth/phone-otp/request|verify` (public),
+- Backend: V18 `phone_otp_codes`, `PhoneOtpRepository`, `PhoneOtpService`, `POST /auth/phone-otp/request|verify` (public),
   `AuthService.tokenPhone` = our one-time token first, else Firebase phone ID token (existing tests and mobile keep working).
 - Web: `authApi.sendSmsOtp/verifySmsOtp` call the backend; reCAPTCHA container removed; last right code cached so a retry after a failed
   register does not need a new SMS.
 - Tests: `PhoneOtpTest` 7 (limits, expiry, attempts, failed send, bad numbers, one-use token at sign-up), `AuthorizationMatrixTest` routes,
   full core-api suite 1757 run / 0 failed after the matrix fix; web unit tests pass; `e2e/phone-otp.spec.js` 2/2.
-- Live (Docker, SMS paused): bad number 400, valid number 503 "Máy chủ chưa bật gửi SMS", V17 applied.
+- Live (Docker, SMS paused): bad number 400, valid number 503 "Máy chủ chưa bật gửi SMS", migration applied (numbered V18 after the merge with main).
 - Known limits: the 30/hour global cap can be used up by someone requesting codes for random numbers (blocks real users for up to an hour,
   costs at most 30 SMS); a per-IP limit would fix it. Two requests in the same instant for one number can both send.
