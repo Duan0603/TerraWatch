@@ -120,7 +120,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <KpiStrip events={events} fieldReports={fieldReports} broadcasts={broadcasts} reviewMetrics={reviewMetrics} />
+      {isAdmin && <KpiStrip events={events} fieldReports={fieldReports} broadcasts={broadcasts} reviewMetrics={reviewMetrics} />}
 
       <div className="main-layout">
         <VerificationQueue

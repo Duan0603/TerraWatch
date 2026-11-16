@@ -28,7 +28,7 @@ test('with confirmed landslides the map offers a toggle with their count', async
 });
 
 test('no confirmed landslides (or the call fails): no toggle, dashboard still works', async ({ page }) => {
-  await mockBackend(page, 'officer', ({ path }) => {
+  await mockBackend(page, 'admin', ({ path }) => {
     if (path === '/landslides/active') return [500, { message: 'boom' }];
     if (path === '/forecasts/review-queue') return [forecastItem('run-d', 'Điểm E2E', 'high')];
   });
@@ -39,7 +39,7 @@ test('no confirmed landslides (or the call fails): no toggle, dashboard still wo
 
 // Story 4.39
 test('broken geometry from the server is dropped: no toggle, no crash', async ({ page }) => {
-  await mockBackend(page, 'officer', ({ path }) => {
+  await mockBackend(page, 'admin', ({ path }) => {
     if (path === '/landslides/active') {
       return { type: 'FeatureCollection', features: [
         { type: 'Feature', geometry: {}, properties: { risk_level: 'high' } },

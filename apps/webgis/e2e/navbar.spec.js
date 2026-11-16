@@ -22,12 +22,14 @@ test('officer: name, initials and role label; the broadcast button is disabled w
   await expect(send).toBeDisabled();
   await expect(send).toHaveAttribute('title', 'Chỉ tài khoản Admin mới có quyền phát lệnh cảnh báo khẩn cấp');
   await expect(page.getByRole('button', { name: 'Quản trị' })).toHaveCount(0);
+  await expect(page.getByLabel('Tổng quan tình hình')).toHaveCount(0); // KPI strip is admin-only
 });
 
 test('admin: role label, enabled broadcast button, and an admin menu with its four tools', async ({ page }) => {
   await open(page, 'admin');
   await expect(page.locator('.nav-avatar')).toHaveText('EA');
   await expect(page.locator('.nav-user-role')).toHaveText('Lãnh đạo phê duyệt');
+  await expect(page.getByLabel('Tổng quan tình hình')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Phát cảnh báo' })).toBeEnabled();
   await page.getByRole('button', { name: 'Quản trị' }).click();
   const items = page.getByRole('menuitem');

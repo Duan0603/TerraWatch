@@ -33,7 +33,7 @@ test('an update event reloads the queue without waiting for the 60 s refresh', a
 });
 
 test('a stream that is refused with 403 does not break the dashboard', async ({ page }) => {
-  await mockBackend(page, 'officer', ({ path }) => {
+  await mockBackend(page, 'admin', ({ path }) => {
     if (path === '/forecasts/review-queue') return [forecastItem('run-403', 'Điểm E2E', 'high')];
   });
   await page.route('**/api/v1/stream', (route) => route.fulfill({

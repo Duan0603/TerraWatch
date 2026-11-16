@@ -13,7 +13,7 @@ function handler(extra = {}) {
 }
 
 test('KPI strip shows the review card and the audit dialog shows the summary with a 30-day switch', async ({ page }) => {
-  const calls = await mockBackend(page, 'officer', handler());
+  const calls = await mockBackend(page, 'admin', handler());
 
   await page.goto('/');
   const strip = page.getByLabel('Tổng quan tình hình');
@@ -30,7 +30,7 @@ test('KPI strip shows the review card and the audit dialog shows the summary wit
 });
 
 test('with no decisions yet the card shows a dash, not zero minutes', async ({ page }) => {
-  await mockBackend(page, 'officer', handler({ metrics: { windowDays: 7, approved: 0, rejected: 0, avgMinutes: null, medianMinutes: null, expiredUnreviewed: 0 } }));
+  await mockBackend(page, 'admin', handler({ metrics: { windowDays: 7, approved: 0, rejected: 0, avgMinutes: null, medianMinutes: null, expiredUnreviewed: 0 } }));
 
   await page.goto('/');
   const strip = page.getByLabel('Tổng quan tình hình');
@@ -39,7 +39,7 @@ test('with no decisions yet the card shows a dash, not zero minutes', async ({ p
 });
 
 test('a failed metrics call leaves the strip without the card and the queue still works', async ({ page }) => {
-  await mockBackend(page, 'officer', ({ path }) => {
+  await mockBackend(page, 'admin', ({ path }) => {
     if (path === '/forecasts/reviews/metrics') return [500, { message: 'boom' }];
   });
 
