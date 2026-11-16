@@ -19,7 +19,7 @@ for (const name of ['Thẻ mô hình', 'Nhật ký thẩm định', 'Báo cáo h
 
 // Story 4.37: at 1440 px the admin bar keeps its text labels and does not overflow.
 for (const role of ['officer', 'admin']) {
-  test(`${role} top bar at 1440 px: labels visible, no overflow, tools menu lists 5 items`, async ({ page }) => {
+  test(`${role} top bar at 1440 px: labels visible, no overflow, tools menu lists 6 items`, async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await mockBackend(page, role, () => undefined);
     await page.goto('/');
@@ -27,7 +27,7 @@ for (const role of ['officer', 'admin']) {
     const fits = await page.locator('.top-nav').evaluate((el) => el.scrollWidth <= el.clientWidth);
     expect(fits).toBe(true);
     await page.getByRole('button', { name: 'Công cụ' }).click();
-    await expect(page.getByRole('menuitem')).toHaveCount(5);
+    await expect(page.getByRole('menuitem')).toHaveCount(6);
     await page.keyboard.press('Escape');
     await expect(page.getByRole('menu')).toHaveCount(0);
   });
