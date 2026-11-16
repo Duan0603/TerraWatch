@@ -38,9 +38,24 @@ function driver(p) {
   return 'Cả phần mưa và phần đất/địa hình cùng góp vào điểm.';
 }
 
+/** The map's GRU layer during the rain simulator demo: the simulated point, alone when live rain is hidden,
+ *  otherwise in place of that point's live score. Reuses the live cell geometry when there is one. */
+export function simulatedCollection(sim, live, hideLive) {
+  const r = sim.result, others = (live?.features || []).filter(f => f.properties.key !== sim.key);
+  const geometry = live?.features?.find(f => f.properties.key === sim.key)?.geometry
+    || { type: 'Point', coordinates: [sim.longitude, sim.latitude] };
+  const feature = { type: 'Feature', geometry, properties: {
+    key: sim.key, name: sim.name, simulated: true, current: true, stale: false, expired: false,
+    hazard_score: r.hazard_score, temporal_score: r.temporal_score, spatial_score: r.spatial_score,
+    rain_24h_mm: sim.past_7d_mm / 7, forecast_24h_mm: sim.next_24h_mm, cell_id: r.unit_id } };
+  return { type: 'FeatureCollection', simulated: true, center: [sim.longitude, sim.latitude],
+    features: hideLive ? [feature] : [...others, feature] };
+}
+
 /** Popup text for one experimental GRU point; properties come from GET /gis/rainfall/live/map. */
 export function describeRisk(p) {
   const lines = [];
+  if (p.simulated) lines.push('MÔ PHỎNG: mưa giả lập cho buổi demo, mô hình và đất/độ dốc là thật. Không gửi cảnh báo.');
   if (p.current) {
     lines.push(`Điểm mô hình thử nghiệm: ${scoreText(p.hazard_score)} (mưa ${scoreText(p.temporal_score)} × đất/địa hình ${scoreText(p.spatial_score)})`);
     lines.push(driver(p));

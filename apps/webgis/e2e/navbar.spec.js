@@ -161,6 +161,6 @@ test.describe('mobile', () => {
     await expect(page.getByRole('button', { name: 'Quản trị' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Phát cảnh báo' })).toBeVisible();
     await page.getByRole('button', { name: 'Công cụ' }).click();
-    await expect(page.getByRole('menuitem')).toHaveCount(5);
+    await expect(page.getByRole('menuitem')).toHaveCount(6);
   });
 });

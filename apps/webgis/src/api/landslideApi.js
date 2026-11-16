@@ -9,6 +9,14 @@ const landslideApi = {
   // GeoJSON điểm GRU thử nghiệm (mưa Open-Meteo + đất/độ dốc) từ cache của GIS; chỉ dùng cho cán bộ.
   getExperimentalRisk() {
     return axiosClient.get('/gis/rainfall/live/map');
+  },
+
+  // Demo mô phỏng mưa: mưa giả lập qua GRU thật, không lưu gì.
+  getSimulationLocations() {
+    return axiosClient.get('/gis/rainfall/simulate/locations');
+  },
+  simulateRain(key, past7dMm, next24hMm, signal) {
+    return axiosClient.get('/gis/rainfall/simulate', { params: { key, past_7d_mm: past7dMm, next_24h_mm: next24hMm }, signal });
   }
 };
 

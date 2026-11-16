@@ -694,3 +694,23 @@ def test_load_climatology_unreadable_file_is_none(monkeypatch):
     monkeypatch.setattr(lr.Path, "read_text", lambda self, **k: "{not json")
     assert lr.load_climatology(KEY) is None
     assert lr.load_climatology("0.0000,0.0000") is None
+
+
+# ---------- demo rain simulation ----------
+def test_simulate_sends_even_synthetic_series_through_same_gru_call(clock, post):
+    as_of = clock.now.replace(minute=0).isoformat()
+    post.outcomes = [FakeResponse(gru_ok({"as_of": as_of}))]
+    out = LiveRainfallService().simulate(KEY, 336.0, 80.0)
+    assert out["ready"] is True and out["hazard_score"] == 0.45
+    body = post.calls[0]["json"]
+    assert body["history"] == [2.0] * 168 and body["forecast_24h_mm"] == 80.0 and body["issue_time"] == as_of
+
+
+def test_simulate_unknown_point_is_held_without_calling_model(clock, post):
+    assert LiveRainfallService().simulate("0.0000,0.0000", 10, 10)["reason"] == "STATIC_FEATURES_UNAVAILABLE"
+    assert post.calls == []
+
+
+def test_simulation_locations_are_ready_registry_points():
+    items = LiveRainfallService.simulation_locations()
+    assert any(i["key"] == KEY for i in items) and all(set(i) == {"key", "name", "latitude", "longitude"} for i in items)
