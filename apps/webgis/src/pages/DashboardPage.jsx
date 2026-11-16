@@ -23,7 +23,7 @@ import { exportReport, FORECAST_COLUMNS } from '../utils/reportExport';
 import { useAuth } from '../context/AuthContext';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
-import { playAlertBeep } from '../utils/sound';
+import { playAlertSiren } from '../utils/sound';
 
 // Thứ tự Escape đóng hộp thoại: cái đầu danh sách đóng trước.
 const DIALOG_ORDER = ['broadcast', 'history', 'audit', 'fieldReports', 'aoi', 'users', 'adminAudit', 'health', 'modelCard'];
@@ -79,7 +79,7 @@ export default function DashboardPage() {
     await loadEvents();
     if (decision === 'approved' && (event.risk === 'extreme' || event.risk === 'high')) {
       setAlertPromptEvent({ ...event, status: 'approved' }); // bản trong state là bản trước khi duyệt
-      if (soundEnabled) playAlertBeep();
+      if (soundEnabled) playAlertSiren();
     }
   };
 

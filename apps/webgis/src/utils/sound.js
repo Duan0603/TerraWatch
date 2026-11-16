@@ -51,3 +51,50 @@ export function playAlertBeep() {
   }
 }
 
+let _sirenUntil = 0;
+
+/**
+ * Còi báo động kiểu phòng không: tiếng hú lên xuống 600 ↔ 1300 Hz, mỗi chu kỳ 1,5 giây.
+ * Hai dao động răng cưa lệch nhau vài cent cho tiếng dày như còi thật, qua bộ lọc thông thấp để bớt chói.
+ * Gọi lại khi còi đang kêu thì bỏ qua, để các cảnh báo dồn dập không chồng tiếng lên nhau.
+ */
+export function playAlertSiren(seconds = 4.5) {
+  try {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
+    const now = ctx.currentTime, end = now + seconds;
+    if (now < _sirenUntil) return;
+    _sirenUntil = end;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(2200, now);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.16, now + 0.15);
+    gain.gain.setValueAtTime(0.16, end - 0.3);
+    gain.gain.exponentialRampToValueAtTime(0.0001, end);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    for (const detune of [0, 9]) {
+      const osc = ctx.createOscillator();
+      osc.type = 'sawtooth';
+      osc.detune.setValueAtTime(detune, now);
+      osc.frequency.setValueAtTime(600, now);
+      for (let t = now; t < end; t += 1.5) {
+        osc.frequency.linearRampToValueAtTime(1300, Math.min(t + 0.9, end)); // lên chậm
+        osc.frequency.linearRampToValueAtTime(600, Math.min(t + 1.5, end)); // xuống nhanh hơn
+      }
+      osc.connect(filter);
+      osc.start(now);
+      osc.stop(end);
+    }
+  } catch (err) {
+    console.warn('Không thể phát còi báo động (trình duyệt chặn trước tương tác):', err);
+  }
+}
+

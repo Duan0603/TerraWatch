@@ -3,14 +3,18 @@ import { importSrc, setGlobal } from './helpers/load-src.mjs';
 
 // Fake Web Audio: records oscillator/gain scheduling.
 function fakeAudioContext({ state = 'running', throwOn } = {}) {
-  const log = { oscillators: [], gains: [], resumed: 0, created: 0 };
+  const log = { oscillators: [], gains: [], filters: [], resumed: 0, created: 0 };
   class Ctx {
     constructor() { log.created++; this.state = state; this.currentTime = 10; this.destination = { dest: true }; }
     resume() { log.resumed++; }
     createOscillator() {
       if (throwOn === 'osc') throw new Error('blocked');
-      const o = { connected: [], frequencyCalls: [], connect(n) { this.connected.push(n); }, start(t) { this.startAt = t; }, stop(t) { this.stopAt = t; }, frequency: { setValueAtTime: (...a) => o.frequencyCalls.push(a) } };
+      const o = { connected: [], frequencyCalls: [], ramps: [], detuneCalls: [], connect(n) { this.connected.push(n); }, start(t) { this.startAt = t; }, stop(t) { this.stopAt = t; }, frequency: { setValueAtTime: (...a) => o.frequencyCalls.push(a), linearRampToValueAtTime: (...a) => o.ramps.push(a) }, detune: { setValueAtTime: (...a) => o.detuneCalls.push(a) } };
       log.oscillators.push(o); return o;
+    }
+    createBiquadFilter() {
+      const f = { connected: [], connect(n) { this.connected.push(n); }, frequency: { setValueAtTime: (...a) => { f.cutoff = a; } } };
+      log.filters.push(f); return f;
     }
     createGain() {
       const g = { connected: [], gainCalls: [], ramps: [], connect(n) { this.connected.push(n); }, gain: { setValueAtTime: (...a) => g.gainCalls.push(a), exponentialRampToValueAtTime: (...a) => g.ramps.push(a) } };
@@ -74,6 +78,27 @@ export async function testSound() {
     assert.equal(sus.log.resumed, 1);
     assert.equal(sus.log.oscillators.length, 2);
     console.log('  ✓ context suspended: resume() rồi vẫn phát');
+
+    // Còi báo động: 2 dao động răng cưa lệch 9 cent, hú 600 <-> 1300 Hz, osc -> lọc -> gain -> loa; không chồng tiếng.
+    const sir = fakeAudioContext();
+    restore.push(setGlobal('window', { AudioContext: sir.Ctx }));
+    mod = await importSrc('utils/sound.js', { fresh: true });
+    mod.playAlertSiren();
+    const [s1, s2] = sir.log.oscillators; const [flt] = sir.log.filters; const [sg] = sir.log.gains;
+    assert.equal(sir.log.oscillators.length, 2);
+    assert.equal(s1.type, 'sawtooth'); assert.equal(s2.type, 'sawtooth');
+    assert.deepEqual([s1.detuneCalls, s2.detuneCalls], [[[0, 10]], [[9, 10]]]);
+    assert.deepEqual(s1.frequencyCalls, [[600, 10]]);
+    assert.deepEqual(s1.ramps.map(r => r[0]), [1300, 600, 1300, 600, 1300, 600]);
+    assert.deepEqual(s1.ramps.at(-1), [600, 14.5]);
+    assert.ok(s1.ramps.every(r => r[1] <= 14.5));
+    assert.deepEqual([s1.startAt, s1.stopAt], [10, 14.5]);
+    assert.equal(flt.type, 'lowpass');
+    assert.deepEqual(s1.connected, [flt]); assert.deepEqual(flt.connected, [sg]); assert.deepEqual(sg.connected, [{ dest: true }]);
+    assert.equal(sg.ramps.at(-1)[0], 0.0001);
+    mod.playAlertSiren(); // còn đang kêu: bỏ qua
+    assert.equal(sir.log.oscillators.length, 2);
+    console.log('  ✓ playAlertSiren: hai dao động răng cưa hú 600 ↔ 1300 Hz trong 4,5 giây, không chồng tiếng');
 
     // Web Audio ném lỗi: nuốt lỗi, chỉ console.warn.
     const bad = fakeAudioContext({ throwOn: 'osc' });

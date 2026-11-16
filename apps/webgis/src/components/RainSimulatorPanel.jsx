@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { CloudRain, Play, Square, X } from 'lucide-react';
 import landslideApi from '../api/landslideApi';
 import { scoreText } from '../utils/weather';
-import { playAlertBeep } from '../utils/sound';
+import { playAlertSiren } from '../utils/sound';
 
 // Demo: mưa giả lập đi qua đúng mô hình GRU thật (GET /gis/rainfall/simulate). Không lưu, không gửi SMS/FCM.
 export const PAST_LEVELS = [['Khô ráo', 0], ['Bình thường', 30], ['Ẩm ướt', 120], ['Mưa kéo dài', 300], ['Mưa cực đoan', 600]];
@@ -55,7 +55,7 @@ export default function RainSimulatorPanel({ onResult, onClose, hideLive, setHid
       setResult(r); setError('');
       onResult({ ...loc, past_7d_mm: past, next_24h_mm: next, result: r });
       const high = !!simLevel(r.hazard_score).high;
-      if (high && !wasHigh.current && soundEnabled) playAlertBeep();
+      if (high && !wasHigh.current && soundEnabled) playAlertSiren();
       wasHigh.current = high;
     }).catch(e => { if (!controller.signal.aborted) setError(errText(e, 'Mô phỏng thất bại')); });
     return () => controller.abort();
